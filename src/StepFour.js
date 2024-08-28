@@ -23,7 +23,7 @@ const StepFour = ({ formData, handleNextStepData }) => {
     titikKoordinatPulang?.latitude != null && titikKoordinatPulang?.longitude != null && { label: '📍', value: `${Math.abs(titikKoordinatPulang.latitude)} ${Math.abs(titikKoordinatPulang.longitude)}` },
     jamMasuk && { label: 'Jam Masuk', value: formatDateTime(jamMasuk).jam },
     jamPulang && { label: 'Jam Pulang', value: formatDateTime(jamPulang).jam },
-    { label: 'Tugas', value: tugas },
+    { label: 'Tugas', value: tugas, isSpecial: true },
   ].filter(Boolean);
 
   const handleSubmit = (e) => {
@@ -65,8 +65,8 @@ const StepFour = ({ formData, handleNextStepData }) => {
       <div style={styles.form}>
         <form onSubmit={handleSubmit}>
           <div style={styles.summary}>
-            {summaryItems.map(({ label, value }) => (
-              <div key={label} style={styles.summaryItem}>
+            {summaryItems.map(({ label, value, isSpecial }) => (
+              <div key={label} style={isSpecial ? styles.specialSummaryItem : styles.summaryItem}>
                 <div style={styles.label}>{label}:</div>
                 <div style={styles.value}>{value}</div>
               </div>
@@ -121,8 +121,14 @@ const styles = {
   summaryItem: {
     display: 'flex',
     padding: '10px',
-    borderBottom: '1px solid #ddd',
+    borderBottom: '2px solid #ddd',
     justifyContent: 'space-between',
+  },
+  specialSummaryItem: {
+    display: 'flex',
+    padding: '10px',
+    flexDirection: 'column',
+    borderBottom: '2px solid #ddd',
   },
   label: {
     fontSize: '1rem',
@@ -131,7 +137,7 @@ const styles = {
   },
   value: {
     fontSize: '1rem',
-    maxWidth: '350px',
+    textAlign: 'justify',
     wordWrap: 'break-word',
   },
   button: {
