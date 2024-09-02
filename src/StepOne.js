@@ -3,23 +3,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 
 const StepOne = React.memo(({ formData, handleNextStepData }) => {
   const [namaOptions, setNamaOptions] = useState([]);
+  const [form, setForm] = useState(formData.form || '');
   const [namaOptionsMap, setNamaOptionsMap] = useState({});
   const [divisiOptionsMap, setDivisiOptionsMap] = useState({});
 
-  const isFormValid = () => localData.divisi && localData.nama;
-
-  const divisiOptions = [
-    { id: '1', name: 'Teknisi' }
-  ];
-
-  const handleChange = useCallback((e) => {
-    const { name, value } = e.target;
-    setLocalData((prevData) => {
-      const updatedData = { ...prevData, [name]: value };
-      localStorage.setItem('stepOneData', JSON.stringify(updatedData));
-      return updatedData;
-    });
-  }, []);
+  const isFormValid = () => localData.divisi && localData.nama && form;
 
   const [localData, setLocalData] = useState(() => {
     try {
@@ -31,22 +19,49 @@ const StepOne = React.memo(({ formData, handleNextStepData }) => {
     }
   });
 
+  const handleChange = useCallback((e) => {
+    const { name, value } = e.target;
+    if (name === 'form') {
+      setForm(value);
+    } else {
+      setLocalData((prevData) => {
+        const updatedData = { ...prevData, [name]: value };
+        localStorage.setItem('stepOneData', JSON.stringify(updatedData));
+        return updatedData;
+      });
+    }
+  }, []);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const selectedNama = namaOptionsMap[localData.nama] || localData.nama;
     const selectedDivisi = divisiOptionsMap[localData.divisi] || localData.divisi;
     const updatedData = {
       ...localData,
+      form,
       nama: selectedNama,
-      divisi: selectedDivisi
+      divisi: selectedDivisi,
     };
     localStorage.removeItem('stepOneData');
     handleNextStepData(updatedData);
   };
 
+  const divisiOptions = [
+    { id: '1', name: 'Personal Assistant' },
+    { id: '2', name: 'Project' },
+    { id: '3', name: 'Teknisi' }
+  ];
+
   useEffect(() => {
     const namaData = {
       1: [
+        { id: '1', name: 'Abigail Y.' },
+        { id: '2', name: 'Helena H. Y.' }
+      ],
+      2: [
+        { id: '1', name: 'Yongki K. J.' }
+      ],
+      3: [
         { id: '1', name: 'Eef Syahrani' },
         { id: '2', name: 'Eka Prastia' },
         { id: '3', name: 'Rachmadoni P.' },
@@ -73,6 +88,14 @@ const StepOne = React.memo(({ formData, handleNextStepData }) => {
     <div style={styles.container}>
       <form onSubmit={handleSubmit} style={styles.form}>
         <div style={styles.formGroup}>
+          <label htmlFor="form" style={styles.label}>Form:</label>
+          <select id="form" name="form" style={styles.select} onChange={handleChange} value={form}>
+            <option value="">Pilih Form</option>
+            <option value="absensi">Absensi</option>
+            <option value="overtime">Overtime</option>
+          </select>
+        </div>
+        <div style={styles.formGroup}>
           <label htmlFor="divisi" style={styles.label}>Divisi:</label>
           <select id="divisi" name="divisi" style={styles.select} onChange={handleChange} value={localData.divisi}>
             <option value="">Pilih Divisi</option>
@@ -97,7 +120,8 @@ const StepOne = React.memo(({ formData, handleNextStepData }) => {
 StepOne.propTypes = {
   formData: PropTypes.shape({
     nama: PropTypes.string,
-    divisi: PropTypes.string
+    divisi: PropTypes.string,
+    form: PropTypes.string
   }).isRequired,
   handleNextStepData: PropTypes.func.isRequired
 };
@@ -122,14 +146,6 @@ const styles = {
     fontSize: '1rem',
     fontWeight: 'bold',
     marginBottom: '2px',
-  },
-  dateDisplay: {
-    color: '#555',
-    padding: '10px',
-    fontSize: '1rem',
-    borderRadius: '10px',
-    border: '2px solid #ccc',
-    backgroundColor: '#f9f9f9',
   },
   select: {
     width: '100%',
