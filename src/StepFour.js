@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 
 const StepFour = ({ formData, handleNextStepData }) => {
-  const { nama, divisi, tugas, lokasi, jamMasuk, jamPulang, titikKoordinatMasuk, titikKoordinatPulang } = formData;
+  const { form, nama, divisi, tugas, lokasi, jamMasuk, jamPulang, titikKoordinatMasuk, titikKoordinatPulang } = formData;
   
   const formatDateTime = (date) => {
     if (!date) return { tanggal: '', jam: '' };
@@ -14,24 +14,27 @@ const StepFour = ({ formData, handleNextStepData }) => {
   };
 
   const summaryItems = [
-    jamMasuk && { label: 'Tanggal', value: formatDateTime(jamMasuk).tanggal },
-    jamPulang && { label: 'Tanggal', value: formatDateTime(jamPulang).tanggal },
-    { label: 'Divisi', value: divisi },
+    { label: 'Form', value: form },
     { label: 'Nama', value: nama },
+    { label: 'Divisi', value: divisi },
     { label: 'Lokasi', value: lokasi },
+    { label: 'Tugas', value: tugas, isSpecial: true },
+    jamMasuk && { label: 'Jam Masuk', value: formatDateTime(jamMasuk).jam },
+    jamMasuk && { label: 'Tanggal', value: formatDateTime(jamMasuk).tanggal },
+    jamPulang && { label: 'Jam Pulang', value: formatDateTime(jamPulang).jam },
+    jamPulang && { label: 'Tanggal', value: formatDateTime(jamPulang).tanggal },
     titikKoordinatMasuk?.latitude != null && titikKoordinatMasuk?.longitude != null && { label: '📍', value: `${titikKoordinatMasuk.latitude} ${titikKoordinatMasuk.longitude}` },
     titikKoordinatPulang?.latitude != null && titikKoordinatPulang?.longitude != null && { label: '📍', value: `${Math.abs(titikKoordinatPulang.latitude)} ${Math.abs(titikKoordinatPulang.longitude)}` },
-    jamMasuk && { label: 'Jam Masuk', value: formatDateTime(jamMasuk).jam },
-    jamPulang && { label: 'Jam Pulang', value: formatDateTime(jamPulang).jam },
-    { label: 'Tugas', value: tugas, isSpecial: true },
   ].filter(Boolean);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const formattedJamMasuk = jamMasuk ? formatDateTime(jamMasuk) : null;
     const formattedJamPulang = jamPulang ? formatDateTime(jamPulang) : null;
+    let response;
     if (jamMasuk && !jamPulang) {
       const dataMasuk = {
+        form,
         nama,
         divisi,
         tugas,
@@ -44,6 +47,7 @@ const StepFour = ({ formData, handleNextStepData }) => {
       // Panggil API untuk data masuk di sini
     } else if (jamPulang && !jamMasuk) {
       const dataPulang = {
+        form,
         nama,
         divisi,
         tugas,
@@ -56,9 +60,15 @@ const StepFour = ({ formData, handleNextStepData }) => {
       // Panggil API untuk data pulang di sini
     } else {
       console.log('Error: Data tidak valid untuk pengiriman.');
+      return;
+    }
+    if (response.ok) {
+      console.log('Data berhasil dikirim.');
+    } else {
+      console.error('Terjadi kesalahan saat mengirim data.');
     }
     handleNextStepData(formData);
-  };
+  };  
 
   return (
     <div style={styles.container}>
@@ -72,9 +82,7 @@ const StepFour = ({ formData, handleNextStepData }) => {
               </div>
             ))}
           </div>
-          <div style={styles.formGroup}>
-            <button type="submit" style={styles.button}>OK</button>
-          </div>
+          <div><button type="submit" style={styles.button}>OK</button></div>
         </form>
       </div>
     </div>
@@ -83,6 +91,7 @@ const StepFour = ({ formData, handleNextStepData }) => {
 
 StepFour.propTypes = {
   formData: PropTypes.shape({
+    form: PropTypes.string,
     nama: PropTypes.string,
     divisi: PropTypes.string,
     tugas: PropTypes.string,
