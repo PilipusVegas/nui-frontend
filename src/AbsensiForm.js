@@ -8,14 +8,7 @@ import logo from './assets/logo.png';
 const AbsensiForm = () => {
   const [step, setStep] = useState(1);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [formData, setFormData] = useState({
-    nama: '',
-    tugas: '',
-    divisi: '',
-    lokasi: '',
-    endTime: null,
-    startTime: null
-  });
+  const [formData, setFormData] = useState({form: '', nama: '', tugas: '', divisi: '', lokasi: '', endTime: null, startTime: null});
 
   const handleNextStepData = (newData) => {
     setFormData((prevData) => ({ ...prevData, ...newData }));
@@ -48,7 +41,6 @@ const AbsensiForm = () => {
     <div style={styles.container}>
       <div style={styles.formContainer}>
         <img src={logo} alt="Company Logo" style={styles.logo} />
-        <h2 style={styles.title}>FORM ABSENSI</h2>
         {renderStep()}
       </div>
     </div>
@@ -75,12 +67,7 @@ const styles = {
     width: '300px',
     margin: '0 auto',
     display: 'block',
-  },
-  title: {
-    fontSize: '1.1rem',
-    marginTop: '-15px',
-    fontWeight: 'bold',
-    textAlign: 'center',
+    marginBottom: '20px',
   },
   completeMessage: {
     fontSize: '1.1rem',
