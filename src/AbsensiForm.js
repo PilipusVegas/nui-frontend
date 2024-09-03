@@ -10,22 +10,33 @@ const AbsensiForm = () => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [formData, setFormData] = useState({form: '', nama: '', tugas: '', divisi: '', lokasi: '', endTime: null, startTime: null});
 
+  const handleReset = () => {
+    setStep(1);
+    setIsCompleted(false);
+    setFormData({form: '', nama: '', tugas: '', divisi: '', lokasi: '', endTime: null, startTime: null});
+  };
+
   const handleNextStepData = (newData) => {
     setFormData((prevData) => ({ ...prevData, ...newData }));
-    if (step === 5) {
+    if (step === 4) {
       setIsCompleted(true);
-    } else if (step < 5) {
+    } else if (step < 4) {
       setStep(step + 1);
     }
   };
 
   const renderStep = () => {
     if (isCompleted) {
-      return <h2 style={styles.completeMessage}>SELESAI</h2>;
+      return (
+        <div style={styles.completeMessageContainer}>
+          <h1 style={styles.completeMessage}>DATA BERHASIL DI SIMPAN</h1>
+          <button style={styles.resetButton} onClick={handleReset}>KEMBALI</button>
+        </div>
+      );
     }
     switch (step) {
       case 1:
-        return <StepOne formData={formData} handleNextStepData={handleNextStepData} />;
+        return <StepOne setStep={setStep} formData={formData} handleNextStepData={handleNextStepData} />;
       case 2:
         return <StepTwo formData={formData} handleNextStepData={handleNextStepData} />;
       case 3:
@@ -33,14 +44,14 @@ const AbsensiForm = () => {
       case 4:
         return <StepFour formData={formData} handleNextStepData={handleNextStepData} />;
       default:
-        return <h2 style={styles.completeMessage}>SELESAI</h2>;
+        return <h1 style={styles.completeMessage}>DATA BERHASIL DI SIMPAN</h1>;
     }
   };
 
   return (
     <div style={styles.container}>
       <div style={styles.formContainer}>
-        <img src={logo} alt="Company Logo" style={styles.logo} />
+        {!isCompleted && <img src={logo} alt="Company Logo" style={styles.logo}/>}
         {renderStep()}
       </div>
     </div>
@@ -69,11 +80,28 @@ const styles = {
     display: 'block',
     marginBottom: '20px',
   },
+  completeMessageContainer: {
+    textAlign: 'center',
+  },
   completeMessage: {
-    fontSize: '1.1rem',
+    padding: '10px',
+    color: '#3d6c63',
+    fontSize: '1.2rem',
     marginTop: '-10px',
     fontWeight: 'bold',
-    textAlign: 'center',
+    borderRadius: '10px',
+    marginBottom: '10px',
+  },
+  resetButton: {
+    padding: '10px',
+    color: '#ffffff',
+    cursor: 'pointer',
+    fontSize: '1.2rem',
+    fontWeight: 'bold',
+    borderRadius: '10px',
+    marginBottom: '-10px',
+    backgroundColor: '#3d6c63',
+    border: '2px solid #1C1C1C',
   },
 };
 
