@@ -1,110 +1,144 @@
 import PropTypes from 'prop-types';
 import React, { useState, useEffect, useCallback } from 'react';
 
-const StepOne = React.memo(({ formData, handleNextStepData }) => {
+const StepOne = React.memo(({ setStep, formData, handleNextStepData }) => {
   const [namaOptions, setNamaOptions] = useState([]);
   const [form, setForm] = useState(formData.form || '');
-  const [namaOptionsMap, setNamaOptionsMap] = useState({});
-  const [divisiOptionsMap, setDivisiOptionsMap] = useState({});
+  const [divisiOptions, setDivisiOptions] = useState([]);
 
-  const isFormValid = () => localData.divisi && localData.nama && form;
+  const isFormValid = () => form && localData.divisi && localData.nama;
 
   const [localData, setLocalData] = useState(() => {
-    try {
-      const savedData = localStorage.getItem('stepOneData');
-      return savedData ? JSON.parse(savedData) : { nama: formData.nama || '', divisi: formData.divisi || '' };
-    } catch (error) {
-      console.error("Failed to parse local storage data:", error);
-      return { nama: formData.nama || '', divisi: formData.divisi || '' };
-    }
+    const savedData = localStorage.getItem('stepOneData');
+    return savedData ? JSON.parse(savedData) : {form: '', nama: '', divisi: '', id_nama: '', id_absen: '', id_divisi: ''};
   });
 
-  const handleChange = useCallback((e) => {
-    const { name, value } = e.target;
-    if (name === 'form') {
-      setForm(value);
-    } else {
-      setLocalData((prevData) => {
-        const updatedData = { ...prevData, [name]: value };
-        localStorage.setItem('stepOneData', JSON.stringify(updatedData));
-        return updatedData;
-      });
-    }
-  }, []);
+  const resetForm = () => {
+    setForm(formData.form || '');
+    setLocalData(prevData => ({...prevData, nama: formData.nama || '', divisi: formData.divisi || '', id_nama: formData.id_nama || '', id_absen: formData.id_absen || '', id_divisi: formData.id_divisi || ''}));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const selectedNama = namaOptionsMap[localData.nama] || localData.nama;
-    const selectedDivisi = divisiOptionsMap[localData.divisi] || localData.divisi;
-    const updatedData = {
-      ...localData,
-      form,
-      nama: selectedNama,
-      divisi: selectedDivisi,
-    };
-    localStorage.removeItem('stepOneData');
-    handleNextStepData(updatedData);
+    fetch(`http://192.168.17.19:3002/absen/cek/${localData.id_nama}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.length > 0) {
+          const fetchedIdAbsen = data[0].id_absen;
+          setLocalData((prevData) => {
+            const updatedData = { ...prevData, id_absen: fetchedIdAbsen };
+            localStorage.setItem('stepOneData', JSON.stringify(updatedData));
+            handleNextStepData(updatedData);
+            setStep(3);
+            return updatedData;
+          });
+        } else {
+          setLocalData((prevData) => {
+            const updatedData = { ...prevData, id_absen: '' };
+            localStorage.setItem('stepOneData', JSON.stringify(updatedData));
+            handleNextStepData(updatedData);
+            setStep(2);
+            return updatedData;
+          });
+        }
+      })
+      .catch((error) => {
+        alert('Error fetching data. Please try again.');
+      });
   };
 
-  const divisiOptions = [
-    { id: '1', name: 'Personal Assistant' },
-    { id: '2', name: 'Project' },
-    { id: '3', name: 'Teknisi' }
-  ];
+  const handleChange = useCallback(
+    (e) => {
+      const { name, value } = e.target;
+      if (name === 'divisi') {
+        const selectedDivisi = divisiOptions.find(
+          (divisi) => divisi.id === parseInt(value)
+        );
+        setLocalData((prevData) => {
+          const updatedData = {
+            ...prevData,
+            divisi: selectedDivisi ? selectedDivisi.name : '',
+            id_divisi: selectedDivisi ? selectedDivisi.id : '',
+          };
+          localStorage.setItem('stepOneData', JSON.stringify(updatedData));
+          return updatedData;
+        });
+      } else if (name === 'nama') {
+        const selectedNama = namaOptions.find(
+          (nama) => nama.id === parseInt(value)
+        );
+        setLocalData((prevData) => {
+          const updatedData = {
+            ...prevData,
+            nama: selectedNama ? selectedNama.name : '',
+            id_nama: selectedNama ? selectedNama.id : '',
+          };
+          localStorage.setItem('stepOneData', JSON.stringify(updatedData));
+          return updatedData;
+        });
+      } else if (name === 'form') {
+        setForm(value);
+        setLocalData((prevData) => {
+          const updatedData = { ...prevData, form: value };
+          localStorage.setItem('stepOneData', JSON.stringify(updatedData));
+          return updatedData;
+        });
+      }
+    },
+    [divisiOptions, namaOptions]
+  );
 
   useEffect(() => {
-    const namaData = {
-      1: [
-        { id: '1', name: 'Abigail Y.' },
-        { id: '2', name: 'Helena H. Y.' }
-      ],
-      2: [
-        { id: '1', name: 'Yongki K. J.' }
-      ],
-      3: [
-        { id: '1', name: 'Eef Syahrani' },
-        { id: '2', name: 'Eka Prastia' },
-        { id: '3', name: 'Rachmadoni P.' },
-        { id: '4', name: 'Saja Gojali' },
-        { id: '5', name: 'Solihin' },
-        { id: '6', name: 'Wachyudi' }
-      ],
-    };
-    const divisiMap = divisiOptions.reduce((acc, item) => {
-      acc[item.id] = item.name;
-      return acc;
-    }, {});
-    setDivisiOptionsMap(divisiMap);
-    const options = namaData[localData.divisi] || [];
-    setNamaOptions(options);
-    const optionsMap = options.reduce((acc, item) => {
-      acc[item.id] = item.name;
-      return acc;
-    }, {});
-    setNamaOptionsMap(optionsMap);
-  }, [localData.divisi]);
+    resetForm();
+  }, [formData]);
+
+  useEffect(() => {
+    if (!localData.id_absen) { setStep(1); }
+  }, [localData.id_absen, setStep]);
+
+  useEffect(() => {
+    fetch('http://192.168.17.19:3002/karyawan/divisi')
+      .then((response) => response.json())
+      .then((data) => {
+        const transformedData = data.map((item) => ({id: item.id, name: item.nama}));
+        setDivisiOptions(transformedData);
+      })
+  }, []);
+
+  useEffect(() => {
+    if (localData.id_divisi) {
+      fetch(`http://192.168.17.19:3002/karyawan/divisi/${localData.id_divisi}`)
+        .then((response) => response.json())
+        .then((data) => {
+          const transformedData = data.map((item) => ({id: item.id, name: item.nama}));
+          setNamaOptions(transformedData);
+        })
+    } else {
+      setNamaOptions([]);
+    }
+  }, [localData.id_divisi]);
 
   return (
     <div style={styles.container}>
       <form onSubmit={handleSubmit} style={styles.form}>
         <div style={styles.formGroup}>
           <label htmlFor="form" style={styles.label}>Form:</label>
-          <select id="form" name="form" style={styles.select} onChange={handleChange} value={form}>
+          <select id="form" name="form" value={form} style={styles.select} onChange={handleChange}>
             <option value="">Pilih Form</option>
-            <option value="absensi">Absensi</option>
-            <option value="overtime">Overtime</option>
+            <option value="Absensi">Absensi</option>
+            <option value="Overtime">Overtime</option>
           </select>
         </div>
         <div style={styles.formGroup}>
           <label htmlFor="divisi" style={styles.label}>Divisi:</label>
-          <select id="divisi" name="divisi" style={styles.select} onChange={handleChange} value={localData.divisi}>
+          <select id="divisi" name="divisi" style={styles.select} onChange={handleChange} value={localData.id_divisi}>
             <option value="">Pilih Divisi</option>
             {divisiOptions.map((divisi) => (<option key={divisi.id} value={divisi.id}>{divisi.name}</option>))}
           </select>
         </div>
         <div style={styles.formGroup}>
           <label htmlFor="nama" style={styles.label}>Nama:</label>
-          <select id="nama" name="nama" style={styles.select} value={localData.nama} onChange={handleChange} disabled={!localData.divisi}>
+          <select id="nama" name="nama" style={styles.select} onChange={handleChange} value={localData.id_nama} disabled={!localData.id_divisi}>
             <option value="">Pilih Nama</option>
             {namaOptions.map((nama) => (<option key={nama.id} value={nama.id}>{nama.name}</option>))}
           </select>
@@ -118,12 +152,16 @@ const StepOne = React.memo(({ formData, handleNextStepData }) => {
 });
 
 StepOne.propTypes = {
+  setStep: PropTypes.func.isRequired,
   formData: PropTypes.shape({
+    form: PropTypes.string,
     nama: PropTypes.string,
     divisi: PropTypes.string,
-    form: PropTypes.string
+    id_nama: PropTypes.number,
+    id_absen: PropTypes.string,
+    id_divisi: PropTypes.number,
   }).isRequired,
-  handleNextStepData: PropTypes.func.isRequired
+  handleNextStepData: PropTypes.func.isRequired,
 };
 
 const styles = {
