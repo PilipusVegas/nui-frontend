@@ -82,8 +82,8 @@ const StepThree = ({ handleNextStepData }) => {
         {!isMasukSelected && !isPulangSelected && (
           <div style={styles.formGroup}>
             <div style={styles.buttonContainer}>
-              <button type="button" onClick={handleMasuk} style={{ ...styles.button, ...styles.buttonStart }}>MASUK</button>
-              <button type="button" onClick={handlePulang} style={{ ...styles.button, ...styles.buttonEnd }}>PULANG</button>
+              <button type="button" onClick={handleMasuk} style={{ ...styles.button, ...styles.buttonStart }}>MULAI</button>
+              <button type="button" onClick={handlePulang} style={{ ...styles.button, ...styles.buttonEnd }}>SELESAI</button>
             </div>
           </div>
         )}
