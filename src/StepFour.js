@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 
 const StepFour = ({ formData, handleNextStepData }) => {
-  const { form, nama, divisi, tugas, lokasi, jamMasuk, jamPulang, titikKoordinatMasuk, titikKoordinatPulang } = formData;
-  
+  const { form, nama, tugas, divisi, lokasi, id_nama, id_absen,  jamMasuk, jamPulang, titikKoordinatMasuk, titikKoordinatPulang } = formData;
+
   const formatDateTime = (date) => {
     if (!date) return { tanggal: '', jam: '' };
     const day = date.getDate().toString().padStart(2, '0');
@@ -20,44 +20,44 @@ const StepFour = ({ formData, handleNextStepData }) => {
     { label: 'Lokasi', value: lokasi },
     { label: 'Tugas', value: tugas, isSpecial: true },
     jamMasuk && { label: 'Jam Masuk', value: formatDateTime(jamMasuk).jam },
-    jamMasuk && { label: 'Tanggal', value: formatDateTime(jamMasuk).tanggal },
+    jamMasuk && { label: 'Tanggal Masuk', value: formatDateTime(jamMasuk).tanggal },
     jamPulang && { label: 'Jam Pulang', value: formatDateTime(jamPulang).jam },
-    jamPulang && { label: 'Tanggal', value: formatDateTime(jamPulang).tanggal },
-    titikKoordinatMasuk?.latitude != null && titikKoordinatMasuk?.longitude != null && { label: '📍', value: `${titikKoordinatMasuk.latitude} ${titikKoordinatMasuk.longitude}` },
-    titikKoordinatPulang?.latitude != null && titikKoordinatPulang?.longitude != null && { label: '📍', value: `${Math.abs(titikKoordinatPulang.latitude)} ${Math.abs(titikKoordinatPulang.longitude)}` },
+    jamPulang && { label: 'Tanggal Pulang', value: formatDateTime(jamPulang).tanggal },
+    titikKoordinatMasuk?.latitude != null && titikKoordinatMasuk?.longitude != null && { label: '📍 Masuk', value: `${titikKoordinatMasuk.latitude} ${titikKoordinatMasuk.longitude}` },
+    titikKoordinatPulang?.latitude != null && titikKoordinatPulang?.longitude != null && { label: '📍 Pulang', value: `${Math.abs(titikKoordinatPulang.latitude)} ${Math.abs(titikKoordinatPulang.longitude)}` },
   ].filter(Boolean);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const formattedJamMasuk = jamMasuk ? formatDateTime(jamMasuk) : null;
-    const formattedJamPulang = jamPulang ? formatDateTime(jamPulang) : null;
     let response;
     if (jamMasuk && !jamPulang) {
       const dataMasuk = {
-        form,
-        nama,
-        divisi,
-        tugas,
-        lokasi,
-        tanggalMasuk: formattedJamMasuk ? formattedJamMasuk.tanggal : '',
-        jamMasuk: formattedJamMasuk ? formattedJamMasuk.jam : '',
-        titikKoordinatMasuk: titikKoordinatMasuk ? `${titikKoordinatMasuk.latitude} ${titikKoordinatMasuk.longitude}` : '',
+        form: form,
+        lokasi: lokasi,
+        id_user: id_nama,
+        deskripsi: tugas,
+        lat: titikKoordinatMasuk ? titikKoordinatMasuk.latitude.toString() : '',
+        lon: titikKoordinatMasuk ? titikKoordinatMasuk.longitude.toString() : '', 
       };
       console.log('Data masuk yang dikirim:', dataMasuk);
-      // Panggil API untuk data masuk di sini
-    } else if (jamPulang && !jamMasuk) {
+      response = await fetch('http://192.168.17.19:3002/absen/mulai', {
+        method: 'POST',
+        body: JSON.stringify(dataMasuk),
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } else if (jamPulang) {
       const dataPulang = {
-        form,
-        nama,
-        divisi,
-        tugas,
-        lokasi,
-        tanggalPulang: formattedJamPulang ? formattedJamPulang.tanggal : '',
-        jamPulang: formattedJamPulang ? formattedJamPulang.jam : '',
-        titikKoordinatPulang: titikKoordinatPulang ? `${Math.abs(titikKoordinatPulang.latitude)} ${Math.abs(titikKoordinatPulang.longitude)}` : '',
+        id_user: id_nama,
+        id_absen: id_absen,
+        lat: titikKoordinatPulang ? titikKoordinatPulang.latitude.toString() : '',
+        lon: titikKoordinatPulang ? titikKoordinatPulang.longitude.toString() : '',
       };
       console.log('Data pulang yang dikirim:', dataPulang);
-      // Panggil API untuk data pulang di sini
+      response = await fetch('http://192.168.17.19:3002/absen/selesai', {
+        method: 'POST',
+        body: JSON.stringify(dataPulang),
+        headers: { 'Content-Type': 'application/json' },
+      });
     } else {
       console.log('Error: Data tidak valid untuk pengiriman.');
       return;
@@ -65,10 +65,11 @@ const StepFour = ({ formData, handleNextStepData }) => {
     if (response.ok) {
       console.log('Data berhasil dikirim.');
     } else {
-      console.error('Terjadi kesalahan saat mengirim data.');
+      const errorData = await response.json();
+      console.error('Terjadi kesalahan saat mengirim data:', errorData);
     }
     handleNextStepData(formData);
-  };  
+  };
 
   return (
     <div style={styles.container}>
@@ -82,7 +83,9 @@ const StepFour = ({ formData, handleNextStepData }) => {
               </div>
             ))}
           </div>
-          <div><button type="submit" style={styles.button}>OK</button></div>
+          <div>
+            <button type="submit" style={styles.button}>OK</button>
+          </div>
         </form>
       </div>
     </div>
@@ -106,6 +109,7 @@ StepFour.propTypes = {
       latitude: PropTypes.number,
       longitude: PropTypes.number,
     }),
+    id_absen: PropTypes.number,
   }).isRequired,
   handleNextStepData: PropTypes.func.isRequired,
 };
