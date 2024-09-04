@@ -27,6 +27,20 @@ const StepTwo = ({ formData, handleNextStepData }) => {
             <option value="">Pilih Lokasi</option>
             <option value="Kantor Palem">Kantor Palem</option>
             <option value="KFC MAXX Karawaci">KFC MAXX Karawaci</option>
+            <option value="KFC Tanjung Duren">KFC Tanjung Duren</option>
+            <option value="KFC Jalan Panjang">KFC Jalan Panjang</option>
+            <option value="KFC Cideng">KFC Cideng</option>
+            <option value="KFC Cempaka Putih">KFC Cempaka Putih</option>
+            <option value="KFC Basmar Plaza">KFC Basmar Plaza</option>
+            <option value="KFC Kemang">KFC Kemang</option>
+            <option value="KFC Ciledug Pertukangan">KFC Ciledug Pertukangan</option>
+            <option value="KFC Balai Pustaka Rawamangun">KFC Balai Pustaka Rawamangun</option>
+            <option value="KFC Taman Harapan Indah">KFC Taman Harapan Indah</option>
+            <option value="KFC Juanda">KFC Juanda</option>
+            <option value="KFC Alamanda Karang Satria">KFC Alamanda Karang Satria</option>
+            <option value="KFC Citralake Sawangan">KFC Citralake Sawangan</option>
+            <option value="KFC Meruyung">KFC Meruyung</option>
+            <option value="KFC Mayor Oking">KFC Mayor Oking</option>
           </select>
         </div>
         <div style={styles.formGroup}>
