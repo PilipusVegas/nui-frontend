@@ -1,22 +1,43 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 
 const StepTwo = ({ formData, handleNextStepData }) => {
-  const [tugas, setTugas] = React.useState(formData.tugas || '');
-  const [lokasi, setLokasi] = React.useState(formData.lokasi || '');
-  const [charCount, setCharCount] = React.useState(formData.tugas?.length || 0);
+  const [locations, setLocations] = useState([]);
+  const [tugas, setTugas] = useState(formData.tugas || '');
+  const [lokasi, setLokasi] = useState(formData.lokasi || '');
+  const [idLokasi, setIdLokasi] = useState(formData.id_lokasi || '');
+  const [charCount, setCharCount] = useState(formData.tugas?.length || 0);
 
   const isFormValid = () => lokasi && tugas;
-  const handleLokasiChange = (e) => { setLokasi(e.target.value) };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (isFormValid()) { handleNextStepData({ tugas, lokasi }) }
-  };
 
   const handleTugasChange = (e) => {
     const value = e.target.value;
-    if (value.length <= 250) { setTugas(value); setCharCount(value.length) }
+    if (value.length <= 250) {setTugas(value); setCharCount(value.length)}
   };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (isFormValid()) {handleNextStepData({ tugas, lokasi, id_lokasi: idLokasi })}
+  };
+
+  const handleLokasiChange = (e) => {
+    const selectedLokasi = e.target.value;
+    const selectedId = locations.find(location => location.nama === selectedLokasi)?.id || '';
+    setLokasi(selectedLokasi);
+    setIdLokasi(selectedId);
+  };
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const response = await fetch('http://192.168.17.19:3002/absen/lokasi');
+        if (!response.ok) {throw new Error('Network response was not ok')}
+        const data = await response.json();
+        setLocations(data);
+      } catch (error) {
+      }
+    };
+    fetchLocations();
+  }, []);
 
   return (
     <div style={styles.container}>
@@ -25,22 +46,7 @@ const StepTwo = ({ formData, handleNextStepData }) => {
           <label htmlFor="lokasi" style={styles.label}>Lokasi:</label>
           <select id="lokasi" name="lokasi" value={lokasi} style={styles.select} onChange={handleLokasiChange}>
             <option value="">Pilih Lokasi</option>
-            <option value="Kantor Palem">Kantor Palem</option>
-            <option value="KFC MAXX Karawaci">KFC MAXX Karawaci</option>
-            <option value="KFC Tanjung Duren">KFC Tanjung Duren</option>
-            <option value="KFC Jalan Panjang">KFC Jalan Panjang</option>
-            <option value="KFC Cideng">KFC Cideng</option>
-            <option value="KFC Cempaka Putih">KFC Cempaka Putih</option>
-            <option value="KFC Basmar Plaza">KFC Basmar Plaza</option>
-            <option value="KFC Kemang">KFC Kemang</option>
-            <option value="KFC Ciledug Pertukangan">KFC Ciledug Pertukangan</option>
-            <option value="KFC Balai Pustaka Rawamangun">KFC Balai Pustaka Rawamangun</option>
-            <option value="KFC Taman Harapan Indah">KFC Taman Harapan Indah</option>
-            <option value="KFC Juanda">KFC Juanda</option>
-            <option value="KFC Alamanda Karang Satria">KFC Alamanda Karang Satria</option>
-            <option value="KFC Citralake Sawangan">KFC Citralake Sawangan</option>
-            <option value="KFC Meruyung">KFC Meruyung</option>
-            <option value="KFC Mayor Oking">KFC Mayor Oking</option>
+            {locations.map(location => (<option key={location.id} value={location.nama}>{location.nama}</option>))}
           </select>
         </div>
         <div style={styles.formGroup}>
@@ -48,7 +54,7 @@ const StepTwo = ({ formData, handleNextStepData }) => {
             <label htmlFor="tugas" style={styles.label}>Tugas yang diberikan:</label>
             <div style={styles.charCount}>{charCount} / 250</div>
           </div>
-          <textarea required rows="4" id="tugas" name="tugas" value={tugas} style={styles.textarea} onChange={handleTugasChange} />
+          <textarea required rows="4" id="tugas" name="tugas" value={tugas} style={styles.textarea} onChange={handleTugasChange}/>
         </div>
         <div style={styles.formGroup}>
           <button type="submit" disabled={!isFormValid()} style={isFormValid() ? styles.buttonActive : styles.buttonInactive}>➜</button>
