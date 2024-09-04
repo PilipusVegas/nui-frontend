@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 
 const StepFour = ({ formData, handleNextStepData }) => {
-  const { form, nama, tugas, divisi, lokasi, id_nama, id_absen,  jamMasuk, jamPulang, titikKoordinatMasuk, titikKoordinatPulang } = formData;
+  const { form, nama, tugas, divisi, lokasi, id_nama, id_absen,  jamMasuk, id_lokasi, jamPulang, titikKoordinatMasuk, titikKoordinatPulang } = formData;
 
   const formatDateTime = (date) => {
     if (!date) return { tanggal: '', jam: '' };
@@ -33,7 +33,7 @@ const StepFour = ({ formData, handleNextStepData }) => {
     if (jamMasuk && !jamPulang) {
       const dataMasuk = {
         form: form,
-        lokasi: lokasi,
+        lokasi: id_lokasi,
         id_user: id_nama,
         deskripsi: tugas,
         lat: titikKoordinatMasuk ? titikKoordinatMasuk.latitude.toString() : '',
