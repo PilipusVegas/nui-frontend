@@ -1,18 +1,18 @@
 import { useState } from 'react';
 
 const StepThree = ({ handleNextStepData }) => {
-  const [jamPulang, setJamPulang] = useState(null);
   const [jamMasuk, setJamMasuk] = useState(null);
+  const [jamPulang, setJamPulang] = useState(null);
   const [isMasukSelected, setIsMasukSelected] = useState(false);
   const [isPulangSelected, setIsPulangSelected] = useState(false);
-  const [titikKoordinatPulang, setTitikKoordinatPulang] = useState({ latitude: null, longitude: null });
   const [titikKoordinatMasuk, setTitikKoordinatMasuk] = useState({ latitude: null, longitude: null });
+  const [titikKoordinatPulang, setTitikKoordinatPulang] = useState({ latitude: null, longitude: null });
 
   const isFormValid = () => (isMasukSelected && jamMasuk && titikKoordinatMasuk) || (isPulangSelected && jamPulang && titikKoordinatPulang);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (isFormValid()) { handleNextStepData({ jamMasuk, jamPulang, titikKoordinatMasuk, titikKoordinatPulang }); }
+    if (isFormValid()) {handleNextStepData({ jamMasuk, jamPulang, titikKoordinatMasuk, titikKoordinatPulang })}
   };
 
   const handleMasuk = () => {
@@ -45,13 +45,36 @@ const StepThree = ({ handleNextStepData }) => {
 
   const getLocation = (setLocation) => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        setLocation({ latitude: position.coords.latitude, longitude: position.coords.longitude });
-      });
+      navigator.geolocation.getCurrentPosition(
+        (position) => {setLocation({ latitude: position.coords.latitude, longitude: position.coords.longitude })},
+      );
     } else {
       alert('Geolocation is not supported by this browser.');
     }
   };
+
+  const TimeDisplay = ({ date, time, coordinates }) => (
+    <div style={styles.formGroup}>
+      <div style={styles.timeDisplay}>
+        <div style={styles.timeRow}>
+          <div style={styles.label}>Tanggal:</div>
+          <div style={styles.timeValue}>{formatDate(date)}</div>
+        </div>
+      </div>
+      <div style={styles.timeDisplay}>
+        <div style={styles.timeRow}>
+          <div style={styles.label}>Jam:</div>
+          <div style={styles.timeValue}>{formatTime(time)}</div>
+        </div>
+      </div>
+      <div style={styles.timeDisplay}>
+        <div style={styles.timeRow}>
+          <div style={styles.label}>Lokasi:</div>
+          <div style={styles.timeValue}>{`${coordinates.latitude || ''} ${coordinates.longitude || ''}`}</div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div style={styles.container}>
@@ -60,58 +83,12 @@ const StepThree = ({ handleNextStepData }) => {
           <div style={styles.formGroup}>
             <div style={styles.buttonContainer}>
               <button type="button" onClick={handleMasuk} style={{ ...styles.button, ...styles.buttonStart }}>MASUK</button>
-              <button type="button" onClick={handlePulang} style={{ ...styles.button, ...styles.buttonStop }}>PULANG</button>
+              <button type="button" onClick={handlePulang} style={{ ...styles.button, ...styles.buttonEnd }}>PULANG</button>
             </div>
           </div>
         )}
-        {(isMasukSelected || isPulangSelected) && (
-          <div>
-            {isMasukSelected && (
-              <>
-                <div style={styles.timeDisplay}>
-                  <div style={styles.timeRow}>
-                    <div style={styles.label}>Tanggal:</div>
-                    <div style={styles.timeValue}>{formatDate(jamMasuk)}</div>
-                  </div>
-                </div>
-                <div style={styles.timeDisplay}>
-                  <div style={styles.timeRow}>
-                    <div style={styles.label}>Jam:</div>
-                    <div style={styles.timeValue}>{formatTime(jamMasuk)}</div>
-                  </div>
-                </div>
-                <div style={styles.timeDisplay}>
-                  <div style={styles.timeRow}>
-                    <div style={styles.label}>Lokasi:</div>
-                    <div style={styles.timeValue}>{`${titikKoordinatMasuk.latitude || ''} ${titikKoordinatMasuk.longitude || ''}`}</div>
-                  </div>
-                </div>
-              </>
-            )}
-            {isPulangSelected && (
-              <>
-                <div style={styles.timeDisplay}>
-                  <div style={styles.timeRow}>
-                    <div style={styles.label}>Tanggal:</div>
-                    <div style={styles.timeValue}>{formatDate(jamPulang)}</div>
-                  </div>
-                </div>
-                <div style={styles.timeDisplay}>
-                  <div style={styles.timeRow}>
-                    <div style={styles.label}>Jam:</div>
-                    <div style={styles.timeValue}>{formatTime(jamPulang)}</div>
-                  </div>  
-                </div>
-                <div style={styles.timeDisplay}>
-                  <div style={styles.timeRow}>
-                    <div style={styles.label}>Lokasi:</div>
-                    <div style={styles.timeValue}>{`${titikKoordinatPulang.latitude} ${titikKoordinatPulang.longitude}`}</div>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        )}
+        {isMasukSelected && (<TimeDisplay date={jamMasuk} time={jamMasuk} coordinates={titikKoordinatMasuk} />)}
+        {isPulangSelected && (<TimeDisplay date={jamPulang} time={jamPulang} coordinates={titikKoordinatPulang} />)}
         <div style={styles.formGroup}>
           <button type="submit" disabled={!isFormValid()} style={isFormValid() ? styles.buttonActive : styles.buttonInactive}>➜</button>
         </div>
@@ -141,20 +118,21 @@ const styles = {
     justifyContent: 'space-around',
   },
   button: {
-    color: '#fff',
-    width: '45%',
-    padding: '16px',
-    fontSize: '1rem',
+    width: '48%',
+    padding: '15px',
     cursor: 'pointer',
+    fontSize: '1.5rem',
     fontWeight: 'bold',
     borderRadius: '10px',
-    border: '2px solid #1C1C1C',
+    marginBottom: '-10px',
   },
   buttonStart: {
+    border: '2px solid',
     backgroundColor: '#28a745',
   },
-  buttonStop: {
-    backgroundColor: '#FF0000',
+  buttonEnd: {
+    border: '2px solid',
+    backgroundColor: '#007bff',
   },
   timeDisplay: {
     padding: '12px',
