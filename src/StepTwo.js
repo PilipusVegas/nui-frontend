@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 const StepTwo = ({ formData, handleNextStepData }) => {
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const [locations, setLocations] = useState([]);
   const [tugas, setTugas] = useState(formData.tugas || '');
   const [lokasi, setLokasi] = useState(formData.lokasi || '');
@@ -29,7 +30,7 @@ const StepTwo = ({ formData, handleNextStepData }) => {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const response = await fetch('${process.env.REACT_APP_API_BASE_URL}/absen/lokasi');
+        const response = await fetch(`${apiUrl}/absen/lokasi`);
         if (!response.ok) {throw new Error('Network response was not ok')}
         const data = await response.json();
         setLocations(data);
