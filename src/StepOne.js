@@ -20,7 +20,7 @@ const StepOne = React.memo(({ setStep, formData, handleNextStepData }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    fetch(`http://192.168.17.19:3002/absen/cek/${localData.id_nama}`)
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/absen/cek/${localData.id_nama}`)
       .then((response) => response.json())
       .then((data) => {
         if (data.length > 0) {
@@ -97,7 +97,7 @@ const StepOne = React.memo(({ setStep, formData, handleNextStepData }) => {
   }, [localData.id_absen, setStep]);
 
   useEffect(() => {
-    fetch('http://192.168.17.19:3002/karyawan/divisi')
+    fetch('${process.env.REACT_APP_API_BASE_URL}/karyawan/divisi')
       .then((response) => response.json())
       .then((data) => {
         const transformedData = data.map((item) => ({id: item.id, name: item.nama}));
@@ -107,7 +107,7 @@ const StepOne = React.memo(({ setStep, formData, handleNextStepData }) => {
 
   useEffect(() => {
     if (localData.id_divisi) {
-      fetch(`http://192.168.17.19:3002/karyawan/divisi/${localData.id_divisi}`)
+      fetch(`${process.env.REACT_APP_API_BASE_URL}/karyawan/divisi/${localData.id_divisi}`)
         .then((response) => response.json())
         .then((data) => {
           const transformedData = data.map((item) => ({id: item.id, name: item.nama}));
