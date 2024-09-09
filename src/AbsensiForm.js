@@ -1,29 +1,52 @@
 import StepOne from './StepOne';
 import StepTwo from './StepTwo';
-import { useState } from 'react';
-import StepFour from './StepFour';
 import StepThree from './StepThree';
+import StepFour from './StepFour';
 import logo from './assets/logo.png';
+import { useState, useEffect } from 'react';
 
 const AbsensiForm = () => {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const [formData, setFormData] = useState({form: '', nama: '', tugas: '', divisi: '', lokasi: '', endTime: null, startTime: null});
 
-  const handleReset = () => {
+  const handleChoice = (choice) => {
+    const updatedFormData = { ...formData, form: choice };
+    setFormData(updatedFormData);
+    localStorage.setItem('formData', JSON.stringify(updatedFormData));
     setStep(1);
+  };
+
+  const handleReset = () => {
+    setStep(0);
     setIsCompleted(false);
-    setFormData({form: '', nama: '', tugas: '', divisi: '', lokasi: '', endTime: null, startTime: null});
+    const resetData = {form: '', nama: '', tugas: '', divisi: '', lokasi: '', endTime: null, startTime: null};
+    setFormData(resetData);
+    localStorage.removeItem('formData');
   };
 
   const handleNextStepData = (newData) => {
-    setFormData((prevData) => ({ ...prevData, ...newData }));
+    const updatedData = { ...formData, ...newData };
+    setFormData(updatedData);
     if (step === 4) {
       setIsCompleted(true);
+      fetch('/api/saveFormData', {
+        method: 'POST',
+        body: JSON.stringify(updatedData),
+        headers: {'Content-Type': 'application/json'},
+      })
+        .then(response => response.json())
     } else if (step < 4) {
       setStep(step + 1);
     }
   };
+
+  useEffect(() => {
+    const storedData = localStorage.getItem('formData');
+    if (storedData) {
+      setFormData(JSON.parse(storedData));
+    }
+  }, []);
 
   const renderStep = () => {
     if (isCompleted) {
@@ -35,6 +58,15 @@ const AbsensiForm = () => {
       );
     }
     switch (step) {
+      case 0:
+        return (
+          <div style={styles.formGroup}>
+            <div style={styles.buttonContainer}>
+              <button style={styles.button} onClick={() => handleChoice('Absensi')}>ABSEN</button>
+              <button style={styles.button} onClick={() => handleChoice('Lembur')}>LEMBUR</button>
+            </div>
+          </div>
+        );
       case 1:
         return <StepOne setStep={setStep} formData={formData} handleNextStepData={handleNextStepData} />;
       case 2:
@@ -102,6 +134,25 @@ const styles = {
     marginBottom: '-10px',
     backgroundColor: '#3d6c63',
     border: '2px solid #1C1C1C',
+  },
+  formGroup: {
+    marginBottom: '10px',
+  },
+  buttonContainer: {
+    display: 'flex',
+    justifyContent: 'space-around',
+  },
+  button: {
+    color: '#fff',
+    width: '48%',
+    padding: '15px',
+    cursor: 'pointer',
+    fontSize: '1.5rem',
+    fontWeight: 'bold',
+    borderRadius: '10px',
+    marginBottom: '-10px',
+    border: '2px solid #000',
+    backgroundColor: '#326058',
   },
 };
 
