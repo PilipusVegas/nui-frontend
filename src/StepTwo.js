@@ -29,7 +29,7 @@ const StepTwo = ({ formData, handleNextStepData }) => {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const response = await fetch('http://192.168.17.19:3002/absen/lokasi');
+        const response = await fetch('${process.env.REACT_APP_API_BASE_URL}/absen/lokasi');
         if (!response.ok) {throw new Error('Network response was not ok')}
         const data = await response.json();
         setLocations(data);
