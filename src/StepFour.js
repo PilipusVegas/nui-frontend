@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 
 const StepFour = ({ formData, handleNextStepData }) => {
-  const { form, nama, tugas, divisi, lokasi, id_nama, id_absen,  jamMasuk, id_lokasi, jamPulang, titikKoordinatMasuk, titikKoordinatPulang } = formData;
+  const { form, nama, tugas, divisi, lokasi, id_nama, id_absen, jamMasuk, id_lokasi, jamPulang, titikKoordinatMasuk, titikKoordinatPulang } = formData;
 
   const formatDateTime = (date) => {
     if (!date) return { tanggal: '', jam: '' };
@@ -30,6 +30,8 @@ const StepFour = ({ formData, handleNextStepData }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     let response;
+    const apiUrl = process.env.REACT_APP_API_BASE_URL;
+
     if (jamMasuk && !jamPulang) {
       const dataMasuk = {
         form: form,
@@ -40,7 +42,7 @@ const StepFour = ({ formData, handleNextStepData }) => {
         lon: titikKoordinatMasuk ? titikKoordinatMasuk.longitude.toString() : '', 
       };
       console.log('Data masuk yang dikirim:', dataMasuk);
-      response = await fetch('${process.env.REACT_APP_API_BASE_URL}/absen/mulai', {
+      response = await fetch(`${apiUrl}/absen/mulai`, {
         method: 'POST',
         body: JSON.stringify(dataMasuk),
         headers: { 'Content-Type': 'application/json' },
@@ -53,7 +55,7 @@ const StepFour = ({ formData, handleNextStepData }) => {
         lon: titikKoordinatPulang ? titikKoordinatPulang.longitude.toString() : '',
       };
       console.log('Data pulang yang dikirim:', dataPulang);
-      response = await fetch('${process.env.REACT_APP_API_BASE_URL}/absen/selesai', {
+      response = await fetch(`${apiUrl}/absen/selesai`, {
         method: 'POST',
         body: JSON.stringify(dataPulang),
         headers: { 'Content-Type': 'application/json' },
