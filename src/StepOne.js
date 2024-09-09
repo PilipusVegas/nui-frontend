@@ -2,30 +2,25 @@ import PropTypes from 'prop-types';
 import React, { useState, useEffect, useCallback } from 'react';
 
 const StepOne = React.memo(({ setStep, formData, handleNextStepData }) => {
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const [namaOptions, setNamaOptions] = useState([]);
-  const [form, setForm] = useState(formData.form || '');
   const [divisiOptions, setDivisiOptions] = useState([]);
 
-  const isFormValid = () => form && localData.divisi && localData.nama;
+  const resetForm = () => {setLocalData(prevData => ({...prevData, nama: formData.nama || '', divisi: formData.divisi || '', id_nama: formData.id_nama || '', id_absen: formData.id_absen || '', id_divisi: formData.id_divisi || ''}))};
 
   const [localData, setLocalData] = useState(() => {
     const savedData = localStorage.getItem('stepOneData');
-    return savedData ? JSON.parse(savedData) : {form: '', nama: '', divisi: '', id_nama: '', id_absen: '', id_divisi: ''};
+    return savedData ? JSON.parse(savedData) : { form: '', nama: '', divisi: '', id_nama: '', id_absen: '', id_divisi: '' };
   });
-
-  const resetForm = () => {
-    setForm(formData.form || '');
-    setLocalData(prevData => ({...prevData, nama: formData.nama || '', divisi: formData.divisi || '', id_nama: formData.id_nama || '', id_absen: formData.id_absen || '', id_divisi: formData.id_divisi || ''}));
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    fetch(`${process.env.REACT_APP_API_BASE_URL}/absen/cek/${localData.id_nama}`)
-      .then((response) => response.json())
-      .then((data) => {
+    fetch(`${apiUrl}/absen/cek/${localData.id_nama}`)
+      .then(response => response.json())
+      .then(data => {
         if (data.length > 0) {
           const fetchedIdAbsen = data[0].id_absen;
-          setLocalData((prevData) => {
+          setLocalData(prevData => {
             const updatedData = { ...prevData, id_absen: fetchedIdAbsen };
             localStorage.setItem('stepOneData', JSON.stringify(updatedData));
             handleNextStepData(updatedData);
@@ -33,7 +28,7 @@ const StepOne = React.memo(({ setStep, formData, handleNextStepData }) => {
             return updatedData;
           });
         } else {
-          setLocalData((prevData) => {
+          setLocalData(prevData => {
             const updatedData = { ...prevData, id_absen: '' };
             localStorage.setItem('stepOneData', JSON.stringify(updatedData));
             handleNextStepData(updatedData);
@@ -42,44 +37,30 @@ const StepOne = React.memo(({ setStep, formData, handleNextStepData }) => {
           });
         }
       })
-      .catch((error) => {
-        alert('Error fetching data. Please try again.');
-      });
   };
 
   const handleChange = useCallback(
     (e) => {
       const { name, value } = e.target;
       if (name === 'divisi') {
-        const selectedDivisi = divisiOptions.find(
-          (divisi) => divisi.id === parseInt(value)
-        );
-        setLocalData((prevData) => {
+        const selectedDivisi = divisiOptions.find(divisi => divisi.id === parseInt(value));
+        setLocalData(prevData => {
           const updatedData = {
             ...prevData,
             divisi: selectedDivisi ? selectedDivisi.name : '',
-            id_divisi: selectedDivisi ? selectedDivisi.id : '',
+            id_divisi: selectedDivisi ? selectedDivisi.id : ''
           };
           localStorage.setItem('stepOneData', JSON.stringify(updatedData));
           return updatedData;
         });
       } else if (name === 'nama') {
-        const selectedNama = namaOptions.find(
-          (nama) => nama.id === parseInt(value)
-        );
-        setLocalData((prevData) => {
+        const selectedNama = namaOptions.find(nama => nama.id === parseInt(value));
+        setLocalData(prevData => {
           const updatedData = {
             ...prevData,
             nama: selectedNama ? selectedNama.name : '',
-            id_nama: selectedNama ? selectedNama.id : '',
+            id_nama: selectedNama ? selectedNama.id : ''
           };
-          localStorage.setItem('stepOneData', JSON.stringify(updatedData));
-          return updatedData;
-        });
-      } else if (name === 'form') {
-        setForm(value);
-        setLocalData((prevData) => {
-          const updatedData = { ...prevData, form: value };
           localStorage.setItem('stepOneData', JSON.stringify(updatedData));
           return updatedData;
         });
@@ -97,22 +78,22 @@ const StepOne = React.memo(({ setStep, formData, handleNextStepData }) => {
   }, [localData.id_absen, setStep]);
 
   useEffect(() => {
-    fetch('${process.env.REACT_APP_API_BASE_URL}/karyawan/divisi')
-      .then((response) => response.json())
-      .then((data) => {
-        const transformedData = data.map((item) => ({id: item.id, name: item.nama}));
+    fetch(`${apiUrl}/karyawan/divisi`)
+      .then(response => response.json())
+      .then(data => {
+        const transformedData = data.map(item => ({ id: item.id, name: item.nama }));
         setDivisiOptions(transformedData);
-      })
+      });
   }, []);
 
   useEffect(() => {
     if (localData.id_divisi) {
-      fetch(`${process.env.REACT_APP_API_BASE_URL}/karyawan/divisi/${localData.id_divisi}`)
-        .then((response) => response.json())
-        .then((data) => {
-          const transformedData = data.map((item) => ({id: item.id, name: item.nama}));
+      fetch(`${apiUrl}/karyawan/divisi/${localData.id_divisi}`)
+        .then(response => response.json())
+        .then(data => {
+          const transformedData = data.map(item => ({ id: item.id, name: item.nama }));
           setNamaOptions(transformedData);
-        })
+        });
     } else {
       setNamaOptions([]);
     }
@@ -122,29 +103,21 @@ const StepOne = React.memo(({ setStep, formData, handleNextStepData }) => {
     <div style={styles.container}>
       <form onSubmit={handleSubmit} style={styles.form}>
         <div style={styles.formGroup}>
-          <label htmlFor="form" style={styles.label}>Form:</label>
-          <select id="form" name="form" value={form} style={styles.select} onChange={handleChange}>
-            <option value="">Pilih Form</option>
-            <option value="Absensi">Absensi</option>
-            <option value="Overtime">Overtime</option>
-          </select>
-        </div>
-        <div style={styles.formGroup}>
           <label htmlFor="divisi" style={styles.label}>Divisi:</label>
           <select id="divisi" name="divisi" style={styles.select} onChange={handleChange} value={localData.id_divisi}>
             <option value="">Pilih Divisi</option>
-            {divisiOptions.map((divisi) => (<option key={divisi.id} value={divisi.id}>{divisi.name}</option>))}
+            {divisiOptions.map(divisi => (<option key={divisi.id} value={divisi.id}>{divisi.name}</option>))}
           </select>
         </div>
         <div style={styles.formGroup}>
           <label htmlFor="nama" style={styles.label}>Nama:</label>
           <select id="nama" name="nama" style={styles.select} onChange={handleChange} value={localData.id_nama} disabled={!localData.id_divisi}>
             <option value="">Pilih Nama</option>
-            {namaOptions.map((nama) => (<option key={nama.id} value={nama.id}>{nama.name}</option>))}
+            {namaOptions.map(nama => (<option key={nama.id} value={nama.id}>{nama.name}</option>))}
           </select>
         </div>
         <div style={styles.formGroup}>
-          <button type="submit" disabled={!isFormValid()} style={isFormValid() ? styles.buttonActive : styles.buttonInactive}>➜</button>
+          <button type="submit" disabled={!localData.id_nama || !localData.id_divisi} style={localData.id_nama && localData.id_divisi ? styles.buttonActive : styles.buttonInactive}>➜</button>
         </div>
       </form>
     </div>
@@ -154,7 +127,6 @@ const StepOne = React.memo(({ setStep, formData, handleNextStepData }) => {
 StepOne.propTypes = {
   setStep: PropTypes.func.isRequired,
   formData: PropTypes.shape({
-    form: PropTypes.string,
     nama: PropTypes.string,
     divisi: PropTypes.string,
     id_nama: PropTypes.number,
@@ -196,8 +168,8 @@ const styles = {
   buttonActive: {
     width: '100%',
     padding: '10px',
-    cursor: 'pointer',
     marginTop: '5px',
+    cursor: 'pointer',
     fontSize: '1.5rem',
     fontWeight: 'bold',
     borderRadius: '10px',
