@@ -40,7 +40,7 @@ const StepFour = ({ formData, handleNextStepData }) => {
         lon: titikKoordinatMasuk ? titikKoordinatMasuk.longitude.toString() : '', 
       };
       console.log('Data masuk yang dikirim:', dataMasuk);
-      response = await fetch('http://192.168.17.19:3002/absen/mulai', {
+      response = await fetch('${process.env.REACT_APP_API_BASE_URL}/absen/mulai', {
         method: 'POST',
         body: JSON.stringify(dataMasuk),
         headers: { 'Content-Type': 'application/json' },
@@ -53,7 +53,7 @@ const StepFour = ({ formData, handleNextStepData }) => {
         lon: titikKoordinatPulang ? titikKoordinatPulang.longitude.toString() : '',
       };
       console.log('Data pulang yang dikirim:', dataPulang);
-      response = await fetch('http://192.168.17.19:3002/absen/selesai', {
+      response = await fetch('${process.env.REACT_APP_API_BASE_URL}/absen/selesai', {
         method: 'POST',
         body: JSON.stringify(dataPulang),
         headers: { 'Content-Type': 'application/json' },
