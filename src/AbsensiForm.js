@@ -30,12 +30,6 @@ const AbsensiForm = () => {
     setFormData(updatedData);
     if (step === 4) {
       setIsCompleted(true);
-      fetch('/api/saveFormData', {
-        method: 'POST',
-        body: JSON.stringify(updatedData),
-        headers: {'Content-Type': 'application/json'},
-      })
-        .then(response => response.json())
     } else if (step < 4) {
       setStep(step + 1);
     }
@@ -43,9 +37,7 @@ const AbsensiForm = () => {
 
   useEffect(() => {
     const storedData = localStorage.getItem('formData');
-    if (storedData) {
-      setFormData(JSON.parse(storedData));
-    }
+    if (storedData) {setFormData(JSON.parse(storedData))}
   }, []);
 
   const renderStep = () => {
