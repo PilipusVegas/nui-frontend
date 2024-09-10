@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import logo from './assets/logo.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faUser, faLock } from '@fortawesome/free-solid-svg-icons';
 
@@ -11,7 +12,7 @@ const Login = ({ onLoginSuccess }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const togglePasswordVisibility = () => {setShowPassword(!showPassword)};
+  const togglePasswordVisibility = () => { setShowPassword(!showPassword) };
 
   const handleLogin = () => {
     if (!username || !password) {
@@ -28,23 +29,23 @@ const Login = ({ onLoginSuccess }) => {
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>Login</h2>
+      <img src={logo} alt="Logo" style={styles.logo} />
       <div style={styles.inputContainer}>
         <span style={styles.iconLeft}>
           <FontAwesomeIcon icon={faUser} />
         </span>
-        <input type="text" value={username} style={styles.input} placeholder="Username" onChange={(e) => setUsername(e.target.value)}/>
+        <input type="text" value={username} style={styles.input} placeholder="Username" onChange={(e) => setUsername(e.target.value)} />
       </div>
       <div style={styles.inputContainer}>
         <span style={styles.iconLeft}>
           <FontAwesomeIcon icon={faLock} />
         </span>
-        <input value={password} style={styles.input} placeholder="Password" type={showPassword ? 'text' : 'password'} onChange={(e) => setPassword(e.target.value)}/>
+        <input value={password} style={styles.input} placeholder="Password" type={showPassword ? 'text' : 'password'} onChange={(e) => setPassword(e.target.value)} />
         <span onClick={togglePasswordVisibility} style={styles.iconRight}>
           <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
         </span>
       </div>
-      <button onClick={handleLogin} style={styles.button}>Login</button>
+      <button onClick={handleLogin} style={styles.button}>LOGIN</button>
       {errorMessage && <p style={styles.error}>{errorMessage}</p>}
     </div>
   );
@@ -59,6 +60,10 @@ const styles = {
     flexDirection: 'column',
     justifyContent: 'center',
     backgroundColor: '#f4f4f4',
+  },
+  logo: {
+    width: '100px',
+    marginBottom: '20px',
   },
   title: {
     color: '#326058',
