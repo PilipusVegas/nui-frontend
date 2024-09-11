@@ -4,13 +4,14 @@ import FormNicoUrbanIndonesia from './formNicoUrbanIndonesia';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-
+  
+  const handleLogout = () => {setIsLoggedIn(false)};
   const handleLoginSuccess = () => {setIsLoggedIn(true)};
 
   return (
     <div className="App">
       {isLoggedIn ? (
-        <FormNicoUrbanIndonesia />
+        <FormNicoUrbanIndonesia onLogout={handleLogout} />
       ) : (
         <Login onLoginSuccess={handleLoginSuccess} />
       )}
