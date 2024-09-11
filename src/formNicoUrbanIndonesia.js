@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClock, faCalendarCheck, faMoneyBillWave, faSyncAlt } from '@fortawesome/free-solid-svg-icons';
+import { faSignOutAlt, faHome, faBell, faUser, faClock, faCalendarCheck, faMoneyBillWave, faSyncAlt } from '@fortawesome/free-solid-svg-icons';
 
 import AbsensiStepOne from './absensi/StepOne';
 import AbsensiStepTwo from './absensi/StepTwo';
@@ -19,11 +19,13 @@ import SalaryStepFour from './salary/StepFour';
 
 import UpdateStockStepOne from './updateStock/StepOne';
 
-const FormNicoUrbanIndonesia = () => {
+const FormNicoUrbanIndonesia = ({ onLogout }) => {
   const [step, setStep] = useState(0);
   const [formType, setFormType] = useState('');
   const [isCompleted, setIsCompleted] = useState(false);
   const [formData, setFormData] = useState({form: '', nama: '', tugas: '', divisi: '', lokasi: '', endTime: null, startTime: null});
+
+  const handleLogout = () => {onLogout()};
 
   const handleChoice = (choice) => {
     const updatedFormData = { ...formData, form: choice };
@@ -45,7 +47,8 @@ const FormNicoUrbanIndonesia = () => {
   const handleNextStepData = (newData) => {
     const updatedData = { ...formData, ...newData };
     setFormData(updatedData);
-    if ((formType === 'Absensi' && step === 4) || (formType === 'Lembur' && step === 8) || (formType === 'Penggajian' && step === 4)) {
+    if ((formType === 'Absensi' && step === 4) || (formType === 'Lembur' && step === 8) || (formType === 'Penggajian' && step === 4)
+    ) {
       setIsCompleted(true);
     } else if (step < (formType === 'Absensi' ? 4 : formType === 'Lembur' ? 8 : 4)) {
       setStep(step + 1);
@@ -144,12 +147,27 @@ const FormNicoUrbanIndonesia = () => {
         </div>
       );
     }
-  };  
+  };
 
   return (
     <div style={styles.container}>
-      <div style={styles.formContainer}>
-        {renderStep()}
+      <div style={styles.topContainer}>
+        <FontAwesomeIcon icon={faSignOutAlt} style={styles.iconLogout} onClick={handleLogout} />
+      </div>
+      <div style={styles.formContainer}>{renderStep()}</div>
+      <div style={styles.bottomContainer}>
+        <button style={styles.iconButton}>
+          <FontAwesomeIcon icon={faHome} style={styles.icon} />
+          <span style={styles.iconText}>Home</span>
+        </button>
+        <button style={styles.iconButton}>
+          <FontAwesomeIcon icon={faBell} style={styles.icon} />
+          <span style={styles.iconText}>Notification</span>
+        </button>
+        <button style={styles.iconButton}>
+          <FontAwesomeIcon icon={faUser} style={styles.icon} />
+          <span style={styles.iconText}>Profile</span>
+        </button>
       </div>
     </div>
   );
@@ -159,17 +177,60 @@ const styles = {
   container: {
     display: 'flex',
     height: '100vh',
+    flexDirection: 'column',
     backgroundColor: '#326058',
   },
-  formContainer: {
-    width: '100%',
-    height: '75%',
-    padding: '20px',
-    marginTop: 'auto',
+  topContainer: {
+    height: '20%',
+    display: 'flex',
+    padding: '0 20px',
     position: 'relative',
-    borderRadius: '10px',
+    alignItems: 'center',
+    backgroundColor: '#326058',
+    justifyContent: 'space-between',
+  },
+  logoutButton: {
+    border: 'none',
+    display: 'flex',
+    color: '#ffffff',
+    cursor: 'pointer',
+    fontSize: '1.2rem',
+    fontWeight: 'bold',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  iconLogout: {
+    top: '20px',
+    right: '20px',
+    color: '#ffffff',
+    cursor: 'pointer',
+    fontSize: '1.5rem',
+    position: 'absolute',
+  },
+  logoutText: {
+    fontSize: '1rem',
+    fontWeight: 'bold',
+  },
+  formContainer: {
+    height: '70%',
+    display: 'flex',
+    padding: '20px',
+    position: 'relative',
     flexDirection: 'column',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#fff',
+    borderRadius: '10px 10px 0 0',
+  },
+  bottomContainer: {
+    height: '10%',
+    display: 'flex',
+    padding: '10px',
+    alignItems: 'center',
+    backgroundColor: '#26413c',
+    justifyContent: 'space-around',
+  },
+  footerText: {
+    color: '#ffffff',
+    fontSize: '1rem',
   },
   completeMessageContainer: {
     textAlign: 'center',
@@ -225,11 +286,24 @@ const styles = {
   },
   icon: {
     fontSize: '2rem',
+    fontSize: '24px',
+  },
+  iconText: {
+    marginTop: '5px',
+    fontSize: '14px',
   },
   buttonText: {
     marginTop: '8px',
     fontSize: '1rem',
     fontWeight: 'bold',
+  }, 
+  iconButton: {
+    border: 'none',
+    display: 'flex',
+    color: '#ffffff',
+    background: 'none',
+    alignItems: 'center',
+    flexDirection: 'column',
   },
 };
 
