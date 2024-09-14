@@ -1,100 +1,88 @@
-import { useState } from 'react';
+import PropTypes from 'prop-types';
 
-const StepThree = ({ handleNextStepData }) => {
-  const [jamMasuk, setJamMasuk] = useState(null);
-  const [jamPulang, setJamPulang] = useState(null);
-  const [isMasukSelected, setIsMasukSelected] = useState(false);
-  const [isPulangSelected, setIsPulangSelected] = useState(false);
-  const [titikKoordinatMasuk, setTitikKoordinatMasuk] = useState({ latitude: null, longitude: null });
-  const [titikKoordinatPulang, setTitikKoordinatPulang] = useState({ latitude: null, longitude: null });
+const StepThree = ({ formData, handleNextStepData }) => {
+  const { form, userId, username, id_lokasi, lokasi, tugas, id_absen, jamMasuk, jamPulang, titikKoordinatMasuk, titikKoordinatPulang } = formData;
 
-  const isFormValid = () => (isMasukSelected && jamMasuk && titikKoordinatMasuk) || (isPulangSelected && jamPulang && titikKoordinatPulang);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (isFormValid()) {handleNextStepData({ jamMasuk, jamPulang, titikKoordinatMasuk, titikKoordinatPulang })}
-  };
-
-  const handleMasuk = () => {
-    setJamMasuk(new Date());
-    setIsMasukSelected(true);
-    getLocation(setTitikKoordinatMasuk);
-  };
-
-  const handlePulang = () => {
-    setJamPulang(new Date());
-    setIsPulangSelected(true);
-    getLocation(setTitikKoordinatPulang);
-  };
-
-  const formatTime = (date) => {
-    if (!date) return '';
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const seconds = date.getSeconds().toString().padStart(2, '0');
-    return `${hours}:${minutes}:${seconds}`;
-  };
-
-  const formatDate = (date) => {
-    if (!date) return '';
+  const formatDateTime = (date) => {
+    if (!date) return { tanggal: '', jam: '' };
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
+    const tanggal = `${day}-${month}-${year}`;
+    const jam = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
+    return { tanggal, jam };
   };
 
-  const getLocation = (setLocation) => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {setLocation({ latitude: position.coords.latitude, longitude: position.coords.longitude })},
-      );
+  const summaryItems = [
+    { label: 'Form', value: form },
+    { label: 'Nama', value: username },
+    { label: 'Lokasi', value: lokasi },
+    { label: 'Tugas', value: tugas, isSpecial: true },
+    jamMasuk && { label: 'Jam Masuk', value: formatDateTime(jamMasuk).jam },
+    jamMasuk && { label: 'Tanggal Masuk', value: formatDateTime(jamMasuk).tanggal },
+    jamPulang && { label: 'Jam Pulang', value: formatDateTime(jamPulang).jam },
+    jamPulang && { label: 'Tanggal Pulang', value: formatDateTime(jamPulang).tanggal },
+    titikKoordinatMasuk?.latitude != null && titikKoordinatMasuk?.longitude != null && { label: '📍 Masuk', value: `${titikKoordinatMasuk.latitude} ${titikKoordinatMasuk.longitude}` },
+    titikKoordinatPulang?.latitude != null && titikKoordinatPulang?.longitude != null && { label: '📍 Pulang', value: `${Math.abs(titikKoordinatPulang.latitude)} ${Math.abs(titikKoordinatPulang.longitude)}` },
+  ].filter(Boolean);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    let response;
+    const apiUrl = process.env.REACT_APP_API_BASE_URL;
+    if (jamMasuk && !jamPulang) {
+      const dataMasuk = {id_user: userId, lokasi: id_lokasi.toString(), deskripsi: tugas, lat: titikKoordinatMasuk ? titikKoordinatMasuk.latitude.toString() : '', lon: titikKoordinatMasuk ? titikKoordinatMasuk.longitude.toString() : ''};
+      console.log('Data masuk yang dikirim:', dataMasuk);
+      response = await fetch(`${apiUrl}/absen/mulai`, {method: 'POST', body: JSON.stringify(dataMasuk), headers: { 'Content-Type': 'application/json' }});
+    } else if (jamPulang) {
+      const dataPulang = {id_absen: id_absen.toString(), id_user: userId, lat: titikKoordinatPulang ? titikKoordinatPulang.latitude.toString() : '', lon: titikKoordinatPulang ? titikKoordinatPulang.longitude.toString() : ''};
+      console.log('Data pulang yang dikirim:', dataPulang);
+      response = await fetch(`${apiUrl}/absen/selesai`, {method: 'POST', body: JSON.stringify(dataPulang), headers: { 'Content-Type': 'application/json' }});
     } else {
-      alert('Geolocation is not supported by this browser.');
+      return;
     }
+    if (response.ok) {
+    } else {
+      const errorData = await response.json();
+      console.error('Terjadi kesalahan saat mengirim data:', errorData);
+    }
+    handleNextStepData(formData);
   };
-
-  const TimeDisplay = ({ date, time, coordinates }) => (
-    <div style={styles.formGroup}>
-      <div style={styles.timeDisplay}>
-        <div style={styles.timeRow}>
-          <div style={styles.label}>Tanggal:</div>
-          <div style={styles.timeValue}>{formatDate(date)}</div>
-        </div>
-      </div>
-      <div style={styles.timeDisplay}>
-        <div style={styles.timeRow}>
-          <div style={styles.label}>Jam:</div>
-          <div style={styles.timeValue}>{formatTime(time)}</div>
-        </div>
-      </div>
-      <div style={styles.timeDisplay}>
-        <div style={styles.timeRow}>
-          <div style={styles.label}>Lokasi:</div>
-          <div style={styles.timeValue}>{`${coordinates.latitude || ''} ${coordinates.longitude || ''}`}</div>
-        </div>
-      </div>
-    </div>
-  );
 
   return (
     <div style={styles.container}>
-      <form onSubmit={handleSubmit} style={styles.form}>
-        {!isMasukSelected && !isPulangSelected && (
-          <div style={styles.formGroup}>
-            <div style={styles.buttonContainer}>
-              <button type="button" onClick={handleMasuk} style={{ ...styles.button, ...styles.buttonStart }}>MULAI</button>
-              <button type="button" onClick={handlePulang} style={{ ...styles.button, ...styles.buttonEnd }}>SELESAI</button>
-            </div>
+      <div style={styles.form}>
+        <form onSubmit={handleSubmit}>
+          <div style={styles.summary}>
+            {summaryItems.map(({ label, value, isSpecial }) => (
+              <div key={label} style={isSpecial ? styles.specialSummaryItem : styles.summaryItem}>
+                <div style={styles.label}>{label}:</div>
+                <div style={styles.value}>{value}</div>
+              </div>
+            ))}
           </div>
-        )}
-        {isMasukSelected && (<TimeDisplay date={jamMasuk} time={jamMasuk} coordinates={titikKoordinatMasuk} />)}
-        {isPulangSelected && (<TimeDisplay date={jamPulang} time={jamPulang} coordinates={titikKoordinatPulang} />)}
-        <div style={styles.formGroup}>
-          <button type="submit" disabled={!isFormValid()} style={isFormValid() ? styles.buttonActive : styles.buttonInactive}>➜</button>
-        </div>
-      </form>
+          <div>
+            <button type="submit" style={styles.button}>OK</button>
+          </div>
+        </form>
+      </div>
     </div>
   );
+};
+
+StepThree.propTypes = {
+  formData: PropTypes.shape({
+    form: PropTypes.string,
+    username: PropTypes.string,
+    lokasi: PropTypes.string,
+    tugas: PropTypes.string,
+    jamMasuk: PropTypes.instanceOf(Date),
+    jamPulang: PropTypes.instanceOf(Date),
+    titikKoordinatMasuk: PropTypes.shape({latitude: PropTypes.number, longitude: PropTypes.number}),
+    titikKoordinatPulang: PropTypes.shape({latitude: PropTypes.number, longitude: PropTypes.number}),
+    id_absen: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  }).isRequired,
+  handleNextStepData: PropTypes.func.isRequired,
 };
 
 const styles = {
@@ -110,73 +98,42 @@ const styles = {
     borderRadius: '10px',
     backgroundColor: '#f9f9f9',
   },
-  formGroup: {
-    marginBottom: '10px',
-  },
-  buttonContainer: {
+  summary: {
     display: 'flex',
-    justifyContent: 'space-around',
+    flexDirection: 'column',
   },
-  button: {
-    width: '48%',
-    padding: '15px',
-    cursor: 'pointer',
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
-    borderRadius: '10px',
-    marginBottom: '-10px',
-  },
-  buttonStart: {
-    border: '2px solid',
-    backgroundColor: '#28a745',
-  },
-  buttonEnd: {
-    border: '2px solid',
-    backgroundColor: '#007bff',
-  },
-  timeDisplay: {
-    padding: '12px',
-    fontSize: '1rem',
-    marginBottom: '10px',
-    borderRadius: '10px',
-    backgroundColor: '#f9f9f9',
-    border: '2px solid #1C1C1C',
-  },
-  timeRow: {
+  summaryItem: {
     display: 'flex',
+    padding: '10px',
+    borderBottom: '2px solid #ddd',
     justifyContent: 'space-between',
   },
+  specialSummaryItem: {
+    display: 'flex',
+    padding: '10px',
+    flexDirection: 'column',
+    borderBottom: '2px solid #ddd',
+  },
   label: {
-    display: 'block',
     fontSize: '1rem',
     fontWeight: 'bold',
+    marginBottom: '2px',
   },
-  timeValue: {
-    textAlign: 'right',
+  value: {
+    fontSize: '1rem',
+    textAlign: 'justify',
+    wordWrap: 'break-word',
   },
-  buttonActive: {
+  button: {
     width: '100%',
     padding: '10px',
     cursor: 'pointer',
-    marginTop: '10px',
-    fontSize: '1.5rem',
+    marginTop: '20px',
+    fontSize: '1.2rem',
     fontWeight: 'bold',
     borderRadius: '10px',
-    marginBottom: '-10px',
     backgroundColor: '#28a745',
-    border: '2px solid #000000',
-  },
-  buttonInactive: {
-    width: '100%',
-    padding: '10px',
-    marginTop: '10px',
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
-    borderRadius: '10px',
-    cursor: 'not-allowed',
-    marginBottom: '-10px',
-    backgroundColor: '#b0b0b0',
-    border: '2px solid #000000',
+    border: '2px solid #1C1C1C',
   },
 };
 
