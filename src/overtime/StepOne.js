@@ -1,143 +1,69 @@
-import PropTypes from 'prop-types';
-import React, { useState, useEffect, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 
-const StepFive = React.memo(({ setStep, formData, handleNextStepData }) => {
+const StepOne = ({ formData, handleNextStepData }) => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
-  const [namaOptions, setNamaOptions] = useState([]);
-  const [divisiOptions, setDivisiOptions] = useState([]);
 
-  const resetForm = () => {setLocalData(prevData => ({...prevData, nama: formData.nama || '', divisi: formData.divisi || '', id_nama: formData.id_nama || '', id_lembur: formData.id_lembur || '', id_divisi: formData.id_divisi || ''}))};
+  const [locations, setLocations] = useState([]);
+  const [tugas, setTugas] = useState(formData.tugas || '');
+  const [lokasi, setLokasi] = useState(formData.lokasi || '');
+  const [idLokasi, setIdLokasi] = useState(formData.id_lokasi || '');
+  const [charCount, setCharCount] = useState(formData.tugas?.length || 0);
 
-  const [localData, setLocalData] = useState(() => {
-    const savedData = localStorage.getItem('stepFiveData');
-    return savedData ? JSON.parse(savedData) : { form: '', nama: '', divisi: '', id_nama: '', id_lembur: '', id_divisi: '' };
-  });
+  const isFormValid = () => lokasi && tugas;
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    fetch(`${apiUrl}/lembur/cek/${localData.id_nama}`)
-      .then(response => response.json())
-      .then(data => {
-        console.log('Data yang diterima dari API:', data);
-        if (data.length > 0) {
-          const fetchedIdAbsen = data[0].id_lembur;
-          setLocalData(prevData => {
-            const updatedData = { ...prevData, id_lembur: fetchedIdAbsen };
-            localStorage.setItem('stepFiveData', JSON.stringify(updatedData));
-            handleNextStepData(updatedData);
-            setStep(3);
-            return updatedData;
-          });
-        } else {
-          setLocalData(prevData => {
-            const updatedData = { ...prevData, id_lembur: '' };
-            localStorage.setItem('stepFiveData', JSON.stringify(updatedData));
-            handleNextStepData(updatedData);
-            setStep(2);
-            return updatedData;
-          });
-        }
-      })
-      .catch(error => {
-        console.error('Terjadi kesalahan saat mem-fetch data:', error);
-      });
-  };  
+    if (isFormValid()) {handleNextStepData({ tugas, lokasi, id_lokasi: idLokasi })}
+  };
 
-  const handleChange = useCallback(
-    (e) => {
-      const { name, value } = e.target;
-      if (name === 'divisi') {
-        const selectedDivisi = divisiOptions.find(divisi => divisi.id === parseInt(value));
-        setLocalData(prevData => {
-          const updatedData = {
-            ...prevData,
-            divisi: selectedDivisi ? selectedDivisi.name : '',
-            id_divisi: selectedDivisi ? selectedDivisi.id : ''
-          };
-          localStorage.setItem('stepFiveData', JSON.stringify(updatedData));
-          return updatedData;
-        });
-      } else if (name === 'nama') {
-        const selectedNama = namaOptions.find(nama => nama.id === parseInt(value));
-        setLocalData(prevData => {
-          const updatedData = {
-            ...prevData,
-            nama: selectedNama ? selectedNama.name : '',
-            id_nama: selectedNama ? selectedNama.id : ''
-          };
-          localStorage.setItem('stepFiveData', JSON.stringify(updatedData));
-          return updatedData;
-        });
+  const handleTugasChange = (e) => {
+    const value = e.target.value;
+    if (value.length <= 250) {setTugas(value); setCharCount(value.length)}
+  };
+
+  const handleLokasiChange = (e) => {
+    const selectedLokasi = e.target.value;
+    const selectedId = locations.find(location => location.nama === selectedLokasi)?.id || '';
+    setLokasi(selectedLokasi);
+    setIdLokasi(selectedId);
+  };
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/absen/lokasi`);
+        if (!response.ok) {throw new Error('Network response was not ok')}
+        const data = await response.json();
+        setLocations(data);
+      } catch (error) {
       }
-    },
-    [divisiOptions, namaOptions]
-  );
-
-  useEffect(() => {
-    resetForm();
-  }, [formData]);
-
-  useEffect(() => {
-    if (!localData.id_lembur) { setStep(1); }
-  }, [localData.id_lembur, setStep]);
-
-  useEffect(() => {
-    fetch(`${apiUrl}/karyawan/divisi`)
-      .then(response => response.json())
-      .then(data => {
-        const transformedData = data.map(item => ({ id: item.id, name: item.nama }));
-        setDivisiOptions(transformedData);
-      });
-  }, []);
-
-  useEffect(() => {
-    if (localData.id_divisi) {
-      fetch(`${apiUrl}/karyawan/divisi/${localData.id_divisi}`)
-        .then(response => response.json())
-        .then(data => {
-          const transformedData = data.map(item => ({ id: item.id, name: item.nama }));
-          setNamaOptions(transformedData);
-        });
-    } else {
-      setNamaOptions([]);
-    }
-  }, [localData.id_divisi]);
+    };
+    fetchLocations();
+  }, [apiUrl]);
 
   return (
     <div style={styles.container}>
-      <form onSubmit={handleSubmit} style={styles.form}>
+      <form onSubmit={handleSubmit} style={styles.form} aria-required="true">
         <div style={styles.formGroup}>
-          <label htmlFor="divisi" style={styles.label}>Divisi:</label>
-          <select id="divisi" name="divisi" style={styles.select} onChange={handleChange} value={localData.id_divisi}>
-            <option value="">Pilih Divisi</option>
-            {divisiOptions.map(divisi => (<option key={divisi.id} value={divisi.id}>{divisi.name}</option>))}
+          <label htmlFor="lokasi" style={styles.label}>Lokasi:</label>
+          <select id="lokasi" name="lokasi" value={lokasi} style={styles.select} onChange={handleLokasiChange}>
+            <option value="">Pilih Lokasi</option>
+            {locations.map(location => (<option key={location.id} value={location.nama}>{location.nama}</option>))}
           </select>
         </div>
         <div style={styles.formGroup}>
-          <label htmlFor="nama" style={styles.label}>Nama:</label>
-          <select id="nama" name="nama" style={styles.select} onChange={handleChange} value={localData.id_nama} disabled={!localData.id_divisi}>
-            <option value="">Pilih Nama</option>
-            {namaOptions.map(nama => (<option key={nama.id} value={nama.id}>{nama.name}</option>))}
-          </select>
+          <div style={styles.taskContainer}>
+            <label htmlFor="tugas" style={styles.label}>Tugas yang diberikan:</label>
+            <div style={styles.charCount}>{charCount} / 250</div>
+          </div>
+          <textarea required rows="4" id="tugas" name="tugas" value={tugas} style={styles.textarea} onChange={handleTugasChange}/>
         </div>
         <div style={styles.formGroup}>
-          <button type="submit" disabled={!localData.id_nama || !localData.id_divisi} style={localData.id_nama && localData.id_divisi ? styles.buttonActive : styles.buttonInactive}>➜</button>
+          <button type="submit" disabled={!isFormValid()} style={isFormValid() ? styles.buttonActive : styles.buttonInactive}>➜</button>
         </div>
       </form>
     </div>
   );
-});
-
-StepFive.propTypes = {
-  setStep: PropTypes.func.isRequired,
-  formData: PropTypes.shape({
-    nama: PropTypes.string,
-    divisi: PropTypes.string,
-    id_nama: PropTypes.number,
-    id_lembur: PropTypes.string,
-    id_divisi: PropTypes.number,
-  }).isRequired,
-  handleNextStepData: PropTypes.func.isRequired,
 };
 
 const styles = {
@@ -154,7 +80,7 @@ const styles = {
     backgroundColor: '#f9f9f9',
   },
   formGroup: {
-    marginBottom: '15px',
+    marginBottom: '10px',
   },
   label: {
     fontSize: '1rem',
@@ -169,11 +95,31 @@ const styles = {
     borderRadius: '10px',
     border: '2px solid #ccc',
   },
+  taskContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  textarea: {
+    width: '100%',
+    padding: '10px',
+    fontSize: '1rem',
+    resize: 'vertical',
+    borderRadius: '10px',
+    boxSizing: 'border-box',
+    border: '1px solid #1C1C1C',
+  },
+  charCount: {
+    color: '#808080',
+    fontSize: '1rem',
+    marginTop: '-10px',
+    marginRight: '10px',
+  },
   buttonActive: {
     width: '100%',
     padding: '10px',
-    marginTop: '5px',
     cursor: 'pointer',
+    marginTop: '10px',
     fontSize: '1.5rem',
     fontWeight: 'bold',
     borderRadius: '10px',
@@ -184,7 +130,7 @@ const styles = {
   buttonInactive: {
     width: '100%',
     padding: '10px',
-    marginTop: '5px',
+    marginTop: '10px',
     fontSize: '1.5rem',
     fontWeight: 'bold',
     borderRadius: '10px',
@@ -195,4 +141,4 @@ const styles = {
   },
 };
 
-export default StepFive;
+export default StepOne;
