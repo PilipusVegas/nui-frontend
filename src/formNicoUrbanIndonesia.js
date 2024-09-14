@@ -1,45 +1,38 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSignOutAlt, faHome, faBell, faUser, faClock, faCalendarCheck, faMoneyBillWave, faSyncAlt } from '@fortawesome/free-solid-svg-icons';
+import { faSignOutAlt, faHome, faBell, faUser, faCalendarCheck, faClock } from '@fortawesome/free-solid-svg-icons';
 
 import AbsensiStepOne from './absensi/StepOne';
 import AbsensiStepTwo from './absensi/StepTwo';
 import AbsensiStepThree from './absensi/StepThree';
-import AbsensiStepFour from './absensi/StepFour';
 
 import OvertimeStepOne from './overtime/StepOne';
 import OvertimeStepTwo from './overtime/StepTwo';
 import OvertimeStepThree from './overtime/StepThree';
-import OvertimeStepFour from './overtime/StepFour';
-
-import SalaryStepOne from './salary/StepOne';
-import SalaryStepTwo from './salary/StepTwo';
-import SalaryStepThree from './salary/StepThree';
-import SalaryStepFour from './salary/StepFour';
-
-import UpdateStockStepOne from './updateStock/StepOne';
 
 const FormNicoUrbanIndonesia = ({ onLogout }) => {
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
+
   const [step, setStep] = useState(0);
   const [formType, setFormType] = useState('');
+  const [username, setUsername] = useState('');
   const [isCompleted, setIsCompleted] = useState(false);
-  const [formData, setFormData] = useState({form: '', nama: '', tugas: '', divisi: '', lokasi: '', endTime: null, startTime: null});
+  const [formData, setFormData] = useState({ form: '', userId: '', username: '', id_absen: '' });
 
-  const handleLogout = () => {onLogout()};
-
-  const handleChoice = (choice) => {
-    const updatedFormData = { ...formData, form: choice };
-    setFormType(choice);
-    setFormData(updatedFormData);
-    localStorage.setItem('formData', JSON.stringify(updatedFormData));
-    setStep(1);
+  const handleLogout = () => {
+    const isConfirmed = window.confirm("Apakah Anda yakin ingin logout?");
+    if (isConfirmed) {
+      localStorage.removeItem('userId');
+      localStorage.removeItem('username');
+      onLogout();
+    }
   };
 
   const handleReset = () => {
     setStep(0);
     setFormType('');
     setIsCompleted(false);
-    const resetData = {form: '', nama: '', tugas: '', divisi: '', lokasi: '', endTime: null, startTime: null};
+    const resetData = { userId: '', username: '', form: '', id_absen: '' };
     setFormData(resetData);
     localStorage.removeItem('formData');
   };
@@ -47,18 +40,57 @@ const FormNicoUrbanIndonesia = ({ onLogout }) => {
   const handleNextStepData = (newData) => {
     const updatedData = { ...formData, ...newData };
     setFormData(updatedData);
-    if ((formType === 'Absensi' && step === 4) || (formType === 'Lembur' && step === 8) || (formType === 'Penggajian' && step === 4)
-    ) {
+    if ((formType === 'Absensi' || formType === 'Overtime') && step === 2) {
       setIsCompleted(true);
-    } else if (step < (formType === 'Absensi' ? 4 : formType === 'Lembur' ? 8 : 4)) {
+    } else if (step < 2) {
       setStep(step + 1);
     }
   };
 
-  useEffect(() => {
-    const storedData = localStorage.getItem('formData');
-    if (storedData) {setFormData(JSON.parse(storedData))}
-  }, []);
+  const handleChoice = async (choice) => {
+    const updatedFormData = { ...formData, form: choice, username };
+    setFormType(choice);
+    setFormData(updatedFormData);
+    localStorage.setItem('formData', JSON.stringify(updatedFormData));
+  
+    if (choice === 'Absensi') {
+      try {
+        const userId = localStorage.getItem('userId');
+        const response = await fetch(`${apiUrl}/absen/cek/${userId}`);
+        if (!response.ok) { throw new Error('Network response was not ok'); }
+        const result = await response.json();
+        if (Array.isArray(result) && result.length > 0) {
+          const { id_absen } = result[0];
+          const newFormData = { ...updatedFormData, id_absen };
+          setFormData(newFormData);
+          localStorage.setItem('formData', JSON.stringify(newFormData));
+          setStep(1);
+        } else {
+          setStep(0);
+        }
+      } catch (error) {
+        console.error('Error fetching absensi data:', error);
+      }
+    } else if (choice === 'Overtime') {
+      try {
+        const userId = localStorage.getItem('userId');
+        const response = await fetch(`${apiUrl}/lembur/cek/${userId}`);
+        if (!response.ok) { throw new Error('Network response was not ok'); }
+        const result = await response.json();
+        if (Array.isArray(result) && result.length > 0) {
+          const { id_lembur } = result[0];
+          const newFormData = { ...updatedFormData, id_lembur };
+          setFormData(newFormData);
+          localStorage.setItem('formData', JSON.stringify(newFormData));
+          setStep(1);
+        } else {
+          setStep(0);
+        }
+      } catch (error) {
+        console.error('Error fetching overtime data:', error);
+      }
+    }
+  };  
 
   const renderStep = () => {
     if (isCompleted) {
@@ -72,48 +104,20 @@ const FormNicoUrbanIndonesia = ({ onLogout }) => {
     if (formType === 'Absensi') {
       switch (step) {
         case 1:
-          return <AbsensiStepOne setStep={setStep} formData={formData} handleNextStepData={handleNextStepData} />;
-        case 2:
           return <AbsensiStepTwo formData={formData} handleNextStepData={handleNextStepData} />;
-        case 3:
+        case 2:
           return <AbsensiStepThree formData={formData} handleNextStepData={handleNextStepData} />;
-        case 4:
-          return <AbsensiStepFour formData={formData} handleNextStepData={handleNextStepData} />;
         default:
-          return <h1 style={styles.completeMessage}>DATA BERHASIL DI SIMPAN</h1>;
+          return <AbsensiStepOne setStep={setStep} formData={formData} handleNextStepData={handleNextStepData} />;
       }
-    } else if (formType === 'Lembur') {
+    } else if (formType === 'Overtime') {
       switch (step) {
         case 1:
-          return <OvertimeStepOne setStep={setStep} formData={formData} handleNextStepData={handleNextStepData} />;
-        case 2:
           return <OvertimeStepTwo formData={formData} handleNextStepData={handleNextStepData} />;
-        case 3:
-          return <OvertimeStepThree formData={formData} handleNextStepData={handleNextStepData} />;
-        case 4:
-          return <OvertimeStepFour formData={formData} handleNextStepData={handleNextStepData} />;
-        default:
-          return <h1 style={styles.completeMessage}>DATA BERHASIL DI SIMPAN</h1>;
-      }
-    } else if (formType === 'Penggajian') {
-      switch (step) {
-        case 1:
-          return <SalaryStepOne formData={formData} handleNextStepData={handleNextStepData} />;
         case 2:
-          return <SalaryStepTwo formData={formData} handleNextStepData={handleNextStepData} />;
-        case 3:
-          return <SalaryStepThree formData={formData} handleNextStepData={handleNextStepData} />;
-        case 4:
-          return <SalaryStepFour formData={formData} handleNextStepData={handleNextStepData} />;
+          return <OvertimeStepThree formData={formData} handleNextStepData={handleNextStepData} />;
         default:
-          return <h1 style={styles.completeMessage}>DATA BERHASIL DI SIMPAN</h1>;
-      }
-    } else if (formType === 'Update Stock') {
-      switch (step) {
-        case 1:
-          return <UpdateStockStepOne formData={formData} handleNextStepData={handleNextStepData} />;
-        default:
-          return <h1 style={styles.completeMessage}>DATA BERHASIL DI SIMPAN</h1>;
+          return <OvertimeStepOne setStep={setStep} formData={formData} handleNextStepData={handleNextStepData} />;
       }
     } else {
       return (
@@ -125,22 +129,16 @@ const FormNicoUrbanIndonesia = ({ onLogout }) => {
                 <span style={styles.buttonText}>Absensi</span>
               </div>
             </button>
-            <button style={styles.button} onClick={() => handleChoice('Lembur')}>
+            <button style={styles.button} onClick={() => handleChoice('Overtime')}>
               <div style={styles.buttonContent}>
                 <FontAwesomeIcon icon={faClock} style={styles.icon} />
-                <span style={styles.buttonText}>Lembur</span>
+                <span style={styles.buttonText}>Overtime</span>
               </div>
             </button>
-            <button style={styles.button} onClick={() => handleChoice('Penggajian')}>
+            <button style={styles.button} onClick={handleLogout}>
               <div style={styles.buttonContent}>
-                <FontAwesomeIcon icon={faMoneyBillWave} style={styles.icon} />
-                <span style={styles.buttonText}>Penggajian</span>
-              </div>
-            </button>
-            <button style={styles.button} onClick={() => handleChoice('Update Stock')}>
-              <div style={styles.buttonContent}>
-                <FontAwesomeIcon icon={faSyncAlt} style={styles.icon} />
-                <span style={styles.buttonText}>Update</span>
+                <FontAwesomeIcon icon={faSignOutAlt} style={styles.icon} />
+                <span style={styles.buttonText}>Log Out</span>
               </div>
             </button>
           </div>
@@ -149,10 +147,29 @@ const FormNicoUrbanIndonesia = ({ onLogout }) => {
     }
   };
 
+  useEffect(() => {
+    const storedData = localStorage.getItem('formData');
+    if (storedData) {
+      const parsedData = JSON.parse(storedData);
+      setFormData(parsedData);
+    }
+    const storedUsername = localStorage.getItem('username');
+    if (storedUsername) {
+      setUsername(storedUsername);
+      setFormData(prevData => ({ ...prevData, username: storedUsername }));
+    }
+    const storedUserId = localStorage.getItem('userId');
+    if (storedUserId) {
+      setFormData(prevData => ({ ...prevData, userId: storedUserId }));
+    }
+  }, []);
+
   return (
     <div style={styles.container}>
       <div style={styles.topContainer}>
-        <FontAwesomeIcon icon={faSignOutAlt} style={styles.iconLogout} onClick={handleLogout} />
+        <div style={styles.greeting}>
+          <h2 style={styles.greetingText}>Halo, {username || 'User'}</h2>
+        </div>
       </div>
       <div style={styles.formContainer}>{renderStep()}</div>
       <div style={styles.bottomContainer}>
@@ -175,8 +192,8 @@ const FormNicoUrbanIndonesia = ({ onLogout }) => {
 
 const styles = {
   container: {
-    display: 'flex',
     height: '100vh',
+    display: 'flex',
     flexDirection: 'column',
     backgroundColor: '#326058',
   },
@@ -206,6 +223,15 @@ const styles = {
     cursor: 'pointer',
     fontSize: '1.5rem',
     position: 'absolute',
+  },
+  greeting: {
+    color: '#ffffff',
+    fontSize: '1.2rem',
+    marginLeft: '20px',
+  },
+  greetingText: {
+    margin: 0,
+    fontWeight: 'bold',
   },
   logoutText: {
     fontSize: '1rem',
