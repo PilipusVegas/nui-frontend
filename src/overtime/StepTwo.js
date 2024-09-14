@@ -1,62 +1,97 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-const StepSix = ({ formData, handleNextStepData }) => {
-  const apiUrl = process.env.REACT_APP_API_BASE_URL;
-  const [locations, setLocations] = useState([]);
-  const [tugas, setTugas] = useState(formData.tugas || '');
-  const [lokasi, setLokasi] = useState(formData.lokasi || '');
-  const [idLokasi, setIdLokasi] = useState(formData.id_lokasi || '');
-  const [charCount, setCharCount] = useState(formData.tugas?.length || 0);
-
-  const isFormValid = () => lokasi && tugas;
-
-  const handleTugasChange = (e) => {
-    const value = e.target.value;
-    if (value.length <= 250) {setTugas(value); setCharCount(value.length)}
-  };
+const StepTwo = ({ handleNextStepData }) => {
+  const [jamMasuk, setJamMasuk] = useState(null);
+  const [jamPulang, setJamPulang] = useState(null);
+  const [isMasukSelected, setIsMasukSelected] = useState(false);
+  const [isPulangSelected, setIsPulangSelected] = useState(false);
+  const [titikKoordinatMasuk, setTitikKoordinatMasuk] = useState({ latitude: null, longitude: null });
+  const [titikKoordinatPulang, setTitikKoordinatPulang] = useState({ latitude: null, longitude: null });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (isFormValid()) {handleNextStepData({ tugas, lokasi, id_lokasi: idLokasi })}
+    if (isFormValid()) {handleNextStepData({ jamMasuk, jamPulang, titikKoordinatMasuk, titikKoordinatPulang })}
   };
 
-  const handleLokasiChange = (e) => {
-    const selectedLokasi = e.target.value;
-    const selectedId = locations.find(location => location.nama === selectedLokasi)?.id || '';
-    setLokasi(selectedLokasi);
-    setIdLokasi(selectedId);
+  const isFormValid = () => {
+    const valid = (isMasukSelected && jamMasuk && titikKoordinatMasuk) || (isPulangSelected && jamPulang && titikKoordinatPulang);
+    return valid;
   };
 
-  useEffect(() => {
-    const fetchLocations = async () => {
-      try {
-        const response = await fetch(`${apiUrl}/absen/lokasi`);
-        if (!response.ok) {throw new Error('Network response was not ok')}
-        const data = await response.json();
-        setLocations(data);
-      } catch (error) {
-      }
-    };
-    fetchLocations();
-  }, []);
+  const handleMasuk = () => {
+    const now = new Date();
+    setJamMasuk(now);
+    setIsMasukSelected(true);
+    getLocation(setTitikKoordinatMasuk);
+  };
+
+  const handlePulang = () => {
+    const now = new Date();
+    setJamPulang(now);
+    setIsPulangSelected(true);
+    getLocation(setTitikKoordinatPulang);
+  };
+
+  const formatTime = (date) => {
+    if (!date) return '';
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
+  };
+
+  const formatDate = (date) => {
+    if (!date) return '';
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  const getLocation = (setLocation) => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {const coords = { latitude: position.coords.latitude, longitude: position.coords.longitude }; setLocation(coords)},
+      );
+    }
+  };
+
+  const TimeDisplay = ({ date, time, coordinates }) => (
+    <div style={styles.formGroup}>
+      <div style={styles.timeDisplay}>
+        <div style={styles.timeRow}>
+          <div style={styles.label}>Tanggal:</div>
+          <div style={styles.timeValue}>{formatDate(date)}</div>
+        </div>
+      </div>
+      <div style={styles.timeDisplay}>
+        <div style={styles.timeRow}>
+          <div style={styles.label}>Jam:</div>
+          <div style={styles.timeValue}>{formatTime(time)}</div>
+        </div>
+      </div>
+      <div style={styles.timeDisplay}>
+        <div style={styles.timeRow}>
+          <div style={styles.label}>Lokasi:</div>
+          <div style={styles.timeValue}>{`${coordinates.latitude || ''} ${coordinates.longitude || ''}`}</div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div style={styles.container}>
-      <form onSubmit={handleSubmit} style={styles.form} aria-required="true">
-        <div style={styles.formGroup}>
-          <label htmlFor="lokasi" style={styles.label}>Lokasi:</label>
-          <select id="lokasi" name="lokasi" value={lokasi} style={styles.select} onChange={handleLokasiChange}>
-            <option value="">Pilih Lokasi</option>
-            {locations.map(location => (<option key={location.id} value={location.nama}>{location.nama}</option>))}
-          </select>
-        </div>
-        <div style={styles.formGroup}>
-          <div style={styles.taskContainer}>
-            <label htmlFor="tugas" style={styles.label}>Tugas yang diberikan:</label>
-            <div style={styles.charCount}>{charCount} / 250</div>
+      <form onSubmit={handleSubmit} style={styles.form}>
+        {!isMasukSelected && !isPulangSelected && (
+          <div style={styles.formGroup}>
+            <div style={styles.buttonContainer}>
+              <button type="button" onClick={handleMasuk} style={{ ...styles.button, ...styles.buttonStart }}>MULAI</button>
+              <button type="button" onClick={handlePulang} style={{ ...styles.button, ...styles.buttonEnd }}>SELESAI</button>
+            </div>
           </div>
-          <textarea required rows="4" id="tugas" name="tugas" value={tugas} style={styles.textarea} onChange={handleTugasChange}/>
-        </div>
+        )}
+        {isMasukSelected && (<TimeDisplay date={jamMasuk} time={jamMasuk} coordinates={titikKoordinatMasuk} />)}
+        {isPulangSelected && (<TimeDisplay date={jamPulang} time={jamPulang} coordinates={titikKoordinatPulang} />)}
         <div style={styles.formGroup}>
           <button type="submit" disabled={!isFormValid()} style={isFormValid() ? styles.buttonActive : styles.buttonInactive}>➜</button>
         </div>
@@ -81,38 +116,46 @@ const styles = {
   formGroup: {
     marginBottom: '10px',
   },
-  label: {
-    fontSize: '1rem',
-    fontWeight: 'bold',
-    marginBottom: '2px',
+  buttonContainer: {
+    display: 'flex',
+    justifyContent: 'space-around',
   },
-  select: {
-    width: '100%',
+  button: {
+    width: '48%',
+    padding: '15px',
+    cursor: 'pointer',
+    fontSize: '1.5rem',
+    fontWeight: 'bold',
+    borderRadius: '10px',
+    marginBottom: '-10px',
+  },
+  buttonStart: {
+    border: '2px solid',
+    backgroundColor: '#28a745',
+  },
+  buttonEnd: {
+    border: '2px solid',
+    backgroundColor: '#007bff',
+  },
+  timeDisplay: {
     padding: '12px',
     fontSize: '1rem',
-    appearance: 'none',
+    marginBottom: '10px',
     borderRadius: '10px',
-    border: '2px solid #ccc',
+    backgroundColor: '#f9f9f9',
+    border: '2px solid #1C1C1C',
   },
-  taskContainer: {
+  timeRow: {
     display: 'flex',
-    alignItems: 'center',
     justifyContent: 'space-between',
   },
-  textarea: {
-    width: '100%',
-    padding: '10px',
+  label: {
+    display: 'block',
     fontSize: '1rem',
-    resize: 'vertical',
-    borderRadius: '10px',
-    boxSizing: 'border-box',
-    border: '1px solid #1C1C1C',
+    fontWeight: 'bold',
   },
-  charCount: {
-    color: '#808080',
-    fontSize: '1rem',
-    marginTop: '-10px',
-    marginRight: '10px',
+  timeValue: {
+    textAlign: 'right',
   },
   buttonActive: {
     width: '100%',
@@ -140,4 +183,4 @@ const styles = {
   },
 };
 
-export default StepSix;
+export default StepTwo;
