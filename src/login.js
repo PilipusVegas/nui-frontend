@@ -4,26 +4,32 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faUser, faLock } from '@fortawesome/free-solid-svg-icons';
 
 const Login = ({ onLoginSuccess }) => {
-  const validUsername = 'user';
-  const validPassword = 'user';
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const togglePasswordVisibility = () => { setShowPassword(!showPassword) };
+  const togglePasswordVisibility = () => {setShowPassword(!showPassword)};
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!username || !password) {
       setErrorMessage('Username and password cannot be empty');
       return;
     }
-
-    if (username === validUsername && password === validPassword) {
-      onLoginSuccess();
-    } else {
-      setErrorMessage('Invalid username or password');
+    try {
+      const response = await fetch(`${apiUrl}/auth/login`, {method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password })});
+      const data = await response.json();
+      if (data.message === 'Login berhasil') {
+        localStorage.setItem('userId', data.userId);
+        localStorage.setItem('username', username);
+        onLoginSuccess();
+      } else {
+        setErrorMessage('Invalid username or password');
+      }
+    } catch (error) {
+      setErrorMessage('Error logging in. Please try again later.');
     }
   };
 
@@ -63,12 +69,6 @@ const styles = {
   },
   logo: {
     width: '100px',
-    marginBottom: '20px',
-  },
-  title: {
-    color: '#326058',
-    fontSize: '2rem',
-    fontWeight: '700',
     marginBottom: '20px',
   },
   inputContainer: {
