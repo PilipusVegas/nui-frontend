@@ -10,7 +10,7 @@ import OvertimeStepOne from './overtime/StepOne';
 import OvertimeStepTwo from './overtime/StepTwo';
 import OvertimeStepThree from './overtime/StepThree';
 
-const FormNicoUrbanIndonesia = ({ onLogout }) => {
+const FormNicoUrbanIndonesia = ({ onLogout, menu }) => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
   const [step, setStep] = useState(0);
