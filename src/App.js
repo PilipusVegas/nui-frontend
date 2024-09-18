@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import Login from './login';
-import FormNicoUrbanIndonesia from './formNicoUrbanIndonesia';
+import Login from './pages/login';
+import FormNicoUrbanIndonesia from './pages/formNicoUrbanIndonesia';
+import Notification from './pages/notification';
+import Profile from './pages/profile';
 import { useEffect, useState } from 'react';
 
 function App() {
@@ -30,12 +32,20 @@ function App() {
     <Router>
       <Routes>
         <Route
+          path="/login"
+          element={<Login onLoginSuccess={handleLoginSuccess} />}
+        />
+        <Route
           path="/home"
           element={<PrivateRoute element={<FormNicoUrbanIndonesia onLogout={handleLogout} />} />}
         />
         <Route
-          path="/login"
-          element={<Login onLoginSuccess={handleLoginSuccess} />}
+          path="/notification"
+          element={<PrivateRoute element={<Notification />} />}
+        />
+        <Route
+          path="/profile"
+          element={<PrivateRoute element={<Profile />} />}
         />
         <Route path="*" element={isLoggedIn ? <Navigate to="/home" /> : <Navigate to="/login" />} />
       </Routes>

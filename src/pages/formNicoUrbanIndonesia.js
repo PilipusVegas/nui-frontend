@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOutAlt, faHome, faBell, faUser, faCalendarCheck, faClock } from '@fortawesome/free-solid-svg-icons';
+import { useNavigate } from 'react-router-dom';
 
 import AbsensiStepOne from './absensi/StepOne';
 import AbsensiStepTwo from './absensi/StepTwo';
@@ -12,6 +13,8 @@ import OvertimeStepThree from './overtime/StepThree';
 
 const FormNicoUrbanIndonesia = ({ onLogout, menu }) => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
+
+  const navigate = useNavigate();
 
   const [step, setStep] = useState(0);
   const [formType, setFormType] = useState('');
@@ -174,15 +177,15 @@ const FormNicoUrbanIndonesia = ({ onLogout, menu }) => {
       <div style={styles.formContainer}>{renderStep()}</div>
       <div style={styles.bottomContainer}>
         <button style={styles.iconButton}>
-          <FontAwesomeIcon icon={faHome} style={styles.icon} />
+          <FontAwesomeIcon onClick={() => navigate('/home')} icon={faHome} style={styles.icon} />
           <span style={styles.iconText}>Home</span>
         </button>
         <button style={styles.iconButton}>
-          <FontAwesomeIcon icon={faBell} style={styles.icon} />
+          <FontAwesomeIcon onClick={() => navigate('/notification')} icon={faBell} style={styles.icon} />
           <span style={styles.iconText}>Notification</span>
         </button>
         <button style={styles.iconButton}>
-          <FontAwesomeIcon icon={faUser} style={styles.icon} />
+          <FontAwesomeIcon onClick={() => navigate('/profile')} icon={faUser} style={styles.icon} />
           <span style={styles.iconText}>Profile</span>
         </button>
       </div>
