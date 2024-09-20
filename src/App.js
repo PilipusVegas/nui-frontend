@@ -24,29 +24,43 @@ function App() {
   };
 
   // PrivateRoute untuk melindungi route yang butuh login
-  const PrivateRoute = ({ element }) => {
-    return isLoggedIn ? element : <Navigate to="/login" />;
+  const PrivateRoute = ({ children }) => {
+    return isLoggedIn ? children : <Navigate to="/login" />;
   };
 
   return (
     <Router>
       <Routes>
+        {/* Cek jika sudah login, redirect ke home */}
         <Route
           path="/login"
-          element={<Login onLoginSuccess={handleLoginSuccess} />}
+          element={isLoggedIn ? <Navigate to="/home" /> : <Login onLoginSuccess={handleLoginSuccess} />}
         />
         <Route
           path="/home"
-          element={<PrivateRoute element={<FormNicoUrbanIndonesia onLogout={handleLogout} />} />}
+          element={
+            <PrivateRoute>
+              <FormNicoUrbanIndonesia onLogout={handleLogout} />
+            </PrivateRoute>
+          }
         />
         <Route
           path="/notification"
-          element={<PrivateRoute element={<Notification />} />}
+          element={
+            <PrivateRoute>
+              <Notification />
+            </PrivateRoute>
+          }
         />
         <Route
           path="/profile"
-          element={<PrivateRoute element={<Profile />} />}
+          element={
+            <PrivateRoute>
+              <Profile />
+            </PrivateRoute>
+          }
         />
+        {/* Redirect ke home atau login sesuai status login */}
         <Route path="*" element={isLoggedIn ? <Navigate to="/home" /> : <Navigate to="/login" />} />
       </Routes>
     </Router>
