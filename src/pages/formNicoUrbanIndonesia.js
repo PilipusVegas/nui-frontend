@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignOutAlt, faHome, faBell, faUser, faCalendarCheck, faClock } from "@fortawesome/free-solid-svg-icons";
+import { height } from "@fortawesome/free-solid-svg-icons/fa0";
 
 const Home = ({ onLogout }) => {
   const navigate = useNavigate();
@@ -11,35 +12,40 @@ const Home = ({ onLogout }) => {
     const isConfirmed = window.confirm("Apakah Anda yakin ingin logout?");
     if (isConfirmed) {
       localStorage.removeItem("userId");
-      localStorage.removeItem("username");
+      localStorage.removeItem("userName");
       onLogout();
     }
   };
 
   const renderStep = () => {
     return (
-      <div style={styles.buttonGrid}>
-        <ActionButton icon={faCalendarCheck} label="Absensi" onClick={() => navigate("/absensi")} />
-        <ActionButton icon={faClock} label="Overtime" onClick={() => navigate("/overtime")} />
-        <ActionButton icon={faSignOutAlt} label="Log Out" onClick={handleLogout} />
+      <div className="grid grid-cols-3 gap-4">
+        <ActionButton icon={faCalendarCheck} label="Absensi" onClick={() => navigate("/absensi")} color="text-blue-500" />
+        <ActionButton icon={faClock} label="Overtime" onClick={() => navigate("/overtime")} color="text-green-500" />
+        <ActionButton icon={faSignOutAlt} label="Log Out" onClick={handleLogout} color="text-yellow-500" />
       </div>
     );
   };
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem("username");
-    if (storedUsername) {setUsername(storedUsername)}
+    const storedUsername = localStorage.getItem("userName");
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
   }, []);
 
   return (
-    <div style={styles.container}>
-      <div style={styles.topContainer}>
-        <div style={styles.greeting}>
-          <h2 style={styles.greetingText}>Halo, {username || "User"}</h2>
+    <div className="flex flex-col h-screen font-sans">
+      <div style={{ height: 200, borderBottomLeftRadius: 20, borderBottomRightRadius: 20 }} className="flex-0 p-5 bg-green-900 border-b-2 border-gray-300 shadow-md">
+        <div >
+          <h2 className="text-2xl font-bold text-white">Halo, {username || "User"}</h2>
         </div>
       </div>
-      <div style={styles.formContainer}>{renderStep()}</div>
-      <div style={styles.bottomContainer}>
+      <div></div>
+      <div className="flex-1 p-5 bg-white shadow-md mb-4">
+        {renderStep()}
+      </div>
+      <div style={{borderTopLeftRadius: 20, borderTopRightRadius: 20 }} className="flex justify-around p-4 bg-green-900 shadow-md">
         <IconButton icon={faHome} label="Home" onClick={() => navigate("/home")} />
         <IconButton icon={faBell} label="Notification" onClick={() => navigate("/notification")} />
         <IconButton icon={faUser} label="Profile" onClick={() => navigate("/profile")} />
@@ -48,106 +54,30 @@ const Home = ({ onLogout }) => {
   );
 };
 
-const ActionButton = ({ icon, label, onClick }) => (
-  <button onClick={onClick} aria-label={label} style={styles.button}>
-    <div style={styles.buttonContent}>
-      <FontAwesomeIcon icon={icon} style={styles.icon} />
-      <span style={styles.buttonText}>{label}</span>
+const ActionButtonOld = ({ icon, label, onClick }) => (
+  <button onClick={onClick} aria-label={label} className="p-4 bg-green-900 text-white rounded-lg transition duration-300 flex flex-col items-center justify-center hover:bg-green-700">
+    <div className="flex flex-col items-center">
+      <FontAwesomeIcon icon={icon} className="text-xl" />
+      <span className="mt-2 text-sm">{label}</span>
+    </div>
+  </button>
+);
+
+const ActionButton = ({ icon, label, onClick, color }) => (
+  <button onClick={onClick} aria-label={label} className="p-4">
+    <div className="flex flex-col items-center">
+      {/* sesuaikan warna tombol berdasarkan color */}
+      <FontAwesomeIcon icon={icon} className={`text-2xl ${color}`} />
+      <span className="mt-2 text-sm">{label}</span>
     </div>
   </button>
 );
 
 const IconButton = ({ icon, label, onClick }) => (
-  <button style={styles.iconButton} onClick={onClick} aria-label={label}>
-    <FontAwesomeIcon icon={icon} style={styles.icon} />
-    <span style={styles.iconText}>{label}</span>
+  <button className="flex flex-col items-center bg-transparent cursor-pointer" onClick={onClick} aria-label={label}>
+    <FontAwesomeIcon icon={icon} className="text-2xl text-white" />
+    <span className="text-xs text-white">{label}</span>
   </button>
 );
-
-const styles = {
-  container: {
-    display: "flex",
-    height: "100vh",
-    flexDirection: "column",
-    fontFamily: "'Open Sans', sans-serif",
-  },
-  topContainer: {
-    flex: 1,
-    padding: "20px",
-    backgroundColor: "#26413c",
-    borderBottom: "2px solid #e0e0e0",
-    borderRadius: "0",
-    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-  },
-  greeting: {
-    marginBottom: "10px",
-  },
-  greetingText: {
-    fontSize: "24px",
-    fontWeight: "bold",
-    color: "#fff",
-    textAlign: "center",
-  },
-  formContainer: {
-    flex: 3,
-    padding: "20px",
-    backgroundColor: "#fff",
-    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-    marginBottom: "10px",
-    borderRadius: "0",
-  },
-  buttonGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "10px",
-  },
-  button: {
-    padding: "15px",
-    backgroundColor: "#26413c",
-    color: "#fff",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    transition: "background-color 0.3s",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  bottomContainer: {
-    display: "flex",
-    justifyContent: "space-around",
-    padding: "10px",
-    backgroundColor: "#26413c",
-    boxShadow: "0 -2px 4px rgba(0, 0, 0, 0.1)",
-    borderRadius: "0",
-  },
-  iconButton: {
-    backgroundColor: "transparent",
-    border: "none",
-    cursor: "pointer",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  icon: {
-    fontSize: "24px",
-    color: "#fff",
-  },
-  buttonContent: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  buttonText: {
-    marginTop: "5px",
-    fontSize: "14px",
-    textAlign: "center",
-  },
-  iconText: {
-    fontSize: "12px",
-    color: "#fff",
-  },
-};
 
 export default Home;
