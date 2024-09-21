@@ -28,6 +28,24 @@ const Home = ({ onLogout }) => {
     );
   };
 
+  const GetNamaDivisi = (id) => {
+    let role = "";
+    if (id === "1") {
+      role = "IT";
+    } else if (id === "2") {
+      role = "GA";
+    } else if (id === "3") {
+      role = "Teksnisi";
+    } else {
+      role = "Divisi Tidak Diketahui";
+    }
+
+    return (
+      <span className="bg-yellow-500 px-2 py-1 rounded-full text-xs text-primary">{role}</span>
+    )
+  };
+
+
   useEffect(() => {
     const storedUsername = localStorage.getItem("nama");
     if (storedUsername) {
@@ -41,7 +59,7 @@ const Home = ({ onLogout }) => {
         <div className="flex flex-row justify-between">
           <div className="flex flex-col gap-5">
             <h2 className="text-2xl font-bold text-white">{username || "User"}</h2>
-            <div><span className="bg-yellow-500 px-2 py-1 rounded-full text-xs text-primary">Teknisi</span></div>
+            <div>{GetNamaDivisi(localStorage.getItem("roleId"))}</div>
             <div className="text-xs text-gray-100">Kantor Palem</div>
           </div>
           <div className="">
