@@ -1,245 +1,223 @@
-import { useState } from 'react';
-import MobileLayout from '../../layouts/mobileLayout';
+import { useEffect, useState } from "react";
+import MobileLayout from "../../layouts/mobileLayout";
 
 const Profile = () => {
-    const [profileData, setProfileData] = useState({
-        name: 'Pilipus',
-        phone: '08900128222',
-        division: 'IT',
-        avatar: 'https://via.placeholder.com/150'
-    });
-    const currentPasswordFromServer = 'Admin#1234'; 
-    const [isEditing, setIsEditing] = useState(false);
-    const [editData, setEditData] = useState(profileData);
+  const [profileData, setProfileData] = useState({
+    name: "",
+    phone: "",
+    division: "",
+    avatar: "",
+  });
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({ ...profileData });
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmNewPassword: "",
+  });
 
-    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-    const [passwordData, setPasswordData] = useState({
-        currentPassword: '',
-        newPassword: '',
-        confirmNewPassword: '',
-    });
+  // Fetch profile data from the API
+  useEffect(() => {
+    const id_user = localStorage.getItem("userId");
+    if (!id_user) {
+      console.error("User ID not found in localStorage.");
+      return;
+    }
 
-    const handleEdit = () => { setIsEditing(true); };
-    const openPasswordModal = () => { setIsPasswordModalOpen(true); };
-    const handleSave = () => { setIsEditing(false); setProfileData(editData); };
-    const handleChange = (e) => { const { name, value } = e.target; setEditData({ ...editData, [name]: value }); };
-    const handlePasswordChange = (e) => { const { name, value } = e.target; setPasswordData({ ...passwordData, [name]: value }); };
-    const closePasswordModal = () => { setIsPasswordModalOpen(false); setPasswordData({ currentPassword: '', newPassword: '', confirmNewPassword: '' }); };
-
-    const handlePasswordSubmit = () => {
-        const { currentPassword, newPassword, confirmNewPassword } = passwordData;
-        if (!currentPassword || !newPassword || !confirmNewPassword) {
-            alert('Please fill all fields');
-            return;
+    fetch(`http://192.168.130.42:3002/profil/user/${id_user}`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
         }
-        if (currentPassword !== currentPasswordFromServer) {
-            alert('Current password is incorrect');
-            return;
+        return response.json();
+      })
+      .then((data) => {
+        const userProfile = data.data;
+        if (userProfile) {
+          setProfileData({
+            name: userProfile.nama,
+            phone: userProfile.telp || "No phone number",
+            division: userProfile.divisi || "No division",
+            avatar: userProfile.foto || "https://via.placeholder.com/150",
+          });
+          setEditData({
+            name: userProfile.nama,
+            phone: userProfile.telp || "",
+            division: userProfile.divisi || "",
+            avatar: userProfile.foto || "https://via.placeholder.com/150",
+          });
+        } else {
+          console.log("No profile data found for the logged-in user.");
         }
-        if (newPassword !== confirmNewPassword) {
-            alert('New passwords do not match');
-            return;
-        }
-        alert('Berhasil');
-        closePasswordModal();
-    };
+      })
+      .catch((error) => console.error("Error fetching profile data:", error));
+  }, []);
 
-    return (
-        <MobileLayout title="PROFIL">
-            <div style={styles.profileContainer}>
-                <img src={profileData.avatar} alt="User Avatar" style={styles.avatar} />
-                <div style={styles.profileInfo}>
-                    <h2 style={styles.name}>{profileData.name}</h2>
-                </div>
-            </div>
-            <div style={styles.details}>
-                <div style={styles.detailRow}>
-                    <p style={styles.detailLabel}><strong>Nama</strong></p>
-                    <p style={styles.detailValue}>: {profileData.name}</p>
-                </div>
-                <div style={styles.detailRow}>
-                    <p style={styles.detailLabel}><strong>Divisi</strong></p>
-                    <p style={styles.detailValue}>: {profileData.division}</p>
-                </div>
-                <div style={styles.detailRow}>
-                    <p style={styles.detailLabel}><strong>Nomor Telepon</strong></p>
-                    {!isEditing ? (
-                        <p style={styles.detailValue}>: {profileData.phone}</p>
-                    ) : (
-                        <input name="phone" type="text" style={styles.input} value={editData.phone} onChange={handleChange} />
-                    )}
-                </div>
-            </div>
-            <div style={styles.buttonContainer}>
-                {!isEditing ? (
-                    <button style={{ ...styles.button, ...styles.editButton }} onClick={handleEdit}>Edit</button>
-                ) : (
-                    <button style={{ ...styles.button, ...styles.saveButton }} onClick={handleSave}>Save</button>
-                )}
-                <button style={{ ...styles.button, ...styles.passwordButton }} onClick={openPasswordModal}>Change Password</button>
-            </div>
-            {isPasswordModalOpen && (
-                <div style={styles.modalOverlay}>
-                    <div style={styles.modal}>
-                        <h2 style={styles.modalTitle}>Change Password</h2>
-                        <div style={styles.modalContent}>
-                            <label style={styles.modalLabel}>Current Password</label>
-                            <input type="password" name="currentPassword" style={styles.modalInput} value={passwordData.currentPassword} onChange={handlePasswordChange} />
-                            <label style={styles.modalLabel}>New Password</label>
-                            <input type="password" name="newPassword" style={styles.modalInput} value={passwordData.newPassword} onChange={handlePasswordChange} />
-                            <label style={styles.modalLabel}>Confirm New Password</label>
-                            <input type="password" name="confirmNewPassword" style={styles.modalInput} value={passwordData.confirmNewPassword} onChange={handlePasswordChange} />
-                        </div>
-                        <div style={styles.modalActions}>
-                            <button style={styles.modalButton} onClick={handlePasswordSubmit}>Submit</button>
-                            <button style={styles.modalCloseButton} onClick={closePasswordModal}>Cancel</button>
-                        </div>
-                    </div>
-                </div>
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    const id_user = localStorage.getItem("userId");
+    if (!id_user) {
+      console.error("User ID not found in localStorage.");
+      return;
+    }
+
+    // Send PUT request to update profile data  
+    fetch(`http://192.168.130.42:3002/profil/user/${id_user}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        telp: editData.te, // Perbaikan di sini
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to update profile");
+        }
+        return response.json();
+      })
+      .then(() => {
+        // Update the local state
+        setProfileData((prevData) => ({
+          ...prevData,
+          phone: editData.telp, // Perbaikan di sini
+        }));
+        setIsEditing(false);
+      })
+      .catch((error) => console.error("Error updating profile data:", error));
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setEditData((prevData) => ({ ...prevData, [name]: value }));
+  };
+
+  const openPasswordModal = () => setIsPasswordModalOpen(true);
+  const closePasswordModal = () => {
+    setIsPasswordModalOpen(false);
+    setPasswordData({ currentPassword: "", newPassword: "", confirmNewPassword: "" });
+  };
+
+  const handlePasswordSubmit = () => {
+    // Implement password change logic here
+  };
+
+  return (
+    <MobileLayout title="Profile">
+      <div className="p-3">
+        <div className="flex items-center bg-green-600 rounded-lg shadow-md p-6 mb-3">
+          <img src={profileData.avatar} alt="User Avatar" className="w-24 h-24 rounded-full mr-4 border-2 border-white" />
+          <div>
+            <h2 className="text-xl font-semibold text-white">{profileData.name || "Loading..."}</h2>
+            <p className="text-white">{profileData.division || "Loading..."}</p>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-md space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-gray-600 font-semibold">Nama</div>
+            <div className="text-gray-900">: {profileData.name || "Loading..."}</div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-gray-600 font-semibold">Divisi</div>
+            <div className="text-gray-900">: {profileData.division || "Loading..."}</div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-gray-600 font-semibold">Nomor Telepon</div>
+            {!isEditing ? (
+              <div className="text-gray-900">: {profileData.phone || "Loading..."}</div>
+            ) : (
+              <input
+                name="phone"
+                type="text"
+                className="col-span-2 w-full p-2 border rounded-md"
+                value={editData.phone}
+                onChange={handleChange}
+              />
             )}
-        </MobileLayout>
-    );
-};
+          </div>
+        </div>
 
-const styles = {
-    profileContainer: {
-        display: 'flex',
-        padding: '20px',
-        alignItems: 'center',
-        borderRadius: '10px',
-        marginBottom: '20px',
-        backgroundColor: '#f9f9f9',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-    },
-    avatar: {
-        width: '100px',
-        height: '100px',
-        borderRadius: '50%',
-        marginRight: '20px',
-    },
-    profileInfo: {
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-    },
-    name: {
-        margin: '0',
-        color: '#26413c',
-        fontSize: '1.5rem',
-    },
-    details: {
-        padding: '20px',
-        borderRadius: '10px',
-        backgroundColor: '#fff',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-    },
-    detailRow: {
-        display: 'grid',
-        alignItems: 'center',
-        marginBottom: '10px',
-        gridTemplateColumns: '150px 1fr',
-    },
-    detailLabel: {
-        color: '#333',
-        fontSize: '1rem',
-    },
-    detailValue: {
-        color: '#666',
-        fontSize: '1rem',
-    },
-    input: {
-        width: '100%',
-        padding: '10px',
-        fontSize: '1rem',
-        borderRadius: '5px',
-        border: '1px solid #ccc',
-    },
-    buttonContainer: {
-        display: 'flex',
-        marginTop: '20px',
-        justifyContent: 'space-between',
-    },
-    button: {
-        color: '#fff',
-        border: 'none',
-        fontSize: '1rem',
-        cursor: 'pointer',
-        fontWeight: 'bold',
-        borderRadius: '8px',
-        padding: '12px 24px',
-        backgroundColor: '#3e8e7e',
-        transition: 'background-color 0.3s ease, transform 0.2s ease',
-    },
-    editButton: {
-        alignSelf: 'flex-start',
-    },
-    passwordButton: {
-        alignSelf: 'flex-end',
-    },
-    saveButton: {
-        backgroundColor: '#26413c',
-    },
-    modalOverlay: {
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        display: 'flex',
-        height: '100vh',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    },
-    modal: {
-        width: '400px',
-        padding: '20px',
-        borderRadius: '8px',
-        backgroundColor: '#fff',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-    },
-    modalTitle: {
-        color: '#333',
-        fontSize: '1.5rem',
-        margin: '0 0 20px',
-        textAlign: 'center',
-    },
-    modalContent: {
-        marginBottom: '20px',
-    },
-    modalLabel: {
-        color: '#333',
-        display: 'block',
-        marginBottom: '5px',
-    },
-    modalInput: {
-        width: '100%',
-        padding: '10px',
-        borderRadius: '5px',
-        marginBottom: '15px',
-        border: '1px solid #ccc',
-    },
-    modalActions: {
-        display: 'flex',
-        justifyContent: 'space-between',
-    },
-    modalButton: {
-        color: '#fff',
-        border: 'none',
-        fontSize: '1rem',
-        cursor: 'pointer',
-        borderRadius: '5px',
-        padding: '10px 20px',
-        backgroundColor: '#3e8e7e',
-    },
-    modalCloseButton: {
-        color: '#fff',
-        border: 'none',
-        fontSize: '1rem',
-        cursor: 'pointer',
-        borderRadius: '5px',
-        padding: '10px 20px',
-        backgroundColor: '#e74c3c',
-    },
+        <div className="flex justify-between mt-6">
+          {!isEditing ? (
+            <button
+              className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+              onClick={handleEdit}
+            >
+              Edit Profil
+            </button>
+          ) : (
+            <button
+              className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              onClick={handleSave}
+            >
+              Simpan
+            </button>
+          )}
+          <button
+            className="w-full sm:w-auto ml-4 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition"
+            onClick={openPasswordModal}
+          >
+            Ganti Password
+          </button>
+        </div>
+
+        {isPasswordModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+              <h2 className="text-2xl font-semibold mb-4">Ganti Password</h2>
+              <div className="mb-4">
+                <label className="block text-gray-600">Current Password</label>
+                <input
+                  type="password"
+                  className="w-full p-2 border rounded-md"
+                  value={passwordData.currentPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-600">New Password</label>
+                <input
+                  type="password"
+                  className="w-full p-2 border rounded-md"
+                  value={passwordData.newPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-600">Confirm New Password</label>
+                <input
+                  type="password"
+                  className="w-full p-2 border rounded-md"
+                  value={passwordData.confirmNewPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, confirmNewPassword: e.target.value })}
+                />
+              </div>
+              <div className="flex justify-between">
+                <button
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                  onClick={handlePasswordSubmit}
+                >
+                  Submit
+                </button>
+                <button
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                  onClick={closePasswordModal}
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </MobileLayout>
+  );
 };
 
 export default Profile;
