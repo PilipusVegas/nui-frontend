@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import MobileLayout from "../../layouts/mobileLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell } from "@fortawesome/free-solid-svg-icons";
@@ -7,9 +8,14 @@ const Notification = () => {
   const [notifications, setNotifications] = useState([]);
   const [timeAgo, setTimeAgo] = useState([]);
   const [clickedNotifications, setClickedNotifications] = useState([]);
+  const navigate = useNavigate();
+  const [hasFetched, setHasFetched] = useState(false); // Flag untuk mencegah fetch ganda
 
   useEffect(() => {
+    if (hasFetched) return; // Hentikan jika sudah fetch
+
     const id_user = localStorage.getItem("userId");
+    console.log("Fetching notifications for user:", id_user);
     fetch(`http://192.168.130.42:3002/notif/user/${id_user}`)
       .then((response) => {
         if (!response.ok) {
@@ -18,6 +24,7 @@ const Notification = () => {
         return response.json();
       })
       .then((data) => {
+        console.log("Fetched notifications:", data.data);
         const filteredNotifications = data.data.filter((notification) => {
           const notificationTime = new Date(notification.created_at);
           const now = new Date();
@@ -27,9 +34,10 @@ const Notification = () => {
 
         setNotifications(filteredNotifications);
         calculateTimeAgo(filteredNotifications);
+        setHasFetched(true); // Tandai sudah fetch
       })
       .catch((error) => console.error("Error fetching notifications:", error));
-  }, []);
+  }, [hasFetched]);
 
   const calculateTimeAgo = (notifications) => {
     const now = new Date();
@@ -59,30 +67,36 @@ const Notification = () => {
   }, [notifications]);
 
   const handleNotificationClick = (id) => {
-    // Mengirim permintaan ke backend untuk mengubah status notifikasi menjadi dibaca (is_read = 1)
+    const notification = notifications.find((notif) => notif.id === id);
+    if (notification?.is_read || clickedNotifications.includes(id)) {
+      // Navigasi ke detail notifikasi jika sudah dibaca atau sudah diklik
+      navigate(`/notification-detail/${id}`);
+      return;
+    }
+
     fetch(`http://192.168.130.42:3002/notif/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ is_read: 1 }), // Mengirimkan status is_read = 1
+      body: JSON.stringify({ is_read: 1 }),
     })
       .then((response) => {
         if (!response.ok) {
           throw new Error("Failed to update notification status");
         }
-        
-        // Perbarui tampilan di frontend
+
         setNotifications((prevNotifications) =>
           prevNotifications.map((notification) =>
             notification.id === id
-              ? { ...notification, is_read: 1 } // Ubah status is_read di frontend
+              ? { ...notification, is_read: 1 }
               : notification
           )
         );
 
-        // Simpan notifikasi yang sudah diklik ke dalam state
         setClickedNotifications((prevClicked) => [...prevClicked, id]);
+
+        navigate(`/notification-detail/${id}`);
       })
       .catch((error) => console.error("Error updating notification status:", error));
   };
@@ -95,7 +109,9 @@ const Notification = () => {
             key={notification.id}
             onClick={() => handleNotificationClick(notification.id)}
             className={`p-4 rounded-lg mb-2 border border-gray-300 shadow-sm cursor-pointer ${
-              notification.is_read || clickedNotifications.includes(notification.id) ? "bg-gray-300" : "bg-white border-green-800"
+              notification.is_read || clickedNotifications.includes(notification.id)
+                ? "bg-gray-300"
+                : "bg-white border-green-800"
             }`}
           >
             <div className="flex items-center space-x-1 mb-0 pb-0">

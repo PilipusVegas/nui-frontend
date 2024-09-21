@@ -2,28 +2,28 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import Login from './pages/login';
 import FormNicoUrbanIndonesia from './pages/formNicoUrbanIndonesia';
 import Notification from './pages/notification';
+import NotificationDetail from './pages/notification/notificationDetail';
 import Profile from './pages/profile';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function App() {
-  // Inisialisasi langsung dari localStorage
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem('isLoggedIn') === 'true';
-  });
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Fungsi logout
+  useEffect(() => {
+    const loggedInStatus = localStorage.getItem('isLoggedIn') === 'true';
+    setIsLoggedIn(loggedInStatus);
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn');
     setIsLoggedIn(false);
   };
 
-  // Fungsi login success
   const handleLoginSuccess = () => {
-    localStorage.setItem('isLoggedIn', 'true'); // Pastikan disimpan sebagai string 'true'
+    localStorage.setItem('isLoggedIn', 'true');
     setIsLoggedIn(true);
   };
 
-  // PrivateRoute untuk melindungi route yang butuh login
   const PrivateRoute = ({ children }) => {
     return isLoggedIn ? children : <Navigate to="/login" />;
   };
@@ -31,7 +31,6 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Cek jika sudah login, redirect ke home */}
         <Route
           path="/login"
           element={isLoggedIn ? <Navigate to="/home" /> : <Login onLoginSuccess={handleLoginSuccess} />}
@@ -53,6 +52,14 @@ function App() {
           }
         />
         <Route
+          path="/notification-detail/:id"
+          element={
+            <PrivateRoute>
+              <NotificationDetail />
+            </PrivateRoute>
+          }
+        />
+        <Route
           path="/profile"
           element={
             <PrivateRoute>
@@ -60,7 +67,6 @@ function App() {
             </PrivateRoute>
           }
         />
-        {/* Redirect ke home atau login sesuai status login */}
         <Route path="*" element={isLoggedIn ? <Navigate to="/home" /> : <Navigate to="/login" />} />
       </Routes>
     </Router>
