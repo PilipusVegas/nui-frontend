@@ -27,7 +27,7 @@ const NotificationDetail = () => {
   }, [id]);
 
   if (!notification) {
-    return <div className="text-center">Loading...</div>; // Tampilkan loading state
+    return <div className="text-center">Loading...</div>; 
   }
 
   return (
