@@ -4,7 +4,7 @@ import FormNicoUrbanIndonesia from './pages/formNicoUrbanIndonesia';
 import Notification from './pages/notification';
 import NotificationDetail from './pages/notification/notificationDetail';
 import Profile from './pages/profile';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -67,6 +67,7 @@ function App() {
             </PrivateRoute>
           }
         />
+        {/* Redirect ke home atau login sesuai status login */}
         <Route path="*" element={isLoggedIn ? <Navigate to="/home" /> : <Navigate to="/login" />} />
       </Routes>
     </Router>

@@ -28,8 +28,11 @@ const Login = ({ onLoginSuccess }) => {
       });
       const data = await response.json();
       if (data.message === 'Login berhasil') {
-        localStorage.setItem('userId', data.userId);
-        localStorage.setItem('username', username);
+        const dataUser = data.data;
+        localStorage.setItem('userId', dataUser.id);
+        localStorage.setItem('nama', dataUser.name);
+        localStorage.setItem('userName', dataUser.username);
+        localStorage.setItem('roleId', dataUser.id_role);
         onLoginSuccess();
         navigate('/home'); // Redirect to /form
       } else {
