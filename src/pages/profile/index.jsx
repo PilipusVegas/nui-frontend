@@ -3,17 +3,46 @@ import MobileLayout from '../../layouts/mobileLayout';
 
 const Profile = () => {
     const [profileData, setProfileData] = useState({
-        name: 'John Doe',
-        phone: '+1234567890',
-        division: 'Engineering',
+        name: 'Pilipus',
+        phone: '08900128222',
+        division: 'IT',
         avatar: 'https://via.placeholder.com/150'
     });
+    const currentPasswordFromServer = 'Admin#1234'; 
     const [isEditing, setIsEditing] = useState(false);
     const [editData, setEditData] = useState(profileData);
 
+    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmNewPassword: '',
+    });
+
     const handleEdit = () => { setIsEditing(true); };
+    const openPasswordModal = () => { setIsPasswordModalOpen(true); };
     const handleSave = () => { setIsEditing(false); setProfileData(editData); };
-    const handleChange = (e) => { const { name, value } = e.target; setEditData({ ...editData, [name]: value }) };
+    const handleChange = (e) => { const { name, value } = e.target; setEditData({ ...editData, [name]: value }); };
+    const handlePasswordChange = (e) => { const { name, value } = e.target; setPasswordData({ ...passwordData, [name]: value }); };
+    const closePasswordModal = () => { setIsPasswordModalOpen(false); setPasswordData({ currentPassword: '', newPassword: '', confirmNewPassword: '' }); };
+
+    const handlePasswordSubmit = () => {
+        const { currentPassword, newPassword, confirmNewPassword } = passwordData;
+        if (!currentPassword || !newPassword || !confirmNewPassword) {
+            alert('Please fill all fields');
+            return;
+        }
+        if (currentPassword !== currentPasswordFromServer) {
+            alert('Current password is incorrect');
+            return;
+        }
+        if (newPassword !== confirmNewPassword) {
+            alert('New passwords do not match');
+            return;
+        }
+        alert('Berhasil');
+        closePasswordModal();
+    };
 
     return (
         <MobileLayout title="PROFIL">
@@ -24,45 +53,50 @@ const Profile = () => {
                 </div>
             </div>
             <div style={styles.details}>
-                {!isEditing ? (
-                    <>
-                        <div style={styles.detailRow}>
-                            <p style={styles.detailLabel}><strong>Nama</strong></p>
-                            <p style={styles.detailValue}>: {profileData.name}</p>
-                        </div>
-                        <div style={styles.detailRow}>
-                            <p style={styles.detailLabel}><strong>Divisi</strong></p>
-                            <p style={styles.detailValue}>: {profileData.division}</p>
-                        </div>
-                        <div style={styles.detailRow}>
-                            <p style={styles.detailLabel}><strong>Nomor Telepon</strong></p>
-                            <p style={styles.detailValue}>: {profileData.phone}</p>
-                        </div>
-                    </>
-                ) : (
-                    <>
-                        <div style={styles.detailRow}>
-                            <p style={styles.detailLabel}><strong>Nama</strong></p>
-                            <input name="name" type="text" style={styles.input} value={editData.name} onChange={handleChange} />
-                        </div>
-                        <div style={styles.detailRow}>
-                            <p style={styles.detailLabel}><strong>Divisi</strong></p>
-                            <input name="division" type="text" style={styles.input} value={editData.division} onChange={handleChange} />
-                        </div>
-                        <div style={styles.detailRow}>
-                            <p style={styles.detailLabel}><strong>Nomor Telepon</strong></p>
-                            <input name="phone" type="text" style={styles.input} value={editData.phone} onChange={handleChange} />
-                        </div>
-                    </>
-                )}
+                <div style={styles.detailRow}>
+                    <p style={styles.detailLabel}><strong>Nama</strong></p>
+                    <p style={styles.detailValue}>: {profileData.name}</p>
+                </div>
+                <div style={styles.detailRow}>
+                    <p style={styles.detailLabel}><strong>Divisi</strong></p>
+                    <p style={styles.detailValue}>: {profileData.division}</p>
+                </div>
+                <div style={styles.detailRow}>
+                    <p style={styles.detailLabel}><strong>Nomor Telepon</strong></p>
+                    {!isEditing ? (
+                        <p style={styles.detailValue}>: {profileData.phone}</p>
+                    ) : (
+                        <input name="phone" type="text" style={styles.input} value={editData.phone} onChange={handleChange} />
+                    )}
+                </div>
             </div>
             <div style={styles.buttonContainer}>
                 {!isEditing ? (
-                    <button style={styles.editButton} onClick={handleEdit}>Edit</button>
+                    <button style={{ ...styles.button, ...styles.editButton }} onClick={handleEdit}>Edit</button>
                 ) : (
-                    <button style={styles.saveButton} onClick={handleSave}>Save</button>
+                    <button style={{ ...styles.button, ...styles.saveButton }} onClick={handleSave}>Save</button>
                 )}
+                <button style={{ ...styles.button, ...styles.passwordButton }} onClick={openPasswordModal}>Change Password</button>
             </div>
+            {isPasswordModalOpen && (
+                <div style={styles.modalOverlay}>
+                    <div style={styles.modal}>
+                        <h2 style={styles.modalTitle}>Change Password</h2>
+                        <div style={styles.modalContent}>
+                            <label style={styles.modalLabel}>Current Password</label>
+                            <input type="password" name="currentPassword" style={styles.modalInput} value={passwordData.currentPassword} onChange={handlePasswordChange} />
+                            <label style={styles.modalLabel}>New Password</label>
+                            <input type="password" name="newPassword" style={styles.modalInput} value={passwordData.newPassword} onChange={handlePasswordChange} />
+                            <label style={styles.modalLabel}>Confirm New Password</label>
+                            <input type="password" name="confirmNewPassword" style={styles.modalInput} value={passwordData.confirmNewPassword} onChange={handlePasswordChange} />
+                        </div>
+                        <div style={styles.modalActions}>
+                            <button style={styles.modalButton} onClick={handlePasswordSubmit}>Submit</button>
+                            <button style={styles.modalCloseButton} onClick={closePasswordModal}>Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </MobileLayout>
     );
 };
@@ -120,10 +154,14 @@ const styles = {
         borderRadius: '5px',
         border: '1px solid #ccc',
     },
-    editButton: {
+    buttonContainer: {
+        display: 'flex',
+        marginTop: '20px',
+        justifyContent: 'space-between',
+    },
+    button: {
         color: '#fff',
         border: 'none',
-        margin: '20px 0',
         fontSize: '1rem',
         cursor: 'pointer',
         fontWeight: 'bold',
@@ -132,31 +170,76 @@ const styles = {
         backgroundColor: '#3e8e7e',
         transition: 'background-color 0.3s ease, transform 0.2s ease',
     },
+    editButton: {
+        alignSelf: 'flex-start',
+    },
+    passwordButton: {
+        alignSelf: 'flex-end',
+    },
     saveButton: {
+        backgroundColor: '#26413c',
+    },
+    modalOverlay: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        display: 'flex',
+        height: '100vh',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modal: {
+        width: '400px',
+        padding: '20px',
+        borderRadius: '8px',
+        backgroundColor: '#fff',
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+    },
+    modalTitle: {
+        color: '#333',
+        fontSize: '1.5rem',
+        margin: '0 0 20px',
+        textAlign: 'center',
+    },
+    modalContent: {
+        marginBottom: '20px',
+    },
+    modalLabel: {
+        color: '#333',
+        display: 'block',
+        marginBottom: '5px',
+    },
+    modalInput: {
+        width: '100%',
+        padding: '10px',
+        borderRadius: '5px',
+        marginBottom: '15px',
+        border: '1px solid #ccc',
+    },
+    modalActions: {
+        display: 'flex',
+        justifyContent: 'space-between',
+    },
+    modalButton: {
         color: '#fff',
         border: 'none',
         fontSize: '1rem',
-        margin: '20px 0',
         cursor: 'pointer',
-        fontWeight: 'bold',
-        borderRadius: '8px',
-        padding: '12px 24px',
-        backgroundColor: '#26413c',
-        transition: 'background-color 0.3s ease, transform 0.2s ease',
+        borderRadius: '5px',
+        padding: '10px 20px',
+        backgroundColor: '#3e8e7e',
     },
-    buttonContainer: {
-        textAlign: 'right',
+    modalCloseButton: {
+        color: '#fff',
+        border: 'none',
+        fontSize: '1rem',
+        cursor: 'pointer',
+        borderRadius: '5px',
+        padding: '10px 20px',
+        backgroundColor: '#e74c3c',
     },
-};
-
-styles.editButton[':hover'] = {
-    transform: 'scale(1.05)',
-    backgroundColor: '#2b6f66',
-};
-
-styles.saveButton[':hover'] = {
-    transform: 'scale(1.05)',
-    backgroundColor: '#1e3a34',
 };
 
 export default Profile;
