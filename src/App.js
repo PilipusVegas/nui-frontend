@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import Login from './pages/login';
 import FormNicoUrbanIndonesia from './pages/formNicoUrbanIndonesia';
 import Notification from './pages/notification';
+import Absensi from './pages/absensi';
 import NotificationDetail from './pages/notification/notificationDetail';
 import Profile from './pages/profile';
 import { useEffect, useState } from 'react';
@@ -64,6 +65,14 @@ function App() {
           element={
             <PrivateRoute>
               <Profile />
+            </PrivateRoute>
+          }
+        />
+        <Route 
+          path="/absensi" 
+          element={
+            <PrivateRoute>
+              <Absensi />
             </PrivateRoute>
           }
         />
