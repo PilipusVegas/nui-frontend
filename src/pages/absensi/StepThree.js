@@ -1,12 +1,13 @@
 import PropTypes from 'prop-types';
 import { useNavigate } from "react-router-dom"; 
+import { useState, useEffect } from 'react';
 import MobileLayout from "../../layouts/mobileLayout";
 
-const StepThree = ({ formData = {}, handleNextStepData = () => {} }) => {
+const StepThree = ({ formData = {} }) => {
   const navigate = useNavigate(); 
-  const { userId = '', username = '', id_lokasi = '', lokasi = '', tugas = '', jamMulai = null, tanggalMulai = '', koordinatMulai = '', fotoMulai = '', id_absen = '', fotoSelesai = '', tanggalSelesai = '', jamSelesai = '', koordinatSelesai = '' } = formData;
 
-  console.log('Form Data:', formData);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const { userId = '', username = '', id_lokasi = '', lokasi = '', tugas = '', jamMulai = null, tanggalMulai = '', koordinatMulai = '', fotoMulai = '', id_absen = '', fotoSelesai = '', tanggalSelesai = '', jamSelesai = '', koordinatSelesai = '' } = formData;
 
   const summaryItems = [
     { label: 'Nama', value: username },
@@ -23,68 +24,77 @@ const StepThree = ({ formData = {}, handleNextStepData = () => {} }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     alert('Data akan dikirim!');
-  
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
-    const titikKoordinatMulai = {
-      latitude: parseFloat(koordinatMulai.split(',')[0]),
-      longitude: parseFloat(koordinatMulai.split(',')[1]),
-    };
-  
-    let data = {
-      id_user: userId,
-      lokasi: id_lokasi.toString(),
-      deskripsi: tugas,
-      lat: titikKoordinatMulai ? titikKoordinatMulai.latitude.toString() : '',
-      lon: titikKoordinatMulai ? titikKoordinatMulai.longitude.toString() : '',
-      foto: fotoMulai,
-      tanggal: tanggalMulai,
-      jam: jamMulai,
-      id_absen: id_absen ? id_absen.toString() : '',
-    };
-  
-    console.log('Data yang dikirim ke API:', data);
-  
-    try {
-      let response;
-      if (id_absen) {
-        // Log data for absen/selesai
-        const selesaiData = {
-          ...data,
-          foto: fotoSelesai,
-          tanggal: tanggalSelesai,
-          jam: jamSelesai,
-          lat: koordinatSelesai ? parseFloat(koordinatSelesai.split(',')[0]).toString() : '',
-          lon: koordinatSelesai ? parseFloat(koordinatSelesai.split(',')[1]).toString() : '',
-          id_absen: id_absen.toString(),
-        };
-        console.log('Data yang dikirim ke absen/selesai:', selesaiData);
-  
-        response = await fetch(`${apiUrl}/absen/selesai`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(selesaiData),
-        });
-      } else {
-        // Log data for absen/mulai
-        console.log('Data yang dikirim ke absen/mulai:', data);
-  
-        response = await fetch(`${apiUrl}/absen/mulai`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        });
+    let formDataToSend = new FormData();
+    if (fotoMulai && fotoMulai.startsWith('blob:')) {
+      const response = await fetch(fotoMulai);
+      const blob = await response.blob();
+      const file = new File([blob], 'fotoMulai.jpg', { type: blob.type });
+      formDataToSend.append('foto', file);
+    } else if (fotoMulai && fotoMulai instanceof File) {formDataToSend.append('foto', fotoMulai)}
+    const titikKoordinatMulai = koordinatMulai ? {latitude: parseFloat(koordinatMulai.split(',')[0]), longitude: parseFloat(koordinatMulai.split(',')[1])} : null;
+    const titikKoordinatSelesai = koordinatSelesai ? {latitude: parseFloat(koordinatSelesai.split(',')[0]), longitude: parseFloat(koordinatSelesai.split(',')[1])} : null;
+    let endpoint;
+    if (id_absen) {
+      endpoint = '/absen/selesai';
+      formDataToSend.append('id_absen', id_absen);
+      if (fotoSelesai && fotoSelesai.startsWith('blob:')) {
+        const response = await fetch(fotoSelesai);
+        const blob = await response.blob();
+        const file = new File([blob], 'fotoSelesai.jpg', { type: blob.type });
+        formDataToSend.append('foto', file);
+      } else if (fotoSelesai && fotoSelesai instanceof File) {
+        formDataToSend.append('foto', fotoSelesai);
       }
-  
-      if (!response.ok) { throw new Error('Gagal mengirim data'); }
+      if (userId) formDataToSend.append('id_user', userId.toString());
+      if (titikKoordinatSelesai) {
+        formDataToSend.append('lat', titikKoordinatSelesai.latitude.toString());
+        formDataToSend.append('lon', titikKoordinatSelesai.longitude.toString());
+      }
+      console.log('Mengirim data ke API:', endpoint);
+      console.log('Data yang dikirim untuk absen/selesai:', Array.from(formDataToSend.entries()));
+    } else {
+      endpoint = '/absen/mulai';
+      if (userId) formDataToSend.append('id_user', userId.toString());
+      if (tugas) formDataToSend.append('deskripsi', tugas);
+      if (id_lokasi) formDataToSend.append('lokasi', id_lokasi);
+      if (titikKoordinatMulai) {
+        formDataToSend.append('lat', titikKoordinatMulai.latitude.toString());
+        formDataToSend.append('lon', titikKoordinatMulai.longitude.toString());
+      }
+      if (!formDataToSend.has('foto')) {
+        if (fotoMulai && fotoMulai instanceof File) {
+          formDataToSend.append('foto', fotoMulai);
+        }
+      }
+      console.log('Mengirim data ke API:', endpoint);
+      console.log('Data yang dikirim untuk absen/mulai:', Array.from(formDataToSend.entries()));
+    }
+    try {
+      const response = await fetch(`${apiUrl}${endpoint}`, {
+        method: 'POST',
+        body: formDataToSend,
+      });
+      if (!response.ok) {
+        throw new Error('Gagal mengirim data');
+      }
       const result = await response.json();
       console.log('Response dari API:', result);
-      handleNextStepData(formData);
-      navigate('/'); // Kembali ke halaman Home setelah berhasil
+      if (result.message.includes("berhasil disimpan")) {
+        setIsSuccess(true);
+        alert('Absen berhasil!');
+      }
     } catch (error) {
-      console.error('Error:', error);
       alert('Terjadi kesalahan saat mengirim data.');
+      console.error(error);
     }
-  };  
+  };
+
+  useEffect(() => {
+    if (isSuccess) {
+      navigate('/');
+    }
+  }, [isSuccess, navigate]);
 
   return (
     <MobileLayout title="ABSENSI" className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
@@ -115,7 +125,6 @@ const StepThree = ({ formData = {}, handleNextStepData = () => {} }) => {
 
 StepThree.propTypes = {
   formData: PropTypes.object.isRequired,
-  handleNextStepData: PropTypes.func.isRequired,
 };
 
 const styles = {
