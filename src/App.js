@@ -4,6 +4,7 @@ import FormNicoUrbanIndonesia from './pages/formNicoUrbanIndonesia';
 import Notification from './pages/notification';
 import NotificationDetail from './pages/notification/notificationDetail';
 import Profile from './pages/profile';
+import Menu from './pages/menu';
 import { useEffect, useState } from 'react';
 
 function App() {
@@ -64,6 +65,14 @@ function App() {
           element={
             <PrivateRoute>
               <Profile />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/menu"
+          element={
+            <PrivateRoute>
+              <Menu />
             </PrivateRoute>
           }
         />
