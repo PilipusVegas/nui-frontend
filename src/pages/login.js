@@ -33,6 +33,7 @@ const Login = ({ onLoginSuccess }) => {
         localStorage.setItem('nama', dataUser.name);
         localStorage.setItem('userName', dataUser.username);
         localStorage.setItem('roleId', dataUser.id_role);
+        localStorage.setItem('isLoggedIn', 'true');
         onLoginSuccess();
         navigate('/home'); // Redirect to /form
       } else {

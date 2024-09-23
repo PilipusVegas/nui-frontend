@@ -1,29 +1,30 @@
-import { useEffect, useState } from "react";
 import MobileLayout from "../layouts/mobileLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSignOutAlt, faHome, faBell, faUser, faCalendarCheck, faClock, faGrip, faMessage } from "@fortawesome/free-solid-svg-icons";
+import { faBell, faUser, faCalendarCheck } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
 
 
 const Menu = () => {
+  const navigate = useNavigate();
   return (
     <MobileLayout title="Menu">
       <div className="grid grid-cols-3 gap-4">
         <ActionButton
           icon={faCalendarCheck}
           label="Absensi"
-          onClick={() => window.location.href = "/absensi"}
+          onClick={() => navigate("/absensi")}
           color="text-blue-500"
         />
         <ActionButton
           icon={faBell}
           label="Notifikasi"
-          onClick={() => window.location.href = "/notification"}
+          onClick={() => navigate("/notification")}
           color="text-yellow-500"
         />
         <ActionButton
           icon={faUser}
           label="Profil"
-          onClick={() => window.location.href = "/profile"}
+          onClick={() => navigate("/profile")}
           color="text-blue-500"
         />
       </div>

@@ -1,94 +1,128 @@
 import PropTypes from 'prop-types';
+import { useNavigate } from "react-router-dom"; 
+import MobileLayout from "../../layouts/mobileLayout";
 
-const StepThree = ({ formData, handleNextStepData }) => {
-  const { form, userId, username, id_lokasi, lokasi, tugas, id_absen, jamMasuk, jamPulang, titikKoordinatMasuk, titikKoordinatPulang } = formData;
+const StepThree = ({ formData = {}, handleNextStepData = () => {} }) => {
+  const navigate = useNavigate(); 
+  const { userId = '', username = '', id_lokasi = '', lokasi = '', tugas = '', jamMulai = null, tanggalMulai = '', koordinatMulai = '', fotoMulai = '', id_absen = '', fotoSelesai = '', tanggalSelesai = '', jamSelesai = '', koordinatSelesai = '' } = formData;
 
-  const formatDateTime = (date) => {
-    if (!date) return { tanggal: '', jam: '' };
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    const tanggal = `${day}-${month}-${year}`;
-    const jam = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
-    return { tanggal, jam };
-  };
+  console.log('Form Data:', formData);
 
   const summaryItems = [
-    { label: 'Form', value: form },
     { label: 'Nama', value: username },
     { label: 'Lokasi', value: lokasi },
-    { label: 'Tugas', value: tugas, isSpecial: true },
-    jamMasuk && { label: 'Jam Masuk', value: formatDateTime(jamMasuk).jam },
-    jamMasuk && { label: 'Tanggal Masuk', value: formatDateTime(jamMasuk).tanggal },
-    jamPulang && { label: 'Jam Pulang', value: formatDateTime(jamPulang).jam },
-    jamPulang && { label: 'Tanggal Pulang', value: formatDateTime(jamPulang).tanggal },
-    titikKoordinatMasuk?.latitude != null && titikKoordinatMasuk?.longitude != null && { label: '📍 Masuk', value: `${titikKoordinatMasuk.latitude} ${titikKoordinatMasuk.longitude}` },
-    titikKoordinatPulang?.latitude != null && titikKoordinatPulang?.longitude != null && { label: '📍 Pulang', value: `${Math.abs(titikKoordinatPulang.latitude)} ${Math.abs(titikKoordinatPulang.longitude)}` },
-  ].filter(Boolean);
+    { label: 'Tugas', value: tugas },
+    { label: 'Tanggal Mulai', value: tanggalMulai },
+    { label: 'Jam Mulai', value: jamMulai },
+    { label: 'Koordinat Mulai', value: koordinatMulai },
+    { label: 'Tanggal Selesai', value: tanggalSelesai },
+    { label: 'Jam Selesai', value: jamSelesai },
+    { label: 'Koordinat Selesai', value: koordinatSelesai },
+  ].filter(item => item.value);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    let response;
+    alert('Data akan dikirim!');
+  
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
-    if (jamMasuk && !jamPulang) {
-      const dataMasuk = {id_user: userId, lokasi: id_lokasi.toString(), deskripsi: tugas, lat: titikKoordinatMasuk ? titikKoordinatMasuk.latitude.toString() : '', lon: titikKoordinatMasuk ? titikKoordinatMasuk.longitude.toString() : ''};
-      console.log('Data masuk yang dikirim:', dataMasuk);
-      response = await fetch(`${apiUrl}/absen/mulai`, {method: 'POST', body: JSON.stringify(dataMasuk), headers: { 'Content-Type': 'application/json' }});
-    } else if (jamPulang) {
-      const dataPulang = {id_absen: id_absen.toString(), id_user: userId, lat: titikKoordinatPulang ? titikKoordinatPulang.latitude.toString() : '', lon: titikKoordinatPulang ? titikKoordinatPulang.longitude.toString() : ''};
-      console.log('Data pulang yang dikirim:', dataPulang);
-      response = await fetch(`${apiUrl}/absen/selesai`, {method: 'POST', body: JSON.stringify(dataPulang), headers: { 'Content-Type': 'application/json' }});
-    } else {
-      return;
+    const titikKoordinatMulai = {
+      latitude: parseFloat(koordinatMulai.split(',')[0]),
+      longitude: parseFloat(koordinatMulai.split(',')[1]),
+    };
+  
+    let data = {
+      id_user: userId,
+      lokasi: id_lokasi.toString(),
+      deskripsi: tugas,
+      lat: titikKoordinatMulai ? titikKoordinatMulai.latitude.toString() : '',
+      lon: titikKoordinatMulai ? titikKoordinatMulai.longitude.toString() : '',
+      foto: fotoMulai,
+      tanggal: tanggalMulai,
+      jam: jamMulai,
+      id_absen: id_absen ? id_absen.toString() : '',
+    };
+  
+    console.log('Data yang dikirim ke API:', data);
+  
+    try {
+      let response;
+      if (id_absen) {
+        // Log data for absen/selesai
+        const selesaiData = {
+          ...data,
+          foto: fotoSelesai,
+          tanggal: tanggalSelesai,
+          jam: jamSelesai,
+          lat: koordinatSelesai ? parseFloat(koordinatSelesai.split(',')[0]).toString() : '',
+          lon: koordinatSelesai ? parseFloat(koordinatSelesai.split(',')[1]).toString() : '',
+          id_absen: id_absen.toString(),
+        };
+        console.log('Data yang dikirim ke absen/selesai:', selesaiData);
+  
+        response = await fetch(`${apiUrl}/absen/selesai`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(selesaiData),
+        });
+      } else {
+        // Log data for absen/mulai
+        console.log('Data yang dikirim ke absen/mulai:', data);
+  
+        response = await fetch(`${apiUrl}/absen/mulai`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+      }
+  
+      if (!response.ok) { throw new Error('Gagal mengirim data'); }
+      const result = await response.json();
+      console.log('Response dari API:', result);
+      handleNextStepData(formData);
+      navigate('/'); // Kembali ke halaman Home setelah berhasil
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Terjadi kesalahan saat mengirim data.');
     }
-    if (response.ok) {
-    } else {
-      const errorData = await response.json();
-      console.error('Terjadi kesalahan saat mengirim data:', errorData);
-    }
-    handleNextStepData(formData);
-  };
+  };  
 
   return (
-    <div style={styles.container}>
-      <div style={styles.form}>
-        <form onSubmit={handleSubmit}>
-          <div style={styles.summary}>
-            {summaryItems.map(({ label, value, isSpecial }) => (
-              <div key={label} style={isSpecial ? styles.specialSummaryItem : styles.summaryItem}>
-                <div style={styles.label}>{label}:</div>
-                <div style={styles.value}>{value}</div>
-              </div>
-            ))}
-          </div>
-          <div>
-            <button type="submit" style={styles.button}>OK</button>
-          </div>
+    <MobileLayout title="ABSENSI" className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
+      <div style={styles.container}>
+        <form onSubmit={handleSubmit} style={styles.form}>
+          {fotoMulai && (
+            <div style={styles.photoContainer}>
+              <img src={fotoMulai} alt="Foto Mulai" style={styles.fullImage} />
+            </div>
+          )}
+          {fotoSelesai && (
+            <div style={styles.photoContainer}>
+              <img src={fotoSelesai} alt="Foto Selesai" style={styles.fullImage} />
+            </div>
+          )}
+          {summaryItems.map((item, index) => (
+            <div key={index} style={styles.itemWithBorder}>
+              <strong style={styles.label}>{item.label}:</strong>
+              <span style={styles.value}>{item.value}</span>
+            </div>
+          ))}
+          <button type="submit" style={styles.submitButton}>KIRIM</button>
         </form>
       </div>
-    </div>
+    </MobileLayout>
   );
 };
 
 StepThree.propTypes = {
-  formData: PropTypes.shape({
-    form: PropTypes.string,
-    username: PropTypes.string,
-    lokasi: PropTypes.string,
-    tugas: PropTypes.string,
-    jamMasuk: PropTypes.instanceOf(Date),
-    jamPulang: PropTypes.instanceOf(Date),
-    titikKoordinatMasuk: PropTypes.shape({latitude: PropTypes.number, longitude: PropTypes.number}),
-    titikKoordinatPulang: PropTypes.shape({latitude: PropTypes.number, longitude: PropTypes.number}),
-    id_absen: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  }).isRequired,
+  formData: PropTypes.object.isRequired,
   handleNextStepData: PropTypes.func.isRequired,
 };
 
 const styles = {
   container: {
     display: 'flex',
-    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'column',
   },
   form: {
     width: '100%',
@@ -98,42 +132,47 @@ const styles = {
     borderRadius: '10px',
     backgroundColor: '#f9f9f9',
   },
-  summary: {
+  photoContainer: {
+    width: '100%',
     display: 'flex',
-    flexDirection: 'column',
+    marginBottom: '20px',
+    justifyContent: 'center',
   },
-  summaryItem: {
-    display: 'flex',
-    padding: '10px',
-    borderBottom: '2px solid #ddd',
-    justifyContent: 'space-between',
+  fullImage: {
+    width: '100%',
+    maxHeight: '400px',
+    objectFit: 'cover',
+    borderRadius: '10px',
   },
-  specialSummaryItem: {
-    display: 'flex',
+  itemWithBorder: {
     padding: '10px',
-    flexDirection: 'column',
-    borderBottom: '2px solid #ddd',
+    borderRadius: '10px',
+    marginBottom: '10px',
+    backgroundColor: '#fff',
+    border: '1px solid #ccc',
   },
   label: {
     fontSize: '1rem',
     fontWeight: 'bold',
-    marginBottom: '2px',
+    marginBottom: '5px',
   },
   value: {
+    color: '#333',
+    display: 'block',
     fontSize: '1rem',
-    textAlign: 'justify',
     wordWrap: 'break-word',
+    overflowWrap: 'break-word',
   },
-  button: {
+  submitButton: {
     width: '100%',
     padding: '10px',
     cursor: 'pointer',
-    marginTop: '20px',
-    fontSize: '1.2rem',
+    marginTop: '10px',
+    fontSize: '1.5rem',
     fontWeight: 'bold',
+    border: '2px solid',
     borderRadius: '10px',
     backgroundColor: '#28a745',
-    border: '2px solid #1C1C1C',
   },
 };
 

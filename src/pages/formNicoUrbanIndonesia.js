@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSignOutAlt, faHome, faBell, faUser, faCalendarCheck, faClock, faGrip, faMessage } from "@fortawesome/free-solid-svg-icons";
-import { height } from "@fortawesome/free-solid-svg-icons/fa0";
-import logoNui from "../assets/logo.png";
+import { faSignOutAlt, faHome, faBell, faUser, faCalendarCheck, faGrip, faMessage } from "@fortawesome/free-solid-svg-icons";
+import machine from "../assets/machine.png";
 
 const Home = ({ onLogout }) => {
   const navigate = useNavigate();
@@ -12,8 +11,6 @@ const Home = ({ onLogout }) => {
   const handleLogout = () => {
     const isConfirmed = window.confirm("Apakah Anda yakin ingin logout?");
     if (isConfirmed) {
-      localStorage.removeItem("userId");
-      localStorage.removeItem("userName");
       onLogout();
     }
   };
@@ -44,7 +41,7 @@ const Home = ({ onLogout }) => {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen font-sans">
+    <div className="flex flex-col font-sans">
       <div style={{borderBottomLeftRadius: 20, borderBottomRightRadius: 20 }} className="flex-0 p-5 bg-green-900">
         <div className="flex flex-row justify-between">
           <div className="flex flex-col gap-5">
@@ -70,8 +67,7 @@ const Home = ({ onLogout }) => {
         <MenuBantuan color={"text-primary"} icon={faMessage} title="Tim IT" />
         <MenuBantuan color={"text-primary"} icon={faMessage} title="Leader" />
       </div>
-      <div className="flex-1 bg-white shadow-md mb-4"></div>
-      <div className="flex justify-around p-4 bg-green-900 shadow-md text-white">
+      <div className="fixed bottom-0 left-0 w-full flex justify-around bg-green-900 shadow-md text-white">
         <IconButton icon={faHome} label="Home" onClick={() => navigate("/home")} />
         <IconButton icon={faBell} label="Notifikasi" onClick={() => navigate("/notification")} />
         <IconButton icon={faUser} label="Profil" onClick={() => navigate("/profile")} />
