@@ -1,8 +1,23 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+<<<<<<< HEAD
 import { faSignOutAlt, faHome, faBell, faUser, faCalendarCheck, faGrip, faMessage } from "@fortawesome/free-solid-svg-icons";
 import machine from "../assets/machine.png";
+=======
+import {
+  faSignOutAlt,
+  faHome,
+  faBell,
+  faUser,
+  faCalendarCheck,
+  faClock,
+  faGrip,
+  faMessage,
+} from "@fortawesome/free-solid-svg-icons";
+import { height } from "@fortawesome/free-solid-svg-icons/fa0";
+import logoNui from "../assets/logo.png";
+>>>>>>> e819742b0b99dc64dd0f8d6f664ff283a281b79d
 
 const Home = ({ onLogout }) => {
   const navigate = useNavigate();
@@ -27,11 +42,8 @@ const Home = ({ onLogout }) => {
       role = "Divisi Tidak Diketahui";
     }
 
-    return (
-      <span className="bg-yellow-500 px-2 py-1 rounded-full text-xs text-primary">{role}</span>
-    )
+    return <span className="bg-yellow-500 px-2 py-1 rounded-full text-xs text-primary">{role}</span>;
   };
-
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("nama");
@@ -76,8 +88,12 @@ const Home = ({ onLogout }) => {
   );
 };
 
+<<<<<<< HEAD
 
 const IconButton = ({ icon, label, onClick, color }) => (
+=======
+const ActionButton = ({ icon, label, onClick, color }) => (
+>>>>>>> e819742b0b99dc64dd0f8d6f664ff283a281b79d
   <button onClick={onClick} aria-label={label} className="p-4">
     <div className="flex flex-col items-center">
       <FontAwesomeIcon icon={icon} className={`text-2xl ${color}`} />
@@ -87,14 +103,18 @@ const IconButton = ({ icon, label, onClick, color }) => (
 );
 
 
-const TitleDivider = ( {title, onClick } ) => (
+const TitleDivider = ({ title, onClick }) => (
   <div className="flex justify-between p-4">
     <div className="font-bold">{title}</div>
-    {onClick && <div onClick={onClick} className="cursor-pointer">Lihat semua</div>}
+    {onClick && (
+      <div onClick={onClick} className="cursor-pointer">
+        Lihat semua
+      </div>
+    )}
   </div>
 );
 
-const MenuBantuan = ({icon, title, color, onClick}) => (
+const MenuBantuan = ({ icon, title, color, onClick }) => (
   <div className={"flex flex-row items-center gap-2 p-4 bg-green-100 rounded-xl"} onClick={onClick}>
     <FontAwesomeIcon className={color} icon={icon} />
     <span>{title}</span>

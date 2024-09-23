@@ -2,94 +2,82 @@ import { useEffect, useState } from "react";
 import MobileLayout from "../../layouts/mobileLayout";
 
 const Profile = () => {
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
+
   const [profileData, setProfileData] = useState({
     name: "",
     phone: "",
     division: "",
-    avatar: "",
+    avatar: "https://via.placeholder.com/150",
   });
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({ ...profileData });
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [passwordData, setPasswordData] = useState({
-    currentPassword: "",
+    oldPassword: "",
     newPassword: "",
     confirmNewPassword: "",
   });
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [isLoading, setIsLoading] = useState(true); // Loading state
 
-  // Fetch profile data from the API
   useEffect(() => {
     const id_user = localStorage.getItem("userId");
-    if (!id_user) {
-      console.error("User ID not found in localStorage.");
-      return;
-    }
+    if (!id_user) return console.error("User ID not found in localStorage.");
 
-    fetch(`http://192.168.130.42:3002/profil/user/${id_user}`)
+    fetch(`${apiUrl}/profil/user/${id_user}`)
       .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
+        if (!response.ok) throw new Error("Network response was not ok");
         return response.json();
       })
-      .then((data) => {
-        const userProfile = data.data;
+      .then(({ data: userProfile }) => {
         if (userProfile) {
-          setProfileData({
+          const userProfileData = {
             name: userProfile.nama,
             phone: userProfile.telp || "No phone number",
-            division: userProfile.divisi || "No division",
-            avatar: userProfile.foto || "https://via.placeholder.com/150",
-          });
-          setEditData({
-            name: userProfile.nama,
-            phone: userProfile.telp || "",
-            division: userProfile.divisi || "",
-            avatar: userProfile.foto || "https://via.placeholder.com/150",
-          });
-        } else {
-          console.log("No profile data found for the logged-in user.");
+            division: userProfile.role_name || "No division",
+            avatar: userProfile.foto || profileData.avatar,
+          };
+          setProfileData(userProfileData);
+          setEditData(userProfileData);
         }
       })
-      .catch((error) => console.error("Error fetching profile data:", error));
-  }, []);
+      .catch((error) => console.error("Error fetching profile data:", error))
+      .finally(() => setIsLoading(false)); // End loading state
+  }, [apiUrl]);
 
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
+  const handleEdit = () => setIsEditing(true);
 
   const handleSave = () => {
     const id_user = localStorage.getItem("userId");
-    if (!id_user) {
-      console.error("User ID not found in localStorage.");
-      return;
-    }
+    if (!id_user) return console.error("User ID not found in localStorage.");
 
-    // Send PUT request to update profile data  
-    fetch(`http://192.168.130.42:3002/profil/user/${id_user}`, {
+    const formData = new FormData();
+    formData.append("telp", editData.phone);
+    if (avatarFile) formData.append("avatar", avatarFile);
+
+    fetch(`${apiUrl}/profil/user/${id_user}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        telp: editData.te, // Perbaikan di sini
-      }),
+      body: formData,
     })
       .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to update profile");
-        }
+        if (!response.ok) throw new Error("Failed to update profile");
         return response.json();
       })
       .then(() => {
-        // Update the local state
         setProfileData((prevData) => ({
           ...prevData,
-          phone: editData.telp, // Perbaikan di sini
+          phone: editData.phone,
+          avatar: avatarFile ? URL.createObjectURL(avatarFile) : prevData.avatar,
         }));
         setIsEditing(false);
+        alert("Profil berhasil diperbarui!"); // Alert when successful
+        window.location.reload(); // Reload page after alert
       })
-      .catch((error) => console.error("Error updating profile data:", error));
+      .catch((error) => {
+        console.error("Error updating profile data:", error);
+        alert("Gagal memperbarui data profil. Silakan coba lagi.");
+      });
   };
 
   const handleChange = (e) => {
@@ -97,15 +85,41 @@ const Profile = () => {
     setEditData((prevData) => ({ ...prevData, [name]: value }));
   };
 
+  const handleFileChange = (e) => setAvatarFile(e.target.files[0]);
+
   const openPasswordModal = () => setIsPasswordModalOpen(true);
   const closePasswordModal = () => {
     setIsPasswordModalOpen(false);
-    setPasswordData({ currentPassword: "", newPassword: "", confirmNewPassword: "" });
+    setPasswordData({ oldPassword: "", newPassword: "", confirmNewPassword: "" });
   };
 
   const handlePasswordSubmit = () => {
-    // Implement password change logic here
+    const id_user = localStorage.getItem("userId");
+    if (!id_user) return console.error("User ID not found in localStorage.");
+
+    fetch(`${apiUrl}/profil/password/${id_user}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(passwordData),
+    })
+      .then((response) => {
+        console.log("Response status:", response.status); // Tambahkan log
+        if (!response.ok) throw new Error("Failed to change password");
+        return response.json();
+      })
+      .then(() => {
+        closePasswordModal();
+        alert("Password changed successfully");
+      })
+      .catch((error) => {
+        console.error("Error changing password:", error);
+        alert("Gagal mengganti password. Silakan coba lagi.");
+      });
   };
+
+  if (isLoading) {
+    return <div className="loading">Loading...</div>; // Show loading state
+  }
 
   return (
     <MobileLayout title="Profile">
@@ -128,19 +142,29 @@ const Profile = () => {
             <div className="text-gray-900">: {profileData.division || "Loading..."}</div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="text-gray-600 font-semibold">Nomor Telepon</div>
+            <div className="text-gray-600 font-semibold">Phone</div>
             {!isEditing ? (
               <div className="text-gray-900">: {profileData.phone || "Loading..."}</div>
             ) : (
               <input
                 name="phone"
-                type="text"
-                className="col-span-2 w-full p-2 border rounded-md"
+                type="tel"
+                className="col-span-2 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-150"
                 value={editData.phone}
                 onChange={handleChange}
+                placeholder="Masukkan nomor telepon"
+                pattern="[0-9]*"
+                inputMode="numeric"
               />
             )}
           </div>
+
+          {isEditing && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-gray-600 font-semibold">Foto Profil</div>
+              <input type="file" onChange={handleFileChange} className="col-span-2 w-full p-2 border rounded-md" />
+            </div>
+          )}
         </div>
 
         <div className="flex justify-between mt-6">
@@ -172,12 +196,12 @@ const Profile = () => {
             <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
               <h2 className="text-2xl font-semibold mb-4">Ganti Password</h2>
               <div className="mb-4">
-                <label className="block text-gray-600">Current Password</label>
+                <label className="block text-gray-600">Old Password</label>
                 <input
                   type="password"
                   className="w-full p-2 border rounded-md"
-                  value={passwordData.currentPassword}
-                  onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                  value={passwordData.oldPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, oldPassword: e.target.value })}
                 />
               </div>
               <div className="mb-4">
@@ -189,27 +213,12 @@ const Profile = () => {
                   onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                 />
               </div>
-              <div className="mb-4">
-                <label className="block text-gray-600">Confirm New Password</label>
-                <input
-                  type="password"
-                  className="w-full p-2 border rounded-md"
-                  value={passwordData.confirmNewPassword}
-                  onChange={(e) => setPasswordData({ ...passwordData, confirmNewPassword: e.target.value })}
-                />
-              </div>
-              <div className="flex justify-between">
-                <button
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-                  onClick={handlePasswordSubmit}
-                >
-                  Submit
+              <div className="flex justify-end">
+                <button className="mr-4" onClick={closePasswordModal}>
+                  Cancel
                 </button>
-                <button
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-                  onClick={closePasswordModal}
-                >
-                  Batal
+                <button onClick={handlePasswordSubmit} className="bg-green-600 text-white px-4 py-2 rounded">
+                  Change Password
                 </button>
               </div>
             </div>
