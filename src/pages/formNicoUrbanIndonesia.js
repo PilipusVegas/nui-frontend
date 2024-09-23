@@ -1,7 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSignOutAlt, faHome, faBell, faUser, faCalendarCheck, faClock, faGrip, faMessage } from "@fortawesome/free-solid-svg-icons";
+import {
+  faSignOutAlt,
+  faHome,
+  faBell,
+  faUser,
+  faCalendarCheck,
+  faClock,
+  faGrip,
+  faMessage,
+} from "@fortawesome/free-solid-svg-icons";
 import { height } from "@fortawesome/free-solid-svg-icons/fa0";
 import logoNui from "../assets/logo.png";
 
@@ -35,16 +44,13 @@ const Home = ({ onLogout }) => {
     } else if (id === "2") {
       role = "GA";
     } else if (id === "3") {
-      role = "Teksnisi";
+      role = "Teknisi";
     } else {
       role = "Divisi Tidak Diketahui";
     }
 
-    return (
-      <span className="bg-yellow-500 px-2 py-1 rounded-full text-xs text-primary">{role}</span>
-    )
+    return <span className="bg-yellow-500 px-2 py-1 rounded-full text-xs text-primary">{role}</span>;
   };
-
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("nama");
@@ -55,21 +61,22 @@ const Home = ({ onLogout }) => {
 
   return (
     <div className="flex flex-col h-screen font-sans">
-      <div style={{borderBottomLeftRadius: 20, borderBottomRightRadius: 20 }} className="flex-0 p-5 bg-green-900 border-gray-300 shadow-md">
-        <div className="flex flex-row justify-between">
-          <div className="flex flex-col gap-5">
-            <h2 className="text-2xl font-bold text-white">{username || "User"}</h2>
-            <div>{GetNamaDivisi(localStorage.getItem("roleId"))}</div>
-            <div className="text-xs text-gray-100">Kantor Palem</div>
-          </div>
-          <div className="">
-            <button onClick={handleLogout} className="text-white">
-              <FontAwesomeIcon icon={faSignOutAlt} />
-            </button>
-          </div>
+      <div className="flex-0 pt-12 pb-12 pl-8 pr-6 bg-green-900 border-b-2 border-gray-300 rounded-b-2xl shadow-md relative">
+        {" "}
+        {/* Added pl-8 for left padding */}
+        <div className="flex flex-col gap-0">
+          <p className="text-xs text-white mb-0 font-semibold">Selamat Datang,</p> {/* Removed padding bottom and margin bottom */}
+          <h1 className="text-3xl font-bold text-white">{username || "User"}</h1>
+          <div className="text-xs text-gray-200 mt-4">{GetNamaDivisi(localStorage.getItem("roleId"))} • Taman Palem</div>
+        </div>
+        <div className="absolute top-6 right-6">
+          <button onClick={handleLogout} className="text-white hover:text-gray-300 transition duration-200">
+            <FontAwesomeIcon icon={faSignOutAlt} />
+          </button>
         </div>
       </div>
-      <TitleDivider title="Menu"  />
+
+      <TitleDivider title="Menu" />
       {renderStep()}
       <TitleDivider title="Bantuan" />
       <div className="flex flex-col gap-2 px-5">
@@ -85,7 +92,6 @@ const Home = ({ onLogout }) => {
     </div>
   );
 };
-
 
 const ActionButton = ({ icon, label, onClick, color }) => (
   <button onClick={onClick} aria-label={label} className="p-4">
@@ -104,14 +110,18 @@ const IconButton = ({ icon, label, onClick }) => (
   </button>
 );
 
-const TitleDivider = ( {title, onClick } ) => (
+const TitleDivider = ({ title, onClick }) => (
   <div className="flex justify-between p-4">
     <div className="font-bold">{title}</div>
-    {onClick && <div onClick={onClick} className="cursor-pointer">Lihat semua</div>}
+    {onClick && (
+      <div onClick={onClick} className="cursor-pointer">
+        Lihat semua
+      </div>
+    )}
   </div>
 );
 
-const MenuBantuan = ({icon, title, color, onClick}) => (
+const MenuBantuan = ({ icon, title, color, onClick }) => (
   <div className={"flex flex-row items-center gap-2 p-4 bg-green-100 rounded-xl"} onClick={onClick}>
     <FontAwesomeIcon className={color} icon={icon} />
     <span>{title}</span>

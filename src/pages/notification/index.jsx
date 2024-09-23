@@ -9,14 +9,15 @@ const Notification = () => {
   const [timeAgo, setTimeAgo] = useState([]);
   const [clickedNotifications, setClickedNotifications] = useState([]);
   const navigate = useNavigate();
-  const [hasFetched, setHasFetched] = useState(false); // Flag untuk mencegah fetch ganda
+  const [hasFetched, setHasFetched] = useState(false);
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
+
 
   useEffect(() => {
-    if (hasFetched) return; // Hentikan jika sudah fetch
-
+    if (hasFetched) return; 
     const id_user = localStorage.getItem("userId");
     console.log("Fetching notifications for user:", id_user);
-    fetch(`http://192.168.130.42:3002/notif/user/${id_user}`)
+    fetch(`${apiUrl}/notif/user/${id_user}`)
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -74,7 +75,7 @@ const Notification = () => {
       return;
     }
 
-    fetch(`http://192.168.130.42:3002/notif/${id}`, {
+    fetch(`${apiUrl}/notif/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
