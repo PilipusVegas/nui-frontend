@@ -3,7 +3,6 @@ import MobileLayout from "../../layouts/mobileLayout";
 
 const StepTwoMulai = ({ handleNextStepData }) => {
   const videoRef = useRef(null);
-
   const [jamMulai, setJamMulai] = useState(null);
   const [fotoMulai, setFotoMulai] = useState(null);
   const [fotoDiambil, setFotoDiambil] = useState(false);
@@ -14,10 +13,22 @@ const StepTwoMulai = ({ handleNextStepData }) => {
     return jamMulai && koordinatMulai.latitude && fotoMulai;
   };
 
+  const handleMulai = () => {
+    if (!fotoDiambil) {const now = new Date(); setJamMulai(now); getLocation(); capturePhoto(); setIsMulaiSelected(true); setFotoDiambil(true)}
+  };
+
   const stopVideoStream = () => {
     const tracks = videoRef.current?.srcObject?.getTracks();
     tracks?.forEach(track => track.stop());
     videoRef.current.srcObject = null;
+  };
+
+  const getLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {const { latitude, longitude } = position.coords; setKoordinatMulai({ latitude, longitude })});
+    } else {
+      alert('Geolocation is not supported by this browser.');
+    }
   };
 
   const handleSubmit = (e) => {
@@ -27,18 +38,6 @@ const StepTwoMulai = ({ handleNextStepData }) => {
     const jamMulaiFormatted = formattedJamMulai?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
     const submissionData = { fotoMulai, tanggalMulai, jamMulai: jamMulaiFormatted, koordinatMulai: `${koordinatMulai.latitude}, ${koordinatMulai.longitude}` };
     handleNextStepData(submissionData);
-    console.log("Form:", submissionData);
-  };
-
-  const handleMulai = () => {
-    if (!fotoDiambil) {
-      const now = new Date();
-      setJamMulai(now);
-      getLocation();
-      capturePhoto();
-      setIsMulaiSelected(true);
-      setFotoDiambil(true);
-    }
   };
 
   const handleUlangi = async () => {
@@ -56,41 +55,6 @@ const StepTwoMulai = ({ handleNextStepData }) => {
     }
   };
 
-  const getLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setKoordinatMulai({ latitude, longitude });
-        },
-        (error) => {
-          alert('Unable to retrieve location. Please enable location services.');
-        }
-      );
-    } else {
-      alert('Geolocation is not supported by this browser.');
-    }
-  };
-
-  const capturePhoto = () => {
-    const canvas = document.createElement('canvas');
-    const video = videoRef.current;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    canvas.toBlob(async (blob) => {
-      const fileSize = blob.size / (1024 * 1024);
-      if (fileSize > 5) {
-        const compressedBlob = await resizeImage(blob);
-        setFotoMulai(URL.createObjectURL(compressedBlob));
-      } else {
-        setFotoMulai(URL.createObjectURL(blob));
-      }
-    }, 'image/png');
-    stopVideoStream();
-  };
-
   const resizeImage = (blob) => {
     return new Promise((resolve) => {
       const img = new Image();
@@ -103,15 +67,9 @@ const StepTwoMulai = ({ handleNextStepData }) => {
         let width = img.width;
         let height = img.height;
         if (width > height) {
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width;
-            width = MAX_WIDTH;
-          }
+          if (width > MAX_WIDTH) {height *= MAX_WIDTH / width; width = MAX_WIDTH}
         } else {
-          if (height > MAX_HEIGHT) {
-            width *= MAX_HEIGHT / height;
-            height = MAX_HEIGHT;
-          }
+          if (height > MAX_HEIGHT) {width *= MAX_HEIGHT / height; height = MAX_HEIGHT}
         }
         canvas.width = width;
         canvas.height = height;
@@ -120,6 +78,36 @@ const StepTwoMulai = ({ handleNextStepData }) => {
       };
     });
   };
+
+  const capturePhoto = () => {
+    const video = videoRef.current;
+    const aspectRatio = 3 / 4;
+    const canvas = document.createElement('canvas');
+    const videoWidth = video.videoWidth;
+    const videoHeight = video.videoHeight;
+    let canvasWidth, canvasHeight;
+    if (videoWidth / videoHeight > aspectRatio) {
+      canvasHeight = videoHeight;
+      canvasWidth = videoHeight * aspectRatio;
+    } else {
+      canvasWidth = videoWidth;
+      canvasHeight = videoWidth / aspectRatio;
+    }
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, (videoWidth - canvasWidth) / 2, (videoHeight - canvasHeight) / 2, canvasWidth, canvasHeight, 0, 0, canvasWidth, canvasHeight);
+    canvas.toBlob(async (blob) => {
+      const fileSize = blob.size / (1024 * 1024);
+      if (fileSize > 5) {
+        const compressedBlob = await resizeImage(blob);
+        setFotoMulai(URL.createObjectURL(compressedBlob));
+      } else {
+        setFotoMulai(URL.createObjectURL(blob));
+      }
+    }, 'image/png');
+    stopVideoStream();
+  };  
 
   useEffect(() => {
     const startVideo = async () => {
@@ -191,12 +179,14 @@ const styles = {
   },
   video: {
     width: '100%',
-    borderRadius: '8px',
+    objectFit: 'cover',
+    aspectRatio: '3 / 4',
+    borderRadius: '10px',
   },
   buttonContainer: {
     display: 'flex',
-    justifyContent: 'center',
     marginTop: '10px',
+    justifyContent: 'center',
   },
   buttonActive: {
     width: '100%',
@@ -205,16 +195,16 @@ const styles = {
     marginTop: '10px',
     fontSize: '1.5rem',
     fontWeight: 'bold',
+    border: '2px solid',
     borderRadius: '10px',
     backgroundColor: '#28a745',
-    border: '2px solid #000',
   },
   details: {
     textAlign: 'center',
   },
   photo: {
     width: '100%',
-    borderRadius: '8px',
+    borderRadius: '10px',
     marginBottom: '20px',
   },
   infoContainer: {
@@ -242,10 +232,10 @@ const styles = {
     marginTop: '10px',
     fontSize: '1.5rem',
     fontWeight: 'bold',
+    border: '2px solid',
     borderRadius: '10px',
     cursor: 'not-allowed',
     backgroundColor: '#b0b0b0',
-    border: '2px solid #000000',
   },
   buttonUlangi: {
     color: '#000',
@@ -255,9 +245,9 @@ const styles = {
     marginTop: '10px',
     fontSize: '1.5rem',
     fontWeight: 'bold',
+    border: '2px solid',
     borderRadius: '10px',
     backgroundColor: '#f44336',
-    border: '2px solid #000000',
   },
 };
 
