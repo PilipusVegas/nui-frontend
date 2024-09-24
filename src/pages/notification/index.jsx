@@ -12,11 +12,17 @@ const Notification = () => {
   const [hasFetched, setHasFetched] = useState(false);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
-
   useEffect(() => {
-    if (hasFetched) return; 
     const id_user = localStorage.getItem("userId");
+    if (!id_user) {
+      console.log("No user ID found in localStorage. Skipping fetch.");
+      setNotifications([]); // Set notifications to empty if no user ID
+      return;
+    }
+
+    if (hasFetched) return; 
     console.log("Fetching notifications for user:", id_user);
+    
     fetch(`${apiUrl}/notif/user/${id_user}`)
       .then((response) => {
         if (!response.ok) {
@@ -38,7 +44,7 @@ const Notification = () => {
         setHasFetched(true); // Tandai sudah fetch
       })
       .catch((error) => console.error("Error fetching notifications:", error));
-  }, [hasFetched]);
+  }, [hasFetched, apiUrl]);
 
   const calculateTimeAgo = (notifications) => {
     const now = new Date();
