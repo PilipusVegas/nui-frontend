@@ -9,8 +9,8 @@ const Absensi = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
   const [currentStep, setCurrentStep] = useState('stepOne');
-  const [attendanceData, setAttendanceData] = useState({ userId: "", username: "", id_absen: "" });
   const [isSelesaiFlow, setIsSelesaiFlow] = useState(false);
+  const [attendanceData, setAttendanceData] = useState({ userId: "", username: "", id_absen: "" });
 
   const handleNextStepData = (data) => {
     setAttendanceData(prev => ({ ...prev, ...data }));
@@ -21,15 +21,11 @@ const Absensi = () => {
     if (isSelesaiFlow) {
       const stepsSelesaiFlow = ['stepTwoSelesai', 'stepThree'];
       const currentIndex = stepsSelesaiFlow.indexOf(currentStep);
-      if (currentIndex >= 0 && currentIndex < stepsSelesaiFlow.length - 1) {
-        setCurrentStep(stepsSelesaiFlow[currentIndex + 1]);
-      }
+      if (currentIndex >= 0 && currentIndex < stepsSelesaiFlow.length - 1) {setCurrentStep(stepsSelesaiFlow[currentIndex + 1])}
     } else {
       const stepsNormalFlow = ['stepOne', 'stepTwoMulai', 'stepThree'];
       const currentIndex = stepsNormalFlow.indexOf(currentStep);
-      if (currentIndex >= 0 && currentIndex < stepsNormalFlow.length - 1) {
-        setCurrentStep(stepsNormalFlow[currentIndex + 1]);
-      }
+      if (currentIndex >= 0 && currentIndex < stepsNormalFlow.length - 1) {setCurrentStep(stepsNormalFlow[currentIndex + 1])}
     }
   };
 
@@ -57,7 +53,6 @@ const Absensi = () => {
         try {
           const response = await fetch(`${apiUrl}/absen/cek/${storedUserId}`);
           const data = await response.json();
-          console.log('Fetched data:', data);
           if (response.ok) {
             if (Array.isArray(data) && data.length > 0) {
               const { id_absen } = data[0];
