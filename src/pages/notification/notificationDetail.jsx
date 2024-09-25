@@ -1,69 +1,53 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import MobileLayout from "../../layouts/mobileLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBell } from "@fortawesome/free-solid-svg-icons";
+import { faChevronLeft, faBell } from "@fortawesome/free-solid-svg-icons";
 
-const NotificationDetail = () => {
-  const { id } = useParams();
-  const [notification, setNotification] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const apiUrl = process.env.REACT_APP_API_BASE_URL;
-  useEffect(() => {
-    const fetchNotificationDetail = async () => {
-      try {
-        const id_user = localStorage.getItem("userId");
-        const response = await fetch(`${apiUrl}/notif/user/${id_user}`);
-        const result = await response.json();
-
-        if (result.success && Array.isArray(result.data)) {
-          const notificationDetail = result.data.find((notif) => notif.id === parseInt(id));
-          setNotification(notificationDetail);
-        } else {
-          throw new Error("Notification not found");
-        }
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchNotificationDetail();
-  }, [id, apiUrl]);
-
-  if (loading) return <div className="text-center text-lg font-semibold">Loading...</div>;
-  if (error) return <div className="text-center text-red-500 text-lg font-semibold">Error: {error}</div>;
-  if (!notification) return <div className="text-center text-lg font-semibold">Notification not found</div>;
-
+const NotificationDetail = ({ notification, onBack }) => {
   return (
-    <MobileLayout title="Detail Notifikasi">
-      <div className="bg-white shadow-lg rounded-lg p-6">
-        <div className="flex items-center space-x-2 mb-3">
-          <div className="bg-green-500 text-white rounded-full p-2">
-            <FontAwesomeIcon icon={faBell} className="text-xl" />
-          </div>
-          <div className="flex-1">
-            <h5 className="text-sm font-semibold text-gray-800">Notifikasi</h5>
-            <div className="flex items-center text-gray-500 space-x-1">
-              <p className="text-xs">
-                {new Date(notification.created_at).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })}
-              </p>
+    <div
+      className={`bg-white shadow-lg rounded-lg p-6 max-w-md mx-auto ${
+        !notification.is_read ? "border-l-4 border-green-500" : ""
+      }`}
+    >
+      {/* Header with Back Button */}
+      <div className="flex items-center mb-4">
+        <button
+          onClick={onBack}
+          className="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-500 hover:bg-green-200 focus:outline-none transition duration-150 ease-in-out"
+        >
+          <FontAwesomeIcon icon={faChevronLeft} className="h-5 w-5" />
+        </button>
+        <h6 className="text-lg font-semibold text-gray-800 ml-2 pb-1">Detail Notifikasi</h6>
+      </div>
 
-              <span>•</span>
-              <p className="text-xs">{notification.is_read ? "Sudah dibaca" : "Belum dibaca"}</p>
-            </div>
+      <div className="border-t border-gray-200 my-4"></div>
+
+      {/* Notification Icon and Meta Info */}
+      <div className="flex items-start mb-4">
+        <FontAwesomeIcon icon={faBell} className="text-3xl text-green-800 pt-2 px-2" />
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-gray-800">
+            {notification.type.length > 34 ? `${notification.type.slice(0, 34)}...` : notification.type}
+          </p>
+          <div className="flex items-center text-gray-500 text-xs space-x-1 mt-1">
+            <p>
+              {new Date(notification.created_at).toLocaleString("id-ID", {
+                timeZone: "Asia/Jakarta",
+              })}
+            </p>
+            <span>•</span>
+            <p>{notification.is_read ? "Sudah dibaca" : "Belum dibaca"}</p>
           </div>
         </div>
-
-        <div className="border-t border-gray-200 my-4"></div>
-
-        {/* Judul dan Tipe Notifikasi */}
-        <h6 className="text-lg font-semibold text-gray-800 mb-2">{notification.type}</h6>
-        <p className="text-gray-700 text-base leading-relaxed">{notification.message}</p>
       </div>
-    </MobileLayout>
+
+      {/* Notification Message */}
+      <div className="px-2 pt-3">
+        <p className="font-semibold text-gray-800 mb-3">Isi Pesan :</p>
+        <div className="max-h-40 overflow-y-auto">
+          <p className="text-gray-700 text-base leading-relaxed break-words whitespace-pre-wrap">{notification.message}</p>
+        </div>
+      </div>
+    </div>
   );
 };
 

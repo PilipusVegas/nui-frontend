@@ -53,14 +53,6 @@ function App() {
           }
         />
         <Route
-          path="/notification-detail/:id"
-          element={
-            <PrivateRoute>
-              <NotificationDetail />
-            </PrivateRoute>
-          }
-        />
-        <Route
           path="/profile"
           element={
             <PrivateRoute>
