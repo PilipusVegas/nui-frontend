@@ -93,4 +93,32 @@ const Home = ({ onLogout }) => {
   );
 };
 
+const IconButton = ({ icon, label, onClick, color }) => (
+  <button onClick={onClick} aria-label={label} className="p-4">
+    <div className="flex flex-col items-center">
+      <FontAwesomeIcon icon={icon} className={`text-2xl ${color}`} />
+      <span className="mt-2 text-sm">{label}</span>
+    </div>
+  </button>
+);
+
+
+const TitleDivider = ({ title, onClick }) => (
+  <div className="flex justify-between p-4">
+    <div className="font-bold">{title}</div>
+    {onClick && (
+      <div onClick={onClick} className="cursor-pointer">
+        Lihat semua
+      </div>
+    )}
+  </div>
+);
+
+const MenuBantuan = ({ icon, title, color, onClick }) => (
+  <div className={"flex flex-row items-center gap-2 p-4 bg-green-100 rounded-xl"} onClick={onClick}>
+    <FontAwesomeIcon className={color} icon={icon} />
+    <span>{title}</span>
+  </div>
+);
+
 export default Home;
