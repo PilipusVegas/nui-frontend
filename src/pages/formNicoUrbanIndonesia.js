@@ -2,45 +2,39 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSignOutAlt, faHome, faBell, faUser, faCalendarCheck, faGrip, faMessage } from "@fortawesome/free-solid-svg-icons";
-import logoNui from "../assets/logo.png"; // Ensure this asset path is correct
+import { faSignOutAlt, faHome, faBell, faUser, faCalendarCheck, faGrip } from "@fortawesome/free-solid-svg-icons";
 
 const Home = ({ onLogout }) => {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
-  const [roleName, setRoleName] = useState(""); // Tambahkan state untuk role_name
-  const apiUrl = process.env.REACT_APP_API_BASE_URL;
-
-  useEffect(() => {
-    const storedUsername = localStorage.getItem("nama");
-    if (storedUsername) {
-      setUsername(storedUsername);
-    }
-
-    const id_user = localStorage.getItem("userId");
-    if (!id_user) return console.error("User ID not found in localStorage.");
-
-    fetch(`${apiUrl}/profil/user/${id_user}`)
-      .then((response) => {
-        if (!response.ok) throw new Error("Network response was not ok");
-        return response.json();
-      })
-      .then(({ data: userProfile }) => {
-        if (userProfile) {
-          setRoleName(userProfile.role_name || "Divisi Tidak Diketahui");
-
-          return <span className="bg-yellow-500 px-3 py-0 rounded-full text-xs text-primary">{roleName}</span>;
-        }
-      })
-      .catch((error) => console.error("Error fetching profile data:", error));
-  }, [apiUrl]);
 
   const handleLogout = () => {
     const isConfirmed = window.confirm("Apakah Anda yakin ingin logout?");
-    if (isConfirmed) {
-      onLogout();
-    }
+    if (isConfirmed) {onLogout()}
   };
+
+  const TitleDivider = ({ title, onClick }) => (
+    <div className="flex justify-between p-4">
+      <div className="font-bold">{title}</div>
+      {onClick && (<div onClick={onClick} className="cursor-pointer">Lihat semua</div>)}
+    </div>
+  );
+  
+  const MenuBantuan = ({ icon, title, color, onClick }) => (
+    <div className={"flex flex-row items-center gap-2 p-4 bg-green-100 rounded-xl"} onClick={onClick}>
+      <FontAwesomeIcon className={color} icon={icon} />
+      <span>{title}</span>
+    </div>
+  );
+
+  const IconButton = ({ icon, label, onClick, color }) => (
+    <button onClick={onClick} aria-label={label} className="p-4">
+      <div className="flex flex-col items-center">
+        <FontAwesomeIcon icon={icon} className={`text-2xl ${color}`} />
+        <span className="mt-2 text-sm">{label}</span>
+      </div>
+    </button>
+  );
 
   const GetNamaDivisi = (id) => {
     let role = "";
@@ -57,7 +51,6 @@ const Home = ({ onLogout }) => {
       default:
         role = "Divisi Tidak Diketahui";
     }
-
     return <span className="bg-yellow-500 px-3 py-0 rounded-full text-xs text-primary">{role}</span>;
   };
 
@@ -77,13 +70,7 @@ const Home = ({ onLogout }) => {
         <div className="flex flex-col py-5">
           <h2 className="text-xs font-bold text-white mb-0 pb-0">Selamat Datang,</h2>
           <div className="text-3xl font-semibold text-white mb-3">{username || "User"}</div>
-
-
-          <div className="text-xs text-black font-bold">
-            <span className="bg-yellow-400 px-3 py-0 rounded-full text-primary">{roleName || "Divisi Tidak Diketahui"}</span>
-            
-            <span className=" py-1 rounded-full text-white font-semibold"> •<FontAwesomeIcon className="ml-1" icon={faBuildingUser} /> Kantor Palem</span>
-          </div>
+          <div className="text-xs text-white font-semibold">{GetNamaDivisi(localStorage.getItem("roleId"))} • Kantor Palem</div>
         </div>
       </div>
       <TitleDivider title="Menu" />
