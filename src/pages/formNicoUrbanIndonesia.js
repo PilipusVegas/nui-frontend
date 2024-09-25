@@ -1,23 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-<<<<<<< HEAD
 import { faSignOutAlt, faHome, faBell, faUser, faCalendarCheck, faGrip, faMessage } from "@fortawesome/free-solid-svg-icons";
 import machine from "../assets/machine.png";
-=======
-import {
-  faSignOutAlt,
-  faHome,
-  faBell,
-  faUser,
-  faCalendarCheck,
-  faClock,
-  faGrip,
-  faMessage,
-} from "@fortawesome/free-solid-svg-icons";
-import { height } from "@fortawesome/free-solid-svg-icons/fa0";
-import logoNui from "../assets/logo.png";
->>>>>>> e819742b0b99dc64dd0f8d6f664ff283a281b79d
 
 const Home = ({ onLogout }) => {
   const navigate = useNavigate();
@@ -88,12 +73,7 @@ const Home = ({ onLogout }) => {
   );
 };
 
-<<<<<<< HEAD
-
 const IconButton = ({ icon, label, onClick, color }) => (
-=======
-const ActionButton = ({ icon, label, onClick, color }) => (
->>>>>>> e819742b0b99dc64dd0f8d6f664ff283a281b79d
   <button onClick={onClick} aria-label={label} className="p-4">
     <div className="flex flex-col items-center">
       <FontAwesomeIcon icon={icon} className={`text-2xl ${color}`} />
