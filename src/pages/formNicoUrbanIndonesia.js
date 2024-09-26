@@ -33,7 +33,7 @@ const Home = ({ onLogout }) => {
       default:
         role = "Divisi Tidak Diketahui";
     }
-    return <span className="bg-yellow-500 px-3 py-0 rounded-full text-xs text-primary">{role}</span>;
+    return <span className="bg-yellow-500 px-3 py-0 rounded-full text-xs text-primary font-bold">{role}</span>;
   };
 
   useEffect(() => {
@@ -45,7 +45,7 @@ const Home = ({ onLogout }) => {
 
   const renderViewBasedOnRole = () => {
     if (roleId === "4") {
-      return <HomeDesktop username={username} handleLogout={handleLogout} />;
+      return <HomeDesktop username={username} roleId={roleId} GetNamaDivisi={GetNamaDivisi} handleLogout={handleLogout} />;
     } else {
       return <HomeMobile username={username} roleId={roleId} handleLogout={handleLogout} GetNamaDivisi={GetNamaDivisi} />;
     }

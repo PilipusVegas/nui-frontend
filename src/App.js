@@ -3,6 +3,7 @@ import Login from './pages/login';
 import FormNicoUrbanIndonesia from './pages/formNicoUrbanIndonesia';
 import Notification from './pages/notification';
 import Absensi from './pages/absensi';
+import MenuSidebar from './pages/menuSidebar';
 import NotificationDetail from './pages/notification/notificationDetail';
 import Profile from './pages/profile';
 import Menu from './pages/menu';

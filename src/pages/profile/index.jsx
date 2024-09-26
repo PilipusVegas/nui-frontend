@@ -230,13 +230,13 @@ const Profile = () => {
       <div className="loading animate-pulse text-center py-20 text-xl font-semibold text-gray-500">
         Loading...
       </div>
-    ); // Show loading state
+    );
   }
 
   return (
     <MobileLayout title="Profile">
       <div className="p-3">
-        <div className="flex items-center bg-green-800 rounded-xl shadow-lg p-6 mb-4 relative">
+        <div className="flex items-center bg-gradient-to-br from-green-700 via-green-700 to-green-700 rounded-xl shadow-lg p-6 mb-4 relative">
           <img
             src={profileData.avatar}
             alt="User Avatar"

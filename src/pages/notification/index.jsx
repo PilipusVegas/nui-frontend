@@ -30,12 +30,12 @@ const Notification = () => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
-        return response.json();
+        return response.json(); 
       })
       .then((data) => {
         const filteredNotifications = data.data.filter((notification) => {
           const notificationTime = new Date(notification.created_at);
-          const now = new Date();
+          const now = new Date(); 
           const diffInDays = Math.floor((now - notificationTime) / (1000 * 60 * 60 * 24));
           return diffInDays < 3;
         });
@@ -104,7 +104,7 @@ const Notification = () => {
         setClickedNotifications((prevClicked) => [...prevClicked, id]);
         setShowDetail(true);
         setSelectedNotification(notification);
-        console.log(notification);
+        // console.log(notification);
       })
       .catch((error) => console.error("Error updating notification status:", error));
   };
@@ -134,8 +134,8 @@ const Notification = () => {
               <p className="pb-1 text-gray-500">•</p>
               <p className="pb-1 text-xs text-gray-500">{notification.is_read ? "Sudah dibaca" : "Belum dibaca"}</p>
             </div>
-            <h6 className="text-l font-semibold mb-1 text-balance text-wrap text-justify">{notification.type.length > 15 ? `${notification.type.slice(0, 15)}...` : notification.type}</h6>
-            <p className="text-l">{notification.message.length > 39 ? `${notification.message.slice(0, 39)}...` : notification.message}</p>
+            <h6 className="text-l font-semibold mb-1 text-balance text-wrap text-justify break-words overflow-hidden">{notification.type.length > 35 ? `${notification.type.slice(0, 35)}...` : notification.type}</h6>
+            <p className="text-l text-gray-500">{notification.message.length > 39 ? `${notification.message.slice(0, 39)}...` : notification.message}</p>
           </div>
         ))
       ) : (
