@@ -6,6 +6,7 @@ import Absensi from './pages/absensi';
 import NotificationDetail from './pages/notification/notificationDetail';
 import Profile from './pages/profile';
 import Menu from './pages/menu';
+import Salary from './pages/salary';
 import { useEffect, useState } from 'react';
 
 function App() {
@@ -73,6 +74,19 @@ function App() {
           element={
             <PrivateRoute>
               <Absensi />
+            </PrivateRoute>
+          }
+        />
+        x<Route 
+          path="/salary" 
+          element={
+            <PrivateRoute>
+              <div className="flex">
+                <MenuSidebar handleLogout={handleLogout} />
+                <div className="flex-grow p-6">
+                  <Salary />
+                </div>
+              </div>
             </PrivateRoute>
           }
         />
