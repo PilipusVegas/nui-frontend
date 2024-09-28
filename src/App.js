@@ -1,20 +1,20 @@
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import Login from './pages/login';
-import FormNicoUrbanIndonesia from './pages/formNicoUrbanIndonesia';
-import Notification from './pages/notification';
-import Absensi from './pages/absensi';
-import MenuSidebar from './pages/menuSidebar';
-import NotificationDetail from './pages/notification/notificationDetail';
-import Profile from './pages/profile';
-import Menu from './pages/menu';
-import Salary from './pages/salary';
-import { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import Login from "./pages/login";
+import FormNicoUrbanIndonesia from "./pages/formNicoUrbanIndonesia";
+import Notification from "./pages/notification";
+import Absensi from "./pages/absensi";
+import MenuSidebar from "./pages/menuSidebar";
+import Profile from "./pages/profile";
+import DataKaryawan from "./pages/profile/dataKaryawan"; // Import DataKaryawan component
+import Menu from "./pages/menu";
+import Salary from "./pages/salary";
+import { useEffect, useState } from "react";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const loggedInStatus = localStorage.getItem('isLoggedIn') === 'true';
+    const loggedInStatus = localStorage.getItem("isLoggedIn") === "true";
     setIsLoggedIn(loggedInStatus);
   }, []);
 
@@ -63,6 +63,14 @@ function App() {
           }
         />
         <Route
+          path="/data-karyawan"
+          element={
+            <PrivateRoute>
+              <DataKaryawan />
+            </PrivateRoute>
+          }
+        />
+        <Route
           path="/menu"
           element={
             <PrivateRoute>
@@ -70,16 +78,16 @@ function App() {
             </PrivateRoute>
           }
         />
-        <Route 
-          path="/absensi" 
+        <Route
+          path="/absensi"
           element={
             <PrivateRoute>
               <Absensi />
             </PrivateRoute>
           }
         />
-        x<Route 
-          path="/salary" 
+        <Route
+          path="/salary"
           element={
             <PrivateRoute>
               <div className="flex">
@@ -91,7 +99,7 @@ function App() {
             </PrivateRoute>
           }
         />
-        {/* Redirect ke home atau login sesuai status login */}
+        {/* Redirect to home or login based on login status */}
         <Route path="*" element={isLoggedIn ? <Navigate to="/home" /> : <Navigate to="/login" />} />
       </Routes>
     </Router>

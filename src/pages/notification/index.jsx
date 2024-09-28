@@ -135,7 +135,7 @@ const Notification = () => {
               <p className="pb-1 text-xs text-gray-500">{notification.is_read ? "Sudah dibaca" : "Belum dibaca"}</p>
             </div>
             <h6 className="text-l font-semibold mb-1 text-balance text-wrap text-justify break-words overflow-hidden">{notification.type.length > 35 ? `${notification.type.slice(0, 35)}...` : notification.type}</h6>
-            <p className="text-l text-gray-500">{notification.message.length > 39 ? `${notification.message.slice(0, 39)}...` : notification.message}</p>
+            <p className="text-l text-gray-500">{notification.message.length > 30 ? `${notification.message.slice(0, 30)}...` : notification.message}</p>
           </div>
         ))
       ) : (
