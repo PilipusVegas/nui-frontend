@@ -1,11 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import MobileLayout from "../../layouts/mobileLayout";
 
-const StepSelesai = ({ handleNextStepData }) => {
+const StepTwoSelesai = ({ handleNextStepData }) => {
   const videoRef = useRef(null);
+
   const [jamSelesai, setJamSelesai] = useState(null);
+  const [currentTime, setCurrentTime] = useState(null);
   const [fotoSelesai, setFotoSelesai] = useState(null);
   const [fotoDiambil, setFotoDiambil] = useState(false);
+  const [isCameraReady, setIsCameraReady] = useState(false);
   const [isSelesaiSelected, setIsSelesaiSelected] = useState(false);
   const [koordinatSelesai, setKoordinatSelesai] = useState({ latitude: null, longitude: null });
 
@@ -14,7 +17,11 @@ const StepSelesai = ({ handleNextStepData }) => {
   };
 
   const handleSelesai = () => {
-    if (!fotoDiambil) {const now = new Date(); setJamSelesai(now); getLocation(); capturePhoto(); setIsSelesaiSelected(true); setFotoDiambil(true)}
+    if (!fotoDiambil) { const now = new Date(); setJamSelesai(now); setCurrentTime(now); getLocation(); capturePhoto(); setIsSelesaiSelected(true); setFotoDiambil(true); stopVideoStream()}
+  };
+
+  const handleUlangi = async () => {
+    startVideo(); setJamSelesai(null); setFotoSelesai(null); setCurrentTime(null); setFotoDiambil(false); setIsCameraReady(false); setIsSelesaiSelected(false); setKoordinatSelesai({ latitude: null, longitude: null })
   };
 
   const stopVideoStream = () => {
@@ -23,35 +30,34 @@ const StepSelesai = ({ handleNextStepData }) => {
     videoRef.current.srcObject = null;
   };
 
-  const getLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {const { latitude, longitude } = position.coords; setKoordinatSelesai({ latitude, longitude })});
-    } else {
-      alert('Geolocation is not supported by this browser.');
-    }
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     const formattedJamSelesai = jamSelesai;
     const tanggalSelesai = formattedJamSelesai?.toLocaleDateString('en-GB');
     const jamSelesaiFormatted = formattedJamSelesai?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-    const submissionData = { fotoSelesai, tanggalSelesai, jamSelesai: jamSelesaiFormatted, koordinatSelesai: `${koordinatSelesai.latitude}, ${koordinatSelesai.longitude}` };
+    const submissionData = {fotoSelesai, tanggalSelesai, jamSelesai: jamSelesaiFormatted, koordinatSelesai: `${koordinatSelesai.latitude}, ${koordinatSelesai.longitude}`};
     handleNextStepData(submissionData);
   };
 
-  const handleUlangi = async () => {
-    setJamSelesai(null);
-    setIsSelesaiSelected(false);
-    setFotoDiambil(false);
-    setKoordinatSelesai({ latitude: null, longitude: null });
-    setFotoSelesai(null);
+  const getLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords; 
+        setKoordinatSelesai({ latitude, longitude })
+      });
+    } else {
+      alert('Geolocation is not supported by this browser.');
+    }
+  };
+
+  const startVideo = async () => {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => videoRef.current.play();
-      } catch (error) {}
+        videoRef.current.onloadedmetadata = () => {videoRef.current.play(); setIsCameraReady(true)};
+      } catch (error) {
+      }
     }
   };
 
@@ -106,24 +112,20 @@ const StepSelesai = ({ handleNextStepData }) => {
         setFotoSelesai(URL.createObjectURL(blob));
       }
     }, 'image/png');
-    stopVideoStream();
-  };  
+  };
 
   useEffect(() => {
-    const startVideo = async () => {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-          videoRef.current.srcObject = stream;
-          videoRef.current.onloadedmetadata = () => videoRef.current.play();
-        } catch (error) {
-        }
-      }
-    };
+    if (fotoDiambil) {
+      const interval = setInterval(() => {setCurrentTime(new Date())}, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [fotoDiambil]);
+
+  useEffect(() => {
     startVideo();
     return () => {
       const tracks = videoRef.current?.srcObject?.getTracks();
-      tracks?.forEach(track => track.stop());
+      tracks?.forEach((track) => track.stop());
     };
   }, []);
 
@@ -135,7 +137,7 @@ const StepSelesai = ({ handleNextStepData }) => {
             <>
               <video ref={videoRef} style={styles.video} />
               <div style={styles.buttonContainer}>
-                <button onClick={handleSelesai} style={styles.buttonActive}>SELESAI</button>
+                <button onClick={handleSelesai} disabled={!isCameraReady} style={isCameraReady ? styles.buttonActive : styles.buttonInactive}>SELESAI</button>
               </div>
             </>
           ) : (
@@ -143,24 +145,20 @@ const StepSelesai = ({ handleNextStepData }) => {
               <img src={fotoSelesai} alt="Foto Selesai" style={styles.photo} />
               <div style={styles.infoContainer}>
                 <div style={styles.infoBox}>
-                  <p>Jam:</p>
-                  <p>{jamSelesai?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                  <p style={styles.label}>Jam:</p>
+                  <p>{currentTime?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}</p>
                 </div>
                 <div style={styles.infoBox}>
-                  <p>Tanggal:</p>
+                  <p style={styles.label}>Tanggal:</p>
                   <p>{jamSelesai?.toLocaleDateString('en-GB')}</p>
                 </div>
                 <div style={styles.infoBox}>
-                  <p>Koordinat:</p>
+                  <p style={styles.label}>Koordinat:</p>
                   <p>{koordinatSelesai.latitude}, {koordinatSelesai.longitude}</p>
                 </div>
               </div>
-              <div style={styles.formGroup}>
-                <button onClick={handleUlangi} style={{ ...styles.buttonUlangi, color: '#000' }}>↻</button>
-              </div>
-              <div style={styles.formGroup}>
-                <button type="submit" onClick={handleSubmit} disabled={!isFormValid()} style={isFormValid() ? styles.buttonActive : styles.buttonInactive}>➜</button>
-              </div>
+              <button onClick={handleUlangi} style={{ ...styles.buttonUlangi, color: '#000' }}>↻</button>
+              <button type="submit" onClick={handleSubmit} disabled={!isFormValid()} style={isFormValid() ? styles.buttonActive : styles.buttonInactive}>➜</button>
             </div>
           )}
         </form>
@@ -256,4 +254,4 @@ const styles = {
   },
 };
 
-export default StepSelesai;
+export default StepTwoSelesai;
