@@ -3,32 +3,31 @@ import MobileLayout from "../../layouts/mobileLayout";
 
 const StepTwoMulai = ({ handleNextStepData }) => {
   const videoRef = useRef(null);
+
   const [jamMulai, setJamMulai] = useState(null);
   const [fotoMulai, setFotoMulai] = useState(null);
+  const [currentTime, setCurrentTime] = useState(null);
   const [fotoDiambil, setFotoDiambil] = useState(false);
+  const [isCameraReady, setIsCameraReady] = useState(false);
   const [isMulaiSelected, setIsMulaiSelected] = useState(false);
   const [koordinatMulai, setKoordinatMulai] = useState({ latitude: null, longitude: null });
 
   const isFormValid = () => {
-    return jamMulai && koordinatMulai.latitude && fotoMulai;
+    return jamMulai && koordinatMulai.latitude && fotoMulai
   };
 
   const handleMulai = () => {
-    if (!fotoDiambil) {const now = new Date(); setJamMulai(now); getLocation(); capturePhoto(); setIsMulaiSelected(true); setFotoDiambil(true)}
+    if (!fotoDiambil) {const now = new Date(); setJamMulai(now); setCurrentTime(now); getLocation(); capturePhoto(); setIsMulaiSelected(true); setFotoDiambil(true); stopVideoStream()}
+  };
+
+  const handleUlangi = async () => {
+    startVideo(); setJamMulai(null); setFotoMulai(null); setCurrentTime(null); setFotoDiambil(false); setIsCameraReady(false); setIsMulaiSelected(false); setKoordinatMulai({ latitude: null, longitude: null })
   };
 
   const stopVideoStream = () => {
     const tracks = videoRef.current?.srcObject?.getTracks();
     tracks?.forEach(track => track.stop());
     videoRef.current.srcObject = null;
-  };
-
-  const getLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {const { latitude, longitude } = position.coords; setKoordinatMulai({ latitude, longitude })});
-    } else {
-      alert('Geolocation is not supported by this browser.');
-    }
   };
 
   const handleSubmit = (e) => {
@@ -40,18 +39,25 @@ const StepTwoMulai = ({ handleNextStepData }) => {
     handleNextStepData(submissionData);
   };
 
-  const handleUlangi = async () => {
-    setJamMulai(null);
-    setIsMulaiSelected(false);
-    setFotoDiambil(false);
-    setKoordinatMulai({ latitude: null, longitude: null });
-    setFotoMulai(null);
+  const getLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords; 
+        setKoordinatMulai({ latitude, longitude })
+      });
+    } else {
+      alert('Geolocation is not supported by this browser.');
+    }
+  };
+
+  const startVideo = async () => {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => videoRef.current.play();
-      } catch (error) {}
+        videoRef.current.onloadedmetadata = () => {videoRef.current.play(); setIsCameraReady(true)};
+      } catch (error) {
+      }
     }
   };
 
@@ -67,9 +73,9 @@ const StepTwoMulai = ({ handleNextStepData }) => {
         let width = img.width;
         let height = img.height;
         if (width > height) {
-          if (width > MAX_WIDTH) {height *= MAX_WIDTH / width; width = MAX_WIDTH}
+          if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH }
         } else {
-          if (height > MAX_HEIGHT) {width *= MAX_HEIGHT / height; height = MAX_HEIGHT}
+          if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT }
         }
         canvas.width = width;
         canvas.height = height;
@@ -106,35 +112,32 @@ const StepTwoMulai = ({ handleNextStepData }) => {
         setFotoMulai(URL.createObjectURL(blob));
       }
     }, 'image/png');
-    stopVideoStream();
-  };  
+  };
 
   useEffect(() => {
-    const startVideo = async () => {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-          videoRef.current.srcObject = stream;
-          videoRef.current.onloadedmetadata = () => videoRef.current.play();
-        } catch (error) {}
-      }
-    };
+    if (fotoDiambil) {
+      const interval = setInterval(() => { setCurrentTime(new Date()) }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [fotoDiambil]);
+
+  useEffect(() => {
     startVideo();
     return () => {
       const tracks = videoRef.current?.srcObject?.getTracks();
-      tracks?.forEach(track => track.stop());
+      tracks?.forEach((track) => track.stop());
     };
   }, []);
 
   return (
-    <MobileLayout title="ABSENSI" className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
+    <MobileLayout title="ABSENSI MASUK" className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
       <div style={styles.container}>
         <form style={styles.form}>
           {!fotoDiambil ? (
             <>
               <video ref={videoRef} style={styles.video} />
               <div style={styles.buttonContainer}>
-                <button onClick={handleMulai} style={styles.buttonActive}>MULAI</button>
+                <button onClick={handleMulai} disabled={!isCameraReady} style={isCameraReady ? styles.buttonActive : styles.buttonInactive}>MULAI</button>
               </div>
             </>
           ) : (
@@ -143,7 +146,7 @@ const StepTwoMulai = ({ handleNextStepData }) => {
               <div style={styles.infoContainer}>
                 <div style={styles.infoBox}>
                   <p style={styles.label}>Jam:</p>
-                  <p>{jamMulai?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}</p>
+                  <p>{currentTime?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}</p>
                 </div>
                 <div style={styles.infoBox}>
                   <p style={styles.label}>Tanggal:</p>
