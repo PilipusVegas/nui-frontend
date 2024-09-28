@@ -1,14 +1,7 @@
 import { useEffect, useState } from "react";
 import MobileLayout from "../../layouts/mobileLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faBuilding,
-  faPhone,
-  faCamera,
-  faUser,
-  faPen,
-  faKey,
-} from "@fortawesome/free-solid-svg-icons";
+import { faBuilding, faPhone, faCamera, faUser, faPen, faKey, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2"; // Import SweetAlert2
 
 const Profile = () => {
@@ -29,6 +22,8 @@ const Profile = () => {
   });
   const [avatarFile, setAvatarFile] = useState(null);
   const [isLoading, setIsLoading] = useState(true); // Loading state
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   useEffect(() => {
     const id_user = localStorage.getItem("userId");
@@ -78,13 +73,11 @@ const Profile = () => {
     const formData = new FormData();
     let hasData = false;
 
-    // Tambahkan data telepon jika ada
     if (editData.phone) {
       formData.append("telp", editData.phone);
       hasData = true;
     }
 
-    // Tambahkan file foto jika ada
     if (avatarFile) {
       formData.append("foto", avatarFile); // Avatar file diambil dari input file
       hasData = true;
@@ -116,11 +109,8 @@ const Profile = () => {
       })
       .then((data) => {
         const updatedPhone = editData.phone || profileData.phone;
-        const updatedAvatar = avatarFile
-          ? URL.createObjectURL(avatarFile)
-          : profileData.avatar;
+        const updatedAvatar = avatarFile ? URL.createObjectURL(avatarFile) : profileData.avatar;
 
-        // Update state dengan data profil baru
         setProfileData((prevData) => ({
           ...prevData,
           phone: updatedPhone,
@@ -226,11 +216,7 @@ const Profile = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="loading animate-pulse text-center py-20 text-xl font-semibold text-gray-500">
-        Loading...
-      </div>
-    );
+    return <div className="loading animate-pulse text-center py-20 text-xl font-semibold text-gray-500">Loading...</div>;
   }
 
   return (
@@ -244,9 +230,7 @@ const Profile = () => {
           />
           <div className="flex flex-col justify-center flex-grow ml-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white">
-                {profileData.name || "Loading..."}
-              </h2>
+              <h2 className="text-xl font-bold text-white">{profileData.name || "Loading..."}</h2>
               <FontAwesomeIcon
                 icon={faPen}
                 className="text-white text-sm cursor-pointer hover:text-gray-300 relative top-1"
@@ -254,52 +238,32 @@ const Profile = () => {
                 title="Edit Profile"
               />
             </div>
-            <p className="text-white text-sm opacity-90">
-              {profileData.division || "Loading..."}
-            </p>
+            <p className="text-white text-sm opacity-90">{profileData.division || "Loading..."}</p>
           </div>
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow-md space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center text-gray-500 font-semibold">
-              <FontAwesomeIcon
-                icon={faUser}
-                className="mr-2"
-                style={{ color: "#555" }}
-              />
+              <FontAwesomeIcon icon={faUser} className="mr-2" style={{ color: "#555" }} />
               Nama
             </div>
-            <div className="text-gray-900 font-medium">
-              : {profileData.name || "Loading..."}
-            </div>
+            <div className="text-gray-900 font-medium">: {profileData.name || "Loading..."}</div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center text-gray-500 font-semibold">
-              <FontAwesomeIcon
-                icon={faBuilding}
-                className="mr-2"
-                style={{ color: "#555" }}
-              />
+              <FontAwesomeIcon icon={faBuilding} className="mr-2" style={{ color: "#555" }} />
               Divisi
             </div>
-            <div className="text-gray-900 font-medium">
-              : {profileData.division || "Loading..."}
-            </div>
+            <div className="text-gray-900 font-medium">: {profileData.division || "Loading..."}</div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center text-gray-500 font-semibold">
-              <FontAwesomeIcon
-                icon={faPhone}
-                className="mr-2"
-                style={{ color: "#555" }}
-              />
+              <FontAwesomeIcon icon={faPhone} className="mr-2" style={{ color: "#555" }} />
               Phone
             </div>
             {!isEditing ? (
-              <div className="text-gray-900 font-medium">
-                : {profileData.phone || "Loading..."}
-              </div>
+              <div className="text-gray-900 font-medium">: {profileData.phone || "Loading..."}</div>
             ) : (
               <input
                 name="phone"
@@ -317,11 +281,7 @@ const Profile = () => {
           {isEditing && (
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center text-gray-500 font-semibold">
-                <FontAwesomeIcon
-                  icon={faCamera}
-                  className="mr-2"
-                  style={{ color: "#555" }}
-                />
+                <FontAwesomeIcon icon={faCamera} className="mr-2" style={{ color: "#555" }} />
                 Foto Profil
               </div>
               <input
@@ -332,84 +292,78 @@ const Profile = () => {
             </div>
           )}
         </div>
+
         <div className="flex justify-between mt-6">
           {!isEditing ? (
             <>
-              <button
-                onClick={openPasswordModal}
-                className="bg-yellow-600 text-white py-2 px-4 rounded-lg"
-              >
-                <div
-                  className="change-password"
-                  style={{ display: "flex", alignItems: "center" }}
-                >
-                  <FontAwesomeIcon
-                    icon={faKey}
-                    className="mr-2 text-white text-base"
-                  />
+              <button onClick={openPasswordModal} className="bg-yellow-600 text-white py-2 px-4 rounded-lg">
+                <div className="change-password" style={{ display: "flex", alignItems: "center" }}>
+                  <FontAwesomeIcon icon={faKey} className="mr-2 text-white text-base" />
                   <span>Ganti Password</span>
                 </div>
               </button>
             </>
           ) : (
             <>
-              <button
-                onClick={handleSave}
-                className="bg-green-600 text-white py-2 px-4 rounded-lg"
-              >
+              <button onClick={handleSave} className="bg-green-600 text-white py-2 px-4 rounded-lg">
                 Simpan
               </button>
-              <button
-                onClick={() => setIsEditing(false)}
-                className="bg-red-600 text-white py-2 px-4 rounded-lg"
-              >
+              <button onClick={() => setIsEditing(false)} className="bg-red-600 text-white py-2 px-4 rounded-lg">
                 Batal
               </button>
             </>
           )}
         </div>
       </div>
-
       {/* Password Modal */}
       {isPasswordModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
           <div className="bg-white rounded-lg shadow-lg p-6 w-80">
             <h3 className="text-xl font-bold mb-4">Ganti Password</h3>
-            <input
-              type="password"
-              placeholder="Password Lama"
-              className="border border-gray-300 rounded-lg p-2 mb-4 w-full"
-              value={passwordData.oldPassword}
-              onChange={(e) =>
-                setPasswordData({
-                  ...passwordData,
-                  oldPassword: e.target.value,
-                })
-              }
-            />
-            <input
-              type="password"
-              placeholder="Password Baru"
-              className="border border-gray-300 rounded-lg p-2 mb-4 w-full"
-              value={passwordData.newPassword}
-              onChange={(e) =>
-                setPasswordData({
-                  ...passwordData,
-                  newPassword: e.target.value,
-                })
-              }
-            />
+
+            {/* Old Password Input */}
+            <div className="relative mb-4">
+              <input
+                type={showOldPassword ? "text" : "password"}
+                placeholder="Password Lama"
+                className="border border-gray-300 rounded-lg p-2 w-full"
+                value={passwordData.oldPassword}
+                onChange={(e) =>
+                  setPasswordData({
+                    ...passwordData,
+                    oldPassword: e.target.value,
+                  })
+                }
+              />
+              <span className="absolute right-2 top-2 cursor-pointer" onClick={() => setShowOldPassword(!showOldPassword)}>
+                {showOldPassword ? <FontAwesomeIcon icon={faEyeSlash} /> : <FontAwesomeIcon icon={faEye} />}
+              </span>
+            </div>
+
+            {/* New Password Input */}
+            <div className="relative mb-4">
+              <input
+                type={showNewPassword ? "text" : "password"}
+                placeholder="Password Baru"
+                className="border border-gray-300 rounded-lg p-2 w-full"
+                value={passwordData.newPassword}
+                onChange={(e) =>
+                  setPasswordData({
+                    ...passwordData,
+                    newPassword: e.target.value,
+                  })
+                }
+              />
+              <span className="absolute right-2 top-2 cursor-pointer" onClick={() => setShowNewPassword(!showNewPassword)}>
+                {showNewPassword ? <FontAwesomeIcon icon={faEyeSlash} /> : <FontAwesomeIcon icon={faEye} />}
+              </span>
+            </div>
+
             <div className="flex justify-between">
-              <button
-                onClick={handlePasswordSubmit}
-                className="bg-green-600 text-white py-2 px-4 rounded-lg"
-              >
+              <button onClick={handlePasswordSubmit} className="bg-green-600 text-white py-2 px-4 rounded-lg">
                 Simpan
               </button>
-              <button
-                onClick={closePasswordModal}
-                className="bg-red-600 text-white py-2 px-4 rounded-lg"
-              >
+              <button onClick={closePasswordModal} className="bg-red-600 text-white py-2 px-4 rounded-lg">
                 Batal
               </button>
             </div>

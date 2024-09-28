@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import MenuSidebar from "./menuSidebar";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
   const [localTime, setLocalTime] = useState("");
-  const [employees, setEmployees] = useState([]); // Menyimpan data karyawan
+  const [employees, setEmployees] = useState([]); 
+  const [displayedEmployees, setDisplayedEmployees] = useState(0); 
+  const navigate = useNavigate(); // Initialize navigate
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;  
 
   const updateLocalTime = () => {
     const time = new Date().toLocaleString("id-ID", {
@@ -22,9 +24,9 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch("http://192.168.130.42:3002/profil/");
+      const response = await fetch("`${apiUrl}/profil/`");
       const result = await response.json();
-      setEmployees(result.data); 
+      setEmployees(result.data);
     } catch (error) {
       console.error("Error fetching employees:", error);
     }
@@ -36,6 +38,25 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     fetchEmployees();
     return () => clearInterval(intervalId);
   }, []);
+
+  useEffect(() => {
+    let start = 0;
+    const end = employees.length;
+    if (start === end) return;
+
+    const duration = 1000; 
+    const incrementTime = Math.abs(Math.floor(duration / end));
+
+    const timer = setInterval(() => {
+      start += 1;
+      setDisplayedEmployees(start);
+      if (start === end) clearInterval(timer);
+    }, incrementTime);
+  }, [employees]);
+
+  const handleCardClick = () => {
+    navigate("/data-karyawan"); // Navigate to the DataKaryawan route
+  };
 
   return (
     <div className="desktop-layout flex min-h-screen bg-gray-100">
@@ -52,23 +73,20 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
           </div>
         </div>
 
-        {/* Tiga kotak hijau di bawah */}
         <div className="mt-6 grid grid-cols-3 gap-4">
-          {[
-            { label: "Total Karyawan", value: employees.length },
-          ].map((item, index) => (
-            <div
-              key={index}
-              className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:scale-15 hover:shadow-xl"
-            >
-              <h4 className="text-5xl font-bold text-green-600 mb-3">{item.value}</h4>
-              <p className="text-xl font-semibold text-gray-700">{item.label}</p>
-            </div>
-          ))}
+          <div
+            className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
+            onClick={handleCardClick} 
+          >
+            <h4 className="text-5xl font-bold text-green-600 mb-3 transition duration-500 ease-in-out">
+              {displayedEmployees}
+            </h4>
+            <p className="text-xl font-semibold text-gray-700">Total Karyawan</p>
+          </div>
         </div>
 
         <div className="mt-4">
-          <p className="text-gray-600">Ini adalah konten utama dari dashboard Anda.</p>
+          <p className="text-gray-600"></p>
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@ import { faChevronLeft, faBell } from "@fortawesome/free-solid-svg-icons";
 
 const NotificationDetail = ({ notification, onBack }) => {
   return (
-    <div className={`bg-white shadow-lg rounded-2xl p-6 sm:p-10 mx-4 sm:mx-auto ${
+    <div className={`bg-white shadow-lg rounded-2xl p-6 sm:p-10 sm:mx-auto ${
         !notification.is_read ? "border-l-4 border-green-500" : ""
       }`}
     >
@@ -25,7 +25,7 @@ const NotificationDetail = ({ notification, onBack }) => {
         <FontAwesomeIcon icon={faBell} className="text-3xl text-green-600 pt-2 px-3" />
         <div className="flex-1">
           <p className="text-lg font-semibold text-gray-900">Notification</p>
-          <div className="flex items-center text-gray-500 text-sm space-x-3">
+          <div className="flex items-center text-gray-500 text-sm space-x-1">
             <p>
               {new Date(notification.created_at).toLocaleString("id-ID", {
                 timeZone: "Asia/Jakarta",
