@@ -1,18 +1,24 @@
+import Swal from 'sweetalert2';
 import PropTypes from 'prop-types';
-import { useNavigate } from "react-router-dom"; 
 import { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom"; 
 import MobileLayout from "../../layouts/mobileLayout";
 
 const StepThree = ({ formData = {} }) => {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
+
+  console.log('Form Data:', formData);
 
   const [isSuccess, setIsSuccess] = useState(false);
-  const { userId = '', username = '', id_lokasi = '', lokasi = '', tugas = '', jamMulai = null, tanggalMulai = '', koordinatMulai = '', fotoMulai = '', id_absen = '', fotoSelesai = '', tanggalSelesai = '', jamSelesai = '', koordinatSelesai = '' } = formData;
+  const [isOvertime, setIsOvertime] = useState(false);
+
+  const { userId = '', username = '', id_lokasi = '', lokasi = '', tugas = '', deskripsi = '', jamMulai = null, tanggalMulai = '', koordinatMulai = '', fotoMulai = '', id_absen = '', fotoSelesai = '', tanggalSelesai = '', jamSelesai = '', koordinatSelesai = '' } = formData;
 
   const summaryItems = [
     { label: 'Nama', value: username },
     { label: 'Lokasi', value: lokasi },
     { label: 'Tugas', value: tugas },
+    { label: 'Tugas', value: deskripsi },
     { label: 'Tanggal Mulai', value: tanggalMulai },
     { label: 'Jam Mulai', value: jamMulai },
     { label: 'Koordinat Mulai', value: koordinatMulai },
@@ -23,17 +29,33 @@ const StepThree = ({ formData = {} }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Data akan dikirim!');
+    if (id_absen && isOvertime) {
+      const confirmLembur = await Swal.fire({
+        title: "Jam kerja Anda sudah melebihi waktu normal, apakah Anda sedang lembur?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Ya",
+        cancelButtonText: "Tidak"
+      });
+    }
+  
+    Swal.fire('Data akan dikirim!', '', 'info');
+  
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     let formDataToSend = new FormData();
+  
     if (fotoMulai && fotoMulai.startsWith('blob:')) {
       const response = await fetch(fotoMulai);
       const blob = await response.blob();
       const file = new File([blob], 'fotoMulai.jpg', { type: blob.type });
       formDataToSend.append('foto', file);
-    } else if (fotoMulai && fotoMulai instanceof File) {formDataToSend.append('foto', fotoMulai)}
-    const titikKoordinatMulai = koordinatMulai ? {latitude: parseFloat(koordinatMulai.split(',')[0]), longitude: parseFloat(koordinatMulai.split(',')[1])} : null;
-    const titikKoordinatSelesai = koordinatSelesai ? {latitude: parseFloat(koordinatSelesai.split(',')[0]), longitude: parseFloat(koordinatSelesai.split(',')[1])} : null;
+    } else if (fotoMulai && fotoMulai instanceof File) {
+      formDataToSend.append('foto', fotoMulai);
+    }
+  
+    const titikKoordinatMulai = koordinatMulai ? { latitude: parseFloat(koordinatMulai.split(',')[0]), longitude: parseFloat(koordinatMulai.split(',')[1]) } : null;
+    const titikKoordinatSelesai = koordinatSelesai ? { latitude: parseFloat(koordinatSelesai.split(',')[0]), longitude: parseFloat(koordinatSelesai.split(',')[1]) } : null;
+  
     let endpoint;
     if (id_absen) {
       endpoint = '/absen/selesai';
@@ -70,11 +92,9 @@ const StepThree = ({ formData = {} }) => {
       console.log('Mengirim data ke API:', endpoint);
       console.log('Data yang dikirim untuk absen/mulai:', Array.from(formDataToSend.entries()));
     }
+  
     try {
-      const response = await fetch(`${apiUrl}${endpoint}`, {
-        method: 'POST',
-        body: formDataToSend,
-      });
+      const response = await fetch(`${apiUrl}${endpoint}`, { method: 'POST', body: formDataToSend });
       if (!response.ok) {
         throw new Error('Gagal mengirim data');
       }
@@ -82,18 +102,16 @@ const StepThree = ({ formData = {} }) => {
       console.log('Response dari API:', result);
       if (result.message.includes("berhasil disimpan")) {
         setIsSuccess(true);
-        alert('Absen berhasil!');
-      }
+        Swal.fire('Absen berhasil!', '', 'success').then(() => {setTimeout(() => {window.location.reload()}, 500)});
+      }      
     } catch (error) {
-      alert('Terjadi kesalahan saat mengirim data.');
+      Swal.fire('Terjadi kesalahan saat mengirim data.', '', 'error');
       console.error(error);
     }
-  };
+  };  
 
   useEffect(() => {
-    if (isSuccess) {
-      navigate('/');
-    }
+    if (isSuccess) {navigate('/')}
   }, [isSuccess, navigate]);
 
   return (
