@@ -55,8 +55,11 @@ const Absensi = () => {
           const data = await response.json();
           if (response.ok) {
             if (Array.isArray(data) && data.length > 0) {
-              const { id_absen } = data[0];
-              setAttendanceData(prev => ({ ...prev, id_absen }));
+              const { id_absen, id_user, username, lokasi, deskripsi, jam_mulai } = data[0];
+              setAttendanceData(prev => {
+                const updatedData = {...prev, id_absen: String(id_absen), userId: String(id_user), username: username || "", lokasi: lokasi || "", deskripsi: deskripsi || "", jam_mulai: String(jam_mulai)};
+                return updatedData;
+              });
               setIsSelesaiFlow(true);
               setCurrentStep('stepTwoSelesai');
             } else {
@@ -71,7 +74,7 @@ const Absensi = () => {
           setIsSelesaiFlow(false);
           setCurrentStep('stepOne');
         }
-      };      
+      };
       checkAttendance();
     } else {
       setIsSelesaiFlow(false);
