@@ -46,7 +46,7 @@ const Absensi = () => {
 
   useEffect(() => {
     const storedUserId = localStorage.getItem("userId");
-    const storedUsername = localStorage.getItem("username");
+    const storedUsername = localStorage.getItem("userName");
     if (storedUserId) {
       setAttendanceData({ userId: storedUserId, username: storedUsername || "" });
       const checkAttendance = async () => {
@@ -81,6 +81,9 @@ const Absensi = () => {
       setCurrentStep('stepOne');
     }
   }, [apiUrl]);
+
+  useEffect(() => {
+  }, [attendanceData]);
 
   return (
     <div>
