@@ -28,7 +28,7 @@ const StepOne = ({ handleNextStepData }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (isFormValid()) {
-      const formData = { userId: localStorage.getItem("userId"), username: localStorage.getItem("username"), id_lokasi: idLokasi, lokasi, tugas };
+      const formData = { userId: localStorage.getItem("userId"), username: localStorage.getItem("userName"), id_lokasi: idLokasi, lokasi, tugas };
       handleNextStepData(formData);
     }
   };
