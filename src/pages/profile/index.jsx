@@ -223,11 +223,11 @@ const Profile = () => {
     <MobileLayout title="Profile">
       <div className="p-3">
         <div className="flex items-center bg-gradient-to-br from-green-700 via-green-700 to-green-700 rounded-xl shadow-lg p-6 mb-4 relative">
-          <img
+          {/* <img
             src={profileData.avatar}
             alt="User Avatar"
             className="w-24 h-24 rounded-full border-4 border-white shadow-lg"
-          />
+          /> */}
           <div className="flex flex-col justify-center flex-grow ml-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-white">{profileData.name || "Loading..."}</h2>
@@ -278,7 +278,7 @@ const Profile = () => {
             )}
           </div>
 
-          {isEditing && (
+          {/* {isEditing && (
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center text-gray-500 font-semibold">
                 <FontAwesomeIcon icon={faCamera} className="mr-2" style={{ color: "#555" }} />
@@ -290,7 +290,7 @@ const Profile = () => {
                 className="col-span-2 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
-          )}
+          )} */}
         </div>
 
         <div className="flex justify-between mt-6">
