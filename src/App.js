@@ -1,90 +1,67 @@
-import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
-import Login from "./pages/login";
-import FormNicoUrbanIndonesia from "./pages/formNicoUrbanIndonesia";
-import Notification from "./pages/notification";
-import Absensi from "./pages/absensi";
-import MenuSidebar from "./pages/menuSidebar";
-import Profile from "./pages/profile";
-import DataKaryawan from "./pages/profile/dataKaryawan"; // Import DataKaryawan component
-import Menu from "./pages/menu";
-import Salary from "./pages/salary";
 import { useEffect, useState } from "react";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+
+import Menu from "./pages/menu";
+import Login from "./pages/login";
+import Salary from "./pages/salary";
+import Absen from "./pages/absensi";
+import Lembur from "./pages/lembur";
+import Profile from "./pages/profile";
+import MenuSidebar from "./pages/menuSidebar";
+import Notification from "./pages/notification";
+import DataKaryawan from "./pages/profile/dataKaryawan";
+import FormNicoUrbanIndonesia from "./pages/formNicoUrbanIndonesia";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
+  const handleLoginSuccess = () => {setIsLoggedIn(true)};
 
-  useEffect(() => {
-    const loggedInStatus = localStorage.getItem("isLoggedIn") === "true";
-    setIsLoggedIn(loggedInStatus);
-  }, []);
+  const PrivateRoute = ({ children }) => {
+    return isLoggedIn ? children : <Navigate to="/login" />;
+  };
 
   const handleLogout = () => {
     localStorage.clear();
     setIsLoggedIn(false);
   };
 
-  const handleLoginSuccess = () => {
-    setIsLoggedIn(true);
-  };
-
-  const PrivateRoute = ({ children }) => {
-    return isLoggedIn ? children : <Navigate to="/login" />;
-  };
+  useEffect(() => {
+    const loggedInStatus = localStorage.getItem("isLoggedIn") === "true";
+    setIsLoggedIn(loggedInStatus);
+  }, []);
 
   return (
     <Router>
       <Routes>
-        <Route
-          path="/login"
-          element={isLoggedIn ? <Navigate to="/home" /> : <Login onLoginSuccess={handleLoginSuccess} />}
-        />
+        <Route path="/login" element={isLoggedIn ? <Navigate to="/home" /> : <Login onLoginSuccess={handleLoginSuccess} />}/>
         <Route
           path="/home"
-          element={
-            <PrivateRoute>
-              <FormNicoUrbanIndonesia onLogout={handleLogout} />
-            </PrivateRoute>
-          }
+          element={<PrivateRoute><FormNicoUrbanIndonesia onLogout={handleLogout} /></PrivateRoute>}
         />
         <Route
           path="/notification"
-          element={
-            <PrivateRoute>
-              <Notification />
-            </PrivateRoute>
-          }
+          element={<PrivateRoute><Notification /></PrivateRoute>}
         />
         <Route
           path="/profile"
-          element={
-            <PrivateRoute>
-              <Profile />
-            </PrivateRoute>
-          }
+          element={<PrivateRoute><Profile /></PrivateRoute>}
         />
         <Route
           path="/data-karyawan"
-          element={
-            <PrivateRoute>
-              <DataKaryawan />
-            </PrivateRoute>
-          }
+          element={<PrivateRoute><DataKaryawan /></PrivateRoute>}
         />
         <Route
           path="/menu"
-          element={
-            <PrivateRoute>
-              <Menu />
-            </PrivateRoute>
-          }
+          element={<PrivateRoute><Menu /></PrivateRoute>}
         />
         <Route
           path="/absensi"
-          element={
-            <PrivateRoute>
-              <Absensi />
-            </PrivateRoute>
-          }
+          element={<PrivateRoute><Absen /></PrivateRoute>}
+        />
+        <Route
+          path="/lembur"
+          element={<PrivateRoute><Lembur /></PrivateRoute>}
         />
         <Route
           path="/salary"
@@ -92,14 +69,11 @@ function App() {
             <PrivateRoute>
               <div className="flex">
                 <MenuSidebar handleLogout={handleLogout} />
-                <div className="flex-grow p-6">
-                  <Salary />
-                </div>
+                <div className="flex-grow p-6"><Salary /></div>
               </div>
             </PrivateRoute>
           }
         />
-        {/* Redirect to home or login based on login status */}
         <Route path="*" element={isLoggedIn ? <Navigate to="/home" /> : <Navigate to="/login" />} />
       </Routes>
     </Router>
