@@ -1,46 +1,66 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import logo from '../assets/logo.png';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faEyeSlash, faUser, faLock } from '@fortawesome/free-solid-svg-icons';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import logo from "../assets/logo.png";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash, faUser, faLock } from "@fortawesome/free-solid-svg-icons";
+import Swal from "sweetalert2"; // Import SweetAlert
 
 const Login = ({ onLoginSuccess }) => {
   const navigate = useNavigate(); // Initialize useNavigate
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const togglePasswordVisibility = () => setShowPassword(prev => !prev);
+  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
   const handleLogin = async () => {
     if (!username || !password) {
-      setErrorMessage('Username and password cannot be empty');
+      Swal.fire({
+        icon: "error",
+        title: "Gagal!",
+        text: "Username dan password tidak boleh kosong!",
+      });
       return;
     }
     try {
       const response = await fetch(`${apiUrl}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
       });
       const data = await response.json();
-      if (data.message === 'Login berhasil') {
+      if (data.message === "Login berhasil") {
         const dataUser = data.data;
-        localStorage.setItem('userId', dataUser.id);
-        localStorage.setItem('nama', dataUser.name);
-        localStorage.setItem('userName', dataUser.username);
-        localStorage.setItem('roleId', dataUser.id_role);
-        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem("userId", dataUser.id);
+        localStorage.setItem("nama", dataUser.name);
+        localStorage.setItem("userName", dataUser.username);
+        localStorage.setItem("roleId", dataUser.id_role);
+        localStorage.setItem("isLoggedIn", "true");
         onLoginSuccess();
-        navigate('/home'); // Redirect to /form
+
+        // Show success message using SweetAlert
+        Swal.fire({
+          icon: "success",
+          title: "Sukses!",
+          text: "Login berhasil!",
+        }).then(() => {
+          navigate("/home"); // Redirect to /home
+        });
       } else {
-        setErrorMessage('Invalid username or password');
+        Swal.fire({
+          icon: "error",
+          title: "Gagal!",
+          text: "Username atau password tidak valid!",
+        });
       }
     } catch (error) {
-      setErrorMessage('Error logging in. Please try again later.');
+      Swal.fire({
+        icon: "error",
+        title: "Kesalahan!",
+        text: "Terjadi kesalahan saat login. Silakan coba lagi nanti.",
+      });
     }
   };
 
@@ -63,7 +83,7 @@ const Login = ({ onLoginSuccess }) => {
           value={password}
           style={styles.input}
           placeholder="Password"
-          type={showPassword ? 'text' : 'password'}
+          type={showPassword ? "text" : "password"}
           onChange={(e) => setPassword(e.target.value)}
         />
         <FontAwesomeIcon
@@ -72,78 +92,79 @@ const Login = ({ onLoginSuccess }) => {
           style={styles.iconRight}
         />
       </div>
-      <button onClick={handleLogin} style={styles.button}>LOGIN</button>
-      {errorMessage && <p style={styles.error}>{errorMessage}</p>}
+      <button onClick={handleLogin} style={styles.button}>
+        LOGIN
+      </button>
     </div>
   );
 };
 
 const styles = {
   container: {
-    height: '100vh',
-    display: 'flex',
-    padding: '0 20px',
-    alignItems: 'center',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    backgroundColor: '#f4f4f4',
+    height: "100vh",
+    display: "flex",
+    padding: "0 20px",
+    alignItems: "center",
+    flexDirection: "column",
+    justifyContent: "center",
+    backgroundColor: "#f4f4f4",
   },
   logo: {
-    width: '100px',
-    marginBottom: '20px',
+    width: "100px",
+    marginBottom: "20px",
   },
   inputContainer: {
-    width: '100%',
-    margin: '10px 0',
-    maxWidth: '280px',
-    position: 'relative',
+    width: "100%",
+    margin: "10px 0",
+    maxWidth: "280px",
+    position: "relative",
   },
   input: {
-    width: '100%',
-    outline: 'none',
-    padding: '10px',
-    fontSize: '1rem',
-    paddingLeft: '35px',
-    borderRadius: '5px',
-    paddingRight: '40px',
-    boxSizing: 'border-box',
-    border: '1px solid #ccc',
-    transition: 'border-color 0.3s ease',
+    width: "100%",
+    outline: "none",
+    padding: "10px",
+    fontSize: "1rem",
+    paddingLeft: "35px",
+    borderRadius: "5px",
+    paddingRight: "40px",
+    boxSizing: "border-box",
+    border: "1px solid #ccc",
+    transition: "border-color 0.3s ease",
   },
   iconLeft: {
-    position: 'absolute',
-    top: '50%',
-    left: '10px',
-    color: '#999',
-    fontSize: '1.2rem',
-    transform: 'translateY(-50%)',
+    position: "absolute",
+    top: "50%",
+    left: "10px",
+    color: "#999",
+    fontSize: "1.2rem",
+    transform: "translateY(-50%)",
   },
   iconRight: {
-    position: 'absolute',
-    top: '50%',
-    right: '10px',
-    color: '#999',
-    cursor: 'pointer',
-    fontSize: '1.2rem',
-    transform: 'translateY(-50%)',
+    position: "absolute",
+    top: "50%",
+    right: "10px",
+    color: "#999",
+    cursor: "pointer",
+    fontSize: "1.2rem",
+    transform: "translateY(-50%)",
   },
   button: {
-    color: '#fff',
-    width: '100%',
-    border: 'none',
-    padding: '10px',
-    fontSize: '1rem',
-    cursor: 'pointer',
-    maxWidth: '280px',
-    marginTop: '20px',
-    borderRadius: '5px',
-    backgroundColor: '#326058',
-    transition: 'background-color 0.3s ease',
+    color: "#fff",
+    width: "100%",
+    border: "none",
+    padding: "10px",
+    fontSize: "1rem",
+    cursor: "pointer",
+    maxWidth: "280px",
+    marginTop: "20px",
+    borderRadius: "5px",
+    backgroundColor: "#326058",
+    transition: "background-color 0.3s ease",
   },
   error: {
-    color: 'red',
-    marginTop: '10px',
-    textAlign: 'center',
+    color: "red",
+    marginTop: "10px",
+    textAlign: "center",
   },
 };
 

@@ -44,7 +44,7 @@ const Notification = () => {
         setHasFetched(true);
       })
       .catch((error) => {
-        console.error("Error fetching notifications:", error);
+        // console.error("Error fetching notifications:", error);
         setNotifications([]);
       })
       .finally(() => setLoading(false)); // Set loading to false after fetch

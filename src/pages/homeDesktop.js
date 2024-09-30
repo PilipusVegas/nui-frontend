@@ -4,10 +4,10 @@ import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
   const [localTime, setLocalTime] = useState("");
-  const [employees, setEmployees] = useState([]); 
-  const [displayedEmployees, setDisplayedEmployees] = useState(0); 
+  const [employees, setEmployees] = useState([]);
+  const [displayedEmployees, setDisplayedEmployees] = useState(0);
   const navigate = useNavigate(); // Initialize navigate
-  const apiUrl = process.env.REACT_APP_API_BASE_URL;  
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
   const updateLocalTime = () => {
     const time = new Date().toLocaleString("id-ID", {
@@ -24,9 +24,10 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch("`${apiUrl}/profil/`");
+      // Use backticks here for template literals
+      const response = await fetch(`${apiUrl}/profil/`);
       const result = await response.json();
-      setEmployees(result.data);
+      setEmployees(result.data || []);
     } catch (error) {
       console.error("Error fetching employees:", error);
     }
@@ -35,23 +36,25 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
   useEffect(() => {
     updateLocalTime();
     const intervalId = setInterval(updateLocalTime, 1000);
-    fetchEmployees();
+    fetchEmployees(); // Fetch employees when component mounts
     return () => clearInterval(intervalId);
   }, []);
 
   useEffect(() => {
+    if (employees.length === 0) return;
+
     let start = 0;
     const end = employees.length;
-    if (start === end) return;
-
-    const duration = 1000; 
+    const duration = 1500; // Increase duration for better animation
     const incrementTime = Math.abs(Math.floor(duration / end));
 
     const timer = setInterval(() => {
       start += 1;
       setDisplayedEmployees(start);
-      if (start === end) clearInterval(timer);
+      if (start >= end) clearInterval(timer); // Ensure no extra increments
     }, incrementTime);
+
+    return () => clearInterval(timer); // Clear the timer when component unmounts
   }, [employees]);
 
   const handleCardClick = () => {
@@ -69,14 +72,14 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
             <p className="text-gray-200 text-lg mt-2">{localTime}</p>
           </div>
           <div className="absolute top-10 right-8 text-white text-l px-2 py-1 font-bold rounded-lg bg-opacity-30">
-            {GetNamaDivisi(roleId)} • Kantor Palem  
+            {GetNamaDivisi(roleId)} • Kantor Palem
           </div>
         </div>
 
         <div className="mt-6 grid grid-cols-3 gap-4">
           <div
             className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
-            onClick={handleCardClick} 
+            onClick={handleCardClick}
           >
             <h4 className="text-5xl font-bold text-green-600 mb-3 transition duration-500 ease-in-out">
               {displayedEmployees}
