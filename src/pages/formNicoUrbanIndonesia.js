@@ -7,8 +7,8 @@ import HomeDesktop from "./homeDesktop";
 const Home = ({ onLogout }) => {
   const navigate = useNavigate();
   
-  const [roleId, setRoleId] = useState("");
-  const [username, setUsername] = useState("");
+  const username = localStorage.getItem("nama");
+  const roleId = localStorage.getItem("roleId");
   
   const handleLogout = () => {
     const isConfirmed = window.confirm("Apakah Anda yakin ingin logout?");
@@ -36,12 +36,6 @@ const Home = ({ onLogout }) => {
     return <span className="bg-yellow-500 px-3 py-0 rounded-full text-xs text-primary font-bold">{role}</span>;
   };
 
-  useEffect(() => {
-    const storedUsername = localStorage.getItem("nama");
-    const storedRoleId = localStorage.getItem("roleId");
-    if (storedUsername) {setUsername(storedUsername)}
-    if (storedRoleId) {setRoleId(storedRoleId)}
-  }, []);
 
   const renderViewBasedOnRole = () => {
     if (roleId === "4") {
