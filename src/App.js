@@ -60,6 +60,19 @@ function App() {
           }
         />
         <Route
+          path="/data-absensi"
+          element={
+            <PrivateRoute>
+              <div className="flex">
+                <MenuSidebar handleLogout={handleLogout} />
+                <div className="flex-grow p-6">
+                  <DataKaryawan />
+                </div>
+              </div>
+            </PrivateRoute>
+          }
+        />
+        <Route
           path="/menu"
           element={<PrivateRoute><Menu /></PrivateRoute>}
         />

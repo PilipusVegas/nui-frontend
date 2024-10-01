@@ -5,30 +5,69 @@ import { useNavigate } from "react-router-dom";
 import MobileLayout from "../../layouts/mobileLayout";
 
 const StepTwo = ({ lemburData = {} }) => {
+  const status = 'Menunggu';
   const navigate = useNavigate();
-
   const [isSuccess, setIsSuccess] = useState(false);
-  const { username = '', lokasi = '', tugas = '', tanggal = '', jamMulai = '', jamSelesai = '' } = lemburData;
+  const [loading, setLoading] = useState(false);
 
-  console.log('Form Data:', lemburData);
+  // Ambil data dari lemburData dengan penamaan yang sesuai
+  const { userId = '', id_lokasi = '', tugas = '', tanggal = '', jamMulai = '', jamSelesai = '' } = lemburData;
 
-  const handleSubmit = (e) => {
+  // Sesuaikan penamaan data yang akan dikirim
+  const dataToSend = { 
+    id_user: userId, 
+    tanggal, 
+    id_lokasi, 
+    deskripsi: tugas, 
+    jam_mulai: jamMulai, 
+    jam_selesai: jamSelesai, 
+    status 
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    Swal.fire('Data akan dikirim!', '', 'info');
-    setIsSuccess(true);
-    Swal.fire('Lembur berhasil!', '', 'success').then(() => {
-      console.log('Data lembur telah berhasil dikirim:', lemburData);
-    });
-  }; 
+    setLoading(true);
+
+    console.log('Data yang akan dikirim:', dataToSend); // Log data yang akan dikirim
+
+    try {
+      Swal.fire('Data akan dikirim!', '', 'info');
+
+      const response = await fetch('http://192.168.0.5:3002/lembur/simpan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dataToSend), // Kirim data dengan format baru
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Data lembur berhasil dikirim:', result);
+        Swal.fire('Lembur berhasil!', '', 'success');
+        setIsSuccess(true);
+      } else {
+        const errorResult = await response.json();
+        console.error('Gagal mengirim data lembur:', errorResult);
+
+        const errorMessage = errorResult.message || 'Terjadi kesalahan';
+        Swal.fire('Gagal mengirim data lembur', errorMessage, 'error');
+        console.log('Pesan kesalahan dari API:', errorMessage);
+      }
+    } catch (error) {
+      console.error('Terjadi kesalahan saat mengirim data lembur:', error);
+      Swal.fire('Gagal mengirim data lembur', error.message || 'Terjadi kesalahan', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const summaryItems = [
-    { label: 'Nama', value: username },
-    { label: 'Lokasi', value: lokasi },
-    { label: 'Tugas', value: tugas },
+    { label: 'Nama', value: userId },
+    { label: 'Lokasi', value: id_lokasi },
+    { label: 'Deskripsi', value: tugas },
     { label: 'Tanggal', value: tanggal },
     { label: 'Jam Mulai', value: jamMulai },
     { label: 'Jam Selesai', value: jamSelesai },
-  ].filter(item => item.value); 
+  ].filter(item => item.value);
 
   useEffect(() => {
     if (isSuccess) {
@@ -46,7 +85,9 @@ const StepTwo = ({ lemburData = {} }) => {
               <span style={styles.value}>{item.value}</span>
             </div>
           ))}
-          <button type="submit" style={styles.submitButton}>KIRIM</button>
+          <button type="submit" style={{ ...styles.submitButton, backgroundColor: loading ? '#ccc' : '#28a745' }} disabled={loading}>
+            {loading ? 'Mengirim...' : 'KIRIM'}
+          </button>
         </form>
       </div>
     </MobileLayout>
@@ -99,7 +140,6 @@ const styles = {
     fontWeight: 'bold',
     border: '2px solid',
     borderRadius: '10px',
-    backgroundColor: '#28a745',
   },
 };
 

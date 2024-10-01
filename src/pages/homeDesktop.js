@@ -1,65 +1,113 @@
-import React, { useState, useEffect } from "react";
 import MenuSidebar from "./menuSidebar";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
-  const [localTime, setLocalTime] = useState("");
-  const [employees, setEmployees] = useState([]);
-  const [displayedEmployees, setDisplayedEmployees] = useState(0);
-  const navigate = useNavigate(); // Initialize navigate
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
+  const navigate = useNavigate();
+  const [employees, setEmployees] = useState([]);
+  const [localTime, setLocalTime] = useState("");
+  const [totalAbsences, setTotalAbsences] = useState(0);
+  const [totalOvertime, setTotalOvertime] = useState(0);
+  const [displayedAbsen, setDisplayedAbsen] = useState(0);
+  const [displayedLembur, setDisplayedLembur] = useState(0);
+  const [displayedEmployees, setDisplayedEmployees] = useState(0);
+
+  const handleAbsenceCardClick = () => {navigate("/data-absensi")};
+  const handleOvertimeCardClick = () => {navigate("/data-lembur")};
+  const handleEmployeeCardClick = () => {navigate("/data-karyawan")};
+
   const updateLocalTime = () => {
-    const time = new Date().toLocaleString("id-ID", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      second: "numeric",
-    });
+    const time = new Date().toLocaleString("id-ID", {weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric"});
     setLocalTime(time);
   };
 
   const fetchEmployees = async () => {
     try {
-      // Use backticks here for template literals
       const response = await fetch(`${apiUrl}/profil/`);
       const result = await response.json();
       setEmployees(result.data || []);
     } catch (error) {
-      console.error("Error fetching employees:", error);
+    }
+  };
+
+  const fetchAbsences = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/absen/`);
+      const result = await response.json();
+      if (Array.isArray(result)) {
+        setTotalAbsences(result.length);
+      } else {
+        setTotalAbsences(0);
+      }
+    } catch (error) {
+    }
+  };
+  
+  const fetchOvertime = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/overtime/`);
+      const result = await response.json();
+      if (Array.isArray(result)) {
+        setTotalOvertime(result.length);
+      } else {
+        setTotalOvertime(0);
+      }
+    } catch (error) {
     }
   };
 
   useEffect(() => {
     updateLocalTime();
     const intervalId = setInterval(updateLocalTime, 1000);
-    fetchEmployees(); // Fetch employees when component mounts
+    fetchEmployees();
+    fetchAbsences();
+    fetchOvertime();
     return () => clearInterval(intervalId);
   }, []);
 
   useEffect(() => {
     if (employees.length === 0) return;
-
     let start = 0;
     const end = employees.length;
-    const duration = 1500; // Increase duration for better animation
+    const duration = 1500;
     const incrementTime = Math.abs(Math.floor(duration / end));
-
     const timer = setInterval(() => {
       start += 1;
       setDisplayedEmployees(start);
-      if (start >= end) clearInterval(timer); // Ensure no extra increments
+      if (start >= end) clearInterval(timer);
     }, incrementTime);
-
-    return () => clearInterval(timer); // Clear the timer when component unmounts
+    return () => clearInterval(timer);
   }, [employees]);
 
-  const handleCardClick = () => {
-    navigate("/data-karyawan"); // Navigate to the DataKaryawan route
-  };
+  useEffect(() => {
+    if (totalAbsences <= 0) return;
+    let start = 0;
+    const end = totalAbsences;
+    const duration = 1500;
+    const incrementTime = Math.abs(Math.floor(duration / end));
+    const timer = setInterval(() => {
+      start += 1;
+      setDisplayedAbsen(start);
+      if (start >= end) clearInterval(timer);
+    }, incrementTime);
+    return () => clearInterval(timer);
+  }, [totalAbsences]);
+
+  useEffect(() => {
+    if (totalOvertime <= 0) return;
+    let start = 0;
+    const end = totalOvertime;
+    const duration = 1500;
+    const incrementTime = Math.abs(Math.floor(duration / end));
+    const timer = setInterval(() => {
+      start += 1;
+      setDisplayedLembur(start);
+      if (start >= end) clearInterval(timer);
+    }, incrementTime);
+    return () => clearInterval(timer);
+  }, [totalOvertime]);
 
   return (
     <div className="desktop-layout flex min-h-screen bg-gray-100">
@@ -75,19 +123,26 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
             {GetNamaDivisi(roleId)} • Kantor Palem
           </div>
         </div>
-
         <div className="mt-6 grid grid-cols-3 gap-4">
-          <div
-            className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
-            onClick={handleCardClick}
-          >
+          <div onClick={handleEmployeeCardClick} className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer">
             <h4 className="text-5xl font-bold text-green-600 mb-3 transition duration-500 ease-in-out">
               {displayedEmployees}
             </h4>
             <p className="text-xl font-semibold text-gray-700">Total Karyawan</p>
           </div>
+          <div onClick={handleAbsenceCardClick} className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer">
+            <h4 className="text-5xl font-bold text-red-600 mb-3 transition duration-500 ease-in-out">
+              {displayedAbsen}
+            </h4>
+            <p className="text-xl font-semibold text-gray-700">Total Absen</p>
+          </div>
+          <div onClick={handleOvertimeCardClick} className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer">
+            <h4 className="text-5xl font-bold text-blue-600 mb-3 transition duration-500 ease-in-out">
+              {displayedLembur}
+            </h4>
+            <p className="text-xl font-semibold text-gray-700">Total Lembur</p>
+          </div>
         </div>
-
         <div className="mt-4">
           <p className="text-gray-600"></p>
         </div>
