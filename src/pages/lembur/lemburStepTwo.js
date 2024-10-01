@@ -5,40 +5,26 @@ import { useNavigate } from "react-router-dom";
 import MobileLayout from "../../layouts/mobileLayout";
 
 const StepTwo = ({ lemburData = {} }) => {
-  const status = 'Menunggu';
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  
   const navigate = useNavigate();
-  const [isSuccess, setIsSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  // Ambil data dari lemburData dengan penamaan yang sesuai
+  const [isSuccess, setIsSuccess] = useState(false);
+  
   const { userId = '', id_lokasi = '', tugas = '', tanggal = '', jamMulai = '', jamSelesai = '' } = lemburData;
-
-  // Sesuaikan penamaan data yang akan dikirim
-  const dataToSend = { 
-    id_user: userId, 
-    tanggal, 
-    id_lokasi, 
-    deskripsi: tugas, 
-    jam_mulai: jamMulai, 
-    jam_selesai: jamSelesai, 
-    status 
-  };
+  const dataToSend = {id_user: userId, tanggal, id_lokasi, deskripsi: tugas, jam_mulai: jamMulai, jam_selesai: jamSelesai};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
-    console.log('Data yang akan dikirim:', dataToSend); // Log data yang akan dikirim
-
+    console.log('Data yang akan dikirim:', dataToSend);
     try {
       Swal.fire('Data akan dikirim!', '', 'info');
-
-      const response = await fetch('http://192.168.0.5:3002/lembur/simpan', {
+      const response = await fetch(`${apiUrl}/lembur/simpan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dataToSend), // Kirim data dengan format baru
+        body: JSON.stringify(dataToSend),
       });
-
       if (response.ok) {
         const result = await response.json();
         console.log('Data lembur berhasil dikirim:', result);
@@ -47,7 +33,6 @@ const StepTwo = ({ lemburData = {} }) => {
       } else {
         const errorResult = await response.json();
         console.error('Gagal mengirim data lembur:', errorResult);
-
         const errorMessage = errorResult.message || 'Terjadi kesalahan';
         Swal.fire('Gagal mengirim data lembur', errorMessage, 'error');
         console.log('Pesan kesalahan dari API:', errorMessage);
@@ -70,9 +55,7 @@ const StepTwo = ({ lemburData = {} }) => {
   ].filter(item => item.value);
 
   useEffect(() => {
-    if (isSuccess) {
-      navigate('/');
-    }
+    if (isSuccess) {navigate('/')}
   }, [isSuccess, navigate]);
 
   return (
