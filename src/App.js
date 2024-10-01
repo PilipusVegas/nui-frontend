@@ -9,26 +9,24 @@ import Lembur from "./pages/lembur";
 import Profile from "./pages/profile";
 import MenuSidebar from "./pages/menuSidebar";
 import Notification from "./pages/notification";
+import DataLembur from "./pages/lembur/dataLembur";
+import DataAbsensi from "./pages/absensi/dataAbsensi";
 import DataKaryawan from "./pages/profile/dataKaryawan";
 import FormNicoUrbanIndonesia from "./pages/formNicoUrbanIndonesia";
 
 function App() {
-  
   const handleLoginSuccess = () => {setIsLoggedIn(true)};
-
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     return localStorage.getItem('isLoggedIn') === 'true';
   });
-
   const PrivateRoute = ({ children }) => {
     return isLoggedIn ? children : <Navigate to="/login" />;
   };
-
+  
   const handleLogout = () => {
     localStorage.clear();
     setIsLoggedIn(false);
   };
-
 
   return (
     <Router>
@@ -45,6 +43,18 @@ function App() {
         <Route
           path="/profile"
           element={<PrivateRoute><Profile /></PrivateRoute>}
+        />
+        <Route
+          path="/menu"
+          element={<PrivateRoute><Menu /></PrivateRoute>}
+        />
+        <Route
+          path="/absensi"
+          element={<PrivateRoute><Absen /></PrivateRoute>}
+        />
+        <Route
+          path="/lembur"
+          element={<PrivateRoute><Lembur /></PrivateRoute>}
         />
         <Route
           path="/data-karyawan"
@@ -66,23 +76,24 @@ function App() {
               <div className="flex">
                 <MenuSidebar handleLogout={handleLogout} />
                 <div className="flex-grow p-6">
-                  <DataKaryawan />
+                  <DataAbsensi />
                 </div>
               </div>
             </PrivateRoute>
           }
         />
         <Route
-          path="/menu"
-          element={<PrivateRoute><Menu /></PrivateRoute>}
-        />
-        <Route
-          path="/absensi"
-          element={<PrivateRoute><Absen /></PrivateRoute>}
-        />
-        <Route
-          path="/lembur"
-          element={<PrivateRoute><Lembur /></PrivateRoute>}
+          path="/data-lembur"
+          element={
+            <PrivateRoute>
+              <div className="flex">
+                <MenuSidebar handleLogout={handleLogout} />
+                <div className="flex-grow p-6">
+                  <DataLembur />
+                </div>
+              </div>
+            </PrivateRoute>
+          }
         />
         <Route
           path="/salary"
