@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 
-const DataKaryawan = ({ username, id_user }) => {
+const DataKaryawan = ({}) => {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -18,6 +18,7 @@ const DataKaryawan = ({ username, id_user }) => {
   const [loadingAction, setLoadingAction] = useState(false);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const handleBackClick = () => navigate("/home");
+
   const [newUser, setNewUser] = useState({
     nama: "",
     id_role: "",
@@ -74,7 +75,7 @@ const DataKaryawan = ({ username, id_user }) => {
       const result = await response.json();
       if (result.success) {
         Swal.fire("Sukses!", result.message, "success").then(() => {
-          window.location.reload(); 
+          window.location.reload();
         });
       } else {
         Swal.fire("Gagal!", result.message || "Error saat menambahkan karyawan.", "error");
@@ -92,12 +93,10 @@ const DataKaryawan = ({ username, id_user }) => {
     const { username } = newUser; // Only validate username since it's a common identifier
     const errors = [];
 
-    // Check for empty username
     if (!username?.trim()) {
       errors.push("Username tidak boleh kosong!");
     }
 
-    // Show alert if there are errors
     if (errors.length > 0) {
       Swal.fire("Gagal!", errors.join(" "), "error");
       return false;
@@ -214,7 +213,7 @@ const DataKaryawan = ({ username, id_user }) => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen">
       <div className="flex-grow px-6 py-8">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center">
@@ -260,7 +259,7 @@ const DataKaryawan = ({ username, id_user }) => {
                 <thead className="bg-green-800 text-white uppercase text-sm leading-normal sticky top-0">
                   <tr>
                     <th className="py-3 pl-3 text-left">No.</th>
-                    <th className="py-3 pr-4 text-left">Foto</th>
+                    {/* <th className="py-3 pr-4 text-left">Foto</th> */}
                     <th className="py-3 pl-6 pr-6 text-left">Nama</th>
                     <th className="py-3  pl-6 text-left">Posisi</th>
                     <th className="py-3 px-6 text-left">Telepon</th>
@@ -269,28 +268,27 @@ const DataKaryawan = ({ username, id_user }) => {
                 </thead>
               </table>
 
-              {/* Scrollable tbody */}
               <div className="overflow-y-auto h-[calc(100vh-250px)]">
-                <table className="min-w-full bg-white">
+                <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
                   <tbody className="text-gray-600 text-sm font-light">
                     {Array.isArray(filteredUsers) && filteredUsers.length > 0 ? (
                       filteredUsers.map((user, index) => (
-                        <tr key={user.id} className="border-b border-gray-300 hover:bg-gray-100">
-                          <td className="py-3 pl-6 text-left">{index + 1}</td>
-                          <td className="py-3 pl-7 pr-4 text-left">
-                            <img
+                        <tr key={user.id} className="border-b border-gray-300 hover:bg-gray-100 transition duration-150">
+                          <td className="py-3 px-4">{index + 1}</td>
+                          <td className="py-3 px-4">
+                            {/* <img
                               src={user.foto || "default-image.jpg"}
                               alt={user.nama || "User Image"}
-                              className="w-12 h-12 rounded-full object-cover"
-                            />
+                              className="w-12 h-12 rounded-full object-cover border border-gray-300"
+                            /> */}
                           </td>
-                          <td className="py-3 pl-6 pr-6 text-left">{user.nama || "Unknown Name"}</td>
-                          <td className="py-3 pl-6 pr-8 text-left">{user.id_role || "Unknown Role"}</td>
-                          <td className="py-3 pl-9 text-left">{user.telp || "No Phone"}</td>
-                          <td className="py-3 px-0 text-left flex justify-center items-center space-x-4">
+                          <td className="py-3 px-4">{user.nama || "Unknown Name"}</td>
+                          <td className="py-3 px-4">{user.id_role || "Unknown Role"}</td>
+                          <td className="py-3 px-4">{user.telp || "No Phone"}</td>
+                          <td className="py-3 px-4 flex justify-center items-center space-x-4">
                             <button
                               onClick={() => handleEdit(user)}
-                              className="text-blue-600 hover:bg-blue-100 transition duration-150 rounded-md px-4 py-2"
+                              className="text-blue-600 hover:bg-blue-100 transition duration-150 rounded-md px-3 py-1"
                               aria-label={`Edit ${user.nama}`}
                               title={`Edit ${user.nama}`}
                             >
@@ -299,7 +297,7 @@ const DataKaryawan = ({ username, id_user }) => {
                             </button>
                             <button
                               onClick={() => handleDelete(user.id)}
-                              className="text-red-600 hover:bg-red-100 transition duration-150 rounded-md px-4 py-2"
+                              className="text-red-600 hover:bg-red-100 transition duration-150 rounded-md px-3 py-1"
                               aria-label={`Delete ${user.nama}`}
                               title={`Delete ${user.nama}`}
                             >
@@ -311,7 +309,7 @@ const DataKaryawan = ({ username, id_user }) => {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="6" className="py-3 text-center">
+                        <td colSpan="6" className="py-3 text-center text-gray-500">
                           Tidak ada karyawan ditemukan
                         </td>
                       </tr>
@@ -343,7 +341,7 @@ const DataKaryawan = ({ username, id_user }) => {
               className="border p-2 w-full rounded-md mb-2"
             >
               <option value="" disabled>
-                Pilih ID Role
+                Pilih Posisi Karyawan
               </option>
               <option value="1">Admin</option>
               <option value="2">IT</option>
@@ -376,20 +374,11 @@ const DataKaryawan = ({ username, id_user }) => {
               type="file"
               accept="image/*"
               onChange={(e) => setNewPhoto(e.target.files[0])}
-              className="border p-2 w-full rounded-md mb-2"
+              className="border p-2 w-full rounded-md mb-4"
             />
 
             {/* Action Buttons */}
             <div className="flex justify-between">
-              <button
-                onClick={isEditing ? handleEditUser : handleAddUser}
-                className={`bg-green-600 text-white px-4 py-2 rounded-md ${
-                  loadingAction ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-                disabled={loadingAction}
-              >
-                {loadingAction ? "Loading..." : isEditing ? "Update" : "Tambah"}
-              </button>
               <button
                 onClick={() => {
                   resetNewUser();
@@ -399,6 +388,15 @@ const DataKaryawan = ({ username, id_user }) => {
                 className="bg-red-600 text-white px-4 py-2 rounded-md"
               >
                 Batal
+              </button>
+              <button
+                onClick={isEditing ? handleEditUser : handleAddUser}
+                className={`bg-green-600 text-white px-4 py-2 rounded-md ${
+                  loadingAction ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+                disabled={loadingAction}
+              >
+                {loadingAction ? "Loading..." : isEditing ? "Update" : "Tambah"}
               </button>
             </div>
           </div>

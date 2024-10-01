@@ -13,9 +13,12 @@ import DataKaryawan from "./pages/profile/dataKaryawan";
 import FormNicoUrbanIndonesia from "./pages/formNicoUrbanIndonesia";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   
   const handleLoginSuccess = () => {setIsLoggedIn(true)};
+
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return localStorage.getItem('isLoggedIn') === 'true';
+  });
 
   const PrivateRoute = ({ children }) => {
     return isLoggedIn ? children : <Navigate to="/login" />;
@@ -26,10 +29,6 @@ function App() {
     setIsLoggedIn(false);
   };
 
-  useEffect(() => {
-    const loggedInStatus = localStorage.getItem("isLoggedIn") === "true";
-    setIsLoggedIn(loggedInStatus);
-  }, []);
 
   return (
     <Router>
