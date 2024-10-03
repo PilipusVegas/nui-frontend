@@ -1,18 +1,19 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-import HomeMobile from "./homeMobile";
-import HomeDesktop from "./homeDesktop";
+import HomeMobile from "../layouts/homeMobile";
+import HomeDesktop from "../layouts/homeDesktop";
 
 const Home = ({ onLogout }) => {
   const navigate = useNavigate();
-  
   const username = localStorage.getItem("nama");
   const roleId = localStorage.getItem("roleId");
-  
+
   const handleLogout = () => {
     const isConfirmed = window.confirm("Apakah Anda yakin ingin logout?");
-    if (isConfirmed) {onLogout()}
+    if (isConfirmed) {
+      onLogout();
+    }
   };
 
   const GetNamaDivisi = (id) => {
@@ -30,26 +31,30 @@ const Home = ({ onLogout }) => {
       case "4":
         role = "HRD";
         break;
+      case "5":
+        role = "PA";
+        break;
       default:
         role = "Divisi Tidak Diketahui";
     }
     return <span className="bg-yellow-500 px-3 py-0 rounded-full text-xs text-primary font-bold">{role}</span>;
   };
 
-
   const renderViewBasedOnRole = () => {
-    if (roleId === "4") {
-      return <HomeDesktop username={username} roleId={roleId} GetNamaDivisi={GetNamaDivisi} handleLogout={handleLogout} />;
+    if (roleId === "4" || roleId === "5") {   
+      return (
+        <HomeDesktop username={username} roleId={roleId} GetNamaDivisi={GetNamaDivisi} handleLogout={handleLogout} />
+      );
     } else {
-      return <HomeMobile username={username} roleId={roleId} handleLogout={handleLogout} GetNamaDivisi={GetNamaDivisi} />;
+      return (
+        <HomeMobile username={username} roleId={roleId} handleLogout={handleLogout} GetNamaDivisi={GetNamaDivisi} 
+        />
+      );
     }
-  };
+};
 
-  return (
-    <div>
-      {renderViewBasedOnRole()}
-    </div>
-  );
+
+  return <div>{renderViewBasedOnRole()}</div>;
 };
 
 export default Home;

@@ -49,7 +49,7 @@ const DataKaryawan = ({}) => {
 
   const filteredUsers = Array.isArray(users)
     ? users.filter((user) => {
-        return user && user.nama && user.nama.toLowerCase().includes(searchQuery.toLowerCase());
+        return user && user.nama && user.id_role && user.nama.toLowerCase().includes(searchQuery.toLowerCase());
       })
     : [];
 
@@ -212,6 +212,31 @@ const DataKaryawan = ({}) => {
     }
   };
 
+  const GetNamaDivisi = (userId) => {
+    let role = "";
+    const id = userId.toString();
+    switch (id) {
+      case "1":
+        role = "Admin";
+        break;
+      case "2":
+        role = "IT";
+        break;
+      case "3":
+        role = "Teknisi";
+        break;
+      case "4":
+        role = "HRD";
+        break;
+      case "5":
+        role = "PA";
+        break;
+      default:
+        role = "Divisi Tidak Diketahui";
+    }
+    return <span className="bg-yellow-400 px-3 py-1 rounded-full text-xs text-black font-bold">{role}</span>;
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex-grow px-6 py-8">
@@ -232,9 +257,9 @@ const DataKaryawan = ({}) => {
               resetNewUser();
               setIsEditing(false);
             }}
-            className="bg-green-600 text-white px-4 py-2 font-bold rounded-md hover:bg-green-700 transition duration-150"
+            className="bg-green-600 text-white px-12 py-2 font-bold rounded-md hover:bg-green-700 transition duration-150"
           >
-            Tambah Karyawan
+            Tambah
           </button>
         </div>
 
@@ -253,72 +278,66 @@ const DataKaryawan = ({}) => {
         ) : errorMessage ? (
           <p className="text-red-500 text-center">{errorMessage}</p>
         ) : (
-          <div className=" mb-8">
-            <div className="relative">
-              <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
-                <thead className="bg-green-800 text-white uppercase text-sm leading-normal sticky top-0">
-                  <tr>
-                    <th className="py-3 pl-3 text-left">No.</th>
-                    {/* <th className="py-3 pr-4 text-left">Foto</th> */}
-                    <th className="py-3 pl-6 pr-6 text-left">Nama</th>
-                    <th className="py-3  pl-6 text-left">Posisi</th>
-                    <th className="py-3 px-6 text-left">Telepon</th>
-                    <th className="py-3 px-9 text-left">Aksi</th>
-                  </tr>
-                </thead>
-              </table>
-
-              <div className="overflow-y-auto h-[calc(100vh-250px)]">
-                <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-                  <tbody className="text-gray-600 text-sm font-light">
-                    {Array.isArray(filteredUsers) && filteredUsers.length > 0 ? (
-                      filteredUsers.map((user, index) => (
-                        <tr key={user.id} className="border-b border-gray-300 hover:bg-gray-100 transition duration-150">
-                          <td className="py-3 px-4">{index + 1}</td>
-                          <td className="py-3 px-4">
-                            {/* <img
-                              src={user.foto || "default-image.jpg"}
-                              alt={user.nama || "User Image"}
-                              className="w-12 h-12 rounded-full object-cover border border-gray-300"
-                            /> */}
-                          </td>
-                          <td className="py-3 px-4">{user.nama || "Unknown Name"}</td>
-                          <td className="py-3 px-4">{user.id_role || "Unknown Role"}</td>
-                          <td className="py-3 px-4">{user.telp || "No Phone"}</td>
-                          <td className="py-3 px-4 flex justify-center items-center space-x-4">
-                            <button
-                              onClick={() => handleEdit(user)}
-                              className="text-blue-600 hover:bg-blue-100 transition duration-150 rounded-md px-3 py-1"
-                              aria-label={`Edit ${user.nama}`}
-                              title={`Edit ${user.nama}`}
-                            >
-                              <FontAwesomeIcon icon={faEdit} className="mr-1" />
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDelete(user.id)}
-                              className="text-red-600 hover:bg-red-100 transition duration-150 rounded-md px-3 py-1"
-                              aria-label={`Delete ${user.nama}`}
-                              title={`Delete ${user.nama}`}
-                            >
-                              <FontAwesomeIcon icon={faTrash} className="mr-1" />
-                              Delete
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="6" className="py-3 text-center text-gray-500">
-                          Tidak ada karyawan ditemukan
+          <div className="mb-8">
+          <div className="relative">
+            <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
+              <thead className="bg-green-800 text-white uppercase text-sm leading-normal sticky top-0 z-10">
+                <tr>
+                  <th className="py-3 text-center">No.</th>
+                  <th className="py-3 text-center">Nama</th>
+                  <th className="py-3 text-center">Posisi</th>
+                  <th className="py-3 text-center">Telepon</th>
+                  <th className="py-3 text-center">Action</th>
+                </tr>
+              </thead>
+            </table>
+        
+            {/* Scrollable Body Container */}
+            <div className="overflow-y-auto h-[calc(100vh-250px)]">
+              <table className="min-w-full bg-white shadow-md rounded-lg border border-gray-300">
+                <tbody className="text-gray-600 text-sm font-light">
+                  {Array.isArray(filteredUsers) && filteredUsers.length > 0 ? (
+                    filteredUsers.map((user, index) => (
+                      <tr key={user.id} className="border-b border-gray-300 hover:bg-gray-100 transition duration-150">
+                        <td className="py-3 px-12 text-center">{index + 1}</td>
+                        <td className="py-3 px-12 text-center">{user.nama || "Unknown Name"}</td>
+                        <td className="py-3 px-12 text-center">{GetNamaDivisi(user.id_role)}</td>
+                        <td className="py-3 px-12 text-center">{user.telp || "No Phone"}</td>
+                        <td className="py-3 px-12 text-center flex justify-center items-center space-x-4">
+                          <button
+                            onClick={() => handleEdit(user)}
+                            className="text-blue-600 hover:bg-blue-100 transition duration-150 rounded-md px-3 py-1"
+                            aria-label={`Edit ${user.nama}`}
+                            title={`Edit ${user.nama}`}
+                          >
+                            <FontAwesomeIcon icon={faEdit} className="mr-1" />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(user.id)}
+                            className="text-red-600 hover:bg-red-100 transition duration-150 rounded-md px-3 py-1"
+                            aria-label={`Delete ${user.nama}`}
+                            title={`Delete ${user.nama}`}
+                          >
+                            <FontAwesomeIcon icon={faTrash} className="mr-1" />
+                            Delete
+                          </button>
                         </td>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="5" className="py-3 text-center text-gray-500">
+                        Tidak ada karyawan ditemukan
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
+        </div>
+        
         )}
       </div>
 
@@ -385,13 +404,13 @@ const DataKaryawan = ({}) => {
                   setIsAdding(false);
                   setIsEditing(false);
                 }}
-                className="bg-red-600 text-white px-4 py-2 rounded-md"
+                className="bg-red-600 text-white px-4 text-center py-2 rounded-md"
               >
                 Batal
               </button>
               <button
                 onClick={isEditing ? handleEditUser : handleAddUser}
-                className={`bg-green-600 text-white px-4 py-2 rounded-md ${
+                className={`bg-green-600 text-white px-12 text-center py-2 rounded-md ${
                   loadingAction ? "opacity-50 cursor-not-allowed" : ""
                 }`}
                 disabled={loadingAction}
