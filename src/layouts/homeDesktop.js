@@ -1,6 +1,6 @@
-import MenuSidebar from "../layouts/menuSidebar";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import MenuSidebar from "../layouts/menuSidebar";
 
 const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -8,52 +8,19 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
   const navigate = useNavigate();
   const [employees, setEmployees] = useState([]);
   const [localTime, setLocalTime] = useState("");
+  const [totalPayroll, setTotalPayroll] = useState(0);
   const [totalAbsences, setTotalAbsences] = useState(0);
   const [totalOvertime, setTotalOvertime] = useState(0);
   const [totalApprovals, setTotalApprovals] = useState(0);
 
-  const handleAbsenceCardClick = () => {
-    navigate("/data-absensi");
-  };
-  const handleOvertimeCardClick = () => {
-    navigate("/data-lembur");
-  };
-  const handleEmployeeCardClick = () => {
-    navigate("/data-karyawan");
-  };
-  const handleApprovalCardClick = () => {
-    navigate("/data-approval");
-  };
-  const handleRequestCardClick = () => {
-    navigate("/data-request");
-  };
-
-  useEffect(() => {
-    updateLocalTime();
-    const intervalId = setInterval(updateLocalTime, 1000);
-
-    if (roleId === "4") {
-      fetchEmployees();
-      fetchAbsences();
-      fetchOvertime();
-    }
-    if (roleId === "5") {
-      fetchApprovals();
-    }
-
-    return () => clearInterval(intervalId);
-  }, [roleId]);
+  const handleAbsenceCardClick = () => {navigate("/data-absensi")};
+  const handleOvertimeCardClick = () => {navigate("/data-lembur")};
+  const handleEmployeeCardClick = () => {navigate("/data-karyawan")};
+  const handleApprovalCardClick = () => {navigate("/data-approval")};
+  const handlePayrollCardClick = () => {navigate("/data-penggajian")};
 
   const updateLocalTime = () => {
-    const time = new Date().toLocaleString("id-ID", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      second: "numeric",
-    });
+    const time = new Date().toLocaleString("id-ID", {weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric"});
     setLocalTime(time);
   };
 
@@ -63,7 +30,6 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
       const result = await response.json();
       setEmployees(result.data || []);
     } catch (error) {
-      console.error("Error fetching employees:", error);
     }
   };
 
@@ -73,7 +39,6 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
       const result = await response.json();
       setTotalAbsences(Array.isArray(result) ? result.length : 0);
     } catch (error) {
-      console.error("Error fetching absences:", error);
     }
   };
 
@@ -83,22 +48,35 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
       const result = await response.json();
       setTotalOvertime(Array.isArray(result) ? result.length : 0);
     } catch (error) {
-      console.error("Error fetching overtime:", error);
     }
   };
+
   const fetchApprovals = async () => {
     try {
-      const response = await fetch(`${apiUrl}/overtime/`); // Pastikan endpoint benar
+      const response = await fetch(`${apiUrl}/overtime/`);
       const result = await response.json();
-
-      // Filter data overtime yang statusnya 0 (pending approval)
       const filteredApprovals = Array.isArray(result) ? result.filter((request) => request.status === 0) : [];
-
-      setTotalApprovals(filteredApprovals.length); // Set jumlah approval lembur dengan status 0
+      setTotalApprovals(filteredApprovals.length);
     } catch (error) {
-      console.error("Error fetching approvals:", error);
     }
   };
+
+  const fetchPayroll = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/penggajian/`);
+      const result = await response.json();
+      setTotalPayroll(Array.isArray(result) ? result.length : 0);
+    } catch (error) {
+    }
+  };
+
+  useEffect(() => {
+    updateLocalTime();
+    const intervalId = setInterval(updateLocalTime, 1000);
+    if (roleId === "4") {fetchEmployees(); fetchAbsences(); fetchOvertime(); fetchPayroll()}
+    if (roleId === "5") {fetchApprovals()}
+    return () => clearInterval(intervalId);
+  }, [roleId]);
 
   return (
     <div className="desktop-layout flex min-h-screen bg-gray-100">
@@ -114,40 +92,29 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
             {GetNamaDivisi(roleId)} • Kantor Palem
           </div>
         </div>
-        <div className="mt-6 grid grid-cols-3 gap-4">
+        <div className="mt-6 grid grid-cols-4 gap-4">
           {roleId === "4" && (
             <>
-              <div
-                onClick={handleEmployeeCardClick}
-                className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
-              >
+              <div onClick={handleEmployeeCardClick} className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer">
                 <h4 className="text-5xl font-bold text-green-600 mb-3">{employees.length}</h4>
-                <p className="text-xl font-semibold text-gray-700">Total Karyawan</p>
+                <p className="text-xl font-semibold text-gray-700">Karyawan</p>
               </div>
-
-              <div
-                onClick={handleAbsenceCardClick}
-                className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
-              >
+              <div onClick={handleAbsenceCardClick} className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer">
                 <h4 className="text-5xl font-bold text-red-600 mb-3">{totalAbsences}</h4>
-                <p className="text-xl font-semibold text-gray-700">Total Absen</p>
+                <p className="text-xl font-semibold text-gray-700">Absensi</p>
               </div>
-
-              <div
-                onClick={handleOvertimeCardClick}
-                className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
-              >
+              <div onClick={handleOvertimeCardClick} className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer">
                 <h4 className="text-5xl font-bold text-blue-600 mb-3">{totalOvertime}</h4>
-                <p className="text-xl font-semibold text-gray-700">Total Lembur</p>
+                <p className="text-xl font-semibold text-gray-700">Lembur</p>
+              </div>
+              <div onClick={handlePayrollCardClick} className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer">
+                <h4 className="text-5xl font-bold text-purple-600 mb-3">{totalPayroll}</h4>
+                <p className="text-xl font-semibold text-gray-700">Penggajian</p>
               </div>
             </>
           )}
-
           {roleId === "5" && (
-            <div
-              onClick={handleApprovalCardClick}
-              className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
-            >
+            <div onClick={handleApprovalCardClick} className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer">
               <h4 className="text-5xl font-bold text-green-600 mb-3">{totalApprovals}</h4>
               <p className="text-xl font-semibold text-gray-700">Approval Lembur</p>
             </div>
