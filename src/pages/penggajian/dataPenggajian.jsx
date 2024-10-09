@@ -9,8 +9,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 const DataPenggajian = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [startDate, setStartDate] = useState(new Date("2024-10-01"));
   const [endDate, setEndDate] = useState(new Date("2024-10-10"));
+  const [startDate, setStartDate] = useState(new Date("2024-10-01"));
   const [currentDate, setCurrentDate] = useState(new Date("2024-10-01"));
 
   const [penggajianData] = useState([
@@ -65,7 +65,7 @@ const DataPenggajian = () => {
         { date: "10/10/2024", in: "08:00", l: "00:30", out: "17:00", t: "02:00" },
       ],
     },
-  ]);
+  ]);  
 
   const handleBackClick = () => {
     navigate("/home");
@@ -82,26 +82,27 @@ const DataPenggajian = () => {
         }),
       };
     });
-    const headerRow1 = ["No", "Nama"];
-    const headerRow2 = [];
+    const headerRow1 = ["No", "Nama", "Jumlah Kehadiran"];
+    const headerRow2 = ["", "", ""];
     const uniqueDates = new Set();
+  
     filteredData.forEach((item) => {
       item.Records.forEach((record) => {
         uniqueDates.add(record.date);
       });
     });
+  
     const uniqueDatesArray = [...uniqueDates];
     uniqueDatesArray.forEach(date => {
-      headerRow1.push(date);
-    });
-    uniqueDatesArray.forEach(() => {
-      headerRow2.push("", "", "In", "L", "Out", "T");
+      headerRow1.push(date, "", "", "");
+      headerRow2.push("In", "L", "Out", "T");
     });
     const dataToDownload = [];
     dataToDownload.push(headerRow1);
     dataToDownload.push(headerRow2);
     filteredData.forEach((item, userIndex) => {
-      const userRow = [userIndex + 1, item.Nama];
+      const jumlahKehadiran = item.Records.filter(record => record.in).length;
+      const userRow = [userIndex + 1, item.Nama, jumlahKehadiran];
       uniqueDatesArray.forEach(date => {
         const record = item.Records.find(r => r.date === date);
         if (record) {
@@ -113,6 +114,16 @@ const DataPenggajian = () => {
       dataToDownload.push(userRow);
     });
     const ws = XLSX.utils.aoa_to_sheet(dataToDownload);
+    const merges = [];
+    let colStart = 3;
+    uniqueDatesArray.forEach(() => {
+      merges.push({
+        s: { r: 0, c: colStart },
+        e: { r: 0, c: colStart + 3 }
+      });
+      colStart += 4;
+    });
+    ws['!merges'] = merges;
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Data Penggajian");
     XLSX.writeFile(wb, "data_penggajian.xlsx");
@@ -121,19 +132,13 @@ const DataPenggajian = () => {
   const handlePreviousDay = () => {
     const previousDay = new Date(currentDate);
     previousDay.setDate(currentDate.getDate() - 1);
-
-    if (previousDay >= startDate) {
-      setCurrentDate(previousDay);
-    }
+    if (previousDay >= startDate) {setCurrentDate(previousDay)}
   };
 
   const handleNextDay = () => {
     const nextDay = new Date(currentDate);
     nextDay.setDate(currentDate.getDate() + 1);
-
-    if (nextDay <= endDate) {
-      setCurrentDate(nextDay);
-    }
+    if (nextDay <= endDate) {setCurrentDate(nextDay)}
   };
 
   const filteredPenggajian = penggajianData.filter((penggajian) => {
@@ -149,7 +154,6 @@ const DataPenggajian = () => {
             <h1 className="text-4xl font-bold text-gray-800 pb-1">DATA PENGGAJIAN</h1>
           </div>
         </div>
-
         <div className="flex mb-4 items-center space-x-4">
           <DatePicker
             selected={startDate}
@@ -178,27 +182,24 @@ const DataPenggajian = () => {
             dateFormat="dd/MM/yyyy"
             className="border p-2 rounded-md"
           />
+          <button onClick={handleDownload} className="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Unduh Data</button>
         </div>
         <div className="flex mb-4 items-center space-x-4">
           <input type="text" value={searchQuery} placeholder="Cari Nama Karyawan..." className="border p-2 rounded-md w-full flex-grow" onChange={(e) => {setSearchQuery(e.target.value)}}/>
         </div>
-
         <div className="flex mb-4 items-center justify-center space-x-4">
-  <button onClick={handlePreviousDay} className="flex items-center justify-center px-2 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-    </svg>
-  </button>
-  <div className="text-lg font-bold">{currentDate.toLocaleDateString("id-ID", { day: "2-digit", month: "2-digit", year: "numeric" })}</div>
-  <button onClick={handleNextDay} className="flex items-center justify-center px-2 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-    </svg>
-  </button>
-</div>
-
-
-        <button onClick={handleDownload} className="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Unduh Data</button>
+          <button onClick={handlePreviousDay} className="flex items-center justify-center px-2 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <div className="text-lg font-bold">{currentDate.toLocaleDateString("id-ID", { day: "2-digit", month: "2-digit", year: "numeric" })}</div>
+          <button onClick={handleNextDay} className="flex items-center justify-center px-2 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
         <div className="mb-8">
           <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
             <thead className="bg-green-800 text-white uppercase text-sm leading-normal sticky top-0">
@@ -206,6 +207,7 @@ const DataPenggajian = () => {
                 <th className="py-3 px-4 text-left">No.</th>
                 <th className="py-3 px-4 text-left">Nama</th>
                 <th className="py-3 px-4 text-left">Divisi</th>
+                <th className="py-3 px-4 text-left">Jumlah Kehadiran</th>
                 <th className="py-3 px-4 text-left">In</th>
                 <th className="py-3 px-4 text-left">L</th>
                 <th className="py-3 px-4 text-left">Out</th>
@@ -215,14 +217,14 @@ const DataPenggajian = () => {
             <tbody className="text-gray-800 text-sm font-light">
               {filteredPenggajian.length > 0 ? (
                 filteredPenggajian.map((penggajian, index) => {
-                  const records = penggajian.records.filter(
-                    (record) => record.date === currentDate.toLocaleDateString("en-GB")
-                  );
+                  const jumlahKehadiran = penggajian.records.length;
+                  const records = penggajian.records.filter((record) => record.date === currentDate.toLocaleDateString("en-GB"));
                   return records.map((record, recordIndex) => (
                     <tr key={`${penggajian.id_user}-${recordIndex}`} className="border-b border-gray-200 hover:bg-gray-100">
                       <td className="py-3 px-4 text-left">{index + 1}</td>
                       <td className="py-3 px-4 text-left">{penggajian.nama}</td>
                       <td className="py-3 px-4 text-left">{penggajian.divisi}</td>
+                      <td className="py-3 px-4 text-left">{jumlahKehadiran}</td>
                       <td className="py-3 px-4 text-left">{record.in}</td>
                       <td className="py-3 px-4 text-left">{record.l}</td>
                       <td className="py-3 px-4 text-left">{record.out}</td>
