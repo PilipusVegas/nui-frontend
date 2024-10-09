@@ -24,9 +24,8 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
           const data = await response.json();
           const unreadNotifications = data.data.some((notif) => notif.is_read === 0);
           setHasNewNotifications(unreadNotifications);
-        } catch (error) {
-          console.error(error); // Better error handling could be implemented
-        } finally {
+        } 
+         finally {
           setLoading(false);
         }
       };

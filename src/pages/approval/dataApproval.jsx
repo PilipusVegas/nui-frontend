@@ -22,7 +22,8 @@ const DataApproval = () => {
 
   const fetchApprovalData = async () => {
     try {
-      const response = await fetch(`${apiUrl}/overtime/`);
+      const response = await fetch(`${apiUrl}/lembur/hrd/`, { method: "GET" });
+
       if (!response.ok) {
         throw new Error("Failed to fetch data");
       }
@@ -179,6 +180,7 @@ const DataApproval = () => {
             ))}
           </select>
         </div>
+        
       </div>
 
       {/* Table Section */}
@@ -198,7 +200,6 @@ const DataApproval = () => {
                 <th className="py-3 px-4 text-left">Deskripsi</th>
                 <th className="py-3 px-4 text-left">Jam Mulai</th>
                 <th className="py-3 px-4 text-left">Jam Selesai</th>
-                {/* Remove Status column when selectedStatus is 0 */}
                 {selectedStatus !== 0 && <th className="py-3 px-4 text-left">Status</th>}
                 {selectedStatus === 0 && <th className="py-3 px-4 text-center">Aksi</th>}
               </tr>

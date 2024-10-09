@@ -248,7 +248,7 @@ const DataKaryawan = ({}) => {
               onClick={handleBackClick}
               title="Back to Home"
             />
-            <h1 className="text-4xl font-bold text-gray-800 pb-1">Data Karyawan</h1>
+            <h1 className="text-3xl font-bold text-gray-800 pb-1">Data Karyawan</h1>
           </div>
 
           <button
@@ -278,66 +278,62 @@ const DataKaryawan = ({}) => {
         ) : errorMessage ? (
           <p className="text-red-500 text-center">{errorMessage}</p>
         ) : (
-          <div className="mb-8">
-          <div className="relative">
-            <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
-              <thead className="bg-green-800 text-white uppercase text-sm leading-normal sticky top-0 z-10">
-                <tr>
-                  <th className="py-3 text-center">No.</th>
-                  <th className="py-3 text-center">Nama</th>
-                  <th className="py-3 text-center">Posisi</th>
-                  <th className="py-3 text-center">Telepon</th>
-                  <th className="py-3 text-center">Action</th>
-                </tr>
-              </thead>
-            </table>
-        
-            {/* Scrollable Body Container */}
-            <div className="overflow-y-auto h-[calc(100vh-250px)]">
-              <table className="min-w-full bg-white shadow-md rounded-lg border border-gray-300">
-                <tbody className="text-gray-600 text-sm font-light">
-                  {Array.isArray(filteredUsers) && filteredUsers.length > 0 ? (
-                    filteredUsers.map((user, index) => (
-                      <tr key={user.id} className="border-b border-gray-300 hover:bg-gray-100 transition duration-150">
-                        <td className="py-3 px-12 text-center">{index + 1}</td>
-                        <td className="py-3 px-12 text-center">{user.nama || "Unknown Name"}</td>
-                        <td className="py-3 px-12 text-center">{GetNamaDivisi(user.id_role)}</td>
-                        <td className="py-3 px-12 text-center">{user.telp || "No Phone"}</td>
-                        <td className="py-3 px-12 text-center flex justify-center items-center space-x-4">
-                          <button
-                            onClick={() => handleEdit(user)}
-                            className="text-blue-600 hover:bg-blue-100 transition duration-150 rounded-md px-3 py-1"
-                            aria-label={`Edit ${user.nama}`}
-                            title={`Edit ${user.nama}`}
-                          >
-                            <FontAwesomeIcon icon={faEdit} className="mr-1" />
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(user.id)}
-                            className="text-red-600 hover:bg-red-100 transition duration-150 rounded-md px-3 py-1"
-                            aria-label={`Delete ${user.nama}`}
-                            title={`Delete ${user.nama}`}
-                          >
-                            <FontAwesomeIcon icon={faTrash} className="mr-1" />
-                            Delete
-                          </button>
+          <div className="relative mb-8 overflow-hidden">
+            <div className="overflow-auto h-[calc(100vh-250px)] scrollbar-hidden">
+              <div className="overflow-y-auto h-full bg-gray-50">
+                {/* Set background color here */}
+                <table className="min-w-full bg-white">
+                  {/* Table Header */}
+                  <thead className="bg-green-500 text-white uppercase text-base leading-normal">
+                    <tr>
+                      <th className="py-4 bg-green-500 text-center sticky top-0 z-10">No.</th>
+                      <th className="py-4 bg-green-500 text-center sticky top-0 z-10">Nama</th>
+                      <th className="py-4 bg-green-500 text-center sticky top-0 z-10">Posisi</th>
+                      <th className="py-4 bg-green-500 text-center sticky top-0 z-10">Telepon</th>
+                      <th className="py-4 bg-green-500 text-center sticky top-0 z-10">Action</th>
+                    </tr>
+                  </thead>
+                  {/* Table Body */}
+                  <tbody className="text-gray-700 text-base font-medium">
+                    {Array.isArray(filteredUsers) && filteredUsers.length > 0 ? (
+                      filteredUsers.map((user, index) => (
+                        <tr key={user.id} className="border-b border-gray-300 hover:bg-gray-100 transition duration-150">
+                          <td className="py-4 text-center">{index + 1}</td>
+                          <td className="py-4 text-center">{user.nama || "Unknown Name"}</td>
+                          <td className="py-4 text-center">{GetNamaDivisi(user.id_role)}</td>
+                          <td className="py-4 text-center">{user.telp || "No Phone"}</td>
+                          <td className="py-4 text-center flex justify-center items-center space-x-4">
+                            <button
+                              onClick={() => handleEdit(user)}
+                              className="bg-green-500 text-white rounded-full p-2 hover:bg-green-600 transition duration-150 flex items-center"
+                              aria-label={`Edit ${user.nama}`}
+                              title={`Edit ${user.nama}`}
+                            >
+                              <FontAwesomeIcon icon={faEdit} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(user.id)}
+                              className="bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition duration-150 flex items-center"
+                              aria-label={`Delete ${user.nama}`}
+                              title={`Delete ${user.nama}`}
+                            >
+                              <FontAwesomeIcon icon={faTrash} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="5" className="py-4 text-center text-gray-500">
+                          Tidak ada karyawan ditemukan
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="5" className="py-3 text-center text-gray-500">
-                        Tidak ada karyawan ditemukan
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
-        
         )}
       </div>
 
@@ -410,7 +406,7 @@ const DataKaryawan = ({}) => {
               </button>
               <button
                 onClick={isEditing ? handleEditUser : handleAddUser}
-                className={`bg-green-600 text-white px-12 text-center py-2 rounded-md ${
+                className={`bg-green-600 text-white px-6 text-center py-2 rounded-md ${
                   loadingAction ? "opacity-50 cursor-not-allowed" : ""
                 }`}
                 disabled={loadingAction}
