@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import "sweetalert2/dist/sweetalert2.min.css";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const DataApproval = () => {
@@ -12,24 +12,23 @@ const DataApproval = () => {
   const [approvalData, setApprovalData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState(0); // Default to "Belum Disetujui"
-  const [selectedDay, setSelectedDay] = useState(""); // Day filter
-  const [selectedMonth, setSelectedMonth] = useState(""); // Month filter
-  const [selectedYear, setSelectedYear] = useState(""); // Year filter
+  const [selectedStatus, setSelectedStatus] = useState(0); // Default status filter
   const [errorMessage, setErrorMessage] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
+  const [modalDescription, setModalDescription] = useState(""); // State for storing description in modal
 
   const handleBackClick = () => navigate("/home");
 
   const fetchApprovalData = async () => {
     try {
-      const response = await fetch(`${apiUrl}/lembur/hrd/`, { method: "GET" });
+      const response = await fetch(`${apiUrl}/lembur/approve/`, { method: "GET" });
 
       if (!response.ok) {
         throw new Error("Failed to fetch data");
       }
       const result = await response.json();
       if (Array.isArray(result)) {
-        setApprovalData(result);
+        setApprovalData(result); // Set all data initially
       } else {
         setErrorMessage("Unexpected response format.");
       }
@@ -44,44 +43,67 @@ const DataApproval = () => {
     fetchApprovalData();
   }, [apiUrl]);
 
-  // Generate arrays for day, month and year
-  const days = Array.from({ length: 31 }, (_, i) => i + 1);
-  const months = [
-    { name: "Januari", value: "01" },
-    { name: "Februari", value: "02" },
-    { name: "Maret", value: "03" },
-    { name: "April", value: "04" },
-    { name: "Mei", value: "05" },
-    { name: "Juni", value: "06" },
-    { name: "Juli", value: "07" },
-    { name: "Agustus", value: "08" },
-    { name: "September", value: "09" },
-    { name: "Oktober", value: "10" },
-    { name: "November", value: "11" },
-    { name: "Desember", value: "12" },
-  ];
-  const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
-
-  // Function to filter by name, status, and date
+  // Filtered approval data based on selected status and search query
   const filteredApproval = approvalData.filter((approval) => {
-    const matchesSearch = approval.nama.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = approval.status === selectedStatus;
-    const matchesDate =
-      (selectedDay === "" || new Date(approval.tanggal).getDate() === parseInt(selectedDay)) &&
-      (selectedMonth === "" || new Date(approval.tanggal).getMonth() + 1 === parseInt(selectedMonth)) &&
-      (selectedYear === "" || new Date(approval.tanggal).getFullYear() === parseInt(selectedYear));
+    const matchesSearch = approval.nama_user.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus =
+      selectedStatus === 0
+        ? approval.status_lembur === 0
+        : selectedStatus === 1
+        ? approval.status_lembur === 1
+        : selectedStatus === 2
+        ? approval.status_lembur === 2
+        : true; // If no status is selected, return all
 
-    return matchesSearch && matchesStatus && matchesDate;
+    return matchesSearch && matchesStatus; // Combine both filters
   });
 
-  // Function to handle approval action
-  const handleApprove = (id) => {
-    Swal.fire("Approved!", "", "success");
+  const handleApprove = async (id) => {
+    try {
+      const response = await fetch(`${apiUrl}/lembur/approve/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: 1 }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update approval status");
+      }
+      fetchApprovalData();
+      Swal.fire("Approved!", "", "success");
+    } catch (error) {
+      Swal.fire("Error", error.message, "error");
+    }
   };
 
-  // Function to handle rejection action
-  const handleReject = (id) => {
-    Swal.fire("Rejected!", "", "error");
+  const handleReject = async (id) => {
+    try {
+      const response = await fetch(`${apiUrl}/lembur/approve/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: 2 }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update rejection status");
+      }
+
+      fetchApprovalData();
+
+      Swal.fire("Rejected!", "", "error");
+    } catch (error) {
+      Swal.fire("Error", error.message, "error");
+    }
+  };
+
+  // Handle modal opening with description
+  const openModalWithDescription = (description) => {
+    setModalDescription(description);
+    setIsModalOpen(true);
   };
 
   return (
@@ -90,24 +112,15 @@ const DataApproval = () => {
         <div className="flex items-center space-x-3">
           <FontAwesomeIcon
             icon={faArrowLeft}
+            title="Back to Home"
             onClick={handleBackClick}
-            className="text-gray-600 cursor-pointer hover:text-green-600 transition duration-200"
+            className="mr-2 cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"
           />
           <h1 className="text-3xl font-semibold text-gray-800">Overview Data Approval</h1>
         </div>
-
-        {/* Search Input */}
-        <input
-          type="text"
-          value={searchQuery}
-          placeholder="Cari Nama Karyawan..."
-          className="border border-gray-300 p-2 rounded-lg w-full max-w-md"
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
       </div>
 
       <div className="mb-6 flex justify-between items-center">
-        {/* Status Toggle */}
         <div className="flex space-x-3">
           <button
             className={`px-4 py-2 rounded-lg font-semibold ${
@@ -119,8 +132,7 @@ const DataApproval = () => {
           </button>
           <button
             className={`px-4 py-2 rounded-lg font-semibold ${
-              selectedStatus === 1 ? "bg-green-500 text-white" : "bg-gray-200"
-            }`}
+              selectedStatus === 1 ? "bg-green-500 text-white" : "bg-gray-200"}`}
             onClick={() => setSelectedStatus(1)}
           >
             Disetujui
@@ -135,52 +147,16 @@ const DataApproval = () => {
           </button>
         </div>
 
-        {/* Date Filter */}
+        {/* Search Input */}
         <div className="flex space-x-2">
-          <select
-            value={selectedDay}
-            onChange={(e) => setSelectedDay(e.target.value)}
-            className="border border-gray-300 p-2 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-150"
-          >
-            <option value="" className="text-gray-400">
-              Tanggal
-            </option>
-            {days.map((day) => (
-              <option key={day} value={day}>
-                {day}
-              </option>
-            ))}
-          </select>
-          <select
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            className="border border-gray-300 p-2 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-150"
-          >
-            <option value="" className="text-gray-400">
-              Bulan
-            </option>
-            {months.map((month) => (
-              <option key={month.value} value={month.value}>
-                {month.name}
-              </option>
-            ))}
-          </select>
-          <select
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(e.target.value)}
-            className="border border-gray-300 p-2 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-150"
-          >
-            <option value="" className="text-gray-400">
-              Tahun
-            </option>
-            {years.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
+          <input
+            type="text"
+            value={searchQuery}
+            placeholder="Cari Nama Karyawan..."
+            className="border border-gray-300 p-2 rounded-lg w-full max-w-md"
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
-        
       </div>
 
       {/* Table Section */}
@@ -200,61 +176,79 @@ const DataApproval = () => {
                 <th className="py-3 px-4 text-left">Deskripsi</th>
                 <th className="py-3 px-4 text-left">Jam Mulai</th>
                 <th className="py-3 px-4 text-left">Jam Selesai</th>
-                {selectedStatus !== 0 && <th className="py-3 px-4 text-left">Status</th>}
-                {selectedStatus === 0 && <th className="py-3 px-4 text-center">Aksi</th>}
+                <th className="py-3 px-4 text-center">{selectedStatus === 1 || selectedStatus === 2 ? "Status" : "Aksi"}</th>
               </tr>
             </thead>
             <tbody className="text-gray-700 text-sm">
               {filteredApproval.length > 0 ? (
                 filteredApproval.map((approval, index) => (
-                  <tr key={approval.id} className="hover:bg-gray-100 border-b border-gray-200">
+                  <tr key={approval.id_lembur} className="hover:bg-gray-100 border-b border-gray-200">
                     <td className="py-3 px-4">{index + 1}</td>
-                    <td className="py-3 px-4">{approval.nama}</td>
-                    <td className="py-3 px-4">{new Date(approval.tanggal).toLocaleDateString()}</td>
+                    <td className="py-3 px-4">{approval.nama_user}</td>
+                    <td className="py-3 px-4">{new Date(approval.tanggal).toLocaleDateString("id-ID")}</td>
                     <td className="py-3 px-4">{approval.lokasi}</td>
-                    <td className="py-3 px-4">{approval.deskripsi}</td>
+                    {/* Deskripsi dengan klik untuk melihat detail */}
+                    <td className="py-3 px-4">
+                      <button
+                        onClick={() => openModalWithDescription(approval.deskripsi)}
+                        className="text-blue-500 underline"
+                      >
+                        Lihat Deskripsi
+                      </button>
+                    </td>
                     <td className="py-3 px-4">{approval.jam_mulai}</td>
                     <td className="py-3 px-4">{approval.jam_selesai}</td>
-                    {/* Show Status or Action based on selectedStatus */}
-                    {selectedStatus !== 0 ? (
-                      <td
-                        className={`py-3 px-4 font-semibold ${
-                          approval.status === 0
-                            ? "text-yellow-500"
-                            : approval.status === 1
-                            ? "text-green-500"
-                            : "text-red-500"
-                        }`}
-                      >
-                        {approval.status === 0 ? "Belum Disetujui" : approval.status === 1 ? "Disetujui" : "Ditolak"}
-                      </td>
-                    ) : (
-                      <td className="py-3 px-4 flex justify-center space-x-2">
-                        <button
-                          className="bg-green-500 text-white py-1 px-3 rounded-lg hover:bg-green-600 transition duration-200"
-                          onClick={() => handleApprove(approval.id)}
-                        >
-                          Setujui
-                        </button>
-                        <button
-                          className="bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600 transition duration-200"
-                          onClick={() => handleReject(approval.id)}
-                        >
-                          Tolak
-                        </button>
-                      </td>
-                    )}
+                    <td className="py-3 px-4 flex justify-center space-x-2">
+                      {approval.status_lembur === 1 ? (
+                        <span className="text-green-600 font-semibold">Disetujui</span>
+                      ) : approval.status_lembur === 2 ? (
+                        <span className="text-red-600 font-semibold">Ditolak</span>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => handleApprove(approval.id_lembur)}
+                            className="bg-green-500 text-white rounded-lg px-4 py-2"
+                          >
+                            Setujui
+                          </button>
+                          <button
+                            onClick={() => handleReject(approval.id_lembur)}
+                            className="bg-red-500 text-white rounded-lg px-4 py-2"
+                          >
+                            Tolak
+                          </button>
+                        </>
+                      )}
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={selectedStatus === 0 ? 7 : 8} className="py-3 px-4 text-center">
-                    Tidak ada data.
+                  <td colSpan="8" className="text-center py-4">
+                    Data tidak ditemukan.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
+          <div className="relative bg-green-600 p-6 rounded-lg shadow-lg max-w-lg mx-auto transform transition-transform duration-300 ease-in-out scale-100 overflow-y-auto h-3/4">
+            <button onClick={() => setIsModalOpen(false)} className="absolute top-2 right-3 text-white text-3xl text-red-700">
+              <FontAwesomeIcon icon={faTimes} />
+            </button>
+            <h2 className="text-2xl font-bold text-white mb-4 mt-5">Rincian Deskripsi :</h2>
+            <p className="mb-6 text-white leading-relaxed">
+              {modalDescription} Lorem ipsum dolor sit amet, consectetur adipisicing elit. Temporibus fuga alias porro quae
+              tempore eligendi sapiente iste repellat aliquid, placeat fugiat, esse voluptates, voluptatum perferendis optio
+              animi eveniet nobis aperiam ullam reprehenderit dolore est officiis. Error ab impedit nihil? Libero eum hic
+              dolorem nemo suscipit! Animi deserunt odio sunt sit incidunt, maiores nulla eveniet dolorem vitae totam
+              consequatur. lorem500
+            </p>
+          </div>
         </div>
       )}
     </div>

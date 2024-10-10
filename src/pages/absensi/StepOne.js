@@ -36,7 +36,7 @@ const StepOne = ({ handleNextStepData }) => {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const response = await fetch(`${apiUrl}/absen/lokasi`);
+        const response = await fetch(`${apiUrl}/lokasi/`);
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
         setLocations(data);

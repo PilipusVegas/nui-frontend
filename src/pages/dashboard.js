@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 import HomeMobile from "../layouts/homeMobile";
 import HomeDesktop from "../layouts/homeDesktop";
@@ -10,11 +11,23 @@ const Home = ({ onLogout }) => {
   const roleId = localStorage.getItem("roleId");
 
   const handleLogout = () => {
-    const isConfirmed = window.confirm("Apakah Anda yakin ingin logout?");
-    if (isConfirmed) {
-      onLogout();
-    }
-  };
+    Swal.fire({
+      title: "Konfirmasi Logout",
+      text: "Apakah Anda yakin ingin logout?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Ya, Logout",
+      cancelButtonText: "Batal",
+      customClass: {
+        confirmButton: 'btn-confirm',
+        cancelButton: 'btn-cancel'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        onLogout();
+      }
+    });
+  };  
 
   const GetNamaDivisi = (id) => {
     let role = "";
@@ -41,19 +54,12 @@ const Home = ({ onLogout }) => {
   };
 
   const renderViewBasedOnRole = () => {
-    if (roleId === "4" || roleId === "5") {   
-      return (
-        <HomeDesktop username={username} roleId={roleId} GetNamaDivisi={GetNamaDivisi} handleLogout={handleLogout} />
-      );
+    if (roleId === "4" || roleId === "5") {
+      return <HomeDesktop username={username} roleId={roleId} GetNamaDivisi={GetNamaDivisi} handleLogout={handleLogout} />;
     } else {
-      return (
-        <HomeMobile username={username} roleId={roleId} handleLogout={handleLogout} GetNamaDivisi={GetNamaDivisi} 
-        />
-      );
+      return <HomeMobile username={username} roleId={roleId} handleLogout={handleLogout} GetNamaDivisi={GetNamaDivisi} />;
     }
-};
-
-
+  };
   return <div>{renderViewBasedOnRole()}</div>;
 };
 

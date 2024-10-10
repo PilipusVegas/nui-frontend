@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { faArrowLeft, faMapMarkerAlt, faClock, faCalendarDay } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faMapMarkerAlt, faClock, faCalendarDay, faRulerVertical } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Swal from "sweetalert2";
 
@@ -112,6 +112,7 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
               <th className="py-2 px-4 font-semibold text-center">No.</th>
               <th className="py-2 px-4 font-semibold text-center">Lokasi</th>
               <th className="py-2 px-4 font-semibold text-center">Jam Mulai</th>
+              <th className="py-2 px-4 font-semibold text-center">Jam Pulang</th>
               <th className="py-2 px-4 font-semibold text-center">Keterangan</th>
               <th className="py-2 px-4 font-semibold text-center">Tanggal</th>
               <th className="py-2 px-4 font-semibold text-center">Status</th>
@@ -125,8 +126,25 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
                   <td className="text-center px-4 py-2">{index + 1}</td>
                   <td className="text-center py-2 px-4">{item.lokasi}</td>
                   <td className="text-center py-2 px-4">
-                    {new Date(item.jam_mulai).toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta" })}
+                    {new Date(item.jam_mulai).toLocaleTimeString("id-ID", {
+                      timeZone: "Asia/Jakarta",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false, // Use 24-hour format
+                    })}
                   </td>
+
+                  <td className="text-center py-2 px-4">
+                    {item.jam_selesai
+                      ? new Date(item.jam_selesai).toLocaleTimeString("id-ID", {
+                          timeZone: "Asia/Jakarta",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: false, // Use 24-hour format
+                        })
+                      : "belum pulang"}
+                  </td>
+
                   <td
                     className={`text-center ${
                       new Date(item.jam_mulai).getHours() >= 8 ? "text-red-500 font-bold" : "text-green-500 font-bold"
@@ -223,6 +241,10 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
                         Open in maps
                       </a>
                     </p>
+                    <p className="text-gray-700 flex items-center">
+                      <FontAwesomeIcon icon={faRulerVertical} className="mr-2" />
+                      {selectedItem.distance_start} Meter
+                    </p>
                   </div>
                 </div>
               </div>
@@ -263,6 +285,10 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
                       >
                         Open in maps
                       </a>
+                    </p>
+                    <p className="text-gray-700 flex items-center">
+                      <FontAwesomeIcon icon={faRulerVertical} className="mr-2" />
+                      {selectedItem.distance_end} Meter
                     </p>
                   </div>
                 </div>

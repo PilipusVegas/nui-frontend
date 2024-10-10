@@ -82,7 +82,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
 
   const fetchApprovals = async () => {
     try {
-      const response = await fetch(`${apiUrl}/overtime/`);
+      const response = await fetch(`${apiUrl}/lembur/approve`);
       const result = await response.json();
       const filteredApprovals = Array.isArray(result) ? result.filter((request) => request.status === 0) : [];
       setTotalApprovals(filteredApprovals.length);
