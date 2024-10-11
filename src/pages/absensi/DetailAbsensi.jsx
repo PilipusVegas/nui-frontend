@@ -59,16 +59,14 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
   const handleStatusUpdate = async () => {
     if (!selectedItem?.id_absen) {
       console.error("ID is required to update status");
+      setIsApproved(true);
       return;
     }
-
     setIsLoading(true);
     const newStatus = 1;
     try {
       await onPostStatus(selectedItem.id_absen, newStatus);
-      setIsApproved(true);
       handleCloseModal();
-
       Swal.fire({
         title: "Status Diperbarui!",
         text: "Status absensi telah berhasil disetujui.",
@@ -82,6 +80,7 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
       setIsLoading(false);
     }
   };
+  
 
   return (
     <div className="min-h-screen flex flex-col justify-start p-6">
@@ -157,8 +156,8 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
                     {new Date(item.jam_mulai).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })}
                   </td>
                   <td className="text-center py-2 px-4">
-                    <span className={`font-semibold ${item.status === 1 ? "text-green-500" : "text-red-500"}`}>
-                      {item.status === 1 ? "Disetujui" : "Belum Disetujui"}
+                    <span className={`font-semibold ${setIsApproved.id_absen ? "text-green-500" : "text-red-500"}`}>
+                      {setIsApproved.id_absen? "Disetujui" : "Belum Disetujui"}
                     </span>
                   </td>
                   <td className="text-center py-2 px-4">

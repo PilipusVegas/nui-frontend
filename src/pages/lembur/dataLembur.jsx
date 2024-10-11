@@ -46,7 +46,7 @@ const DataLembur = () => {
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center">
             <FontAwesomeIcon icon={faArrowLeft} title="Back to Home" onClick={handleBackClick} className="mr-2 cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"/>
-            <h1 className="text-4xl font-bold text-gray-800 pb-1">DATA LEMBUR</h1>
+            <h1 className="text-4xl font-bold text-gray-800 pb-1">Data Lembur</h1>
           </div>
         </div>
         <div className="flex mb-4 items-center space-x-4">

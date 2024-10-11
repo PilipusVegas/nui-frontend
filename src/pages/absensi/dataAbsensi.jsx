@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import DetailAbsensi from "./DetailAbsensi";
 import { useNavigate } from "react-router-dom";
@@ -44,7 +44,6 @@ const DataAbsensi = () => {
       console.error("Error: Missing id_absen");
       return;
     }
-
     try {
       const response = await fetch(`${apiUrl}/absen/${id}`);
       if (!response.ok) {
@@ -63,7 +62,6 @@ const DataAbsensi = () => {
       if (!id_absen) {
         throw new Error("ID absensi tidak valid");
       }
-
       const response = await fetch(`${apiUrl}/absen/status/${id_absen}`, {
         method: "PUT",
         headers: {
@@ -71,7 +69,6 @@ const DataAbsensi = () => {
         },
         body: JSON.stringify({ status: newStatus }),
       });
-
       if (!response.ok) {
         throw new Error("Gagal memperbarui status");
       }
@@ -113,12 +110,24 @@ const DataAbsensi = () => {
           <FontAwesomeIcon icon={faArrowLeft} title="Back to Home" onClick={handleBackClick} className="mr-2 cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"/>
           <h2 className="text-3xl font-bold text-gray-800 pb-1">Data Absensi</h2>
         </div>
-
         <div className="flex items-center space-x-2">
-          <input type="text" placeholder="Search by Name" value={searchName} onChange={(e) => setSearchName(e.target.value)} className="border border-gray-300 rounded-lg p-2" />
-          <input type="text" placeholder="Search by Divisi" value={searchDivisi} onChange={(e) => setSearchDivisi(e.target.value)} className="border border-gray-300 rounded-lg p-2"
-          />
-        </div>
+      <div className="relative w-full">
+        <input type="text" placeholder="Search by Name" value={searchName} onChange={(e) => setSearchName(e.target.value)}
+          className="border border-gray-300 rounded-lg p-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-600"
+        />
+        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+          <FontAwesomeIcon icon={faSearch} />
+        </span>
+      </div>
+      <div className="relative w-full">
+        <input type="text" placeholder="Search by Divisi" value={searchDivisi} onChange={(e) => setSearchDivisi(e.target.value)}
+          className="border border-gray-300 rounded-lg p-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-600"
+        />
+        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+          <FontAwesomeIcon icon={faSearch} />
+        </span>
+      </div>
+    </div>
       </div>
 
       <div className="rounded-lg shadow-md overflow-hidden">
@@ -142,7 +151,6 @@ const DataAbsensi = () => {
                   <td className="text-center px-4 py-2">{absen.role}</td>
                   <td className="text-center px-4 py-2">{absen.total_absen} Hari</td>
                   <td className="text-center text-red-600 font-bold px-4 py-2">{absen.total_status} Unapproved</td>
-
                   <td className="text-center px-4 py-2">
                     <button onClick={() => handleDetailClick(absen.id_user)} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-150">
                       Detail

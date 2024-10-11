@@ -1,26 +1,24 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom"; 
 import logo from "../assets/logo.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash, faUser, faLock } from "@fortawesome/free-solid-svg-icons";
-import Swal from "sweetalert2"; // Import SweetAlert
+import Swal from "sweetalert2"; 
 
 const Login = ({ onLoginSuccess }) => {
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate(); 
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
-
+  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
-  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
   const handleLogin = async () => {
     if (!username || !password) {
       Swal.fire({
         icon: "error",
-        title: "Gagal!",
-        text: "Username dan password tidak boleh kosong!",
+        title: "Login Gagal",
+        text: "Pastikan username dan password telah diisi dengan benar.",
       });
       return;
     }
@@ -39,14 +37,9 @@ const Login = ({ onLoginSuccess }) => {
         localStorage.setItem("roleId", dataUser.id_role);
         localStorage.setItem("isLoggedIn", "true");
         onLoginSuccess();
-
-        // Show success message using SweetAlert
-        Swal.fire({
-          icon: "success",
-          title: "Sukses!",
-          text: "Login berhasil!",
-        }).then(() => {
-          navigate("/home"); // Redirect to /home
+        Swal.fire({ icon: "success",title: "Login Berhasil!", text: "Selamat Datang!",})
+        .then(() => {
+          navigate("/home");
         });
       } else {
         Swal.fire({

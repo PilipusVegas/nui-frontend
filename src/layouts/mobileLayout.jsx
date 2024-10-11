@@ -5,7 +5,7 @@ const MobileLayout = ({ title, children }) => {
   const navigate = useNavigate();
 
   const handleBack = () => {
-    navigate(-1);
+    navigate(-1) ? navigate(-1) : navigate('/home');
   };
 
   return (

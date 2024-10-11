@@ -74,7 +74,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
 
   const fetchOvertime = async () => {
     try {
-      const response = await fetch(`${apiUrl}/overtime/`);
+      const response = await fetch(`${apiUrl}/lembur/approve`);
       const result = await response.json();
       setTotalOvertime(Array.isArray(result) ? result.length : 0);
     } catch (error) {}
@@ -126,6 +126,9 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
             {GetNamaDivisi(roleId)} • Kantor Palem
           </div>
         </div>
+
+         
+        {/* ACC HRD */}
         <div className="mt-6 grid grid-cols-4 gap-4">
           {roleId === "4" && (
             <>
@@ -160,6 +163,8 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
               </div>
             </>
           )}
+
+          {/* ACC BU ABI */}
           {roleId === "5" && (
             <div
               onClick={handleApprovalCardClick}

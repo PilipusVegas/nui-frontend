@@ -3,7 +3,7 @@ import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faEdit, faTrash, faSearch } from "@fortawesome/free-solid-svg-icons";
 
 const DataKaryawan = ({}) => {
   const navigate = useNavigate();
@@ -263,13 +263,19 @@ const DataKaryawan = ({}) => {
           </button>
         </div>
 
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Cari Karyawan..."
-          className="border p-2 mb-4 w-full rounded-md"
-        />
+        <div className="relative mb-4">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Cari Karyawan..."
+            aria-label="Search Karyawan" 
+            className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 p-2 pl-10 pr-4 w-full rounded-md transition duration-200 ease-in-out"
+          />
+          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+            <FontAwesomeIcon icon={faSearch} />
+          </span>
+        </div>
 
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
