@@ -18,7 +18,7 @@ const DataPenggajian = () => {
   const navigate = useNavigate();
 
   const handleBackClick = () => {
-    navigate(-1);
+    navigate("/home");
   };
 
   const fetchPayrollData = async () => {
