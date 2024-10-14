@@ -12,10 +12,10 @@ const DataApproval = () => {
   const [approvalData, setApprovalData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState(0); // Default status filter
+  const [selectedStatus, setSelectedStatus] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
-  const [modalDescription, setModalDescription] = useState(""); // State for storing description in modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalDescription, setModalDescription] = useState("");
 
   const handleBackClick = () => navigate("/home");
 
@@ -27,8 +27,8 @@ const DataApproval = () => {
         throw new Error("Failed to fetch data");
       }
       const result = await response.json();
-      if (Array.isArray(result)) {
-        setApprovalData(result); // Set all data initially
+      if (Array.isArray(result.data)) {
+        setApprovalData(result.data); // Set all data initially
       } else {
         setErrorMessage("Unexpected response format.");
       }
@@ -132,7 +132,8 @@ const DataApproval = () => {
           </button>
           <button
             className={`px-4 py-2 rounded-lg font-semibold ${
-              selectedStatus === 1 ? "bg-green-500 text-white" : "bg-gray-200"}`}
+              selectedStatus === 1 ? "bg-green-500 text-white" : "bg-gray-200"
+            }`}
             onClick={() => setSelectedStatus(1)}
           >
             Disetujui
@@ -167,28 +168,24 @@ const DataApproval = () => {
       ) : (
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <table className="min-w-full table-auto">
-            <thead className="bg-green-600 text-white uppercase text-sm">
-              <tr>
-                <th className="py-3 px-4 text-left">No.</th>
-                <th className="py-3 px-4 text-left">Nama Karyawan</th>
-                <th className="py-3 px-4 text-left">Tanggal</th>
-                <th className="py-3 px-4 text-left">Lokasi</th>
-                <th className="py-3 px-4 text-left">Deskripsi</th>
-                <th className="py-3 px-4 text-left">Jam Mulai</th>
-                <th className="py-3 px-4 text-left">Jam Selesai</th>
-                <th className="py-3 px-4 text-center">{selectedStatus === 1 || selectedStatus === 2 ? "Status" : "Aksi"}</th>
+            <thead>
+              <tr className="bg-green-500 text-white">
+                {["No.","Username","Tanggal","Lokasi","Deskripsi","Jam Mulai","Jam Selesai",
+                  selectedStatus === 1 || selectedStatus === 2 ? "Status" : "Aksi",
+                ].map((header) => (
+                  <th className="py-2 px-4 font-semibold text-center">{header}</th>
+                ))}
               </tr>
             </thead>
             <tbody className="text-gray-700 text-sm">
               {filteredApproval.length > 0 ? (
                 filteredApproval.map((approval, index) => (
                   <tr key={approval.id_lembur} className="hover:bg-gray-100 border-b border-gray-200">
-                    <td className="py-3 px-4">{index + 1}</td>
-                    <td className="py-3 px-4">{approval.nama_user}</td>
-                    <td className="py-3 px-4">{new Date(approval.tanggal).toLocaleDateString("id-ID")}</td>
-                    <td className="py-3 px-4">{approval.lokasi}</td>
-                    {/* Deskripsi dengan klik untuk melihat detail */}
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-4 text-center">{index + 1}</td>
+                    <td className="py-3 px-4 text-left">{approval.nama_user}</td>
+                    <td className="py-3 px-4 text-center">{new Date(approval.tanggal).toLocaleDateString("id-ID")}</td>
+                    <td className="py-3 px-4 text-left">{approval.lokasi}</td>
+                    <td className="py-3 px-4 text-center">
                       <button
                         onClick={() => openModalWithDescription(approval.deskripsi)}
                         className="text-blue-500 underline"
@@ -196,9 +193,9 @@ const DataApproval = () => {
                         Lihat Deskripsi
                       </button>
                     </td>
-                    <td className="py-3 px-4">{approval.jam_mulai}</td>
-                    <td className="py-3 px-4">{approval.jam_selesai}</td>
-                    <td className="py-3 px-4 flex justify-center space-x-2">
+                    <td className="py-3 px-4 text-center">{approval.jam_mulai}</td>
+                    <td className="py-3 px-4 text-center">{approval.jam_selesai}</td>
+                    <td className="py-3 px-4 flex justify-center space-x-2 text-center">
                       {approval.status_lembur === 1 ? (
                         <span className="text-green-600 font-semibold">Disetujui</span>
                       ) : approval.status_lembur === 2 ? (
@@ -236,18 +233,15 @@ const DataApproval = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
-          <div className="relative bg-green-600 p-6 rounded-lg shadow-lg max-w-lg mx-auto transform transition-transform duration-300 ease-in-out scale-100 overflow-y-auto h-3/4">
-            <button onClick={() => setIsModalOpen(false)} className="absolute top-2 right-3 text-white text-3xl text-red-700">
+          <div className="relative bg-green-600 p-6 rounded-lg shadow-lg w-full max-w-lg mx-auto transform transition-transform duration-300 ease-in-out scale-100 overflow-y-auto h-3/4 min-h-[300px]">
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-2 right-3 text-white text-3xl text-red-700"
+            >
               <FontAwesomeIcon icon={faTimes} />
             </button>
             <h2 className="text-2xl font-bold text-white mb-4 mt-5">Rincian Deskripsi :</h2>
-            <p className="mb-6 text-white leading-relaxed">
-              {modalDescription} Lorem ipsum dolor sit amet, consectetur adipisicing elit. Temporibus fuga alias porro quae
-              tempore eligendi sapiente iste repellat aliquid, placeat fugiat, esse voluptates, voluptatum perferendis optio
-              animi eveniet nobis aperiam ullam reprehenderit dolore est officiis. Error ab impedit nihil? Libero eum hic
-              dolorem nemo suscipit! Animi deserunt odio sunt sit incidunt, maiores nulla eveniet dolorem vitae totam
-              consequatur. lorem500
-            </p>
+            <p className="mb-6 text-white leading-relaxed">{modalDescription || "Deskripsi tidak tersedia."}</p>
           </div>
         </div>
       )}

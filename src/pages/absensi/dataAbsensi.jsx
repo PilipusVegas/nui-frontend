@@ -133,13 +133,10 @@ const DataAbsensi = () => {
       <div className="rounded-lg shadow-md overflow-hidden">
         <table className="table-auto w-full border-collapse rounded-lg">
           <thead>
-            <tr className="text-white bg-transparent">
-              <th className="px-4 py-3 text-center font-semibold bg-green-500">No</th>
-              <th className="px-4 py-3 text-center font-semibold bg-green-500">Nama User</th>
-              <th className="px-4 py-3 text-center font-semibold bg-green-500">Divisi</th>
-              <th className="px-4 py-3 text-center font-semibold bg-green-500">Total Absen</th>
-              <th className="px-4 py-3 text-center font-semibold bg-green-500">Data Unapproved</th>
-              <th className="px-4 py-3 text-center font-semibold bg-green-500">Aksi</th>
+          <tr className="bg-green-500 text-white">
+              {["No.", "Username", "Divisi", "Total Absen", "Data Unapproved", "Aksi"].map((header) => (
+                <th className="py-2 px-4 font-semibold text-center">{header}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -150,7 +147,7 @@ const DataAbsensi = () => {
                   <td className="text-center px-4 py-2">{absen.nama_user}</td>
                   <td className="text-center px-4 py-2">{absen.role}</td>
                   <td className="text-center px-4 py-2">{absen.total_absen} Hari</td>
-                  <td className="text-center text-red-600 font-bold px-4 py-2">{absen.total_status} Unapproved</td>
+                  <td className="text-center text-red-600 font-bold px-4 py-2">{absen.unapproved} Unapproved</td>
                   <td className="text-center px-4 py-2">
                     <button onClick={() => handleDetailClick(absen.id_user)} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-150">
                       Detail

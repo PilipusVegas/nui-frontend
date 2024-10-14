@@ -55,14 +55,11 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
       const response = await fetch(`${apiUrl}/absen/`);
       const result = await response.json();
 
-      // Check if the result is an array
       if (Array.isArray(result)) {
-        // Calculate the total status by summing up the total_status values
         const totalStatus = result.reduce((acc, item) => {
-          return acc + Number(item.total_status); // Convert to number before adding
+          return acc + Number(item.unapproved); // Convert to number before adding
         }, 0);
 
-        // Set the total status
         setTotalAbsences(totalStatus); // Store the total status value
       } else {
         setTotalAbsences(0); // Set 0 if not an array
@@ -72,27 +69,32 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     }
   };
 
-  const fetchOvertime = async () => {
+  const fetchApprovedByHRDAndPA = async () => {
     try {
       const response = await fetch(`${apiUrl}/lembur/approve`);
       const result = await response.json();
-      setTotalOvertime(Array.isArray(result) ? result.length : 0);
-    } catch (error) {}
+  
+      if (result.success && Array.isArray(result.data)) {
+        const lemburStatus0 = result.data.filter(item => item.status_lembur === 0);
+        
+        const lemburStatus1 = result.data.filter(item => item.status_lembur === 1);
+  
+        setTotalApprovals(lemburStatus0.length); 
+        setTotalOvertime(lemburStatus1.length);  
+      } else {
+        console.error("Data format is incorrect or fetching failed");
+      }
+    } catch (error) {
+      console.error("Error fetching lembur data:", error);
+    }
   };
+  
 
-  const fetchApprovals = async () => {
-    try {
-      const response = await fetch(`${apiUrl}/lembur/approve`);
-      const result = await response.json();
-      const filteredApprovals = Array.isArray(result) ? result.filter((request) => request.status === 0) : [];
-      setTotalApprovals(filteredApprovals.length);
-    } catch (error) {}
-  };
 
   const fetchPayroll = async () => {
     try {
       const response = await fetch(`${apiUrl}/penggajian/`);
-      const result = await response.json();
+      const result = await response.json(); 
       setTotalPayroll(Array.isArray(result) ? result.length : 0);
     } catch (error) {}
   };
@@ -103,11 +105,11 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     if (roleId === "4") {
       fetchEmployees();
       fetchAbsences();
-      fetchOvertime();
+      fetchApprovedByHRDAndPA();
       fetchPayroll();
     }
     if (roleId === "5") {
-      fetchApprovals();
+      fetchApprovedByHRDAndPA();
     }
     return () => clearInterval(intervalId);
   }, [roleId]);
@@ -127,7 +129,6 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
           </div>
         </div>
 
-         
         {/* ACC HRD */}
         <div className="mt-6 grid grid-cols-4 gap-4">
           {roleId === "4" && (
@@ -151,7 +152,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
                 onClick={handleOvertimeCardClick}
                 className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
               >
-                <h4 className="text-5xl font-bold text-blue-600 mb-3">{totalOvertime}</h4>
+                <h4 className="text-5xl font-bold text-blue-600 mb-3">{totalOvertime}</h4> {/* Total ACC HRD */}
                 <p className="text-xl font-semibold text-gray-700">Lembur</p>
               </div>
               <div
@@ -170,7 +171,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
               onClick={handleApprovalCardClick}
               className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
             >
-              <h4 className="text-5xl font-bold text-green-600 mb-3">{totalApprovals}</h4>
+              <h4 className="text-5xl font-bold text-green-600 mb-3">{totalApprovals}</h4> {/* Total ACC PA */}
               <p className="text-xl font-semibold text-gray-700">Approval Lembur</p>
             </div>
           )}

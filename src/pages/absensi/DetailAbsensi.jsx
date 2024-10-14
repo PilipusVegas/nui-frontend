@@ -7,6 +7,7 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isApproved, setIsApproved] = useState(false);
+  const [statusApproval, setStatusApproval] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [period, setPeriod] = useState("");
@@ -39,9 +40,11 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
 
   useEffect(() => {
     if (Array.isArray(absen) && absen.length > 0) {
-      const firstItem = absen[0];
-      setSelectedItem(firstItem);
-      setIsApproved(firstItem?.status === 1);
+      const initialStatus = {};
+      absen.forEach((item) => {
+        initialStatus[item.id_absen] = item.status === 1;
+      });
+      setStatusApproval(initialStatus); // Set status approval per id_absen
     }
   }, [absen]);
 
@@ -56,17 +59,22 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
     setError(null);
   };
 
-  const handleStatusUpdate = async () => {
-    if (!selectedItem?.id_absen) {
+  const handleStatusUpdate = async (id_absen) => {
+    if (!id_absen) {
       console.error("ID is required to update status");
-      setIsApproved(true);
       return;
     }
     setIsLoading(true);
     const newStatus = 1;
     try {
-      await onPostStatus(selectedItem.id_absen, newStatus);
-      handleCloseModal();
+      await onPostStatus(id_absen, newStatus);
+
+      // Update status khusus untuk id_absen ini
+      setStatusApproval((prevState) => ({
+        ...prevState,
+        [id_absen]: true, // Set status sebagai disetujui untuk id_absen ini
+      }));
+
       Swal.fire({
         title: "Status Diperbarui!",
         text: "Status absensi telah berhasil disetujui.",
@@ -80,7 +88,6 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
       setIsLoading(false);
     }
   };
-  
 
   return (
     <div className="min-h-screen flex flex-col justify-start p-6">
@@ -108,14 +115,9 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
         <table className="min-w-full border-collapse">
           <thead>
             <tr className="bg-green-500 text-white">
-              <th className="py-2 px-4 font-semibold text-center">No.</th>
-              <th className="py-2 px-4 font-semibold text-center">Lokasi</th>
-              <th className="py-2 px-4 font-semibold text-center">Jam Mulai</th>
-              <th className="py-2 px-4 font-semibold text-center">Jam Pulang</th>
-              <th className="py-2 px-4 font-semibold text-center">Keterangan</th>
-              <th className="py-2 px-4 font-semibold text-center">Tanggal</th>
-              <th className="py-2 px-4 font-semibold text-center">Status</th>
-              <th className="py-2 px-4 font-semibold text-center">Aksi</th>
+              {["No.", "Lokasi", "Jam Mulai", "Jam Pulang", "Keterangan", "Tanggal", "Status", "Aksi"].map((header) => (
+                <th className="py-2 px-4 font-semibold text-center">{header}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -129,7 +131,7 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
                       timeZone: "Asia/Jakarta",
                       hour: "2-digit",
                       minute: "2-digit",
-                      hour12: false, // Use 24-hour format
+                      hour12: false,
                     })}
                   </td>
 
@@ -139,9 +141,9 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
                           timeZone: "Asia/Jakarta",
                           hour: "2-digit",
                           minute: "2-digit",
-                          hour12: false, // Use 24-hour format
+                          hour12: false,
                         })
-                      : "belum pulang"}
+                      : "---"}
                   </td>
 
                   <td
@@ -156,10 +158,11 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
                     {new Date(item.jam_mulai).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })}
                   </td>
                   <td className="text-center py-2 px-4">
-                    <span className={`font-semibold ${setIsApproved.id_absen ? "text-green-500" : "text-red-500"}`}>
-                      {setIsApproved.id_absen? "Disetujui" : "Belum Disetujui"}
+                    <span className={`font-semibold ${statusApproval[item.id_absen] ? "text-green-500" : "text-red-500"}`}>
+                      {statusApproval[item.id_absen] ? "Disetujui" : "Belum Disetujui"}
                     </span>
                   </td>
+
                   <td className="text-center py-2 px-4">
                     <button
                       onClick={() => handleViewClick(item)}
@@ -192,9 +195,7 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
             </button>
 
             <h3 className="text-xl font-bold mb-4 text-left text-gray-700">Detail Lokasi : </h3>
-
             {error && <p className="text-red-500">{error}</p>}
-
             <div className="bg-white rounded-lg shadow-lg p-4 mb-3">
               <h4 className="text-base font-semibold text-gray-700">
                 Lokasi: <span className="font-normal">{selectedItem.lokasi}</span>
@@ -207,12 +208,9 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-              {/* Absen Mulai */}
               <div className="bg-green-100 rounded-lg shadow-lg p-4">
                 {" "}
-                {/* Warna hijau untuk Absen Mulai */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-                  {/* Link untuk gambar */}
                   <a href={selectedItem.foto_mulai} target="_blank" rel="noopener noreferrer">
                     <img src={selectedItem.foto_mulai} alt="Foto Mulai" className="w-full h-48 object-contain rounded-xl" />
                   </a>
@@ -226,7 +224,6 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
                       <FontAwesomeIcon icon={faCalendarDay} className="mr-2" />
                       {new Date(selectedItem.jam_mulai).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })}
                     </p>
-                    {/* Lokasi Mulai sebagai tautan ke Google Maps */}
                     <p className="text-gray-700 flex items-center">
                       <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" />
                       <a
@@ -248,12 +245,9 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
                 </div>
               </div>
 
-              {/* Absen Selesai */}
               <div className="bg-red-100 rounded-lg shadow-lg p-4">
                 {" "}
-                {/* Warna merah untuk Absen Selesai */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-                  {/* Link untuk gambar */}
                   <a href={selectedItem.foto_selesai} target="_blank" rel="noopener noreferrer">
                     <img
                       src={selectedItem.foto_selesai}
@@ -271,7 +265,6 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
                       <FontAwesomeIcon icon={faCalendarDay} className="mr-2" />
                       {new Date(selectedItem.jam_selesai).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })}
                     </p>
-                    {/* Lokasi Selesai sebagai tautan ke Google Maps */}
                     <p className="text-gray-700 flex items-center">
                       <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" />
                       <a
@@ -293,11 +286,10 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
                 </div>
               </div>
             </div>
-
             <div className="mt-4 flex justify-center">
-              {!isApproved ? (
+              {!statusApproval[selectedItem?.id_absen] ? (
                 <button
-                  onClick={handleStatusUpdate}
+                  onClick={() => handleStatusUpdate(selectedItem.id_absen)}
                   disabled={isLoading}
                   className={`px-6 py-2 rounded-md text-white ${
                     isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"

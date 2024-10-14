@@ -281,15 +281,14 @@ const DataPenggajian = () => {
         <div className="mb-8">
           <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
             <thead className="bg-green-800 text-white uppercase text-sm leading-normal sticky top-0">
-              <tr>
-                <th className="py-3 px-4 text-left">No.</th>
-                <th className="py-3 px-4 text-left">Nama</th>
-                <th className="py-3 px-4 text-left">Divisi</th>
-                <th className="py-3 px-4 text-left">Jumlah Kehadiran</th>
-                <th className="py-3 px-4 text-left">In</th>
-                <th className="py-3 px-4 text-left">L</th>
-                <th className="py-3 px-4 text-left">Out</th>
-                <th className="py-3 px-4 text-left">T</th>
+              <tr className="bg-green-500 text-white">
+                {["No.", "Karyawan", "Divisi", "Total Absen", "Total Jam Lembur", "Total Keterlambatan", "Detail"].map(
+                  (header, index) => (
+                    <th key={index} className="py-2 px-4 font-semibold text-center">
+                      {header}
+                    </th>
+                  )
+                )}
               </tr>
             </thead>
             <tbody className="text-gray-800 text-sm font-light">
@@ -301,14 +300,15 @@ const DataPenggajian = () => {
                   );
                   return records.map((record, recordIndex) => (
                     <tr key={`${penggajian.id_user}-${recordIndex}`} className="border-b border-gray-200 hover:bg-gray-100">
-                      <td className="py-3 px-4 text-left">{index + 1}</td>
-                      <td className="py-3 px-4 text-left">{penggajian.nama}</td>
-                      <td className="py-3 px-4 text-left">{penggajian.divisi}</td>
-                      <td className="py-3 px-4 text-left">{jumlahKehadiran}</td>
-                      <td className="py-3 px-4 text-left">{record.in}</td>
-                      <td className="py-3 px-4 text-left">{record.l}</td>
-                      <td className="py-3 px-4 text-left">{record.out}</td>
-                      <td className="py-3 px-4 text-left">{record.t}</td>
+                      <td className="py-3 px-4 text-center">{index + 1}</td>
+                      <td className="py-3 px-4 text-center">{penggajian.nama}</td>
+                      <td className="py-3 px-4 text-center">{penggajian.divisi}</td>
+                      <td className="py-3 px-4 text-center">{jumlahKehadiran}</td>
+                      <td className="py-3 px-4 text-center">{record.in}</td>
+                      <td className="py-3 px-4 text-center">{record.l}</td>
+                      <td className="py-3 px-4 text-center">
+                        <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Detail</button>
+                      </td>
                     </tr>
                   ));
                 })

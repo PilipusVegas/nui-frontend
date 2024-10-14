@@ -11,7 +11,6 @@ import MenuSidebar from "./layouts/menuSidebar";
 import Notification from "./pages/notification";
 import DataLembur from "./pages/lembur/dataLembur";
 import DataAbsensi from "./pages/absensi/dataAbsensi";
-import DataRequest from "./pages/approval/dataRequest";
 import DataKaryawan from "./pages/profile/dataKaryawan";
 import DataApproval from "./pages/approval/dataApproval";
 import DataPenggajian from "./pages/penggajian/dataPenggajian";
@@ -55,16 +54,6 @@ function App() {
               <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} />
               <div className="flex-grow p-6">
                 <DataApproval />
-              </div>
-            </div>
-          </PrivateRoute>
-        }/>
-        <Route path="/data-request" element={
-          <PrivateRoute>
-            <div className="flex">
-              <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} />
-              <div className="flex-grow p-6">
-                <DataRequest />
               </div>
             </div>
           </PrivateRoute>
