@@ -287,19 +287,17 @@ const DataKaryawan = ({}) => {
           <div className="relative mb-8 overflow-hidden">
             <div className="overflow-auto h-[calc(100vh-250px)] scrollbar-hidden">
               <div className="overflow-y-auto h-full bg-gray-50">
-                {/* Set background color here */}
                 <table className="min-w-full bg-white">
-                  {/* Table Header */}
                   <thead className="bg-green-500 text-white uppercase text-base leading-normal">
                     <tr>
-                      <th className="py-4 bg-green-500 text-center sticky top-0 z-10">No.</th>
-                      <th className="py-4 bg-green-500 text-center sticky top-0 z-10">Nama</th>
-                      <th className="py-4 bg-green-500 text-center sticky top-0 z-10">Posisi</th>
-                      <th className="py-4 bg-green-500 text-center sticky top-0 z-10">Telepon</th>
-                      <th className="py-4 bg-green-500 text-center sticky top-0 z-10">Action</th>
-                    </tr>
+                  {["No.", "Karyawan", "Posisi", "Telepon", "Action"].map((header) => (
+                    <th className="py-2 px-4 bg-green-500 text-center sticky top-0 z-10">
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+                    
                   </thead>
-                  {/* Table Body */}
                   <tbody className="text-gray-700 text-base font-medium">
                     {Array.isArray(filteredUsers) && filteredUsers.length > 0 ? (
                       filteredUsers.map((user, index) => (
@@ -398,7 +396,6 @@ const DataKaryawan = ({}) => {
               className="border p-2 w-full rounded-md mb-4"
             />
 
-            {/* Action Buttons */}
             <div className="flex justify-between">
               <button
                 onClick={() => {

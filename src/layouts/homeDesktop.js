@@ -93,7 +93,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
 
   const fetchPayroll = async () => {
     try {
-      const response = await fetch(`${apiUrl}/penggajian/`);
+      const response = await fetch(`${apiUrl}/payroll/`);
       const result = await response.json(); 
       setTotalPayroll(Array.isArray(result) ? result.length : 0);
     } catch (error) {}

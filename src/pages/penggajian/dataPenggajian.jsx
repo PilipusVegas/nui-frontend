@@ -1,188 +1,97 @@
+import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
-import { useState } from "react";
 import DatePicker from "react-datepicker";
 import { useNavigate } from "react-router-dom";
-import "react-datepicker/dist/react-datepicker.css";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft, faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import "react-datepicker/dist/react-datepicker.css";
 
 const DataPenggajian = () => {
-  const navigate = useNavigate();
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  const [payrollData, setPayrollData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [endDate, setEndDate] = useState(new Date("2024-10-10"));
   const [startDate, setStartDate] = useState(new Date("2024-10-01"));
-  const [currentDate, setCurrentDate] = useState(new Date("2024-10-01"));
-
-  const [penggajianData] = useState([
-    {
-      id_user: 1,
-      nama: "Andi",
-      divisi: "IT",
-      records: [
-        { date: "01/10/2024", in: "08:00", l: "00:30", out: "17:00", t: "02:00" },
-        { date: "02/10/2024", in: "08:10", l: "00:20", out: "17:10", t: "01:50" },
-        { date: "03/10/2024", in: "08:00", l: "00:25", out: "17:00", t: "01:35" },
-        { date: "04/10/2024", in: "08:05", l: "00:15", out: "17:05", t: "01:45" },
-        { date: "05/10/2024", in: "08:00", l: "00:30", out: "17:00", t: "02:00" },
-        { date: "06/10/2024", in: "08:00", l: "00:30", out: "17:00", t: "02:00" },
-        { date: "07/10/2024", in: "08:00", l: "00:30", out: "17:00", t: "02:00" },
-        { date: "08/10/2024", in: "08:00", l: "00:30", out: "17:00", t: "02:00" },
-        { date: "09/10/2024", in: "08:00", l: "00:30", out: "17:00", t: "02:00" },
-        { date: "10/10/2024", in: "08:00", l: "00:30", out: "17:00", t: "02:00" },
-      ],
-    },
-    {
-      id_user: 2,
-      nama: "Budi",
-      divisi: "HR",
-      records: [
-        { date: "01/10/2024", in: "08:15", l: "00:45", out: "17:15", t: "01:30" },
-        { date: "02/10/2024", in: "08:20", l: "00:25", out: "17:20", t: "01:35" },
-        { date: "03/10/2024", in: "08:10", l: "00:20", out: "17:10", t: "01:50" },
-        { date: "04/10/2024", in: "08:00", l: "00:30", out: "17:00", t: "02:00" },
-        { date: "05/10/2024", in: "08:05", l: "00:15", out: "17:05", t: "01:45" },
-        { date: "06/10/2024", in: "08:30", l: "00:30", out: "17:30", t: "01:30" },
-        { date: "07/10/2024", in: "08:10", l: "00:20", out: "17:10", t: "01:50" },
-        { date: "08/10/2024", in: "08:05", l: "00:30", out: "17:05", t: "01:45" },
-        { date: "09/10/2024", in: "08:15", l: "00:30", out: "17:15", t: "01:45" },
-        { date: "10/10/2024", in: "08:20", l: "00:25", out: "17:20", t: "01:35" },
-      ],
-    },
-    {
-      id_user: 3,
-      nama: "Cici",
-      divisi: "Finance",
-      records: [
-        { date: "01/10/2024", in: "08:00", l: "00:30", out: "17:00", t: "02:00" },
-        { date: "02/10/2024", in: "08:00", l: "00:30", out: "17:00", t: "02:00" },
-        { date: "03/10/2024", in: "08:05", l: "00:20", out: "17:05", t: "01:45" },
-        { date: "04/10/2024", in: "08:10", l: "00:25", out: "17:10", t: "01:35" },
-        { date: "05/10/2024", in: "08:00", l: "00:30", out: "17:00", t: "02:00" },
-        { date: "06/10/2024", in: "08:00", l: "00:30", out: "17:00", t: "02:00" },
-        { date: "07/10/2024", in: "08:00", l: "00:30", out: "17:00", t: "02:00" },
-        { date: "08/10/2024", in: "08:00", l: "00:30", out: "17:00", t: "02:00" },
-        { date: "09/10/2024", in: "08:00", l: "00:30", out: "17:00", t: "02:00" },
-        { date: "10/10/2024", in: "08:00", l: "00:30", out: "17:00", t: "02:00" },
-      ],
-    },
-  ]);
+  const [endDate, setEndDate] = useState(new Date("2024-10-10"));
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   const handleBackClick = () => {
-    navigate("/home");
+    navigate(-1);
   };
 
-  const handleDownload = () => {
-    const filteredData = penggajianData.map((penggajian) => {
-      return {
-        Nama: penggajian.nama,
-        Divisi: penggajian.divisi,
-        Records: penggajian.records.filter((record) => {
-          const recordDate = new Date(record.date.split("/").reverse().join("-"));
-          return recordDate >= startDate && recordDate <= endDate;
-        }),
-      };
-    });
+  const fetchPayrollData = async () => {
+    setLoading(true);
+    setError(null);
 
-    const headerRow1 = ["No", "Nama", "Jumlah Kehadiran"];
-    const headerRow2 = ["", "", ""];
-    const uniqueDates = new Set();
+    try {
+      const response = await fetch(`${apiUrl}/payroll/`, { method: "GET" });
 
-    filteredData.forEach((item) => {
-      item.Records.forEach((record) => {
-        uniqueDates.add(record.date);
-      });
-    });
-
-    const uniqueDatesArray = [...uniqueDates];
-    uniqueDatesArray.forEach((date) => {
-      headerRow1.push(date, "", "", "");
-      headerRow2.push("In", "L", "Out", "T");
-    });
-
-    const dataToDownload = [];
-    dataToDownload.push(headerRow1);
-    dataToDownload.push(headerRow2);
-
-    filteredData.forEach((item, userIndex) => {
-      const jumlahKehadiran = item.Records.filter((record) => record.in).length;
-      const userRow = [userIndex + 1, item.Nama, jumlahKehadiran];
-      uniqueDatesArray.forEach((date) => {
-        const record = item.Records.find((r) => r.date === date);
-        if (record) {
-          userRow.push(record.in, record.l, record.out, record.t);
-        } else {
-          userRow.push("", "", "", "");
-        }
-      });
-      dataToDownload.push(userRow);
-    });
-
-    const ws = XLSX.utils.aoa_to_sheet(dataToDownload);
-
-    // Center all the cells
-    const range = XLSX.utils.decode_range(ws["!ref"]);
-    for (let R = range.s.r; R <= range.e.r; ++R) {
-      for (let C = range.s.c; C <= range.e.c; ++C) {
-        const cell = ws[XLSX.utils.encode_cell({ r: R, c: C })];
-        if (cell) {
-          // Set cell alignment to center
-          cell.s = {
-            alignment: {
-              horizontal: "center",
-              vertical: "center",
-            },
-          };
-        }
+      if (!response.ok) {
+        throw new Error("Failed to fetch data");
       }
+
+      const result = await response.json();
+
+      if (Array.isArray(result)) {
+        const aggregatedData = result.reduce((acc, current) => {
+          const existing = acc[current.id_user] || {
+            id_user: current.id_user,
+            nama_user: current.nama_user,
+            total_absen: 0,
+            total_jam_lembur: "00:00",
+          };
+
+          existing.total_absen += current.total_absen;
+          existing.total_jam_lembur = addTimes(existing.total_jam_lembur, current.total_jam_lembur);
+          acc[current.id_user] = existing;
+
+          return acc;
+        }, {});
+
+        setPayrollData(Object.values(aggregatedData)); // Convert object to array
+      } else {
+        throw new Error("Unexpected response format.");
+      }
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    // Apply auto-fit for each column
-    const columnWidths = dataToDownload[0].map((_, i) => {
-      return {
-        wch: Math.max(...dataToDownload.map((row) => (row[i] ? row[i].toString().length : 0))) + 2, // +2 for padding
-      };
-    });
-    ws["!cols"] = columnWidths;
+  // Function to sum time strings in the format "HH:MM"
+  const addTimes = (time1, time2) => {
+    const [hours1, minutes1] = time1.split(":").map(Number);
+    const [hours2, minutes2] = time2.split(":").map(Number);
 
-    // Merging cells for headers
-    const merges = [];
-    let colStart = 3;
-    uniqueDatesArray.forEach(() => {
-      merges.push({
-        s: { r: 0, c: colStart },
-        e: { r: 0, c: colStart + 3 },
-      });
-      colStart += 4;
-    });
-    ws["!merges"] = merges;
+    let totalMinutes = minutes1 + minutes2;
+    let totalHours = hours1 + hours2 + Math.floor(totalMinutes / 60);
+    totalMinutes = totalMinutes % 60;
 
-    // Create a new workbook and append the worksheet
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Data Penggajian");
+    return `${String(totalHours).padStart(2, "0")}:${String(totalMinutes).padStart(2, "0")}`;
+  };
 
-    // Write the file
-    XLSX.writeFile(wb, "data_penggajian.xlsx");
+  useEffect(() => {
+    fetchPayrollData();
+  }, []);
+
+  const handleDownload = () => {
+    // Implement your download logic here
   };
 
   const handlePreviousDay = () => {
-    const previousDay = new Date(currentDate);
-    previousDay.setDate(currentDate.getDate() - 1);
-    if (previousDay >= startDate) {
-      setCurrentDate(previousDay);
-    }
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() - 1);
+    setCurrentDate(newDate);
   };
 
   const handleNextDay = () => {
-    const nextDay = new Date(currentDate);
-    nextDay.setDate(currentDate.getDate() + 1);
-    if (nextDay <= endDate) {
-      setCurrentDate(nextDay);
-    }
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() + 1);
+    setCurrentDate(newDate);
   };
-
-  const filteredPenggajian = penggajianData.filter((penggajian) => {
-    return penggajian.nama.toLowerCase().includes(searchQuery.toLowerCase());
-  });
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -202,11 +111,12 @@ const DataPenggajian = () => {
               type="text"
               value={searchQuery}
               placeholder="Cari Nama Karyawan..."
-              className="border p-2 rounded-md w-100" // Adjust the width as needed
+              className="border p-2 rounded-md w-100"
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
         </div>
+
         <div className="flex mb-4 items-center justify-between space-x-4">
           <div className="flex space-x-4">
             <DatePicker
@@ -243,82 +153,63 @@ const DataPenggajian = () => {
             </button>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={handlePreviousDay}
-              className="flex items-center justify-center px-2 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
+          <div className="flex space-x-4">
+            <button onClick={handlePreviousDay} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
+              <FontAwesomeIcon icon={faChevronLeft} />
             </button>
-            <div className="text-lg font-bold">
-              {currentDate.toLocaleDateString("id-ID", { day: "2-digit", month: "2-digit", year: "numeric" })}
-            </div>
-            <button
-              onClick={handleNextDay}
-              className="flex items-center justify-center px-2 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+            <span>{currentDate.toLocaleDateString()}</span>
+            <button onClick={handleNextDay} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
+              <FontAwesomeIcon icon={faChevronRight} />
             </button>
           </div>
         </div>
 
-        <div className="mb-8">
-          <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
-            <thead className="bg-green-800 text-white uppercase text-sm leading-normal sticky top-0">
+        <div className="overflow-x-auto">
+          <table className="min-w-full border border-gray-300">
+            <thead>
               <tr className="bg-green-500 text-white">
-                {["No.", "Karyawan", "Divisi", "Total Absen", "Total Jam Lembur", "Total Keterlambatan", "Detail"].map(
-                  (header, index) => (
-                    <th key={index} className="py-2 px-4 font-semibold text-center">
-                      {header}
-                    </th>
-                  )
-                )}
+                {["No.", "Nama", "Total Absen", "Jam Lembur", "Aksi"].map((header, index) => (
+                  <th key={index} className="py-2 px-4 font-semibold text-center">
+                    {header}
+                  </th>
+                ))}
               </tr>
             </thead>
-            <tbody className="text-gray-800 text-sm font-light">
-              {filteredPenggajian.length > 0 ? (
-                filteredPenggajian.map((penggajian, index) => {
-                  const jumlahKehadiran = penggajian.records.length;
-                  const records = penggajian.records.filter(
-                    (record) => record.date === currentDate.toLocaleDateString("en-GB")
-                  );
-                  return records.map((record, recordIndex) => (
-                    <tr key={`${penggajian.id_user}-${recordIndex}`} className="border-b border-gray-200 hover:bg-gray-100">
-                      <td className="py-3 px-4 text-center">{index + 1}</td>
-                      <td className="py-3 px-4 text-center">{penggajian.nama}</td>
-                      <td className="py-3 px-4 text-center">{penggajian.divisi}</td>
-                      <td className="py-3 px-4 text-center">{jumlahKehadiran}</td>
-                      <td className="py-3 px-4 text-center">{record.in}</td>
-                      <td className="py-3 px-4 text-center">{record.l}</td>
-                      <td className="py-3 px-4 text-center">
-                        <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Detail</button>
-                      </td>
-                    </tr>
-                  ));
-                })
-              ) : (
+            <tbody>
+              {loading && (
                 <tr>
-                  <td colSpan="7" className="py-3 px-4 text-center">
-                    Data tidak ditemukan.
+                  <td colSpan="5" className="text-center py-4">
+                    Loading...
                   </td>
                 </tr>
               )}
+              {error && (
+                <tr>
+                  <td colSpan="5" className="text-center py-4 text-red-500">
+                    {error}
+                  </td>
+                </tr>
+              )}
+              {!loading &&
+                !error &&
+                payrollData
+                  .filter((item) => item.nama_user.toLowerCase().includes(searchQuery.toLowerCase()))
+                  .map((item, index) => (
+                    <tr key={item.id_user} className="hover:bg-gray-100">
+                      <td className="border px-4 py-2 text-center">{index + 1}</td>
+                      <td className="border px-4 py-2 text-left">{item.nama_user}</td>
+                      <td className="border px-4 py-2 text-center">{item.total_absen} Hari</td>
+                      <td className="border px-4 py-2 text-center">{item.total_jam_lembur}</td>
+                      <td className="border px-4 py-2 text-center">
+                        <button
+                          className="text-blue-500 hover:underline"
+                          onClick={() => navigate(`/data-penggajian/${item.id_user}`)}
+                        >
+                          Detail
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
             </tbody>
           </table>
         </div>

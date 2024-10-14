@@ -14,6 +14,7 @@ import DataAbsensi from "./pages/absensi/dataAbsensi";
 import DataKaryawan from "./pages/profile/dataKaryawan";
 import DataApproval from "./pages/approval/dataApproval";
 import DataPenggajian from "./pages/penggajian/dataPenggajian";
+import DetailPenggajian from "./pages/penggajian/detailPenggajian"; 
 import DetailDataLembur from "./pages/lembur/detailDataLembur";
 
 function App() {
@@ -98,7 +99,17 @@ function App() {
             </div>
           </PrivateRoute>
         }/>
-        <Route path="*" element={isLoggedIn ? <Navigate to="/home" /> : <Navigate to="/login" />} />
+        <Route path="/data-penggajian/:id_user" element={
+          <PrivateRoute>
+            <div className="flex">
+              <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")}   />
+              <div className="flex-grow p-6">
+                <DetailPenggajian/>
+              </div>
+            </div>
+          </PrivateRoute>
+        }/>
+        <Route path="*" element={isLoggedIn ? <Navigate to="/home"/> : <Navigate to="/login" />} />
       </Routes>
     </Router>
   );
