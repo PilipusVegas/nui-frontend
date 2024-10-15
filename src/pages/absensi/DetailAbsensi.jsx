@@ -112,10 +112,10 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
       )}
 
       <div className="bg-white shadow-md rounded-lg mb-4">
-        <table className="min-w-full border-collapse">
+        <table className="min-w-full border-collapse rounded-lg">
           <thead>
             <tr className="bg-green-500 text-white">
-              {["No.", "Lokasi", "Jam Mulai", "Jam Pulang", "Keterangan", "Tanggal", "Status", "Aksi"].map((header) => (
+              {["No.", "Lokasi", "IN", "OUT", "Keterangan", "Tanggal", "Status", "Aksi"].map((header) => (
                 <th className="py-2 px-4 font-semibold text-center">{header}</th>
               ))}
             </tr>

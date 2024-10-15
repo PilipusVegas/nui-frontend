@@ -122,7 +122,7 @@ const DetailDataLembur = () => {
               onClick={handleBackClick}
               className="mr-2 cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"
             />
-            <h1 className="text-4xl font-bold text-gray-800 pb-1">DETAIL DATA LEMBUR</h1>
+            <h1 className="text-4xl font-bold text-gray-800 pb-1">Detail Data Lembur</h1>
           </div>
         </div>
         {lembur && (
@@ -132,7 +132,7 @@ const DetailDataLembur = () => {
                 {lembur.nama} - {lembur.divisi}
               </h2>
               <p className="text-gray-600">
-                Total lembur {totalLembur} || Total jam {totalJamLembur}
+                Total {totalLembur} Data || Total {totalJamLembur} Jam
               </p>
             </div>
           </div>
@@ -141,48 +141,60 @@ const DetailDataLembur = () => {
           <div className="flex justify-center items-center h-64">Loading...</div>
         ) : (
           <div className="mb-8">
-            <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
+            <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-lg">
               <thead>
-                <tr className="bg-green-500 text-white">
-                  {["No.", "Tanggal", "Tugas", "Jam Mulai", "Jam Selesai", "Aksi"].map((header) => (
-                    <th className="py-2 px-4 font-semibold text-center">
+                <tr className="bg-green-600 text-white">
+                  {["No.", "Tanggal", "Tugas", "Jam Mulai", "Jam Selesai", "Aksi"].map((header, index) => (
+                    <th key={index} className="py-3 px-6 font-semibold text-center uppercase tracking-wider">
                       {header}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="text-gray-600 text-sm font-light">
-                {lemburData.length > 0 ? (
-                  lemburData.map((lembur, index) => (
-                    <tr key={lembur.id_lembur} className="border-b border-gray-300 hover:bg-gray-100">
-                      <td className="py-3 px-4 text-center">{index + 1}.</td>
-                      <td className="py-3 px-4 text-center">{lembur.tanggal}</td>
-                      <td className="py-3 px-4 text-center">
-                        <button
-                          onClick={() => handleOpenModal(lembur.deskripsi)}
-                          className="bg-blue-500 text-white py-1 px-4 rounded-md shadow hover:bg-blue-600 transition duration-200 ease-in-out"
-                        >
-                          Detail
-                        </button>
-                      </td>
-                      <td className="py-3 px-4 text-center">{lembur.jam_mulai}</td>
-                      <td className="py-3 px-4 text-center">{lembur.jam_selesai}</td>
-                      <td className="py-3 px-4 text-center">
-                        {lembur.status === 1 && (
+              <tbody className="text-gray-700">
+                {lemburData.filter((lembur) => lembur.status === 1 || lembur.status === 3).length > 0 ? (
+                  lemburData
+                    .filter((lembur) => lembur.status === 1 || lembur.status === 3)
+                    .map((lembur, index) => (
+                      <tr
+                        key={lembur.id_lembur}
+                        className="border-b border-gray-200 hover:bg-gray-100 transition duration-200 ease-in-out"
+                      >
+                        <td className="py-3 px-6 text-center">{index + 1}.</td>
+                        <td className="py-3 px-6 text-center">{lembur.tanggal}</td>
+                        <td className="py-3 px-6 text-center">
                           <button
-                            onClick={() => handleStatusChange(index, lembur.id_lembur)}
-                            className="py-1 px-4 rounded-md shadow transition duration-200 ease-in-out bg-red-500 text-white hover:bg-red-600"
+                            onClick={() => handleOpenModal(lembur.deskripsi)}
+                            className="bg-blue-500 text-white py-1 px-4 rounded-md shadow hover:bg-blue-600 transition duration-200 ease-in-out"
                           >
-                            Belum Disetujui
+                            Detail
                           </button>
-                        )}
-                        {lembur.status === 3 && <span className="text-green-500">Disetujui</span>}
-                      </td>
-                    </tr>
-                  ))
+                        </td>
+                        <td className="py-3 px-6 text-center">{lembur.jam_mulai}</td>
+                        <td className="py-3 px-6 text-center">{lembur.jam_selesai}</td>
+                        <td className="py-3 px-6 text-center">
+                          {lembur.status === 1 ? (
+                            <button
+                              onClick={() => handleStatusChange(index, lembur.id_lembur)}
+                              className="py-1.5 px-5 rounded-full shadow-md bg-green-700 text-white hover:bg-green-500 hover:shadow-lg transition duration-300 ease-in-out font-semibold"
+                            >
+                              Setujui
+                            </button>
+                          ) : lembur.status === 3 ? (
+                            <span className="py-1.5 px-5 rounded-full font-semibold text-gray-600 ">
+                              Disetujui
+                            </span>
+                          ) : (
+                            <span className="py-1.5 px-5 rounded-full bg-red-200 text-red-700 font-medium">
+                              Status Tidak Dikenali
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
                 ) : (
                   <tr>
-                    <td colSpan="6" className="text-center py-3">
+                    <td colSpan="6" className="text-center py-5 text-gray-500">
                       Data lembur tidak tersedia.
                     </td>
                   </tr>

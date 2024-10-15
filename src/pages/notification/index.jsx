@@ -24,7 +24,6 @@ const Notification = () => {
     }
     if (hasFetched) return;
 
-    // console.log("Fetching notifications for user:", id_user);
     fetch(`${apiUrl}/notif/user/${id_user}`)
       .then((response) => {
         if (!response.ok) {
@@ -44,7 +43,6 @@ const Notification = () => {
         setHasFetched(true);
       })
       .catch((error) => {
-        // console.error("Error fetching notifications:", error);
         setNotifications([]);
       })
       .finally(() => setLoading(false)); // Set loading to false after fetch

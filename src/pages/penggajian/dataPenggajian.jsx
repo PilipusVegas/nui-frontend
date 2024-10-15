@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import * as XLSX from "xlsx";
 import DatePicker from "react-datepicker";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -40,11 +39,10 @@ const DataPenggajian = () => {
             id_user: current.id_user,
             nama_user: current.nama_user,
             total_absen: 0,
-            total_jam_lembur: "00:00",
+            total_jam_lembur: current.total_jam_lembur,
           };
 
           existing.total_absen += current.total_absen;
-          existing.total_jam_lembur = addTimes(existing.total_jam_lembur, current.total_jam_lembur);
           acc[current.id_user] = existing;
 
           return acc;
@@ -59,18 +57,6 @@ const DataPenggajian = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Function to sum time strings in the format "HH:MM"
-  const addTimes = (time1, time2) => {
-    const [hours1, minutes1] = time1.split(":").map(Number);
-    const [hours2, minutes2] = time2.split(":").map(Number);
-
-    let totalMinutes = minutes1 + minutes2;
-    let totalHours = hours1 + hours2 + Math.floor(totalMinutes / 60);
-    totalMinutes = totalMinutes % 60;
-
-    return `${String(totalHours).padStart(2, "0")}:${String(totalMinutes).padStart(2, "0")}`;
   };
 
   useEffect(() => {
@@ -198,8 +184,13 @@ const DataPenggajian = () => {
                     <tr key={item.id_user} className="hover:bg-gray-100">
                       <td className="border px-4 py-2 text-center">{index + 1}</td>
                       <td className="border px-4 py-2 text-left">{item.nama_user}</td>
-                      <td className="border px-4 py-2 text-center">{item.total_absen} Hari</td>
-                      <td className="border px-4 py-2 text-center">{item.total_jam_lembur}</td>
+                      <td className="border px-4 py-2 text-center">
+                        {item.total_absen !== null ? `${item.total_absen} Hari` : "0 Ha"}
+                      </td>
+                      <td className="border px-4 py-2 text-center">
+                        {item.total_jam_lembur !== null ? item.total_jam_lembur : "00.00"}
+                      </td>
+
                       <td className="border px-4 py-2 text-center">
                         <button
                           className="text-blue-500 hover:underline"

@@ -76,14 +76,14 @@ const DetailPenggajian = () => {
 const DataTableAbsen = ({ data }) => (
     <div className="overflow-x-auto">
       <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
-        <thead className="bg-green-500 text-white"> {/* Changed to bg-green-500 */}
-          <tr>
-            <th className="py-3 px-4 text-left">No.</th>
-            <th className="py-3 px-4 text-left">Nama</th>
-            <th className="py-3 px-4 text-left">Absen Mulai</th>
-            <th className="py-3 px-4 text-left">Absen Selesai</th>
-            <th className="py-3 px-4 text-left">Deskripsi</th>
-          </tr>
+        <thead className="bg-green-500 text-white">
+          <tr className="bg-green-500 text-white">
+                {["No.","Nama","Absen Mulai","Absen Selesai", "Deskripsi"].map((header, index) => (
+                  <th key={index} title="header" className="py-2 px-4 font-semibold text-center">
+                    {header}
+                  </th>
+                ))}
+              </tr>
         </thead>
         <tbody className="text-gray-700">
           {data.length > 0 ? (
@@ -116,11 +116,11 @@ const DataTableAbsen = ({ data }) => (
         <thead className="bg-green-500 text-white"> {/* Changed to bg-green-500 */}
           <tr className="bg-green-500 text-white">
                 {["No.","Nama","Tanggal","Mulai","Selesai","Tugas lembur","Total Jam"].map((header, index) => (
-                  <th key={index} className="py-2 px-4 font-semibold text-center">
+                  <th key={index} title="header" className="py-2 px-4 font-semibold text-center">
                     {header}
                   </th>
                 ))}
-              </tr>
+          </tr>
         </thead>
         <tbody className="text-gray-700">
           {data.length > 0 ? (
