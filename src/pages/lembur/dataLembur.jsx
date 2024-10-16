@@ -83,7 +83,7 @@ const DataLembur = () => {
             <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
               <thead className="bg-green-800 text-white uppercase text-sm leading-normal sticky top-0">
                 <tr className="bg-green-500 text-white">
-                  {["No.", "Nama", "Divisi", "Total lembur", "Aksi"].map((header, index) => (
+                  {["No.", "Nama", "Divisi", "Total Unapproved", "Aksi"].map((header, index) => (
                     <th key={index} className="py-2 px-4 font-semibold text-center">
                       {header}
                     </th>
@@ -97,7 +97,7 @@ const DataLembur = () => {
                       <td className="py-3 px-4 text-center">{index + 1}.</td>
                       <td className="py-3 px-4 text-center">{lembur.nama}</td>
                       <td className="py-3 px-4 text-center">{lembur.divisi}</td>
-                      <td className="py-3 px-4 text-center">{lembur.total}</td>
+                      <td className="py-3 px-4 text-center text-red-700 font-bold">{lembur.total} Unapproved</td>
                       <td className="py-3 px-4 text-center">
                         <button
                           onClick={() => handleDetailClick(lembur)}

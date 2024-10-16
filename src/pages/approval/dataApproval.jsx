@@ -170,7 +170,7 @@ const DataApproval = () => {
           <table className="min-w-full table-auto">
             <thead>
               <tr className="bg-green-500 text-white">
-                {["No.","Username","Tanggal","Lokasi","Deskripsi","Jam Mulai","Jam Selesai",
+                {["No.","Tanggal","Username","Lokasi","Deskripsi","Jam Mulai","Jam Selesai",
                   selectedStatus === 1 || selectedStatus === 2 ? "Status" : "Aksi",
                 ].map((header) => (
                   <th className="py-2 px-4 font-semibold text-center">{header}</th>
@@ -182,8 +182,8 @@ const DataApproval = () => {
                 filteredApproval.map((approval, index) => (
                   <tr key={approval.id_lembur} className="hover:bg-gray-100 border-b border-gray-200">
                     <td className="py-3 px-4 text-center">{index + 1}</td>
-                    <td className="py-3 px-4 text-left">{approval.nama_user}</td>
                     <td className="py-3 px-4 text-center">{new Date(approval.tanggal).toLocaleDateString("id-ID")}</td>
+                    <td className="py-3 px-4 text-left">{approval.nama_user}</td>
                     <td className="py-3 px-4 text-left">{approval.lokasi}</td>
                     <td className="py-3 px-4 text-center">
                       <button

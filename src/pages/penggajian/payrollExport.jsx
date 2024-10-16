@@ -1,47 +1,58 @@
 import React, { useState } from 'react';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-import * as XLSX from 'xlsx';
 
-const PayrollComponent = () => {
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+const PayrollExport = () => {
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
-  const detailPenggajian = [
-    { user: 'John Doe', date: '2024-10-01', kehadiran: 8, lembur: 2 },
-    { user: 'John Doe', date: '2024-10-02', kehadiran: 8, lembur: 0 },
-    { user: 'Jane Doe', date: '2024-10-01', kehadiran: 8, lembur: 3 },
-  ];
-
-  const filterData = () => {
-    return detailPenggajian.filter((item) => {
-      const itemDate = new Date(item.date);
-      return itemDate >= startDate && itemDate <= endDate;
-    });
+  const handleStartDateChange = (e) => {
+    setStartDate(e.target.value);
   };
 
-  const downloadExcel = () => {
-    const filteredData = filterData();
-    const worksheet = XLSX.utils.json_to_sheet(filteredData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Payroll Data');
-    XLSX.writeFile(workbook, 'PayrollData.xlsx');
+  const handleEndDateChange = (e) => {
+    setEndDate(e.target.value);
+  };
+
+  const handleDownload = () => {
+    if (startDate && endDate) {
+      console.log(`Downloading payroll data from ${startDate} to ${endDate}`);
+      alert(`Payroll data from ${startDate} to ${endDate} is being downloaded.`);
+    } else {
+      alert('Please select both start and end dates.');
+    }
   };
 
   return (
-    <div>
-      <h1>Payroll Data</h1>
-      <div>
-        <label>Start Date: </label>
-        <DatePicker selected={startDate} onChange={(date) => setStartDate(date)} />
+    <div className="bg-white  rounded-lg w-full">
+      <div className="flex flex-wrap justify-between items-end gap-4">
+        <div className="flex flex-col">
+          <label className="block text-gray-700 text-xs font-semibold">Start Date:</label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={handleStartDateChange}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <label className="block text-gray-700 text-xs font-semibold">End Date:</label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={handleEndDateChange}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+          />
+        </div>
+
+        <button
+          onClick={handleDownload}
+          className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition duration-150 ease-in-out"
+        >
+          Download Payroll
+        </button>
       </div>
-      <div>
-        <label>End Date: </label>
-        <DatePicker selected={endDate} onChange={(date) => setEndDate(date)} />
-      </div>
-      <button onClick={downloadExcel}>Download Excel</button>
     </div>
   );
 };
 
-export default PayrollComponent;
+export default PayrollExport;
