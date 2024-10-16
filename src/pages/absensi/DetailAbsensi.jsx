@@ -148,10 +148,10 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
 
                   <td
                     className={`text-center ${
-                      new Date(item.jam_mulai).getHours() >= 8 ? "text-red-500 font-bold" : "text-green-500 font-bold"
+                      new Date(item.jam_mulai).getHours() >= 21 ? "text-red-500 font-bold" : "text-green-500 font-bold"
                     }`}
                   >
-                    {new Date(item.jam_mulai).getHours() >= 8 ? "Terlambat" : "Tepat Waktu"}
+                    {new Date(item.jam_mulai).getHours() >= 21 ? "Terlambat" : "Tepat Waktu"}
                   </td>
 
                   <td className="text-center py-2 px-4">
