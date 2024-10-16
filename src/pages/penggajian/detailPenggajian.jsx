@@ -72,7 +72,12 @@ const DataTable = ({ data }) => (
           data.map((item, index) => (
             <tr key={item.id_absen} className="hover:bg-gray-100 transition duration-200 even:bg-gray-50">
               <td className="py-2 px-4 border-b border-gray-200 text-center">{index + 1}</td>
-              <td className="py-2 px-4 border-b border-gray-200 text-center">{item.tanggal_absen || "0:00"}</td>
+              <td className="py-2 px-4 border-b border-gray-200 text-center">
+                {item.tanggal_absen && item.tanggal_lembur && item.tanggal_absen === item.tanggal_lembur
+                  ? item.tanggal_absen
+                  : item.tanggal_absen || item.tanggal_lembur}
+              </td>
+
               <td className="py-2 px-4 border-b border-gray-200 text-center">{item.absen_mulai || "0:00"}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-center">{item.keterlambatan || "0:00"}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-center">{item.absen_selesai || "0:00"}</td>
