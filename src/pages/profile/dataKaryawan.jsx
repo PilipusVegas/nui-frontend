@@ -306,7 +306,7 @@ const DataKaryawan = ({}) => {
                           <td className="py-4 text-center">{index + 1}</td>
                           <td className="py-4 text-center">{user.nama || "Unknown Name"}</td>
                           <td className="py-4 text-center">{GetNamaDivisi(user.id_role)}</td>
-                          <td className="py-4 text-center">{user.telp || "No Phone"}</td>
+                          <td className="py-4 text-center">{user.telp || "No phone number"}</td>
                           <td className="py-4 text-center flex justify-center items-center space-x-4">
                             <button
                               onClick={() => handleEdit(user)}

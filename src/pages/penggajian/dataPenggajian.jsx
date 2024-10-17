@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import PayrollExport from './payrollExport';
+import { faArrowLeft,faSearch } from "@fortawesome/free-solid-svg-icons";
+import PayrollExport from "./payrollExport";
 
 const DataPenggajian = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -30,11 +30,10 @@ const DataPenggajian = () => {
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     fetchPayrollData();
   }, []);
-  
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -54,27 +53,28 @@ const DataPenggajian = () => {
           </div>
         </div>
 
-        <div className="flex mb-4 items-center">
-          <input
-            type="text"
-            value={searchQuery}
-            placeholder="Cari Nama Karyawan..."
-            className="border border-gray-300 p-2 rounded-md w-1/3"
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+        <div className="flex mb-4 items-center relative w-full">
+      <span className="absolute left-3 top-2 text-gray-500">
+        <FontAwesomeIcon icon={faSearch} />
+      </span>
+      <input
+        type="text"
+        value={searchQuery}
+        placeholder="Cari Nama Karyawan..."
+        className="border border-gray-300 p-2 rounded-md w-full pl-10" // padding kiri untuk ikon
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+    </div>
 
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
             <thead>
               <tr className="bg-green-500 text-white">
-                {["No.", "Nama", "Jumlah Kehadiran", "Total Lembur", "Aksi"].map(
-                  (header, index) => (
-                    <th key={index} className="py-3 px-4 text-center font-semibold text-sm uppercase tracking-wider">
-                      {header}
-                    </th>
-                  )
-                )}
+                {["No.", "Nama", "Jumlah Kehadiran", "Total Lembur", "Aksi"].map((header, index) => (
+                  <th key={index} className="py-3 px-4 text-center font-semibold text-sm uppercase tracking-wider">
+                    {header}
+                  </th>
+                ))}
               </tr>
             </thead>
 
