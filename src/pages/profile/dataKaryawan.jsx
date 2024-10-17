@@ -232,6 +232,9 @@ const DataKaryawan = ({}) => {
       case "5":
         role = "PA";
         break;
+        case "6":
+        role = "Staff HRD";
+        break;
       default:
         role = "Divisi Tidak Diketahui";
     }
@@ -305,7 +308,7 @@ const DataKaryawan = ({}) => {
                         <tr key={user.id} className="border-b border-gray-300 hover:bg-gray-100 transition duration-150">
                           <td className="py-4 text-center">{index + 1}</td>
                           <td className="py-4 text-center">{user.nama || "Unknown Name"}</td>
-                          <td className="py-4 text-center">{GetNamaDivisi(user.id_role)}</td>
+                          <td className="py-4 text-center">{GetNamaDivisi(user.id_role  )}</td>
                           <td className="py-4 text-center">{user.telp || "No phone number"}</td>
                           <td className="py-4 text-center flex justify-center items-center space-x-4">
                             <button
@@ -364,9 +367,11 @@ const DataKaryawan = ({}) => {
               Pilih Posisi Karyawan
             </option>
             <option value="1">Admin</option>
-            <option value="2">IT</option>
+            <option value="2">IT Programmer</option>
             <option value="3">Teknisi</option>
-            <option value="4">HRD</option>
+            <option value="4">Manajer HRD</option>
+            <option value="5">PA</option>
+            <option value="6">Staff HRD</option>
           </select>
 
           <input

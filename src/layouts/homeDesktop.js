@@ -10,15 +10,15 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
   const [localTime, setLocalTime] = useState("");
   const [totalPayroll, setTotalPayroll] = useState(0);
   const [totalAbsences, setTotalAbsences] = useState(0);
-  const [totalOvertime, setTotalOvertime] = useState(0);
+  // const [totalOvertime, setTotalOvertime] = useState(0);
   const [totalApprovals, setTotalApprovals] = useState(0);
 
   const handleAbsenceCardClick = () => {
     navigate("/data-absensi");
   };
-  const handleOvertimeCardClick = () => {
-    navigate("/data-lembur");
-  };
+  // const handleOvertimeCardClick = () => {
+  //   navigate("/data-lembur");
+  // };
   const handleEmployeeCardClick = () => {
     navigate("/data-karyawan");
   };
@@ -73,14 +73,14 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     try {
       const response = await fetch(`${apiUrl}/lembur/approve`);
       const result = await response.json();
-  
+
       if (result.success && Array.isArray(result.data)) {
-        const lemburStatus0 = result.data.filter(item => item.status_lembur === 0);
-        
-        const lemburStatus1 = result.data.filter(item => item.status_lembur === 1);
-  
-        setTotalApprovals(lemburStatus0.length); 
-        setTotalOvertime(lemburStatus1.length);  
+        const lemburStatus0 = result.data.filter((item) => item.status_lembur === 0);
+
+        const lemburStatus1 = result.data.filter((item) => item.status_lembur === 1);
+
+        setTotalApprovals(lemburStatus0.length);
+        // setTotalOvertime(lemburStatus1.length);
       } else {
         console.error("Data format is incorrect or fetching failed");
       }
@@ -88,13 +88,11 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
       console.error("Error fetching lembur data:", error);
     }
   };
-  
-
 
   const fetchPayroll = async () => {
     try {
       const response = await fetch(`${apiUrl}/payroll/`);
-      const result = await response.json(); 
+      const result = await response.json();
       setTotalPayroll(Array.isArray(result) ? result.length : 0);
     } catch (error) {}
   };
@@ -103,13 +101,17 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     updateLocalTime();
     const intervalId = setInterval(updateLocalTime, 1000);
     if (roleId === "4") {
-      fetchEmployees();
       fetchAbsences();
-      fetchApprovedByHRDAndPA();
-      fetchPayroll();
+      // fetchApprovedByHRDAndPA();
     }
     if (roleId === "5") {
       fetchApprovedByHRDAndPA();
+    }
+    if (roleId === "6") {
+      fetchEmployees();
+      // fetchApprovedByHRDAndPA();
+      fetchPayroll();
+
     }
     return () => clearInterval(intervalId);
   }, [roleId]);
@@ -134,28 +136,25 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
           {roleId === "4" && (
             <>
               <div
+                onClick={handleAbsenceCardClick}
+                className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
+              >
+                <h4 className="text-5xl font-bold text-green-600 mb-3">{totalAbsences}</h4>
+                <p className="text-xl font-semibold text-gray-700">Absensi</p>
+              </div>
+            </>
+          )}  
+
+          {/* ACC STAFF HRD */}
+          {roleId === "6" && (
+            <>
+              <div
                 onClick={handleEmployeeCardClick}
                 className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
               >
                 <h4 className="text-5xl font-bold text-green-600 mb-3">{employees.length}</h4>
                 <p className="text-xl font-semibold text-gray-700">Karyawan</p>
               </div>
-              <div
-                onClick={handleAbsenceCardClick}
-                className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
-              >
-                <h4 className="text-5xl font-bold text-red-600 mb-3">{totalAbsences}</h4>
-                <p className="text-xl font-semibold text-gray-700">Absensi</p>
-              </div>
-
-              {/* <div
-                onClick={handleOvertimeCardClick}
-                className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
-              >
-                <h4 className="text-5xl font-bold text-blue-600 mb-3">{totalOvertime}</h4>
-                <p className="text-xl font-semibold text-gray-700">Lembur</p>
-              </div> */}
-
               <div
                 onClick={handlePayrollCardClick}
                 className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
@@ -183,3 +182,10 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
 };
 
 export default HomeDesktop;
+ {/* <div
+                onClick={handleOvertimeCardClick}
+                className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
+              >
+                <h4 className="text-5xl font-bold text-blue-600 mb-3">{totalOvertime}</h4>
+                <p className="text-xl font-semibold text-gray-700">Lembur</p>
+              </div> */}

@@ -42,10 +42,13 @@ const Home = ({ onLogout }) => {
         role = "Teknisi";
         break;
       case "4":
-        role = "HRD";
+        role = "Manajer HRD";
         break;
       case "5":
         role = "PA";
+        break;
+        case "6":
+        role = "Staff HRD";
         break;
       default:
         role = "Divisi Tidak Diketahui";
@@ -54,7 +57,7 @@ const Home = ({ onLogout }) => {
   };
 
   const renderViewBasedOnRole = () => {
-    if (roleId === "4" || roleId === "5") {
+    if (roleId === "4" || roleId === "5" || roleId === "6") {
       return <HomeDesktop username={username} roleId={roleId} GetNamaDivisi={GetNamaDivisi} handleLogout={handleLogout} />;
     } else {
       return <HomeMobile username={username} roleId={roleId} handleLogout={handleLogout} GetNamaDivisi={GetNamaDivisi} />;

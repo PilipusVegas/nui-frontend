@@ -107,7 +107,7 @@ const DataApproval = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-start p-6">
+    <div className="min-h-screen flex flex-col justify-start p-6">
       <div className="flex items-center space-x-3 mb-6 justify-between">
         <div className="flex items-center space-x-3">
           <FontAwesomeIcon
@@ -116,7 +116,7 @@ const DataApproval = () => {
             onClick={handleBackClick}
             className="mr-2 cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"
           />
-          <h1 className="text-3xl font-semibold text-gray-800">Overview Data Approval</h1>
+          <h1 className="text-3xl font-semibold text-gray-800">Data Approval Lembur</h1>
         </div>
       </div>
 
