@@ -212,7 +212,7 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
                 {" "}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                   <a href={selectedItem.foto_mulai} target="_blank" rel="noopener noreferrer">
-                    <img src={selectedItem.foto_mulai} alt="Foto Mulai" className="w-full h-48 object-contain rounded-xl" />
+                    <img src={selectedItem.foto_mulai} alt="Foto Mulai" className="w-full h-48 object-contain   rounded-xl" />
                   </a>
                   <div>
                     <h4 className="text-base font-semibold text-gray-700">Absen Mulai</h4>
