@@ -40,14 +40,14 @@ const DataPenggajian = () => {
     <div className="flex flex-col min-h-screen">
       <div className="flex-grow px-6 py-8">
         <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             <FontAwesomeIcon
               icon={faArrowLeft}
               title="Back to Home"
               onClick={handleBackClick}
-              className="mr-2 cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"
+              className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"
             />
-            <h1 className="text-3xl font-bold text-gray-800">Data Penggajian Bulanan</h1>
+            <h1 className="text-3xl font-bold text-gray-800">Overview Data Penggajian</h1>
           </div>
           <div className="flex items-center">
             <PayrollExport />

@@ -39,7 +39,7 @@ const StepThree = ({ formData = {} }) => {
       });
     }
   
-    Swal.fire('Data akan dikirim!', '', 'info');
+    // Swal.fire('Data akan dikirim!', '', 'info');
   
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     let formDataToSend = new FormData();
@@ -96,18 +96,32 @@ const StepThree = ({ formData = {} }) => {
     try {
       const response = await fetch(`${apiUrl}${endpoint}`, { method: 'POST', body: formDataToSend });
       if (!response.ok) {
-        throw new Error('Gagal mengirim data');
+        const errorData = await response.json(); // Tangkap pesan error dari backend
+        throw new Error(errorData.message || 'Gagal mengirim data'); // Gunakan pesan dari backend jika ada
       }
       const result = await response.json();
       console.log('Response dari API:', result);
       if (result.message.includes("berhasil disimpan")) {
         setIsSuccess(true);
-        Swal.fire('Absen berhasil!', '', 'success').then(() => {setTimeout(() => {window.location.reload()}, 500)});
-      }      
+        Swal.fire('Absen berhasil!', '', 'success').then(() => {
+          setTimeout(() => { window.location.reload() }, 500);
+        });
+      }
     } catch (error) {
-      Swal.fire('Terjadi kesalahan saat mengirim data.', '', 'error');
-      console.error(error);
+      Swal.fire({
+        title: "Kamu Sudah Absen Hari ini",
+        html: "<p style='font-size:14px;'>1 Hari hanya sekali absen <br> Absen pulang akan ditutup secara otomatis oleh sistem setiap jam 7 pagi</p>",
+        icon: 'error',
+        confirmButtonText: 'Kembali ke Home',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = '/home'; // Redirect ke halaman home
+        }
+      });
+      
     }
+    
+    
   };  
 
   useEffect(() => {

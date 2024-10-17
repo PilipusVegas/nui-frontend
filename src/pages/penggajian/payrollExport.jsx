@@ -6,7 +6,7 @@ const PayrollExport = () => {
     const [payrollDetail, setPayrollDetail] = useState({});
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
-    const apiUrl = process.env.REACT_APP_API_BASE_URL;
+    const apiUrl = "http://192.168.130.42:3002";
 
     // Fetch payroll data when component mounts
     useEffect(() => {
@@ -58,30 +58,10 @@ const PayrollExport = () => {
             return;
         }
 
-        if (!startDate || !endDate) {
-            alert("Silakan pilih rentang tanggal terlebih dahulu.");
-            return;
-        }
-
         const dates = getDateRange(startDate, endDate);
         const excelData = generateExcelData(dates);
 
         const worksheet = XLSX.utils.aoa_to_sheet(excelData);
-
-        // Optional: Mengatur lebar kolom agar lebih rapi
-        const columnWidths = [
-            { wpx: 50 }, // No
-            { wpx: 150 }, // Nama
-            { wpx: 150 }, // Jumlah Kehadiran
-        ];
-
-        // Menambahkan lebar kolom untuk setiap subkolom tanggal
-        dates.forEach(() => {
-            columnWidths.push({ wpx: 80 }, { wpx: 50 }, { wpx: 80 }, { wpx: 50 });
-        });
-
-        worksheet['!cols'] = columnWidths;
-
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Payroll Data");
         XLSX.writeFile(workbook, "PayrollData.xlsx");
@@ -89,93 +69,51 @@ const PayrollExport = () => {
 
     const getDateRange = (start, end) => {
         const dates = [];
-        const startD = new Date(start);
-        const endD = new Date(end);
-
-        for (let d = new Date(startD); d <= endD; d.setDate(d.getDate() + 1)) {
-            const day = d.getDate().toString().padStart(2, '0');
-            const month = (d.getMonth() + 1).toString().padStart(2, '0');
-            const year = d.getFullYear();
-            dates.push(`${day}-${month}-${year}`);
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        
+        for (let d = startDate; d <= endDate; d.setDate(d.getDate() + 1)) {
+            dates.push(`${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`);
         }
         return dates;
     };
 
     const generateExcelData = (dates) => {
-        const excelData = [];
-    
-        // Baris Header Pertama (Tanggal)
-        const headerRow1 = ["No", "Nama", "Jumlah Kehadiran"];
-        dates.forEach(date => {
-            headerRow1.push(date, "", "", ""); // Placeholder untuk IN, L, OUT, T
-        });
-        excelData.push(headerRow1);
-    
-        // Baris Header Kedua (IN, L, OUT, T di bawah tanggal)
-        const headerRow2 = ["", "", ""];
-        dates.forEach(() => {
-            headerRow2.push("IN", "L", "OUT", "T");
-        });
-        excelData.push(headerRow2);
-    
-        // Data Pengguna
+        const excelData = [["No", "Nama", "Jumlah Kehadiran"]];
+        const attendanceTypesRow = ["", "IN", "L", "OUT", "T"];
+        
+        // Prepare the header for dates
+        excelData.push(["", "", "", ...dates.flatMap(date => [date, "", "", ""])]);
+
+        // Push attendance types under dates
+        const typesRow = ["", "", "", ...dates.flatMap(() => attendanceTypesRow)];
+        excelData.push(typesRow);
+
         payrollData.forEach((user, index) => {
             const userDetails = payrollDetail[user.id_user] || [];
             const row = [index + 1, user.nama_user, user.total_absen];
-    
+
+            // Add attendance details for each date
             dates.forEach(date => {
                 const attendance = userDetails.find(detail => detail.tanggal_absen === date) || {};
                 row.push(
-                    attendance.absen_mulai || "0:00",   // IN
-                    attendance.keterlambatan || "0:00", // L
-                    attendance.absen_selesai || "0:00", // OUT
-                    attendance.lembur || "0:00"         // T
+                    attendance.absen_mulai || "00:00",  // IN
+                    attendance.keterlambatan || "00:00", // L
+                    attendance.absen_selesai || "00:00", // OUT
+                    attendance.lembur || "00:00"          // T
                 );
             });
             excelData.push(row);
         });
-    
-        // Membuat worksheet dari data excel
-        const worksheet = XLSX.utils.aoa_to_sheet(excelData);
-    
-        // Melakukan merge pada header tanggal (menggabungkan 4 kolom jadi satu per tanggal)
-        const mergeRanges = [];
-        dates.forEach((_, index) => {
-            const colStart = 3 + (index * 4);  // Kolom awal dari setiap tanggal
-            mergeRanges.push({
-                s: { r: 0, c: colStart },   // Mulai dari baris 0 (headerRow1), kolom pertama dari tanggal
-                e: { r: 0, c: colStart + 3 } // Sampai baris 0, kolom keempat dari tanggal (menyertakan IN, L, OUT, T)
-            });
-        });
-        worksheet["!merges"] = mergeRanges;
-    
-        return worksheet;
+
+        return excelData;
     };
-    
-    
+
     return (
         <div>
-            <h1>Payroll Export</h1>
-            <div style={{ marginBottom: "20px" }}>
-                <label>
-                    Tanggal Mulai:
-                    <input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        style={{ marginLeft: "10px", marginRight: "20px" }}
-                    />
-                </label>
-                <label>
-                    Tanggal Selesai:
-                    <input
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        style={{ marginLeft: "10px" }}
-                    />
-                </label>
-            </div>
+            <h1>Payroll Export</h1>         
+            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
             <button onClick={handleDownload}>Download Excel</button>
         </div>
     );

@@ -3,7 +3,7 @@ import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faEdit, faTrash, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faEdit, faTrash, faSearch, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
 const DataKaryawan = ({}) => {
   const navigate = useNavigate();
@@ -17,6 +17,7 @@ const DataKaryawan = ({}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loadingAction, setLoadingAction] = useState(false);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  const [showPassword, setShowPassword] = useState(false);
   const handleBackClick = () => navigate("/home");
 
   const [newUser, setNewUser] = useState({
@@ -342,62 +343,73 @@ const DataKaryawan = ({}) => {
       </div>
 
       {isAdding || isEditing ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg p-6 w-96">
-            <h2 className="text-xl font-bold mb-4">{isEditing ? "Edit Karyawan" : "Tambah Karyawan"}</h2>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="bg-white rounded-lg p-6 w-96">
+          <h2 className="text-xl font-bold mb-4">{isEditing ? "Edit Karyawan" : "Tambah Karyawan"}</h2>
 
-            {/* Form Fields */}
-            <input
-              type="text"
-              placeholder="Nama"
-              value={newUser.nama}
-              onChange={(e) => setNewUser({ ...newUser, nama: e.target.value })}
-              className="border p-2 w-full rounded-md mb-2"
-            />
-            <select
-              value={newUser.id_role}
-              onChange={(e) => setNewUser({ ...newUser, id_role: e.target.value })}
-              className="border p-2 w-full rounded-md mb-2"
-            >
-              <option value="" disabled>
-                Pilih Posisi Karyawan
-              </option>
-              <option value="1">Admin</option>
-              <option value="2">IT</option>
-              <option value="3">Teknisi</option>
-              <option value="4">HRD</option>
-            </select>
+          {/* Form Fields */}
+          <input
+            type="text"
+            placeholder="Nama"
+            value={newUser.nama}
+            onChange={(e) => setNewUser({ ...newUser, nama: e.target.value })}
+            className="border p-2 w-full rounded-md mb-2"
+          />
+          <select
+            value={newUser.id_role}
+            onChange={(e) => setNewUser({ ...newUser, id_role: e.target.value })}
+            className="border p-2 w-full rounded-md mb-2"
+          >
+            <option value="" disabled>
+              Pilih Posisi Karyawan
+            </option>
+            <option value="1">Admin</option>
+            <option value="2">IT</option>
+            <option value="3">Teknisi</option>
+            <option value="4">HRD</option>
+          </select>
 
+          <input
+            type="text"
+            placeholder="Telepon"
+            value={newUser.telp}
+            onChange={(e) => setNewUser({ ...newUser, telp: e.target.value })}
+            className="border p-2 w-full rounded-md mb-2"
+          />
+          <input
+            type="text"
+            placeholder="Username"
+            value={newUser.username}
+            onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+            className="border p-2 w-full rounded-md mb-2"
+          />
+
+          {/* Input password with toggle visibility */}
+          <div className="relative">
             <input
-              type="text"
-              placeholder="Telepon"
-              value={newUser.telp}
-              onChange={(e) => setNewUser({ ...newUser, telp: e.target.value })}
-              className="border p-2 w-full rounded-md mb-2"
-            />
-            <input
-              type="text"
-              placeholder="Username"
-              value={newUser.username}
-              onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
-              className="border p-2 w-full rounded-md mb-2"
-            />
-            <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={newUser.password}
               onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
               className="border p-2 w-full rounded-md mb-2"
             />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setNewPhoto(e.target.files[0])}
-              className="border p-2 w-full rounded-md mb-4"
-            />
+            <span
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-3 flex items-center cursor-pointer"
+            >
+              <FontAwesomeIcon className="pb-2" icon={showPassword ? faEyeSlash : faEye} />
+            </span>
+          </div>
 
-            <div className="flex justify-between">
-              <button
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setNewPhoto(e.target.files[0])}
+            className="border p-2 w-full rounded-md mb-4"
+          />
+
+          <div className="flex justify-between">
+          <button
                 onClick={() => {
                   resetNewUser();
                   setIsAdding(false);
@@ -407,19 +419,18 @@ const DataKaryawan = ({}) => {
               >
                 Batal
               </button>
-              <button
-                onClick={isEditing ? handleEditUser : handleAddUser}
-                className={`bg-green-600 text-white px-6 text-center py-2 rounded-md ${
-                  loadingAction ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-                disabled={loadingAction}
-              >
-                {loadingAction ? "Loading..." : isEditing ? "Update" : "Tambah"}
-              </button>
-            </div>
+            <button
+              onClick={isEditing ? handleEditUser : handleAddUser}
+              className={`bg-green-600 text-white px-6 text-center py-2 rounded-md ${loadingAction ? "opacity-50 cursor-not-allowed" : ""}`}
+              disabled={loadingAction}
+            >
+              {loadingAction ? "Loading..." : isEditing ? "Update" : "Tambah"}
+            </button>
           </div>
         </div>
-      ) : null}
+      </div>
+    ) : null}
+  
     </div>
   );
 };

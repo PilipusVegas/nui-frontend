@@ -134,7 +134,7 @@ const DataAbsensi = () => {
         <table className="table-auto w-full border-collapse rounded-lg">
           <thead>
           <tr className="bg-green-500 text-white">
-              {["No.", "Username", "Divisi", "Total Absen", "Data Unapproved", "Aksi"].map((header) => (
+              {["No.", "Nama Karyawan", "Divisi", "Total Absen", "Data Unapproved", "Aksi"].map((header) => (
                 <th className="py-2 px-4 font-semibold text-center">{header}</th>
               ))}
             </tr>

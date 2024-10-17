@@ -45,14 +45,21 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
         initialStatus[item.id_absen] = item.status === 1;
       });
       setStatusApproval(initialStatus); // Set status approval per id_absen
+
+      // Set the first item as the selected item automatically
+      setSelectedItem(absen[0]);  // Set selectedItem as the first item in absen
+      setIsApproved(absen[0]?.status === 1);
     }
   }, [absen]);
+  
 
   const handleViewClick = (item) => {
+    console.log("Selected item:", item); // Debugging
     setSelectedItem(item);
     setIsModalOpen(true);
     setIsApproved(item?.status === 1);
   };
+  
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -101,7 +108,7 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
         <h2 className="text-3xl font-bold text-gray-800 pb-1">Detail Absensi</h2>
       </div>
 
-      {selectedItem && (
+      {selectedItem &&(
         <div className="bg-white shadow-md rounded-lg p-6 mb-2 border border-gray-200 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-semibold">{selectedItem.nama}</h1>
