@@ -148,13 +148,14 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
                 <p className="text-xl font-semibold text-gray-700">Absensi</p>
               </div>
 
-              <div
+              {/* <div
                 onClick={handleOvertimeCardClick}
                 className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
               >
-                <h4 className="text-5xl font-bold text-blue-600 mb-3">{totalOvertime}</h4> {/* Total ACC HRD */}
+                <h4 className="text-5xl font-bold text-blue-600 mb-3">{totalOvertime}</h4>
                 <p className="text-xl font-semibold text-gray-700">Lembur</p>
-              </div>
+              </div> */}
+
               <div
                 onClick={handlePayrollCardClick}
                 className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"

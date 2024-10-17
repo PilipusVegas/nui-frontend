@@ -122,7 +122,7 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
         <table className="min-w-full border-collapse rounded-lg">
           <thead>
             <tr className="bg-green-500 text-white">
-              {["No.", "Lokasi", "IN", "OUT", "Keterangan", "Tanggal", "Status", "Aksi"].map((header) => (
+              {["No.","Tanggal", "IN", "OUT","Lokasi", "Keterangan", "Status", "Aksi"].map((header) => (
                 <th className="py-2 px-4 font-semibold text-center">{header}</th>
               ))}
             </tr>
@@ -132,7 +132,9 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
               absen.map((item, index) => (
                 <tr key={item.id_absen} className="border-b hover:bg-gray-100">
                   <td className="text-center px-4 py-2">{index + 1}</td>
-                  <td className="text-center py-2 px-4">{item.lokasi}</td>
+                  <td className="text-center py-2 px-4">
+                    {new Date(item.jam_mulai).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })}
+                  </td>
                   <td className="text-center py-2 px-4">
                     {new Date(item.jam_mulai).toLocaleTimeString("id-ID", {
                       timeZone: "Asia/Jakarta",
@@ -152,6 +154,8 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
                         })
                       : "---"}
                   </td>
+                  <td className="text-center py-2 px-4">{item.lokasi}</td>
+                  
 
                   <td
                     className={`text-center ${
@@ -159,10 +163,6 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
                     }`}
                   >
                     {new Date(item.jam_mulai).getHours() >= 22 ? "Terlambat" : "Tepat Waktu"}
-                  </td>
-
-                  <td className="text-center py-2 px-4">
-                    {new Date(item.jam_mulai).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })}
                   </td>
                   <td className="text-center py-2 px-4">
                     <span className={`font-semibold ${statusApproval[item.id_absen] ? "text-green-500" : "text-red-500"}`}>
