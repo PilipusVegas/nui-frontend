@@ -100,18 +100,15 @@ const StepThree = ({ formData = {} }) => {
       });
     } catch (error) {
       Swal.fire({
-        title: "Kamu Sudah Absen Hari ini",
+        title: "Formulir ditolak",
         text: error.message,
         icon: 'error',
-        confirmButtonText: 'Kembali ke Home',
-      }).then((result) => {
-        if (result.isConfirmed) {
-          window.location.href = '/home';
-        }
+        confirmButtonText: 'Coba lagi',
       });
     } finally {
       setIsLoading(false); // Set loading state to false after request completes
     }
+    
   };  
 
   useEffect(() => {
@@ -142,7 +139,8 @@ const StepThree = ({ formData = {} }) => {
           ))}
           <button
             type="submit"
-            className={`w-full py-2 px-4 bg-blue-500 text-white font-semibold rounded-md shadow-sm hover:bg-blue-600 focus:outline-none ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            style={styles.submitButton}
+            className={`${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             disabled={isLoading}
           >
             {isLoading ? (

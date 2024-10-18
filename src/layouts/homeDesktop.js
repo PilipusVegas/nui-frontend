@@ -146,7 +146,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
               </>
             )}
 
-          {(roleId === "4" || roleId === "5")  && (
+          {(roleId === "4" || roleId === "6")  && (
             <>
               <div
                 onClick={handlePayrollCardClick}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft,faSearch } from "@fortawesome/free-solid-svg-icons";
-import PayrollExport from "./payrollExport";
+
 
 const DataPenggajian = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -48,9 +48,6 @@ const DataPenggajian = () => {
             />
             <h1 className="text-3xl font-bold text-gray-800">Overview Data Penggajian</h1>
           </div>
-          <div className="flex items-center">
-            <PayrollExport />
-          </div>
         </div>
 
         <div className="flex mb-4 items-center relative w-full">
@@ -70,7 +67,7 @@ const DataPenggajian = () => {
           <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
             <thead>
               <tr className="bg-green-500 text-white">
-                {["No.", "Nama", "Jumlah Kehadiran", "Total Lembur", "Aksi"].map((header, index) => (
+                {["No.", "Nama Karyawan", "Jumlah Kehadiran", "Total Lembur", "Aksi"].map((header, index) => (
                   <th key={index} className="py-3 px-4 text-center font-semibold text-sm uppercase tracking-wider">
                     {header}
                   </th>
