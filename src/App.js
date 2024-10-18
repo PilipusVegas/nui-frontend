@@ -125,7 +125,7 @@ function App() {
         }/>
 
         <Route path="/data-penggajian/:id_user" element={
-          <PrivateRoute allowedRoles={["6"]}>
+          <PrivateRoute allowedRoles={["4","6"]}>
             <div className="flex">
               <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")}   />
               <div className="flex-grow p-6">

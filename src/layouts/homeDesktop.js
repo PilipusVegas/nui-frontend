@@ -103,15 +103,16 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     if (roleId === "4") {
       fetchAbsences();
       // fetchApprovedByHRDAndPA();
+      fetchPayroll();
     }
     if (roleId === "5") {
       fetchApprovedByHRDAndPA();
+
     }
     if (roleId === "6") {
       fetchEmployees();
       // fetchApprovedByHRDAndPA();
       fetchPayroll();
-
     }
     return () => clearInterval(intervalId);
   }, [roleId]);
@@ -134,16 +135,29 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
         {/* ACC HRD */}
         <div className="mt-6 grid grid-cols-4 gap-4">
           {roleId === "4" && (
+              <>
+                <div
+                  onClick={handleAbsenceCardClick}
+                  className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
+                >
+                  <h4 className="text-5xl font-bold text-green-600 mb-3">{totalAbsences}</h4>
+                  <p className="text-xl font-semibold text-gray-700">Absensi</p>
+                </div>
+              </>
+            )}
+
+          {(roleId === "4" || roleId === "5")  && (
             <>
               <div
-                onClick={handleAbsenceCardClick}
+                onClick={handlePayrollCardClick}
                 className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
               >
-                <h4 className="text-5xl font-bold text-green-600 mb-3">{totalAbsences}</h4>
-                <p className="text-xl font-semibold text-gray-700">Absensi</p>
+                <h4 className="text-5xl font-bold text-purple-600 mb-3">{totalPayroll}</h4>
+                <p className="text-xl font-semibold text-gray-700">Penggajian</p>
               </div>
             </>
-          )}  
+          )}
+
 
           {/* ACC STAFF HRD */}
           {roleId === "6" && (
@@ -154,13 +168,6 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
               >
                 <h4 className="text-5xl font-bold text-green-600 mb-3">{employees.length}</h4>
                 <p className="text-xl font-semibold text-gray-700">Karyawan</p>
-              </div>
-              <div
-                onClick={handlePayrollCardClick}
-                className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
-              >
-                <h4 className="text-5xl font-bold text-purple-600 mb-3">{totalPayroll}</h4>
-                <p className="text-xl font-semibold text-gray-700">Penggajian</p>
               </div>
             </>
           )}
@@ -182,10 +189,12 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
 };
 
 export default HomeDesktop;
- {/* <div
+{
+  /* <div
                 onClick={handleOvertimeCardClick}
                 className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
               >
                 <h4 className="text-5xl font-bold text-blue-600 mb-3">{totalOvertime}</h4>
                 <p className="text-xl font-semibold text-gray-700">Lembur</p>
-              </div> */}
+              </div> */
+}

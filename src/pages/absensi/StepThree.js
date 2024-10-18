@@ -6,11 +6,9 @@ import MobileLayout from "../../layouts/mobileLayout";
 
 const StepThree = ({ formData = {} }) => {
   const navigate = useNavigate();
-
-  console.log('Form Data:', formData);
-
   const [isSuccess, setIsSuccess] = useState(false);
   const [isOvertime, setIsOvertime] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // State untuk loading
 
   const { userId = '', username = '', id_lokasi = '', lokasi = '', tugas = '', deskripsi = '', jamMulai = null, tanggalMulai = '', koordinatMulai = '', fotoMulai = '', id_absen = '', fotoSelesai = '', tanggalSelesai = '', jamSelesai = '', koordinatSelesai = '' } = formData;
 
@@ -18,7 +16,7 @@ const StepThree = ({ formData = {} }) => {
     { label: 'Nama', value: username },
     { label: 'Lokasi', value: lokasi },
     { label: 'Tugas', value: tugas },
-    { label: 'Tugas', value: deskripsi },
+    { label: 'Deskripsi', value: deskripsi },
     { label: 'Tanggal Mulai', value: tanggalMulai },
     { label: 'Jam Mulai', value: jamMulai },
     { label: 'Koordinat Mulai', value: koordinatMulai },
@@ -29,6 +27,8 @@ const StepThree = ({ formData = {} }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true); // Set loading state to true when submitting
+
     if (id_absen && isOvertime) {
       const confirmLembur = await Swal.fire({
         title: "Jam kerja Anda sudah melebihi waktu normal, apakah Anda sedang lembur?",
@@ -38,12 +38,10 @@ const StepThree = ({ formData = {} }) => {
         cancelButtonText: "Tidak"
       });
     }
-  
-    // Swal.fire('Data akan dikirim!', '', 'info');
-  
+
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     let formDataToSend = new FormData();
-  
+    
     if (fotoMulai && fotoMulai.startsWith('blob:')) {
       const response = await fetch(fotoMulai);
       const blob = await response.blob();
@@ -52,10 +50,10 @@ const StepThree = ({ formData = {} }) => {
     } else if (fotoMulai && fotoMulai instanceof File) {
       formDataToSend.append('foto', fotoMulai);
     }
-  
+
     const titikKoordinatMulai = koordinatMulai ? { latitude: parseFloat(koordinatMulai.split(',')[0]), longitude: parseFloat(koordinatMulai.split(',')[1]) } : null;
     const titikKoordinatSelesai = koordinatSelesai ? { latitude: parseFloat(koordinatSelesai.split(',')[0]), longitude: parseFloat(koordinatSelesai.split(',')[1]) } : null;
-  
+
     let endpoint;
     if (id_absen) {
       endpoint = '/absen/selesai';
@@ -73,8 +71,6 @@ const StepThree = ({ formData = {} }) => {
         formDataToSend.append('lat', titikKoordinatSelesai.latitude.toString());
         formDataToSend.append('lon', titikKoordinatSelesai.longitude.toString());
       }
-      console.log('Mengirim data ke API:', endpoint);
-      console.log('Data yang dikirim untuk absen/selesai:', Array.from(formDataToSend.entries()));
     } else {
       endpoint = '/absen/mulai';
       if (userId) formDataToSend.append('id_user', userId.toString());
@@ -89,24 +85,19 @@ const StepThree = ({ formData = {} }) => {
           formDataToSend.append('foto', fotoMulai);
         }
       }
-      console.log('Mengirim data ke API:', endpoint);
-      console.log('Data yang dikirim untuk absen/mulai:', Array.from(formDataToSend.entries()));
     }
-  
+
     try {
       const response = await fetch(`${apiUrl}${endpoint}`, { method: 'POST', body: formDataToSend });
       if (!response.ok) {
-        const errorData = await response.json(); // Tangkap pesan error dari backend
-        throw new Error(errorData.message || 'Gagal mengirim data'); // Gunakan pesan dari backend jika ada
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Gagal mengirim data');
       }
       const result = await response.json();
-      console.log('Response dari API:', result);
-      if (result.message.includes("berhasil disimpan")) {
-        setIsSuccess(true);
-        Swal.fire('Absen berhasil!', '', 'success').then(() => {
-          setTimeout(() => { window.location.reload() }, 500);
-        });
-      }
+      setIsSuccess(true);
+      Swal.fire('Absen berhasil!', '', 'success').then(() => {
+        setTimeout(() => { window.location.reload() }, 500);
+      });
     } catch (error) {
       Swal.fire({
         title: "Kamu Sudah Absen Hari ini",
@@ -115,17 +106,18 @@ const StepThree = ({ formData = {} }) => {
         confirmButtonText: 'Kembali ke Home',
       }).then((result) => {
         if (result.isConfirmed) {
-          window.location.href = '/home'; // Redirect ke halaman home
+          window.location.href = '/home';
         }
       });
-      
+    } finally {
+      setIsLoading(false); // Set loading state to false after request completes
     }
-    
-    
   };  
 
   useEffect(() => {
-    if (isSuccess) {navigate('/')}
+    if (isSuccess) {
+      navigate('/');
+    }
   }, [isSuccess, navigate]);
 
   return (
@@ -148,12 +140,45 @@ const StepThree = ({ formData = {} }) => {
               <span style={styles.value}>{item.value}</span>
             </div>
           ))}
-          <button type="submit" style={styles.submitButton}>KIRIM</button>
+          <button
+            type="submit"
+            className={`w-full py-2 px-4 bg-blue-500 text-white font-semibold rounded-md shadow-sm hover:bg-blue-600 focus:outline-none ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <span className="flex justify-center items-center">
+                <svg
+                  className="animate-spin h-5 w-5 mr-3 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  ></path>
+                </svg>
+                Mengirim...
+              </span>
+            ) : (
+              'KIRIM'
+            )}
+          </button>
         </form>
       </div>
     </MobileLayout>
   );
 };
+
 
 StepThree.propTypes = {
   formData: PropTypes.object.isRequired,
