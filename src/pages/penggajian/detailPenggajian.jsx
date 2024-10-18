@@ -77,7 +77,6 @@ const DataTable = ({ data }) => (
                   ? item.tanggal_absen
                   : item.tanggal_absen || item.tanggal_lembur}
               </td>
-
               <td className="py-2 px-4 border-b border-gray-200 text-center">{item.absen_mulai || "0:00"}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-center">{item.keterlambatan || "0:00"}</td>
               <td className="py-2 px-4 border-b border-gray-200 text-center">{item.absen_selesai || "0:00"}</td>
@@ -92,6 +91,18 @@ const DataTable = ({ data }) => (
           </tr>
         )}
       </tbody>
+      <tfoot className="bg-gray-100 text-gray-700">
+        <tr>
+          <th colSpan="3" className="py-2 px-4 border-t border-gray-200 text-center">Total</th>
+          <th className="py-2 px-4 border-t border-gray-200 text-center">
+            {data.reduce((acc, item) => acc + (item.keterlambatan ? parseInt(item.keterlambatan.split(":")[0]) * 60 + parseInt(item.keterlambatan.split(":")[1]) : 0), 0)} menit
+          </th>
+          <th className="py-2 px-4 border-t border-gray-200 text-center">
+            {data.reduce((acc, item) => acc + (item.lembur ? parseInt(item.lembur.split(":")[0]) * 60 + parseInt(item.lembur.split(":")[1]) : 0), 0)} menit
+          </th>
+          <th colSpan="2" className="py-2 px-4 border-t border-gray-200 text-center"></th>
+        </tr>
+      </tfoot>
     </table>
   </div>
 );

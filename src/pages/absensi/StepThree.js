@@ -110,7 +110,7 @@ const StepThree = ({ formData = {} }) => {
     } catch (error) {
       Swal.fire({
         title: "Kamu Sudah Absen Hari ini",
-        html: "<p style='font-size:14px;'>1 Hari hanya sekali absen <br> Absen pulang akan ditutup secara otomatis oleh sistem setiap jam 7 pagi</p>",
+        text: error.message,
         icon: 'error',
         confirmButtonText: 'Kembali ke Home',
       }).then((result) => {
