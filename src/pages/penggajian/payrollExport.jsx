@@ -1,158 +1,81 @@
-import React, { useState, useEffect } from "react";
-import * as XLSX from "xlsx";
+// import React, { useState, useEffect } from "react";
+// import * as XLSX from "xlsx";
 
-const PayrollExport = () => {
-    const [payrollData, setPayrollData] = useState([]);
-    const [payrollDetail, setPayrollDetail] = useState({});
-    const [startDate, setStartDate] = useState("");
-    const [endDate, setEndDate] = useState("");
-    const apiUrl = process.env.REACT_APP_API_BASE_URL;
+// const PayrollExport = () => {
+    
+//     const apiUrl = process.env.REACT_APP_API_BASE_URL; // Mendapatkan URL API dari environment variables
 
-    // Fetch payroll data when component mounts
-    useEffect(() => {
-        const fetchPayrollData = async () => {
-            try {
-                const response = await fetch(`${apiUrl}/payroll/`);
-                const result = await response.json();
-                setPayrollData(result);
-            } catch (error) {
-                console.error("Error fetching payroll data:", error);
-            }
-        };
-        fetchPayrollData();
-    }, [apiUrl]);
+//     const handleDownload = () => {
+//         if (!payrollData.length) {
+//             console.warn("No payroll data available for download.");
+//             return; // Menghentikan eksekusi jika tidak ada data
+//         }
 
-    // Fetch payroll details based on selected date range
-    useEffect(() => {
-        const fetchAllPayrollDetails = async () => {
-            if (payrollData.length > 0 && startDate && endDate) {
-                try {
-                    const detailPromises = payrollData.map((user) => fetchPayrollDetail(user.id_user));
-                    const results = await Promise.all(detailPromises);
-                    const details = results.reduce((acc, result, index) => {
-                        acc[payrollData[index].id_user] = result.data || [];
-                        return acc;
-                    }, {});
-                    setPayrollDetail(details);
-                } catch (error) {
-                    console.error("Error fetching payroll details:", error);
-                }
-            }
-        };
-        fetchAllPayrollDetails();
-    }, [payrollData, startDate, endDate]);
+//         const dates = getDateRange(startDate, endDate); // Mengambil rentang tanggal
+//         const excelData = generateExcelData(dates); // Menghasilkan data untuk Excel
 
-    const fetchPayrollDetail = async (id_user) => {
-        try {
-            const response = await fetch(`${apiUrl}/payroll/detail/${id_user}?start=${startDate}&end=${endDate}`);
-            return await response.json();
-        } catch (error) {
-            console.error(`Error fetching detail payroll for user ${id_user}:`, error);
-            return { data: [] };
-        }
-    };
+//         const worksheet = XLSX.utils.aoa_to_sheet(excelData); // Membuat worksheet dari data
+//         const workbook = XLSX.utils.book_new(); // Membuat workbook baru
+//         XLSX.utils.book_append_sheet(workbook, worksheet, "Payroll Data"); // Menambahkan worksheet ke workbook
+//         XLSX.writeFile(workbook, "PayrollData.xlsx"); // Menyimpan file Excel
+//     };
 
-    const handleDownload = () => {
-        if (!payrollData.length) {
-            console.warn("No payroll data available for download.");
-            return;
-        }
+//     const getDateRange = (start, end) => {
+//         const dates = [];
+//         const startDate = new Date(start);
+//         const endDate = new Date(end);
 
-        const dates = getDateRange(startDate, endDate);
-        const excelData = generateExcelData(dates);
+//         for (let d = startDate; d <= endDate; d.setDate(d.getDate() + 1)) {
+//             dates.push(
+//                 `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1).toString().padStart(2, "0")}/${d.getFullYear()}`
+//             );
+//         }
+//         return dates; // Mengembalikan array tanggal
+//     };
 
-        const worksheet = XLSX.utils.aoa_to_sheet(excelData);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Payroll Data");
-        XLSX.writeFile(workbook, "PayrollData.xlsx");
-    };
+//     const generateExcelData = (dates) => {
+//         const excelData = [["No", "Nama", "Jumlah Kehadiran"]]; // Header Excel
 
-    const getDateRange = (start, end) => {
-        const dates = [];
-        const startDate = new Date(start);
-        const endDate = new Date(end);
+//         // Header untuk tanggal
+//         const dateHeader = dates.flatMap((date) => [date, "", "", ""]);
+//         excelData[0] = [...excelData[0], ...dateHeader];
 
-        for (let d = startDate; d <= endDate; d.setDate(d.getDate() + 1)) {
-            dates.push(
-                `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1).toString().padStart(2, "0")}/${d.getFullYear()}`
-            );
-        }
-        return dates;
-    };
+//         // Baris untuk jenis kehadiran
+//         const typesRow = [];
+//         dates.forEach(() => {
+//             typesRow.push("IN", "L", "OUT", "T");
+//         });
+//         excelData.push(["", "", "", ...typesRow]);
 
-    const generateExcelData = (dates) => {
-        const excelData = [["No", "Nama", "Jumlah Kehadiran"]];
+//         // Menambahkan data pengguna
+//         payrollData.forEach((user, index) => {
+//             const userDetails = payrollDetail[user.id_user] || [];
+//             const row = [index + 1, user.nama_user, userDetails.length]; // Ambil jumlah kehadiran
 
-        // Header untuk tanggal
-        const dateHeader = dates.flatMap((date) => [date, "", "", ""]);
-        excelData[0] = [...excelData[0], ...dateHeader];
+//             // Menambahkan detail kehadiran untuk setiap tanggal
+//             dates.forEach((date) => {
+//                 const formattedDate = date.split("/").reverse().join("-"); // Format tanggal untuk pencocokan
+//                 const attendance = userDetails.find((detail) => detail.tanggal_absen === formattedDate) || {};
 
-        // Baris untuk jenis kehadiran
-        const typesRow = [];
-        dates.forEach(() => {
-            typesRow.push("IN", "L", "OUT", "T");
-        });
-        excelData.push(["", "", "", ...typesRow]);
+//                 row.push(
+//                     attendance.absen_mulai || "0:00", // IN
+//                     attendance.keterlambatan || "0:00", // L
+//                     attendance.absen_selesai || "0:00", // OUT
+//                     attendance.lembur || "0:00" // T
+//                 );
+//             });
 
-        // Menambahkan data pengguna
-        payrollData.forEach((user, index) => {
-            const userDetails = payrollDetail[user.id_user] || [];
-            const row = [index + 1, user.nama_user, userDetails.length]; // Ambil jumlah kehadiran
+//             excelData.push(row); // Menambahkan row ke data Excel
+//         });
 
-            // Menambahkan detail kehadiran untuk setiap tanggal
-            dates.forEach((date) => {
-              const formattedDate = date.split("/").reverse().join("-"); // Format tanggal untuk pencocokan
-              const attendance = userDetails.find((detail) => detail.tanggal_absen === formattedDate) || {};
-          
-              row.push(
-                  attendance.absen_mulai || "0:00", // IN
-                  attendance.keterlambatan || "0:00", // L
-                  attendance.absen_selesai || "0:00", // OUT
-                  attendance.lembur || "0:00" // T
-              );
-          });
-          
-            excelData.push(row);
-        });
+//         return excelData; // Mengembalikan data Excel
+//     };
 
-        return excelData;
-    };
+//     return (
+//         <div>
+         
+//         </div>
+//     );
+// };
 
-    return (
-        <div>
-            <div className="flex items-end space-x-4">
-                <div>
-                    <label htmlFor="startDate" className="sr-only">
-                        Start Date
-                    </label>
-                    <input
-                        type="date"
-                        id="startDate"
-                        className="border border-gray-300 rounded px-3 py-2"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                    />
-                </div>
-                <div>
-                    <label htmlFor="endDate" className="sr-only">
-                        End Date
-                    </label>
-                    <input
-                        type="date"
-                        id="endDate"
-                        className="border border-gray-300 rounded px-3 py-2"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                    />
-                </div>
-                <div>
-                    <button onClick={handleDownload} className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600 transition">
-                        Download Excel
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-export default PayrollExport;
+// export default PayrollExport;
