@@ -39,7 +39,7 @@ const StepOne = ({ handleNextStepData }) => {
         const response = await fetch(`${apiUrl}/lokasi/`);
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
-        setLocations(data);
+        setLocations(data.data);
       } catch (error) {
       }
     };
