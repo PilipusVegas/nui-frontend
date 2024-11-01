@@ -47,11 +47,10 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
       setStatusApproval(initialStatus); // Set status approval per id_absen
 
       // Set the first item as the selected item automatically
-      setSelectedItem(absen[0]);  // Set selectedItem as the first item in absen
+      setSelectedItem(absen[0]); // Set selectedItem as the first item in absen
       setIsApproved(absen[0]?.status === 1);
     }
   }, [absen]);
-  
 
   const handleViewClick = (item) => {
     console.log("Selected item:", item); // Debugging
@@ -59,7 +58,6 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
     setIsModalOpen(true);
     setIsApproved(item?.status === 1);
   };
-  
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -108,7 +106,7 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
         <h2 className="text-3xl font-bold text-gray-800 pb-1">Detail Absensi</h2>
       </div>
 
-      {selectedItem &&(
+      {selectedItem && (
         <div className="bg-white shadow-md rounded-lg p-6 mb-2 border border-gray-200 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-semibold">{selectedItem.nama}</h1>
@@ -122,7 +120,7 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
         <table className="min-w-full border-collapse rounded-lg">
           <thead>
             <tr className="bg-green-500 text-white">
-              {["No.","Tanggal", "IN", "OUT","Lokasi", "Keterangan", "Status", "Aksi"].map((header) => (
+              {["No.", "Tanggal", "IN", "OUT", "Lokasi", "Keterangan", "Status", "Aksi"].map((header) => (
                 <th className="py-2 px-4 font-semibold text-center">{header}</th>
               ))}
             </tr>
@@ -155,7 +153,6 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
                       : "---"}
                   </td>
                   <td className="text-center py-2 px-4">{item.lokasi}</td>
-                  
 
                   <td
                     className={`text-center ${
@@ -216,78 +213,116 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               <div className="bg-green-100 rounded-lg shadow-lg p-4">
-                {" "}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-                  <a href={selectedItem.foto_mulai} target="_blank" rel="noopener noreferrer">
-                    <img src={selectedItem.foto_mulai} alt="Foto Mulai" className="w-full h-48 object-contain   rounded-xl" />
+                  <a
+                    href={selectedItem.foto_mulai || "#"}
+                    target={selectedItem.foto_mulai ? "_blank" : "_self"}
+                    rel="noopener noreferrer"
+                  >
+                    {selectedItem.foto_mulai ? (
+                      <img
+                        src={selectedItem.foto_mulai}
+                        alt="Foto Mulai"
+                        className="w-full h-48 object-contain rounded-xl"
+                      />
+                    ) : (
+                      <div className="w-full h-48 flex items-center justify-center bg-gray-200 rounded-xl text-gray-500">
+                        Foto tidak tersedia
+                      </div>
+                    )}
                   </a>
                   <div>
                     <h4 className="text-base font-semibold text-gray-700">Absen Mulai</h4>
                     <p className="text-gray-700 flex items-center">
                       <FontAwesomeIcon icon={faClock} className="mr-2" />
-                      {new Date(selectedItem.jam_mulai).toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta" })}
+                      {selectedItem.jam_mulai
+                        ? new Date(selectedItem.jam_mulai).toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta" })
+                        : "-"}
                     </p>
                     <p className="text-gray-700 flex items-center">
                       <FontAwesomeIcon icon={faCalendarDay} className="mr-2" />
-                      {new Date(selectedItem.jam_mulai).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })}
+                      {selectedItem.jam_mulai
+                        ? new Date(selectedItem.jam_mulai).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })
+                        : "-"}
                     </p>
                     <p className="text-gray-700 flex items-center">
                       <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" />
-                      <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                          selectedItem.lokasi_mulai
-                        )}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 underline"
-                      >
-                        Open in maps
-                      </a>
+                      {selectedItem.lokasi_mulai ? (
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                            selectedItem.lokasi_mulai
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 underline"
+                        >
+                          Open in maps
+                        </a>
+                      ) : (
+                        "-"
+                      )}
                     </p>
                     <p className="text-gray-700 flex items-center">
                       <FontAwesomeIcon icon={faRulerVertical} className="mr-2" />
-                      {selectedItem.distance_start} Meter
+                      {selectedItem.distance_start ? `${selectedItem.distance_start} Meter` : "-"}
                     </p>
                   </div>
                 </div>
               </div>
 
               <div className="bg-red-100 rounded-lg shadow-lg p-4">
-                {" "}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-                  <a href={selectedItem.foto_selesai} target="_blank" rel="noopener noreferrer">
-                    <img
-                      src={selectedItem.foto_selesai}
-                      alt="Foto Selesai"
-                      className="w-full h-48 object-contain rounded-xl"
-                    />
+                  <a
+                    href={selectedItem.foto_selesai || "#"}
+                    target={selectedItem.foto_selesai ? "_blank" : "_self"}
+                    rel="noopener noreferrer"
+                  >
+                    {selectedItem.foto_selesai ? (
+                      <img
+                        src={selectedItem.foto_selesai}
+                        alt="Foto Selesai"
+                        className="w-full h-48 object-contain rounded-xl"
+                      />
+                    ) : (
+                      <div className="w-full h-48 flex items-center justify-center bg-gray-200 rounded-xl text-gray-500">
+                        Foto tidak tersedia
+                      </div>
+                    )}
                   </a>
                   <div>
                     <h4 className="text-base font-semibold text-gray-700">Absen Selesai</h4>
                     <p className="text-gray-700 flex items-center">
                       <FontAwesomeIcon icon={faClock} className="mr-2" />
-                      {new Date(selectedItem.jam_selesai).toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta" })}
+                      {selectedItem.jam_selesai
+                        ? new Date(selectedItem.jam_selesai).toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta" })
+                        : "-"}
                     </p>
                     <p className="text-gray-700 flex items-center">
                       <FontAwesomeIcon icon={faCalendarDay} className="mr-2" />
-                      {new Date(selectedItem.jam_selesai).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })}
+                      {selectedItem.jam_selesai
+                        ? new Date(selectedItem.jam_selesai).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })
+                        : "-"}
                     </p>
                     <p className="text-gray-700 flex items-center">
                       <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" />
-                      <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                          selectedItem.lokasi_selesai
-                        )}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 underline"
-                      >
-                        Open in maps
-                      </a>
+                      {selectedItem.lokasi_selesai ? (
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                            selectedItem.lokasi_selesai
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 underline"
+                        >
+                          Open in maps
+                        </a>
+                      ) : (
+                        "-"
+                      )}
                     </p>
                     <p className="text-gray-700 flex items-center">
                       <FontAwesomeIcon icon={faRulerVertical} className="mr-2" />
-                      {selectedItem.distance_end} Meter
+                      {selectedItem.distance_end ? `${selectedItem.distance_end} Meter` : "-"}
                     </p>
                   </div>
                 </div>

@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 const DataAbsensi = () => {
   const navigate = useNavigate();
-  const [absenData, setAbsenData] = useState([]);
+  const [absenData, setAbsenData] = useState([]); // Inisialisasi sebagai array
   const [selectedAbsen, setSelectedAbsen] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,10 +30,11 @@ const DataAbsensi = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setAbsenData(data);
+      setAbsenData(Array.isArray(data) ? data : []); // Pastikan data adalah array
     } catch (err) {
       console.error("Error fetching absen data:", err.message);
       setError(err.message);
+      setAbsenData([]); // Reset to an empty array on error
     } finally {
       setLoading(false);
     }
@@ -85,11 +86,11 @@ const DataAbsensi = () => {
     fetchAbsenDetail(id);
   };
 
-  const filteredAbsenData = absenData.filter((absen) => {
+  const filteredAbsenData = Array.isArray(absenData) ? absenData.filter((absen) => {
     const matchesName = absen.nama_user.toLowerCase().includes(searchName.toLowerCase());
     const matchesDivisi = absen.role.toLowerCase().includes(searchDivisi.toLowerCase());
     return matchesName && matchesDivisi;
-  });
+  }) : [];
 
   if (loading) {
     return <div className="text-center">Loading...</div>;
@@ -111,31 +112,31 @@ const DataAbsensi = () => {
           <h2 className="text-3xl font-bold text-gray-800 pb-1">Data Absensi</h2>
         </div>
         <div className="flex items-center space-x-2">
-      <div className="relative w-full">
-        <input type="text" placeholder="Search by Name" value={searchName} onChange={(e) => setSearchName(e.target.value)}
-          className="border border-gray-300 rounded-lg p-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-600"
-        />
-        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-          <FontAwesomeIcon icon={faSearch} />
-        </span>
-      </div>
-      <div className="relative w-full">
-        <input type="text" placeholder="Search by Divisi" value={searchDivisi} onChange={(e) => setSearchDivisi(e.target.value)}
-          className="border border-gray-300 rounded-lg p-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-600"
-        />
-        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-          <FontAwesomeIcon icon={faSearch} />
-        </span>
-      </div>
-    </div>
+          <div className="relative w-full">
+            <input type="text" placeholder="Search by Name" value={searchName} onChange={(e) => setSearchName(e.target.value)}
+              className="border border-gray-300 rounded-lg p-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-600"
+            />
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+              <FontAwesomeIcon icon={faSearch} />
+            </span>
+          </div>
+          <div className="relative w-full">
+            <input type="text" placeholder="Search by Divisi" value={searchDivisi} onChange={(e) => setSearchDivisi(e.target.value)}
+              className="border border-gray-300 rounded-lg p-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-600"
+            />
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+              <FontAwesomeIcon icon={faSearch} />
+            </span>
+          </div>
+        </div>
       </div>
 
       <div className="rounded-lg shadow-md overflow-hidden">
         <table className="table-auto w-full border-collapse rounded-lg">
           <thead>
-          <tr className="bg-green-500 text-white">
+            <tr className="bg-green-500 text-white">
               {["No.", "Nama Karyawan", "Divisi", "Total Absen", "Data Unapproved", "Aksi"].map((header) => (
-                <th className="py-2 px-4 font-semibold text-center">{header}</th>
+                <th key={header} className="py-2 px-4 font-semibold text-center">{header}</th>
               ))}
             </tr>
           </thead>

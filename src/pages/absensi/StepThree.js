@@ -75,7 +75,7 @@ const StepThree = ({ formData = {} }) => {
       endpoint = '/absen/mulai';
       if (userId) formDataToSend.append('id_user', userId.toString());
       if (tugas) formDataToSend.append('deskripsi', tugas);
-      if (id_lokasi) formDataToSend.append('lokasi', id_lokasi);
+      if (id_lokasi) formDataToSend.append('id_lokasi', id_lokasi);
       if (titikKoordinatMulai) {
         formDataToSend.append('lat', titikKoordinatMulai.latitude.toString());
         formDataToSend.append('lon', titikKoordinatMulai.longitude.toString());
