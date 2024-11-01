@@ -43,52 +43,52 @@ const DetailPenggajian = () => {
       console.warn("No payroll data available for download.");
       return;
     }
-  
+
     const excelData = generateExcelData(filteredData);
     const worksheet = XLSX.utils.aoa_to_sheet(excelData);
-  
+
     // Mengatur border dan style pada setiap sel
-    const range = XLSX.utils.decode_range(worksheet['!ref']);
+    const range = XLSX.utils.decode_range(worksheet["!ref"]);
     for (let row = range.s.r; row <= range.e.r; row++) {
       for (let col = range.s.c; col <= range.e.c; col++) {
         const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
         if (!worksheet[cellAddress]) continue; // Lewati sel kosong
-  
+
         // Tambahkan border
         worksheet[cellAddress].s = {
           border: {
-            top: { style: "bold", color: { rgb: "000000" } },
-            bottom: { style: "bold", color: { rgb: "000000" } },
-            left: { style: "bold", color: { rgb: "000000" } },
-            right: { style: "bold", color: { rgb: "000000" } },
+            top: { style: "bold", color: { rgb: "#000000" } },
+            bottom: { style: "bold", color: { rgb: "#000000" } },
+            left: { style: "bold", color: { rgb: "#000000" } },
+            right: { style: "bold", color: { rgb: "#000000" } },
           },
           alignment: {
             horizontal: "center", // Mengatur teks di tengah secara horizontal
-            vertical: "center",   // Mengatur teks di tengah secara vertikal
+            vertical: "center", // Mengatur teks di tengah secara vertikal
           },
         };
       }
     }
-  
+
     // Mengatur lebar kolom
-    worksheet['!cols'] = [
-      { wpx: 145 },  // Kolom "No" (lebar 40 pixel)
+    worksheet["!cols"] = [
+      { wpx: 145 }, // Kolom "No" (lebar 40 pixel)
       { wpx: 250 }, // Kolom "Tanggal" (lebar 100 pixel)
-      { wpx: 50 },  // Kolom "IN" (lebar 50 pixel)
-      { wpx: 50 },  // Kolom "L" (lebar 50 pixel)
-      { wpx: 50 },  // Kolom "OUT" (lebar 50 pixel)
-      { wpx: 50 },  // Kolom "T" (lebar 50 pixel)
+      { wpx: 50 }, // Kolom "IN" (lebar 50 pixel)
+      { wpx: 50 }, // Kolom "L" (lebar 50 pixel)
+      { wpx: 50 }, // Kolom "OUT" (lebar 50 pixel)
+      { wpx: 50 }, // Kolom "T" (lebar 50 pixel)
     ];
-  
+
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Payroll Data");
     XLSX.writeFile(workbook, "PayrollData.xlsx");
   };
-  
+
   const generateExcelData = (data) => {
     const totalKehadiran = data.filter((item) => item.id_absen !== null && item.tanggal_absen !== "-").length;
     const excelData = [
-      ["Nama", dataUser?.nama_user || "-"],
+      ["Nama", dataUser?.nama || "-"],
       ["Total Kehadiran", totalKehadiran + " Hari"],
       ["Periode", period],
       ["Total Keterlambatan", `${Math.floor(totalKeterlambatan / 60)} Jam ${totalKeterlambatan % 60} Menit`],
@@ -96,7 +96,7 @@ const DetailPenggajian = () => {
       [],
       ["No", "Tanggal", "IN", "L", "OUT", "T"],
     ];
-  
+
     data.forEach((item, index) => {
       excelData.push([
         index + 1,
@@ -107,10 +107,9 @@ const DetailPenggajian = () => {
         item.lembur || "00:00",
       ]);
     });
-  
+
     return excelData;
   };
-  
 
   const getFilteredData = () => {
     // Jika startDate atau endDate tidak ditentukan, kembalikan seluruh payrollData
@@ -213,30 +212,6 @@ const DetailPenggajian = () => {
         <div className="ml-auto">
           <div className="flex items-end space-x-4">
             <div>
-              <label htmlFor="startDate" className="sr-only">
-                Start Date
-              </label>
-              <input
-                type="date"
-                id="startDate"
-                className="border border-gray-300 rounded px-3 py-2"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="endDate" className="sr-only">
-                End Date
-              </label>
-              <input
-                type="date"
-                id="endDate"
-                className="border border-gray-300 rounded px-3 py-2"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-            </div>
-            <div>
               <button
                 onClick={handleDownload}
                 className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600 transition"
@@ -251,7 +226,7 @@ const DetailPenggajian = () => {
       {dataUser && (
         <div className="bg-white shadow-md rounded-lg p-6 mb-4 border border-gray-200 flex flex-col md:flex-row justify-between items-start">
           <div className="flex-grow">
-            <h1 className="text-3xl font-semibold text-gray-800 mb-2">{dataUser.nama_user}</h1>
+            <h1 className="text-3xl font-semibold text-gray-800 mb-2">{dataUser.nama}</h1>
             <p className="text-gray-600">
               Total Kehadiran:{" "}
               <span className="font-medium">
