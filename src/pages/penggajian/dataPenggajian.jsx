@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faSearch } from "@fortawesome/free-solid-svg-icons";
+import Swal from "sweetalert2";
 
 const DataPenggajian = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -36,32 +37,25 @@ const DataPenggajian = () => {
     fetchPayrollData();
   }, []);
 
-  const parseDate = (dateString) => {
-    const parts = dateString.split("-");
-    return new Date(parts[2], parts[1] - 1, parts[0]);
-  };
-
   const getFilteredData = () => {
-    const start = startDate ? new Date(startDate) : null;
-    const end = endDate ? new Date(endDate) : null;
-    if (end) end.setHours(23, 59, 59, 999);
-    if (start) start.setDate(start.getDate() - 1);
-
-    return payrollData.filter((item) => {
-      const date =
-        item.tanggal_absen ? parseDate(item.tanggal_absen) : item.tanggal_lembur ? parseDate(item.tanggal_lembur) : null;
-
-      return (
-        (!searchQuery || item.nama_user.toLowerCase().includes(searchQuery.toLowerCase())) &&
-        (!start || (date && date >= start)) &&
-        (!end || (date && date <= end))
-      );
-    });
+    return payrollData.filter((item) =>
+      !searchQuery || item.nama_user.toLowerCase().includes(searchQuery.toLowerCase())
+    );
   };
+
+  const handleDetailClick = (id_user) => {
+    if (startDate && endDate) {
+      const url = `/data-penggajian/${id_user}?startDate=${startDate}&endDate=${endDate}`;
+      window.open(url, '_blank'); // Membuka tautan di tab baru
+    } else {
+      Swal.fire("Error", "Pilih rentang tanggal terlebih dahulu untuk melihat detail atau merekap data", "error");
+    }
+  };
+  
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="flex-grow px-6 py-8">
+      <div className="flex-grow px-6 ">
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center space-x-2">
             <FontAwesomeIcon
@@ -137,7 +131,7 @@ const DataPenggajian = () => {
                     <td className="border-b px-4 py-3 text-center">
                       <button
                         className="text-blue-500 hover:underline"
-                        onClick={() => navigate(`/data-penggajian/${item.id_user}`)}
+                        onClick={() => handleDetailClick(item.id_user)}
                       >
                         Detail
                       </button>

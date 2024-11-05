@@ -5,7 +5,7 @@ import {
   faSignOutAlt, 
   faDashboard, 
   faArrowCircleLeft, 
-  faArrowCircleRight // Import icon baru
+  faArrowCircleRight 
 } from "@fortawesome/free-solid-svg-icons";
 
 const IconButton = ({ icon, label, onClick }) => (
@@ -22,7 +22,7 @@ const IconButton = ({ icon, label, onClick }) => (
 const ButtonHide = ({ onClick, hidden }) => (
   <button onClick={onClick} className="text-right mb-4">
     <FontAwesomeIcon
-      icon={hidden ? faArrowCircleRight : faArrowCircleLeft} // Kondisi ikon
+      icon={hidden ? faArrowCircleRight : faArrowCircleLeft}
       className="text-3xl"
     />
   </button>
@@ -30,18 +30,18 @@ const ButtonHide = ({ onClick, hidden }) => (
 
 const MenuSidebar = ({ handleLogout }) => {
   const navigate = useNavigate();
-  const [hidden, setHidden] = useState(false); // Inisialisasi state
+  const [hidden, setHidden] = useState(false);
 
-  const hideAction = () => setHidden((prev) => !prev); // Fungsi untuk toggle sidebar
+  const hideAction = () => setHidden((prev) => !prev);
 
   return (
     <div
       className={`flex ${
         hidden ? "w-16" : "w-64"
-      } h-screen bg-green-800 text-white flex-col p-4 shadow-md transition-all duration-300`}
+      } h-screen sticky top-0 left-0 bg-green-800 text-white flex-col p-4 shadow-md transition-all duration-300`}
     >
-      <ButtonHide onClick={hideAction} hidden={hidden} /> {/* Toggle button */}
-      {!hidden && ( // Tampilkan menu hanya jika tidak tersembunyi
+      <ButtonHide onClick={hideAction} hidden={hidden} />
+      {!hidden && (
         <>
           <h2 className="text-2xl font-semibold mb-6">Menu</h2>
           <div className="flex flex-col gap-2">
@@ -50,9 +50,6 @@ const MenuSidebar = ({ handleLogout }) => {
               label="Dashboard"
               onClick={() => navigate("/home")}
             />
-            {/* Uncomment jika dibutuhkan */}
-            {/* <IconButton icon={faBell} label="Notifikasi" onClick={() => navigate("/notification")} /> */}
-            {/* <IconButton icon={faUser} label="Profil" onClick={() => navigate("/profile")} /> */}
             <IconButton
               label="Logout"
               icon={faSignOutAlt}
