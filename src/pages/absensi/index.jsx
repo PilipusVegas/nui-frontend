@@ -57,7 +57,7 @@ const Absensi = () => {
             const currentTime = new Date();
             const currentHour = currentTime.getHours();
             console.log("Current hour:", currentHour);
-            if (Array.isArray(data) && data.length > 0 && currentHour < 7 ) {
+            if (Array.isArray(data) && data.length > 0) {
               const { id_absen, id_user, username, id_lokasi, deskripsi, jam_mulai } = data[0];
               setAttendanceData(prev => {
                 const updatedData = {...prev, id_absen: String(id_absen), userId: String(id_user), username: username || "", id_lokasi: id_lokasi || "", deskripsi: deskripsi || "", jam_mulai: String(jam_mulai)};
