@@ -5,12 +5,12 @@ import { faArrowLeft, faSearch } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 
 const DataPenggajian = () => {
-  const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  const apiUrl = process.env.REACT_APP_API_BASE_URL || "http://192.168.130.64:3002";
   const [payrollData, setPayrollData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [startDate, setStartDate] = useState(sessionStorage.getItem("startDate") || "");
+  const [endDate, setEndDate] = useState(sessionStorage.getItem("endDate") || "");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
@@ -19,10 +19,13 @@ const DataPenggajian = () => {
   };
 
   const fetchPayrollData = async () => {
+    if (!startDate || !endDate) return;
+
     setLoading(true);
     setError(null);
+
     try {
-      const response = await fetch(`${apiUrl}/payroll/`);
+      const response = await fetch(`${apiUrl}/payroll?startDate=${startDate}&endDate=${endDate}`);
       if (!response.ok) throw new Error("Failed to fetch data");
       const result = await response.json();
       setPayrollData(result);
@@ -35,23 +38,28 @@ const DataPenggajian = () => {
 
   useEffect(() => {
     fetchPayrollData();
-  }, []);
+  }, [startDate, endDate]);
+
+  useEffect(() => {
+    sessionStorage.setItem("startDate", startDate);
+  }, [startDate]);
+
+  useEffect(() => {
+    sessionStorage.setItem("endDate", endDate);
+  }, [endDate]);
 
   const getFilteredData = () => {
-    return payrollData.filter((item) =>
-      !searchQuery || item.nama_user.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    return payrollData.filter((item) => !searchQuery || item.nama_user.toLowerCase().includes(searchQuery.toLowerCase()));
   };
 
   const handleDetailClick = (id_user) => {
     if (startDate && endDate) {
-      const url = `/data-penggajian/${id_user}?startDate=${startDate}&endDate=${endDate}`;
-      window.open(url, '_blank'); // Membuka tautan di tab baru
+      const url = `/data-penggajian/${id_user}`;
+      navigate(url);
     } else {
       Swal.fire("Error", "Pilih rentang tanggal terlebih dahulu untuk melihat detail atau merekap data", "error");
     }
   };
-  
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -69,7 +77,7 @@ const DataPenggajian = () => {
           <div className="flex items-end space-x-4">
             <div>
               <label htmlFor="startDate" className="block mb-1 text-xs">
-                Start Date :
+                Start Date:
               </label>
               <input
                 type="date"
@@ -81,7 +89,7 @@ const DataPenggajian = () => {
             </div>
             <div>
               <label htmlFor="endDate" className="block mb-1 text-xs">
-                End Date :
+                End Date:
               </label>
               <input
                 type="date"
@@ -107,40 +115,42 @@ const DataPenggajian = () => {
           />
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
-            <thead>
-              <tr className="bg-green-500 text-white">
-                {["No.", "Nama Karyawan", "Jumlah Kehadiran", "Total Lembur", "Aksi"].map((header, index) => (
-                  <th key={index} className="py-3 px-4 text-center font-semibold text-sm uppercase tracking-wider">
-                    {header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-
-            <tbody>
-              {!loading &&
-                !error &&
-                getFilteredData().map((item, index) => (
-                  <tr key={item.id_user} className={`hover:bg-gray-100 ${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}>
-                    <td className="border-b px-4 py-3 text-center">{index + 1}</td>
-                    <td className="border-b px-4 py-3 text-left">{item.nama_user}</td>
-                    <td className="border-b px-4 py-3 text-center">{item.total_absen} Hari</td>
-                    <td className="border-b px-4 py-3 text-center">{item.total_jam_lembur || "0:00"}</td>
-                    <td className="border-b px-4 py-3 text-center">
-                      <button
-                        className="text-blue-500 hover:underline"
-                        onClick={() => handleDetailClick(item.id_user)}
-                      >
-                        Detail
-                      </button>
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
+              <thead>
+                <tr className="bg-green-500 text-white">
+                  {["No.", "Nama Karyawan", "Jumlah Kehadiran", "Total Lembur", "Aksi"].map((header, index) => (
+                    <th key={index} className="py-3 px-4 text-center font-semibold text-sm uppercase tracking-wider">
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {getFilteredData().length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="px-4 py-3 text-center text-gray-500">
+                      Silahkan pilih rentang tanggal terlebih dahulu
                     </td>
                   </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  getFilteredData().map((item, index) => (
+                    <tr key={item.id_user} className={`hover:bg-gray-100 ${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}>
+                      <td className="border-b px-4 py-3 text-center">{index + 1}</td>
+                      <td className="border-b px-4 py-3 text-left">{item.nama_user}</td>
+                      <td className="border-b px-4 py-3 text-center">{item.total_absen} Hari</td>
+                      <td className="border-b px-4 py-3 text-center">{item.total_jam_lembur || "0:00"}</td>
+                      <td className="border-b px-4 py-3 text-center">
+                        <button className="text-blue-500 hover:underline" onClick={() => handleDetailClick(item.id_user)}>
+                          Detail
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
       </div>
     </div>
   );
