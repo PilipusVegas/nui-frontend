@@ -138,12 +138,21 @@ const DetailPenggajian = () => {
     const endDate = sessionStorage.getItem("endDate");
 
     if (startDate && endDate) {
-      setPeriod(`${startDate} - ${endDate}`);
+      const formatDate = (dateStr) => {
+        const date = new Date(dateStr);
+        return new Intl.DateTimeFormat("id-ID", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }).format(date);
+      };
+
+      setPeriod(`${formatDate(startDate)} - ${formatDate(endDate)}`);
     }
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen p-4">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center">
           <FontAwesomeIcon
@@ -167,56 +176,59 @@ const DetailPenggajian = () => {
       ) : error ? (
         <p className="text-center text-red-500">Error fetching data: {error}</p>
       ) : (
-        <div>
+        <div className="min-h-screen">
           {/* Informasi Karyawan Card */}
-          <div className="bg-white shadow-lg rounded-lg p-6 mb-6 w-full text-gray-800">
-            <p className="text-2xl font-semibold text-gray-800">{dataUser?.nama}</p>
-            <p className="text-sm text-gray-500 mb-1">{period}</p>
-            <div className="flex justify-between text-sm text-gray-600">
+          <div className="bg-white shadow-md rounded-lg p-6 mb-6 text-gray-800">
+            <p className="text-2xl font-semibold text-gray-900">{dataUser?.nama}</p>
+            <div className="flex justify-between mt-3 text-sm text-gray-600">
               <span>
-                <strong>Kehadiran:</strong> {totalKehadiran} Hari
+                <strong className="text-green-600">Kehadiran:</strong> {totalKehadiran} Hari
               </span>
               <span>
-                <strong>Terlambat:</strong> {totalKeterlambatan}
+                <strong className="text-yellow-600">Terlambat:</strong> {totalKeterlambatan}
               </span>
               <span>
-                <strong>Lembur:</strong> {totalLembur}
+                <strong className="text-blue-600">Lembur:</strong> {totalLembur}
               </span>
             </div>
           </div>
 
-          {/* Tabel dengan warna thead */}
-          <table className="w-full border-collapse rounded-lg bg-white shadow-lg overflow-hidden">
-            <thead className="bg-green-600 text-white">
-              <tr>
-                {["No", "Tanggal", "IN", "L", "OUT", "T"].map((header, index) => (
-                  <th key={index} className="py-3 px-4 text-left font-semibold text-center text-sm uppercase border-b border-green-400">
-                    {header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {payrollData.map((item, index) => {
-                // Cek apakah tanggal absen dan tanggal lembur sama
-                const isSameDate = item.tanggal_absen === item.tanggal_lembur;
+          {/* Periode */}
+          <p className="text-sm text-gray-500 mb-2 font-medium">Periode: {period}</p>
 
-                // Tentukan tanggal yang akan ditampilkan
-                const displayTanggal = item.tanggal_absen || item.tanggal_lembur || "-";
+          {/* Tabel */}
+          <div className="overflow-hidden rounded-lg shadow-lg">
+            <table className="w-full bg-white border-collapse">
+              <thead className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+                <tr>
+                  {["No", "Tanggal", "IN", "L", "OUT", "T"].map((header, index) => (
+                    <th
+                      key={index}
+                      className="py-4 px-4 font-semibold text-sm uppercase border-b border-green-400 text-center"
+                    >
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {payrollData.map((item, index) => {
+                  const displayTanggal = item.tanggal_absen || item.tanggal_lembur || "-";
 
-                return (
-                  <tr key={item.id_absen || index} className="hover:bg-green-50 transition-all">
-                    <td className="py-3 px-4 text-center border-b border-green-200">{index + 1}</td>
-                    <td className="py-3 px-4 text-center border-b border-green-200">{displayTanggal}</td>
-                    <td className="py-3 px-4 text-center border-b border-green-200">{item.absen_mulai || "00:00"}</td>
-                    <td className="py-3 px-4 text-center border-b border-green-200">{item.keterlambatan || "00:00"}</td>
-                    <td className="py-3 px-4 text-center border-b border-green-200">{item.absen_selesai || "00:00"}</td>
-                    <td className="py-3 px-4 text-center border-b border-green-200">{item.lembur || "00:00"}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                  return (
+                    <tr key={item.id_absen || index} className="hover:bg-green-50 transition-all duration-150">
+                      <td className="py-3 px-4 text-center border-b border-gray-200">{index + 1}</td>
+                      <td className="py-3 px-4 text-center border-b border-gray-200">{displayTanggal}</td>
+                      <td className="py-3 px-4 text-center border-b border-gray-200">{item.absen_mulai || "--:--"}</td>
+                      <td className="py-3 px-4 text-center border-b border-gray-200">{item.keterlambatan || "--:--"}</td>
+                      <td className="py-3 px-4 text-center border-b border-gray-200">{item.absen_selesai || "--:--"}</td>
+                      <td className="py-3 px-4 text-center border-b border-gray-200">{item.lembur || "--:--"}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
