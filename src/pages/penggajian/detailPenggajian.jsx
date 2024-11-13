@@ -44,13 +44,33 @@ const DetailPenggajian = () => {
 
       // Calculate total kehadiran, keterlambatan, and lembur
       const kehadiranCount = result.data.filter((item) => item.id_absen !== null && item.tanggal_absen !== "-").length;
+
+      // Keterlambatan: hitung total keterlambatan berdasarkan waktu absen_mulai lebih dari jam 22:00
       const keterlambatanTotal = result.data.reduce((acc, item) => {
-        const [hours, minutes] = item.keterlambatan ? item.keterlambatan.split(":").map(Number) : [0, 0];
-        return acc + hours * 60 + minutes;
+        if (item.absen_mulai) {
+          // Ambil waktu mulai absen (absen_mulai) dan konversi ke format 24 jam
+          const [hours, minutes] = item.absen_mulai.split(":").map(Number);
+          const absenTimeInMinutes = hours * 60 + minutes;
+
+          // Bandingkan dengan jam 22:00 (22:00 = 1320 menit)
+          const lateThresholdInMinutes = 22 * 60; // 22:00 dalam menit
+
+          // Jika waktu absen lebih dari 22:00, hitung keterlambatan
+          if (absenTimeInMinutes > lateThresholdInMinutes) {
+            const lateMinutes = absenTimeInMinutes - lateThresholdInMinutes;
+            acc += lateMinutes;
+          }
+        }
+        return acc;
       }, 0);
+
+      // Lembur: hitung total lembur dalam menit
       const lemburTotal = result.data.reduce((acc, item) => {
-        const [hours, minutes] = item.lembur ? item.lembur.split(":").map(Number) : [0, 0];
-        return acc + hours * 60 + minutes;
+        if (item.lembur && item.lembur !== "null" && item.lembur !== "0:00") {
+          const [hours, minutes] = item.lembur.split(":").map(Number);
+          acc += hours * 60 + minutes;
+        }
+        return acc;
       }, 0);
 
       setTotalKehadiran(kehadiranCount);
