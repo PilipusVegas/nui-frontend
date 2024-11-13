@@ -15,8 +15,8 @@ const DetailPenggajian = () => {
   const [error, setError] = useState(null);
   const [period, setPeriod] = useState("");
   const [totalKehadiran, setTotalKehadiran] = useState(0);
-  const [totalKeterlambatan, setTotalKeterlambatan] = useState("00:00");
-  const [totalLembur, setTotalLembur] = useState("00:00");
+  const [totalKeterlambatan, setTotalKeterlambatan] = useState("-");
+  const [totalLembur, setTotalLembur] = useState("-");
 
   const handleBackClick = () => {
     navigate(-1);
@@ -102,10 +102,10 @@ const DetailPenggajian = () => {
       excelData.push([
         index + 1,
         item.tanggal_absen || item.tanggal_lembur || "-",
-        item.absen_mulai || "00:00",
-        item.keterlambatan || "00:00",
-        item.absen_selesai || "00:00",
-        item.lembur || "00:00",
+        item.absen_mulai || "-",
+        item.keterlambatan || "-",
+        item.absen_selesai || "-",
+        item.lembur || "-",
       ]);
     });
 
@@ -239,10 +239,10 @@ const DetailPenggajian = () => {
                     <tr key={item.id_absen || index} className="hover:bg-green-50 transition-all duration-150">
                       <td className="py-3 px-4 text-center border-b border-gray-200">{index + 1}</td>
                       <td className="py-3 px-4 text-center border-b border-gray-200">{displayTanggal}</td>
-                      <td className="py-3 px-4 text-center border-b border-gray-200">{item.absen_mulai || "--:--"}</td>
-                      <td className="py-3 px-4 text-center border-b border-gray-200">{item.keterlambatan || "--:--"}</td>
-                      <td className="py-3 px-4 text-center border-b border-gray-200">{item.absen_selesai || "--:--"}</td>
-                      <td className="py-3 px-4 text-center border-b border-gray-200">{item.lembur || "--:--"}</td>
+                      <td className="py-3 px-4 text-center border-b border-gray-200">{item.absen_mulai || "-"}</td>
+                      <td className="py-3 px-4 text-center border-b border-gray-200">{item.keterlambatan || "-"}</td>
+                      <td className="py-3 px-4 text-center border-b border-gray-200">{item.absen_selesai || "-"}</td>
+                      <td className="py-3 px-4 text-center border-b border-gray-200">{item.lembur || "-"}</td>
                     </tr>
                   );
                 })}
