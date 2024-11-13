@@ -36,14 +36,18 @@ const DetailPenggajian = () => {
     setError(null);
 
     try {
-      const response = await fetch(`${apiUrl}/payroll/detail/${id_user}?startDate=${startDate}&endDate=${endDate}`);
+      const response = await fetch(
+        `${apiUrl}/payroll/detail/${id_user}?startDate=${startDate}&endDate=${endDate}`
+      );
       if (!response.ok) throw new Error("Failed to fetch payroll detail data");
       const result = await response.json();
       setDataUser(result);
       setPayrollData(result.data || []);
 
       // Calculate total kehadiran, keterlambatan, and lembur
-      const kehadiranCount = result.data.filter((item) => item.id_absen !== null && item.tanggal_absen !== "-").length;
+      const kehadiranCount = result.data.filter(
+        (item) => item.id_absen !== null && item.tanggal_absen !== "-"
+      ).length;
 
       // Keterlambatan: hitung total keterlambatan berdasarkan waktu absen_mulai lebih dari jam 22:00
       const keterlambatanTotal = result.data.reduce((acc, item) => {
@@ -74,8 +78,14 @@ const DetailPenggajian = () => {
       }, 0);
 
       setTotalKehadiran(kehadiranCount);
-      setTotalKeterlambatan(`${Math.floor(keterlambatanTotal / 60)} Jam ${keterlambatanTotal % 60} Menit`);
-      setTotalLembur(`${Math.floor(lemburTotal / 60)} Jam ${lemburTotal % 60} Menit`);
+      setTotalKeterlambatan(
+        `${Math.floor(keterlambatanTotal / 60)} Jam ${
+          keterlambatanTotal % 60
+        } Menit`
+      );
+      setTotalLembur(
+        `${Math.floor(lemburTotal / 60)} Jam ${lemburTotal % 60} Menit`
+      );
     } catch (error) {
       setError(error.message);
     } finally {
@@ -171,6 +181,31 @@ const DetailPenggajian = () => {
     }
   }, []);
 
+  function hitungKeterlambatan(jamMasuk, jamAbsen) {
+    // Parsing waktu ke dalam objek Date dengan mempertimbangkan lintas hari
+    const masuk = new Date(`1970-01-01T${jamMasuk}`);
+    let absen = new Date(`1970-01-01T${jamAbsen}`);
+    
+    // Jika `jamAbsen` lebih awal atau sama dengan `jamMasuk`, berarti tidak ada keterlambatan
+    if (absen <= masuk) {
+      return "00:00";
+    }
+  
+    // Hitung selisih waktu dalam milidetik
+    const selisihMilidetik = absen - masuk;
+  
+    // Konversi milidetik ke menit dan jam
+    const menit = Math.floor(selisihMilidetik / (1000 * 60));
+    const jam = Math.floor(menit / 60);
+    const sisaMenit = menit % 60;
+  
+    // Format jam dan menit ke dalam format hh:mm
+    const jamFormatted = String(jam).padStart(2, '0');
+    const menitFormatted = String(sisaMenit).padStart(2, '0');
+  
+    return `${jamFormatted}:${menitFormatted}`;
+  }
+
   return (
     <div className="flex flex-col min-h-screen p-4">
       <div className="flex justify-between items-center mb-4">
@@ -181,7 +216,9 @@ const DetailPenggajian = () => {
             onClick={handleBackClick}
             className="mr-2 cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-2 shadow-md"
           />
-          <h2 className="text-3xl font-bold text-gray-800 pb-1">Detail Penggajian</h2>
+          <h2 className="text-3xl font-bold text-gray-800 pb-1">
+            Detail Penggajian
+          </h2>
         </div>
         <button
           onClick={handleDownload}
@@ -199,13 +236,17 @@ const DetailPenggajian = () => {
         <div className="min-h-screen">
           {/* Informasi Karyawan Card */}
           <div className="bg-white shadow-md rounded-lg p-6 mb-6 text-gray-800">
-            <p className="text-2xl font-semibold text-gray-900">{dataUser?.nama}</p>
+            <p className="text-2xl font-semibold text-gray-900">
+              {dataUser?.nama}
+            </p>
             <div className="flex justify-between mt-3 text-sm text-gray-600">
               <span>
-                <strong className="text-green-600">Kehadiran:</strong> {totalKehadiran} Hari
+                <strong className="text-green-600">Kehadiran:</strong>{" "}
+                {totalKehadiran} Hari
               </span>
               <span>
-                <strong className="text-yellow-600">Terlambat:</strong> {totalKeterlambatan}
+                <strong className="text-yellow-600">Terlambat:</strong>{" "}
+                {totalKeterlambatan}
               </span>
               <span>
                 <strong className="text-blue-600">Lembur:</strong> {totalLembur}
@@ -214,35 +255,55 @@ const DetailPenggajian = () => {
           </div>
 
           {/* Periode */}
-          <p className="text-sm text-gray-500 mb-2 font-medium">Periode: {period}</p>
+          <p className="text-sm text-gray-500 mb-2 font-medium">
+            Periode: {period}
+          </p>
 
           {/* Tabel */}
           <div className="overflow-hidden rounded-lg shadow-lg">
             <table className="w-full bg-white border-collapse">
               <thead className="bg-gradient-to-r from-green-500 to-green-600 text-white">
                 <tr>
-                  {["No", "Tanggal", "IN", "L", "OUT", "T"].map((header, index) => (
-                    <th
-                      key={index}
-                      className="py-4 px-4 font-semibold text-sm uppercase border-b border-green-400 text-center"
-                    >
-                      {header}
-                    </th>
-                  ))}
+                  {["No", "Tanggal", "IN", "L", "OUT", "T"].map(
+                    (header, index) => (
+                      <th
+                        key={index}
+                        className="py-4 px-4 font-semibold text-sm uppercase border-b border-green-400 text-center"
+                      >
+                        {header}
+                      </th>
+                    )
+                  )}
                 </tr>
               </thead>
               <tbody>
                 {payrollData.map((item, index) => {
-                  const displayTanggal = item.tanggal_absen || item.tanggal_lembur || "-";
+                  const displayTanggal =
+                    item.tanggal_absen || item.tanggal_lembur || "-";
 
                   return (
-                    <tr key={item.id_absen || index} className="hover:bg-green-50 transition-all duration-150">
-                      <td className="py-3 px-4 text-center border-b border-gray-200">{index + 1}</td>
-                      <td className="py-3 px-4 text-center border-b border-gray-200">{displayTanggal}</td>
-                      <td className="py-3 px-4 text-center border-b border-gray-200">{item.absen_mulai || "-"}</td>
-                      <td className="py-3 px-4 text-center border-b border-gray-200">{item.keterlambatan || "-"}</td>
-                      <td className="py-3 px-4 text-center border-b border-gray-200">{item.absen_selesai || "-"}</td>
-                      <td className="py-3 px-4 text-center border-b border-gray-200">{item.lembur || "-"}</td>
+                    <tr
+                      key={item.id_absen || index}
+                      className="hover:bg-green-50 transition-all duration-150"
+                    >
+                      <td className="py-3 px-4 text-center border-b border-gray-200">
+                        {index + 1}
+                      </td>
+                      <td className="py-3 px-4 text-center border-b border-gray-200">
+                        {displayTanggal}
+                      </td>
+                      <td className="py-3 px-4 text-center border-b border-gray-200">
+                        {item.absen_mulai || "-"}
+                      </td>
+                      <td className="py-3 px-4 text-center border-b border-gray-200">
+                        {hitungKeterlambatan('22:00', item.absen_mulai) || "-"}
+                      </td>
+                      <td className="py-3 px-4 text-center border-b border-gray-200">
+                        { (item.absen_selesai === '0:00') ? '-' : item.absen_selesai}
+                      </td>
+                      <td className="py-3 px-4 text-center border-b border-gray-200">
+                        {item.lembur || "-"}
+                      </td>
                     </tr>
                   );
                 })}
