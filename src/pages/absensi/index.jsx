@@ -4,6 +4,9 @@ import StepOne from "./StepOne";
 import StepTwoMulai from "./StepTwoMulai";
 import StepTwoSelesai from "./StepTwoSelesai";
 import StepThree from "./StepThree";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {  faCalendarCheck, faCalendarPlus, faCalendar } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
 
 const Absensi = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -47,32 +50,35 @@ const Absensi = () => {
       default:
         return (
           <MobileLayout title="Absensi">
-            <div className="flex flex-col items-center justify-center h-screen w-full overflow-hidden p-4">
-              <div className="w-full sm:w-2/3 md:w-1/2 lg:w-1/3 p-4 mb-4 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-                <button
-                  className="bg-green-700 text-white px-6 py-3 rounded-md w-full hover:bg-green-800 transition duration-300"
-                  onClick={() => {
-                    setIsSelesaiFlow(false);
-                    setCurrentStep("stepOne");
-                  }}
-                >
-                  Absen Mulai
-                </button>
-              </div>
-
-              <div className="w-full sm:w-2/3 md:w-1/2 lg:w-1/3 p-4 mb-4 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-                <button
-                  className="bg-teal-600 text-white px-6 py-3 rounded-md w-full hover:bg-green-600 transition duration-300"
-                  onClick={() => {
-                    setIsSelesaiFlow(true);
-                    setCurrentStep("stepTwoSelesai");
-                  }}
-                >
-                  Absen Selesai
-                </button>
-              </div>
+          <div className="flex flex-col items-center justify-center h-screen w-full overflow-hidden p-4">
+            <div className="w-full sm:w-2/3 md:w-1/2 lg:w-1/3 p-4 mb-4 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <button
+                className="bg-green-700 text-white px-6 py-4 rounded-md w-full hover:bg-green-800 transition duration-300 flex flex-col items-center"
+                onClick={() => {
+                  setIsSelesaiFlow(false);
+                  setCurrentStep("stepOne");
+                }}
+              >
+                <FontAwesomeIcon icon={faCalendarPlus} className="text-3xl mb-2" />
+                <span className="text-lg font-medium">Absen Mulai</span>
+              </button>
             </div>
-          </MobileLayout>
+        
+            <div className="w-full sm:w-2/3 md:w-1/2 lg:w-1/3 p-4 mb-4 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <button
+                className="bg-teal-600 text-white px-6 py-4 rounded-md w-full hover:bg-teal-700 transition duration-300 flex flex-col items-center"
+                onClick={() => {
+                  setIsSelesaiFlow(true);
+                  setCurrentStep("stepTwoSelesai");
+                }}
+              >
+                <FontAwesomeIcon icon={faCalendarCheck} className="text-3xl mb-2" />
+                <span className="text-lg font-medium">Absen Selesai</span>
+              </button>
+            </div>
+          </div>
+        </MobileLayout>
+        
         );
     }
   };

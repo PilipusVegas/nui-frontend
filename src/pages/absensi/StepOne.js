@@ -11,7 +11,7 @@ const StepOne = ({ handleNextStepData }) => {
   const [charCount, setCharCount] = useState(0);
   const [locations, setLocations] = useState([]);
 
-  const isFormValid = () => lokasi && tugas;
+  const isFormValid = () => lokasi;
 
   const handleTugasChange = (e) => {
     const value = e.target.value;
@@ -59,10 +59,10 @@ const StepOne = ({ handleNextStepData }) => {
           </div>
           <div style={styles.formGroup}>
             <div style={styles.taskContainer}>
-              <label htmlFor="tugas" style={styles.label}>Tugas yang diberikan:</label>
+              <label htmlFor="tugas" style={styles.label}>Deskripsi Tugas (opsional):</label>
               <div style={styles.charCount}>{charCount} / {CHAR_LIMIT}</div>
             </div>
-            <textarea required rows="4" id="tugas" name="tugas" value={tugas} style={styles.textarea} onChange={handleTugasChange}/>
+            <textarea rows="7" id="tugas" name="tugas" value={tugas} style={styles.textarea} onChange={handleTugasChange}/>
           </div>
           <button type="submit" disabled={!isFormValid()} style={isFormValid() ? styles.buttonActive : styles.buttonInactive}>➜</button>
         </form>
