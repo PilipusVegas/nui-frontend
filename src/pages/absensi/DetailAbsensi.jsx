@@ -109,8 +109,8 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
       {selectedItem && (
         <div className="bg-white shadow-md rounded-lg p-6 mb-2 border border-gray-200 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-semibold">{selectedItem.nama}</h1>
-            <p className="text-gray-600 text-lg font-semibold">{selectedItem.role}</p>
+            <h1 className="text-2xl font-bold">{selectedItem.nama_user}</h1>
+            <p className="text-gray-600 text-sm font-semibold">{selectedItem.role}</p>
             <span className="text-gray-600 text-sm pb-0 mb-0">Periode Absen : {period}</span>
           </div>
         </div>
