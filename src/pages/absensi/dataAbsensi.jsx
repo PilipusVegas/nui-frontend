@@ -136,7 +136,7 @@ const DataAbsensi = () => {
           <thead>
             <tr className="bg-green-500 text-white">
               {["No.", "Nama Karyawan", "Divisi", "Total Absen", "Data Unapproved", "Aksi"].map((header) => (
-                <th key={header} className="py-2 px-4 font-semibold text-center">{header}</th>
+                <th key={header} className="py-1 px-4 font-semibold text-center text-sm">{header}</th>
               ))}
             </tr>
           </thead>
@@ -144,13 +144,13 @@ const DataAbsensi = () => {
             {filteredAbsenData.length > 0 ? (
               filteredAbsenData.map((absen, index) => (
                 <tr key={absen.id_user} className="border-t hover:bg-gray-50 transition-colors duration-150">
-                  <td className="text-center px-4 py-2">{index + 1}</td>
-                  <td className="text-center px-4 py-2">{absen.nama_user}</td>
-                  <td className="text-center px-4 py-2">{absen.role}</td>
-                  <td className="text-center px-4 py-2">{absen.total_absen} Hari</td>
-                  <td className="text-center text-red-600 font-bold px-4 py-2">{absen.unapproved} Unapproved</td>
-                  <td className="text-center px-4 py-2">
-                    <button onClick={() => handleDetailClick(absen.id_user)} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-150">
+                  <td className="text-center px-4 py-1 text-sm">{index + 1}</td>
+                  <td className="text-center px-4 py-1 text-sm">{absen.nama_user}</td>
+                  <td className="text-center px-4 py-1 text-sm">{absen.role}</td>
+                  <td className="text-center px-4 py-1 text-sm">{absen.total_absen} Hari</td>
+                  <td className="text-center text-red-600 font-bold px-4 py-1 text-sm">{absen.unapproved} Unapproved</td>
+                  <td className="text-center px-4 py-1 text-sm">
+                    <button onClick={() => handleDetailClick(absen.id_user)} className="bg-blue-500 text-white px-4 py-1 text-sm rounded hover:bg-blue-600 transition-colors duration-150">
                       Detail
                     </button>
                   </td>
@@ -158,7 +158,7 @@ const DataAbsensi = () => {
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="text-center px-4 py-2">
+                <td colSpan={6} className="text-center px-4 py-1 text-sm">
                   No Data Found
                 </td>
               </tr>
