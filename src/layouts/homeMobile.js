@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarCheck, faClock, faBell, faGrip, faHome, faUser, faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
+import { faCalendarCheck, faClock, faBell, faGrip, faHome, faUser,  faSignOutAlt, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 
 const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
   const [loading, setLoading] = useState(true);
@@ -17,7 +18,7 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
     if (idUser) {
       const fetchNotifications = async () => {
         try {
-          setLoading(true); // Mulai loading saat fetch dimulai
+          setLoading(true);
           const response = await fetch(`${apiUrl}/notif/user/${idUser}`, {
             headers: { "Cache-Control": "no-cache" },
           });
@@ -27,28 +28,26 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
           }
 
           const data = await response.json();
-
-          // Cek apakah data ada dan tidak kosong
           if (data && data.data && data.data.length > 0) {
             const unreadNotifications = data.data.some((notif) => notif.is_read === 0);
             setHasNewNotifications(unreadNotifications);
           } else {
-            setHasNewNotifications(false); // Tidak ada notifikasi
+            setHasNewNotifications(false);
           }
         } catch (error) {
           console.error("Terjadi kesalahan:", error);
         } finally {
-          setLoading(false); // Hentikan loading setelah proses selesai
+          setLoading(false);
         }
       };
 
       fetchNotifications();
     } else {
-      setLoading(false); // Tidak ada user, langsung set loading false
+      setLoading(false);
     }
 
     return () => {
-      setLoading(false); // Cleanup untuk menghindari kebocoran memori
+      setLoading(false);
     };
   }, [apiUrl]);
 
@@ -58,10 +57,10 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
   };
 
   const TitleDivider = ({ title, onClick }) => (
-    <div className="flex justify-between p-4">
-      <div className="font-bold">{title}</div>
+    <div className="flex justify-between items-center py-2 px-4 bg-gray-100 rounded-lg shadow-sm">
+      <div className="font-semibold text-lg">{title}</div>
       {onClick && (
-        <div onClick={onClick} className="cursor-pointer">
+        <div onClick={onClick} className="cursor-pointer text-sm text-green-600 hover:text-green-800">
           Lihat semua
         </div>
       )}
@@ -69,50 +68,61 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
   );
 
   const MenuBantuan = ({ icon, title, color, onClick }) => (
-    <div className="flex flex-row items-center gap-2 p-4 bg-green-100 rounded-xl cursor-pointer" onClick={onClick}>
-      <FontAwesomeIcon className={color} icon={icon} />
-      <span>{title}</span>
+    <div
+      className="flex flex-row items-center gap-2 p-4 bg-green-100 rounded-xl cursor-pointer hover:bg-green-200 transition-all duration-300"
+      onClick={onClick}
+    >
+      <FontAwesomeIcon className={`${color} text-xl`} icon={icon} />
+      <span className="font-medium">{title}</span>
     </div>
   );
 
-  const IconButton = ({ icon, label, onClick, color, hasNotification }) => (
-    <button onClick={onClick} aria-label={label} className="p-4 relative icon-button-relative">
-      <div className="flex flex-col items-center">
-        <div className="relative">
-          <FontAwesomeIcon
-            icon={icon}
-            className={`text-2xl ${color} ${hasNotification}`}
-          />
-          {hasNotification && (
-            <>
-              <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 animate-ping" />
-              <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-600 border-2 border-white" />
-            </>
-          )}
-        </div>
-        <span className="mt-2 text-sm">{label}</span>
+  const IconButton = ({ icon, label, onClick, color, hasNotification, isActive }) => (
+    <button
+      onClick={onClick}
+      aria-label={label}
+      className={`flex flex-col items-center justify-center mb-1 py-2 px-4 relative transition-all duration-300 rounded-full ${
+        isActive ? "bg-white text-green-900" : "hover:bg-gray-200"
+      }`}
+    >
+      <div className="relative">
+        <FontAwesomeIcon icon={icon} className={`text-xl ${color}`} />
+        {hasNotification && (
+          <>
+            <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 animate-ping" />
+            <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-600 border-2 border-white" />
+          </>
+        )}
       </div>
+      <span className="mt-1 text-xs font-medium">{label}</span>
     </button>
   );
+  
+  
 
   return (
-    <div className="flex flex-col font-sans">
-      <div className="bg-green-900 rounded-b-2xl p-9 relative">
-        <button onClick={handleLogout} className="absolute top-5 right-5 text-lg text-white hover:text-gray-300">
+    <div className="flex flex-col font-sans bg-gray-50 min-h-screen">
+      <div className="bg-green-900 rounded-b-2xl p-8 relative shadow-lg">
+        <button
+          onClick={handleLogout}
+          title="Logout"
+          className="absolute top-3 right-3 text-lg text-white hover:text-green-900 transition-colors hover:bg-white px-2 py-1 rounded-full"
+        >
           <FontAwesomeIcon icon={faSignOutAlt} />
         </button>
         <div className="flex flex-col py-5">
-          <h2 className="text-xs font-bold text-white mb-0 pb-0">Selamat Datang,</h2>
-          <div className="text-3xl font-semibold text-white mb-3">{username || "User"}</div>
-          <div className="text-xs text-white font-semibold">{GetNamaDivisi(roleId)} • Kantor Palem</div>
+          <h2 className="text-xs font-semibold text-white">Selamat Datang,</h2>
+          <div className="text-3xl font-bold text-white mb-2">{username || "User"}</div>
+          <div className="text-sm text-white font-semibold">{GetNamaDivisi(roleId)} • Kantor Palem</div>
         </div>
       </div>
+
       <TitleDivider title="Menu" />
-      <div className="grid grid-cols-4 gap-4">
+
+      <div className="grid grid-cols-4 gap-4 p-4">
         <IconButton icon={faCalendarCheck} label="Absen" onClick={() => navigate("/absensi")} color="text-blue-500" />
         <IconButton icon={faClock} label="Lembur" onClick={() => navigate("/lembur")} color="text-blue-500" />
         <IconButton
-          isTop={true}
           icon={faBell}
           label="Notifikasi"
           color="text-yellow-500"
@@ -121,8 +131,13 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
         />
         <IconButton icon={faGrip} label="Lainnya" onClick={() => navigate("/menu")} color="text-gray-500" />
       </div>
+
+      <div className="flex flex-row items-center p-1">
       <TitleDivider title="Bantuan" />
-      <div className="flex flex-col gap-2 px-5">
+      <FontAwesomeIcon icon={faQuestionCircle} />
+      </div>
+
+      <div className="flex flex-col gap-3 px-5">
         <MenuBantuan
           title="Team IT"
           icon={faWhatsapp}
@@ -136,15 +151,22 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
           onClick={() => window.open("https://wa.me/6287819999599", "_blank")}
         />
       </div>
-      <div className="fixed bottom-0 left-0 w-full flex justify-around bg-green-900 shadow-md text-white">
-        <IconButton icon={faHome} label="Home" onClick={() => navigate("/home")} />
+
+      <div className="fixed bottom-0 left-0 w-full flex justify-around items-center p-2 bg-green-900 shadow-md text-white rounded-t-3xl">
+        <IconButton icon={faHome} label="Home" isActive={location.pathname === "/home"} onClick={() => navigate("/home")} />
         <IconButton
           icon={faBell}
           label="Notifikasi"
           hasNotification={hasNewNotifications}
+          isActive={location.pathname === "/notification"}
           onClick={handleNotificationClick}
         />
-        <IconButton icon={faUser} label="Profil" onClick={() => navigate("/profile")} />
+        <IconButton
+          icon={faUser}
+          label="Profil"
+          isActive={location.pathname === "/profile"}
+          onClick={() => navigate("/profile")}
+        />
       </div>
     </div>
   );

@@ -58,123 +58,58 @@ const Login = ({ onLoginSuccess }) => {
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
-      handleLogin(); // Panggil fungsi handleLogin saat tombol Enter ditekan
+      handleLogin();
     }
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <img src={logo} alt="Logo" style={styles.logo} />
-        <form onSubmit={(e) => e.preventDefault()} style={styles.form}>
-          <div style={styles.inputContainer}>
-            <FontAwesomeIcon icon={faUser} style={styles.iconLeft} />
+    <div className="flex items-center justify-center h-screen px-7 bg-gradient-to-br from-teal-500 to-green-600 font-poppins">
+      <div className="w-full max-w-md px-7 py-10 bg-white rounded-lg shadow-lg">
+        <img src={logo} alt="Logo" className="w-16 mx-auto mb-2" />
+        <h5 className="text-xl font-bold text-[#326058] text-center mb-4 transition-all duration-300 cursor-pointer">
+          PT Nico Urban Indonesia
+        </h5>
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-2 pt-7 pb-10">
+          <label className="block text-sm font-medium text-gray-700">Username</label>
+          <div className="relative">
+            <FontAwesomeIcon icon={faUser} className="absolute top-1/2 left-3 text-gray-500 -translate-y-1/2" />
             <input
               type="text"
               value={username}
-              style={styles.input}
+              className="w-full px-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#326058]"
               placeholder="Username"
               onChange={(e) => setUsername(e.target.value)}
-              onKeyDown={handleKeyPress} // Tangani penekanan tombol pada input username
+              onKeyDown={handleKeyPress}
             />
           </div>
-          <div style={styles.inputContainer}>
-            <FontAwesomeIcon icon={faLock} style={styles.iconLeft} />
+          <label className="block text-sm font-medium text-gray-700">Password</label>
+          <div className="relative">
+            <FontAwesomeIcon icon={faLock} className="absolute top-1/2 left-3 text-gray-500 -translate-y-1/2" />
             <input
-              value={password}
-              style={styles.input}
-              placeholder="Password"
               type={showPassword ? "text" : "password"}
+              value={password}
+              className="w-full px-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#326058]"
+              placeholder="Password"
               onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={handleKeyPress} // Tangani penekanan tombol pada input password
+              onKeyDown={handleKeyPress}
             />
-            <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} onClick={togglePasswordVisibility} style={styles.iconRight} />
+            <FontAwesomeIcon
+              icon={showPassword ? faEyeSlash : faEye}
+              onClick={togglePasswordVisibility}
+              className="absolute top-1/2 right-3 text-gray-500 cursor-pointer -translate-y-1/2"
+            />
           </div>
-          <button type="submit" style={styles.button} onClick={handleLogin}>
-            LOGIN
-          </button>
         </form>
+        <button
+          type="submit"
+          onClick={handleLogin}
+          className="w-full py-2 font-bold text-white bg-[#326058] rounded-md hover:bg-green-900 transition-all duration-300"
+        >
+          Login
+        </button>
       </div>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    height: "100vh",
-    display: "flex",
-    padding: "0 20px",
-    alignItems: "center",
-    justifyContent: "center",
-    background: "linear-gradient(130deg, #15B392, #0A6847)",
-    flexDirection: "column",
-    fontFamily: "'Poppins', sans-serif",
-  },
-  card: {
-    width: "100%",
-    maxWidth: "400px",
-    padding: "20px",
-    borderRadius: "10px",
-    backgroundColor: "rgba(255, 255, 255, 0.4)",
-    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.3)",
-    textAlign: "center",
-    backdropFilter: "blur(10px)",
-  },
-  logo: {
-    //logo ditengah
-    margin: "0 auto",
-    width: "100px",
-    marginBottom: "50px",
-  },
-  form: {
-    width: "100%",
-  },
-  inputContainer: {
-    width: "100%",
-    margin: "10px 0",
-    position: "relative",
-  },
-  input: {
-    width: "100%",
-    outline: "none",
-    padding: "10px",
-    fontSize: "1rem",
-    paddingLeft: "35px",
-    borderRadius: "5px",
-    paddingRight: "40px",
-    boxSizing: "border-box",
-    border: "1px solid #ccc",
-    transition: "border-color 0.3s ease",
-  },
-  iconLeft: {
-    position: "absolute",
-    top: "50%",
-    left: "10px",
-    color: "#999",
-    fontSize: "1.2rem",
-    transform: "translateY(-50%)",
-  },
-  iconRight: {
-    position: "absolute",
-    top: "50%",
-    right: "10px",
-    color: "#999",
-    cursor: "pointer",
-    fontSize: "1.2rem",
-    transform: "translateY(-50%)",
-  },
-  button: {
-    color: "#fff",
-    width: "100%",
-    border: "none",
-    padding: "10px",
-    fontSize: "1rem",
-    cursor: "pointer",
-    marginTop: "20px",
-    borderRadius: "5px",
-    backgroundColor: "#326058",
-    transition: "background-color 0.3s ease",
-  },
 };
 
 export default Login;
