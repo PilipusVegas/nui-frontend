@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faSearch, faEye } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 
 const DataPenggajian = () => {
@@ -62,7 +62,7 @@ const DataPenggajian = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen p-6">
       <div className="flex-grow px-6 ">
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center space-x-2">
@@ -82,7 +82,7 @@ const DataPenggajian = () => {
               <input
                 type="date"
                 id="startDate"
-                className="border border-gray-300 rounded px-3 py-2"
+                className="border border-gray-300 rounded px-3 py-1 "
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
               />
@@ -94,7 +94,7 @@ const DataPenggajian = () => {
               <input
                 type="date"
                 id="endDate"
-                className="border border-gray-300 rounded px-3 py-2"
+                className="border border-gray-300 rounded px-3 py-1 "
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
               />
@@ -103,28 +103,32 @@ const DataPenggajian = () => {
         </div>
 
         <div className="flex mb-4 items-center relative w-full">
-          <span className="absolute left-3 top-2 text-gray-500">
+          <span className="absolute left-3 top-1 text-gray-500">
             <FontAwesomeIcon icon={faSearch} />
           </span>
           <input
             type="text"
             value={searchQuery}
             placeholder="Cari Nama Karyawan..."
-            className="border border-gray-300 p-2 rounded-md w-full pl-10"
+            className="border border-gray-300 p-1 rounded-md w-full pl-10"
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
           <div className="overflow-x-auto">
-            <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
+            <table className="min-w-full bg-white rounded-lg shadow-md">
               <thead>
-                <tr className="bg-green-500 text-white">
-                  {["No.", "Nama Karyawan", "Jumlah Kehadiran", "Total Lembur", "Aksi"].map((header, index) => (
-                    <th key={index} className="py-3 px-4 text-center font-semibold text-sm uppercase tracking-wider">
-                      {header}
-                    </th>
-                  ))}
-                </tr>
+              <tr className="bg-green-500 text-white">
+                {["No.", "Nama Karyawan", "Jumlah Kehadiran", "Total Lembur", "Menu"].map((header, index) => (
+                  <th
+                    key={index}
+                    className={`py-2 px-4 text-center font-semibold text-sm uppercase tracking-wider ${index === 0 ? "first:rounded-tl-lg" : ""} ${index === 4 ? "last:rounded-tr-lg" : ""}`}
+                  >
+                    {header}
+                  </th>
+                ))}
+              </tr>
+
               </thead>
               <tbody>
                 {getFilteredData().length === 0 ? (
@@ -136,13 +140,13 @@ const DataPenggajian = () => {
                 ) : (
                   getFilteredData().map((item, index) => (
                     <tr key={item.id_user} className={`hover:bg-gray-100 ${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}>
-                      <td className="border-b px-4 py-3 text-center">{index + 1}</td>
-                      <td className="border-b px-4 py-3 text-left">{item.nama_user}</td>
-                      <td className="border-b px-4 py-3 text-center">{item.total_absen} Hari</td>
-                      <td className="border-b px-4 py-3 text-center">{item.total_jam_lembur || "0:00"}</td>
-                      <td className="border-b px-4 py-3 text-center">
-                        <button className="text-blue-500 hover:underline" onClick={() => handleDetailClick(item.id_user)}>
-                          Detail
+                      <td className="border-b px-4 text-center">{index + 1}</td>
+                      <td className="border-b px-4 text-left">{item.nama_user}</td>
+                      <td className="border-b px-4 text-center">{item.total_absen} Hari</td>
+                      <td className="border-b px-4 text-center">{item.total_jam_lembur || "0:00"}</td>
+                      <td className="border-b px-4 text-center">
+                        <button className="text-white hover:underline px-3 my-1 py-1 bg-blue-600 rounded-lg" title="Lihat Detail" onClick={() => handleDetailClick(item.id_user)}>
+                          <FontAwesomeIcon icon={faEye} />
                         </button>
                       </td>
                     </tr>

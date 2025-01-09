@@ -207,7 +207,7 @@ const DetailPenggajian = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen p-4">
+    <div className="flex flex-col min-h-screen p-6">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center">
           <FontAwesomeIcon
@@ -216,7 +216,7 @@ const DetailPenggajian = () => {
             onClick={handleBackClick}
             className="mr-2 cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-2 shadow-md"
           />
-          <h2 className="text-3xl font-bold text-gray-800 pb-1">
+          <h2 className="text-2xl font-bold text-gray-800 pb-1">
             Detail Penggajian
           </h2>
         </div>
@@ -224,7 +224,7 @@ const DetailPenggajian = () => {
           onClick={handleDownload}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150"
         >
-          Download Excel
+          Unduh Data
         </button>
       </div>
 
@@ -255,8 +255,8 @@ const DetailPenggajian = () => {
           </div>
 
           {/* Periode */}
-          <p className="text-sm text-gray-500 mb-2 font-medium">
-            Periode: {period}
+          <p className="text-sm text-gray-600 mb-2 font-medium">
+            Rentang Periode: {period}
           </p>
 
           {/* Tabel */}
@@ -268,7 +268,7 @@ const DetailPenggajian = () => {
                     (header, index) => (
                       <th
                         key={index}
-                        className="py-4 px-4 font-semibold text-sm uppercase border-b border-green-400 text-center"
+                        className="py-1 px-4 font-semibold text-sm uppercase border-b border-green-400 text-center"
                       >
                         {header}
                       </th>
@@ -280,28 +280,27 @@ const DetailPenggajian = () => {
                 {payrollData.map((item, index) => {
                   const displayTanggal =
                     item.tanggal_absen || item.tanggal_lembur || "-";
-
                   return (
                     <tr
                       key={item.id_absen || index}
                       className="hover:bg-green-50 transition-all duration-150"
                     >
-                      <td className="py-3 px-4 text-center border-b border-gray-200">
+                      <td className="py-1 px-4 text-center border-b border-gray-200">
                         {index + 1}
                       </td>
-                      <td className="py-3 px-4 text-center border-b border-gray-200">
+                      <td className="py-1 px-4 text-center border-b border-gray-200">
                         {displayTanggal}
                       </td>
-                      <td className="py-3 px-4 text-center border-b border-gray-200">
+                      <td className="py-1 px-4 text-center border-b border-gray-200">
                         {item.absen_mulai || "-"}
                       </td>
-                      <td className="py-3 px-4 text-center border-b border-gray-200">
+                      <td className="py-1 px-4 text-center border-b border-gray-200">
                         {hitungKeterlambatan('22:00', item.absen_mulai) || "-"}
                       </td>
-                      <td className="py-3 px-4 text-center border-b border-gray-200">
+                      <td className="py-1 px-4 text-center border-b border-gray-200">
                         { (item.absen_selesai === '0:00') ? '-' : item.absen_selesai}
                       </td>
-                      <td className="py-3 px-4 text-center border-b border-gray-200">
+                      <td className="py-1 px-4 text-center border-b border-gray-200">
                         {item.lembur || "-"}
                       </td>
                     </tr>

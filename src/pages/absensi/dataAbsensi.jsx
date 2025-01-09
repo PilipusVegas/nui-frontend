@@ -6,13 +6,18 @@ import { useNavigate } from "react-router-dom";
 
 const DataAbsensi = () => {
   const navigate = useNavigate();
-  const [absenData, setAbsenData] = useState([]); // Inisialisasi sebagai array
+  const [absenData, setAbsenData] = useState([]);
   const [selectedAbsen, setSelectedAbsen] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const [searchName, setSearchName] = useState("");
   const [searchDivisi, setSearchDivisi] = useState("");
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
   const handleBackClick = () => {
     if (selectedAbsen) {
@@ -30,11 +35,11 @@ const DataAbsensi = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setAbsenData(Array.isArray(data) ? data : []); // Pastikan data adalah array
+      setAbsenData(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error fetching absen data:", err.message);
       setError(err.message);
-      setAbsenData([]); // Reset to an empty array on error
+      setAbsenData([]);
     } finally {
       setLoading(false);
     }
@@ -58,26 +63,6 @@ const DataAbsensi = () => {
     }
   };
 
-  const postAbsenStatus = async (id_absen, newStatus) => {
-    try {
-      if (!id_absen) {
-        throw new Error("ID absensi tidak valid");
-      }
-      const response = await fetch(`${apiUrl}/absen/status/${id_absen}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
-      if (!response.ok) {
-        throw new Error("Gagal memperbarui status");
-      }
-    } catch (error) {
-      console.error("Error:", error.message);
-    }
-  };
-
   useEffect(() => {
     fetchAbsenData();
   }, []);
@@ -92,6 +77,11 @@ const DataAbsensi = () => {
     return matchesName && matchesDivisi;
   }) : [];
 
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredAbsenData.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredAbsenData.length / itemsPerPage);
+
   if (loading) {
     return <div className="text-center">Loading...</div>;
   }
@@ -101,28 +91,41 @@ const DataAbsensi = () => {
   }
 
   if (selectedAbsen) {
-    return <DetailAbsensi absen={selectedAbsen} onBackClick={handleBackClick} onPostStatus={postAbsenStatus} />;
+    return <DetailAbsensi absen={selectedAbsen} onBackClick={handleBackClick} />;
   }
 
   return (
     <div className="min-h-screen flex flex-col justify-start p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <FontAwesomeIcon icon={faArrowLeft} title="Back to Home" onClick={handleBackClick} className="mr-2 cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"/>
+          <FontAwesomeIcon
+            icon={faArrowLeft}
+            title="Back to Home"
+            onClick={handleBackClick}
+            className="mr-2 cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"
+          />
           <h2 className="text-3xl font-bold text-gray-800 pb-1">Data Absensi</h2>
         </div>
         <div className="flex items-center space-x-2">
           <div className="relative w-full">
-            <input type="text" placeholder="Search by Name" value={searchName} onChange={(e) => setSearchName(e.target.value)}
-              className="border border-gray-300 rounded-lg p-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-600"
+            <input
+              type="text"
+              placeholder="Search by Name"
+              value={searchName}
+              onChange={(e) => setSearchName(e.target.value)}
+              className="border border-gray-300 rounded-lg p-1 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-600"
             />
             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
               <FontAwesomeIcon icon={faSearch} />
             </span>
           </div>
           <div className="relative w-full">
-            <input type="text" placeholder="Search by Divisi" value={searchDivisi} onChange={(e) => setSearchDivisi(e.target.value)}
-              className="border border-gray-300 rounded-lg p-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-600"
+            <input
+              type="text"
+              placeholder="Search by Divisi"
+              value={searchDivisi}
+              onChange={(e) => setSearchDivisi(e.target.value)}
+              className="border border-gray-300 rounded-lg p-1 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-600"
             />
             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
               <FontAwesomeIcon icon={faSearch} />
@@ -141,10 +144,10 @@ const DataAbsensi = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredAbsenData.length > 0 ? (
-              filteredAbsenData.map((absen, index) => (
+            {currentItems.length > 0 ? (
+              currentItems.map((absen, index) => (
                 <tr key={absen.id_user} className="border-t hover:bg-gray-50 transition-colors duration-150">
-                  <td className="text-center px-4 py-1 text-sm">{index + 1}</td>
+                  <td className="text-center px-4 py-1 text-sm">{indexOfFirstItem + index + 1}</td>
                   <td className="text-center px-4 py-1 text-sm">{absen.nama_user}</td>
                   <td className="text-center px-4 py-1 text-sm">{absen.role}</td>
                   <td className="text-center px-4 py-1 text-sm">{absen.total_absen} Hari</td>
@@ -165,6 +168,35 @@ const DataAbsensi = () => {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-center mt-4 space-x-2">
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+          className={`px-5 rounded-full font-medium transition-all duration-200 ${
+            currentPage === 1
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-green-500 text-white hover:bg-green-900 shadow-lg"
+          }`}
+        >
+          &#8592;
+        </button>
+        <span className="px-4 rounded-full bg-white border border-gray-300 text-gray-700 shadow-sm">
+         {currentPage} / {totalPages}
+        </span>
+        <button
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+          disabled={currentPage === totalPages}
+          className={`px-5 rounded-full font-xl transition-all duration-200 ${
+            currentPage === totalPages
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed "
+              : "bg-green-600 text-white hover:bg-green-900 shadow-lg"
+          }`}
+        >
+         &#8594;
+        </button>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarCheck, faClock, faBell, faGrip, faHome, faUser,  faSignOutAlt, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
+import { faCalendarCheck, faClock, faBell,faHistory, faGrip, faHome, faUser,  faSignOutAlt, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 
 const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
   const navigate = useNavigate();
@@ -82,11 +82,11 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
       onClick={onClick}
       aria-label={label}
       className={`flex flex-col items-center justify-center mb-1 py-2 px-4 relative transition-all duration-300 rounded-full ${
-        isActive ? "bg-white text-green-900" : "hover:bg-gray-200"
+        isActive ? "bg-white text-green-900" : "hover:bg-gray-200 hover:text-green-900 px-2"
       }`}
     >
       <div className="relative">
-        <FontAwesomeIcon icon={icon} className={`text-xl ${color}`} />
+        <FontAwesomeIcon icon={icon} className={`text-lg ${color}`} />
         {hasNotification && (
           <>
             <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 animate-ping" />
@@ -97,7 +97,6 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
       <span className="mt-1 text-xs font-medium">{label}</span>
     </button>
   );
-  
   
 
   return (
@@ -133,8 +132,7 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
       </div>
 
       <div className="flex flex-row items-center p-1">
-      <TitleDivider title="Bantuan" />
-      <FontAwesomeIcon icon={faQuestionCircle} />
+        <span className="text-md font-semibold pl-3 pb-3">Bantuan <FontAwesomeIcon icon={faQuestionCircle} className="text-sm" /></span>
       </div>
 
       <div className="flex flex-col gap-3 px-5">
@@ -155,8 +153,8 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
       <div className="fixed bottom-0 left-0 w-full flex justify-around items-center p-2 bg-green-900 shadow-md text-white rounded-t-3xl">
         <IconButton icon={faHome} label="Home" isActive={location.pathname === "/home"} onClick={() => navigate("/home")} />
         <IconButton
-          icon={faBell}
-          label="Notifikasi"
+          icon={faHistory}
+          label="Riwayat"
           hasNotification={hasNewNotifications}
           isActive={location.pathname === "/notification"}
           onClick={handleNotificationClick}

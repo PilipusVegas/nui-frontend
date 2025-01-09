@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { faArrowLeft, faMapMarkerAlt, faClock, faCalendarDay, faRulerVertical } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faMapMarkerAlt, faClock, faCalendarDay, faRulerVertical, faEye } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Swal from "sweetalert2";
 
@@ -11,6 +11,13 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [period, setPeriod] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = absen.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(absen.length / itemsPerPage);
 
   useEffect(() => {
     const calculatePeriod = () => {
@@ -26,12 +33,17 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
         startDate = new Date(currentYear, currentMonth, 21);
         endDate = new Date(currentYear, currentMonth + 1, 20);
       }
+
       setPeriod(
         `${startDate.toLocaleDateString("id-ID", {
           year: "numeric",
           month: "long",
           day: "numeric",
-        })} - ${endDate.toLocaleDateString("id-ID", { year: "numeric", month: "long", day: "numeric" })}`
+        })} - ${endDate.toLocaleDateString("id-ID", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })}`
       );
     };
 
@@ -44,16 +56,13 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
       absen.forEach((item) => {
         initialStatus[item.id_absen] = item.status === 1;
       });
-      setStatusApproval(initialStatus); // Set status approval per id_absen
-
-      // Set the first item as the selected item automatically
-      setSelectedItem(absen[0]); // Set selectedItem as the first item in absen
+      setStatusApproval(initialStatus);
+      setSelectedItem(absen[0]);
       setIsApproved(absen[0]?.status === 1);
     }
   }, [absen]);
 
   const handleViewClick = (item) => {
-    console.log("Selected item:", item); // Debugging
     setSelectedItem(item);
     setIsModalOpen(true);
     setIsApproved(item?.status === 1);
@@ -65,19 +74,16 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
   };
 
   const handleStatusUpdate = async (id_absen) => {
-    if (!id_absen) {
-      console.error("ID is required to update status");
-      return;
-    }
+    if (!id_absen) return;
     setIsLoading(true);
+    setError(null); // Reset error message before starting update
     const newStatus = 1;
+
     try {
       await onPostStatus(id_absen, newStatus);
-
-      // Update status khusus untuk id_absen ini
       setStatusApproval((prevState) => ({
         ...prevState,
-        [id_absen]: true, // Set status sebagai disetujui untuk id_absen ini
+        [id_absen]: true,
       }));
 
       Swal.fire({
@@ -120,20 +126,24 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
         <table className="min-w-full border-collapse rounded-lg">
           <thead>
             <tr className="bg-green-500 text-white">
-              {["No.", "Tanggal", "IN", "OUT", "Lokasi", "Keterangan", "Status", "Aksi"].map((header) => (
-                <th className="py-2 px-4 font-semibold text-center">{header}</th>
+              {["No.", "Tanggal","Lokasi", "IN", "OUT", "Status", "Aksi"].map((header, index) => (
+                <th key={index} className={`py-1 px-4 font-semibold text-center ${index === 0 ? "first:rounded-tl-lg" : ""} ${index === 6 ? "last:rounded-tr-lg" : ""}`}>
+                  {header}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {absen.length > 0 ? (
-              absen.map((item, index) => (
+            {currentItems.length > 0 ? (
+              currentItems.map((item, index) => (
                 <tr key={item.id_absen} className="border-b hover:bg-gray-100">
-                  <td className="text-center px-4 py-2">{index + 1}</td>
-                  <td className="text-center py-2 px-4">
+                  <td className="text-center py-1 px-4">{indexOfFirstItem + index + 1}</td>
+                  <td className="text-center py-1 px-4">
                     {new Date(item.jam_mulai).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })}
                   </td>
-                  <td className="text-center py-2 px-4">
+                  <td className="py-1 px-4">{item.lokasi}</td>
+
+                  <td className="text-center py-1 px-4">
                     {new Date(item.jam_mulai).toLocaleTimeString("id-ID", {
                       timeZone: "Asia/Jakarta",
                       hour: "2-digit",
@@ -141,8 +151,7 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
                       hour12: false,
                     })}
                   </td>
-
-                  <td className="text-center py-2 px-4">
+                  <td className="text-center py-1 px-4">
                     {item.jam_selesai
                       ? new Date(item.jam_selesai).toLocaleTimeString("id-ID", {
                           timeZone: "Asia/Jakarta",
@@ -152,34 +161,24 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
                         })
                       : "---"}
                   </td>
-                  <td className="text-center py-2 px-4">{item.lokasi}</td>
-
-                  <td
-                    className={`text-center ${
-                      new Date(item.jam_mulai).getHours() >= 22 ? "text-red-500 font-bold" : "text-green-500 font-bold"
-                    }`}
-                  >
-                    {new Date(item.jam_mulai).getHours() >= 22 ? "Terlambat" : "Tepat Waktu"}
-                  </td>
-                  <td className="text-center py-2 px-4">
+                  <td className="text-center py-1 px-4">
                     <span className={`font-semibold ${statusApproval[item.id_absen] ? "text-green-500" : "text-red-500"}`}>
                       {statusApproval[item.id_absen] ? "Disetujui" : "Belum Disetujui"}
                     </span>
                   </td>
-
-                  <td className="text-center py-2 px-4">
+                  <td className="text-center py-1 px-4">
                     <button
                       onClick={() => handleViewClick(item)}
-                      className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600 transition-colors duration-150"
+                      className="bg-blue-500 text-white py-1 px-2 rounded hover:bg-blue-600 transition-colors duration-150"
                     >
-                      Lihat
+                      <FontAwesomeIcon icon={faEye} />
                     </button>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="6" className="py-2 px-4 text-center italic">
+                <td colSpan="7" className="py-2 px-4 text-center italic">
                   Tidak ada data absensi.
                 </td>
               </tr>
@@ -188,7 +187,47 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
         </table>
       </div>
 
+      <div className="flex justify-center mt-4 space-x-2">
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+          className={`px-5 rounded-full font-medium transition-all duration-200 ${
+            currentPage === 1
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-green-500 text-white hover:bg-green-900 shadow-lg"
+          }`}
+        >
+          &#8592;
+        </button>
+        <span className="px-4 rounded-full bg-white border border-gray-300 text-gray-700 shadow-sm">
+          {currentPage} / {totalPages}
+        </span>
+        <button
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+          disabled={currentPage === totalPages}
+          className={`px-5 rounded-full font-xl transition-all duration-200 ${
+            currentPage === totalPages
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed "
+              : "bg-green-600 text-white hover:bg-green-900 shadow-lg"
+          }`}
+        >
+          &#8594;
+        </button>
+      </div>
+
       {isModalOpen && selectedItem && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-full relative max-h-screen overflow-y-auto">
+            <button
+              onClick={handleCloseModal}
+              className="absolute top-1 right-5 text-4xl text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 rounded-full transition duration-200"
+            >
+              &times;
+            </button>
+
+            <h3 className="text-xl font-bold mb-4 text-left text-gray-700">Detail Lokasi : </h3>
+            {error && <p className="text-red-500">{error}</p>}
+            {/* Modal content remains unchanged */}{isModalOpen && selectedItem && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-full relative max-h-screen overflow-y-auto">
             <button
@@ -346,8 +385,12 @@ const DetailAbsensi = ({ absen, onBackClick, onPostStatus }) => {
           </div>
         </div>
       )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default DetailAbsensi;
+
