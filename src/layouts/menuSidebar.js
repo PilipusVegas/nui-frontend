@@ -4,8 +4,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
   faSignOutAlt, 
   faDashboard, 
-  faArrowCircleLeft, 
-  faArrowCircleRight 
+  faBars,
+  faTimes,
+  faChevronRight,
+  faChevronLeft,
+  faArrowAltCircleLeft,
+  faArrowAltCircleRight,
 } from "@fortawesome/free-solid-svg-icons";
 
 const IconButton = ({ icon, label, onClick }) => (
@@ -21,11 +25,11 @@ const IconButton = ({ icon, label, onClick }) => (
 
 const ButtonHide = ({ onClick, hidden }) => (
   <button onClick={onClick} className="text-right mb-4">
-    <FontAwesomeIcon
-      icon={hidden ? faArrowCircleRight : faArrowCircleLeft}
-      className="text-3xl"
-    />
-  </button>
+      <FontAwesomeIcon
+        icon={hidden ? faArrowAltCircleRight : faArrowAltCircleLeft} // Ikon berubah sesuai status hidden
+        className="text-3xl"
+      />
+    </button>
 );
 
 const MenuSidebar = ({ handleLogout }) => {
