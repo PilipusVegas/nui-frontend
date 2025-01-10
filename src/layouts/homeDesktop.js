@@ -118,76 +118,77 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     <div className="desktop-layout flex min-h-screen bg-gray-100">
       <MenuSidebar handleLogout={handleLogout} roleId={roleId} />
       <div className="flex-1 px-8 bg-white shadow-lg rounded-lg transition-all duration-300 ease-in-out">
-        <div className="mt-6 p-8 bg-gradient-to-br from-green-700 via-green-700 to-green-700 text-white rounded-lg shadow-md relative">
+        <div className="mt-6 p-8 bg-gradient-to-b from-green-900 to-green-600 text-white rounded-lg shadow-md relative">
+          <div className="w-full hidden md:block md:text-right">
+            {GetNamaDivisi(roleId)} • Kantor Palem
+          </div>
           <div className="flex flex-col">
             <h2 className="text-xl font-semibold">Selamat Datang,</h2>
             <h3 className="text-4xl font-extrabold">{username || "User"}</h3>
             <p className="text-gray-200 text-lg mt-2">{localTime}</p>
           </div>
-          <div className="absolute top-10 right-8 text-white text-l px-2 py-1 font-bold rounded-lg bg-opacity-30">
-            {GetNamaDivisi(roleId)} • Kantor Palem
-          </div>
+          
         </div>
 
-        <div className="mt-6 grid grid-cols-4 gap-4">
+        <div className="mt-6">
           {/* Cards for HRD */}
           {roleId === "4" && (
-            <>
+            <div className="flex flex-col md:flex-row gap-4">
               <div
                 onClick={() => handleCardClick("/data-absensi")}
-                className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
+                className="w-full p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
               >
                 <h4 className="text-5xl font-bold text-red-600 mb-3">{totalAbsences}</h4>
                 <p className="text-xl font-semibold text-gray-700">Absensi</p>
               </div>
               <div
                 onClick={() => handleCardClick("/data-penggajian")}
-                className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
+                className="w-full p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
               >
                 <h4 className="text-5xl font-bold text-purple-600 mb-3">{totalPayroll}</h4>
                 <p className="text-xl font-semibold text-gray-700">Penggajian</p>
               </div>
-            </>
+            </div>
           )}
 
           {/* Cards for HRD Staff */}
           {roleId === "6" && (
-            <>
+            <div className="flex flex-col md:flex-row gap-4">
               <div
                 onClick={() => handleCardClick("/data-karyawan")}
-                className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
+                className="w-full p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
               >
                 <h4 className="text-5xl font-bold text-green-600 mb-3">{employees.length || "0"}</h4>
                 <p className="text-xl font-semibold text-gray-700">Karyawan</p>
               </div>
               <div
                 onClick={() => handleCardClick("/data-penggajian")}
-                className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
+                className="w-full p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
               >
                 <h4 className="text-5xl font-bold text-purple-600 mb-3">{totalPayroll}</h4>
                 <p className="text-xl font-semibold text-gray-700">Penggajian</p>
               </div>
-            </>
+            </div>
           )}
 
           {/* Cards for BU ABI */}
           {roleId === "5" && (
-            <>
+            <div className="flex flex-col md:flex-row gap-4">
               <div
                 onClick={() => handleCardClick("/data-approval")}
-                className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
+                className="w-full p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
               >
                 <h4 className="text-5xl font-bold text-green-600 mb-3">{totalApprovals}</h4>
                 <p className="text-xl font-semibold text-gray-700">Approval Lembur</p>
               </div>
               <div
                 onClick={() => handleCardClick("/data-lokasi")}
-                className="p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
+                className="w-full p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
               >
                 <h4 className="text-5xl font-bold text-purple-600 mb-3">{totalLocations.length || "0"}</h4>
                 <p className="text-xl font-semibold text-gray-700">Data Lokasi</p>
               </div>
-            </>
+            </div>
           )}
         </div>
       </div>

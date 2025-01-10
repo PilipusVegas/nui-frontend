@@ -43,7 +43,7 @@ const MenuSidebar = ({ handleLogout }) => {
     <div
       className={`flex ${
         hidden ? "w-16" : "w-64"
-      } h-screen sticky top-0 left-0 bg-green-800 text-white flex-col p-4 shadow-md transition-all duration-300`}
+      } h-screen sticky top-0 left-0 bg-gradient-to-b from-green-900 to-green-600 text-white flex-col p-4 shadow-md transition-all duration-300`}
     >
       <ButtonHide onClick={hideAction} hidden={hidden} />
       {!hidden && (
