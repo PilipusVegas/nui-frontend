@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import MobileLayout from "../../layouts/mobileLayout";
+import { faStore } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const StepOne = ({ handleNextStepData }) => {
   const CHAR_LIMIT = 250;
@@ -9,8 +11,10 @@ const StepOne = ({ handleNextStepData }) => {
   const [idLokasi, setIdLokasi] = useState("");
   const [charCount, setCharCount] = useState(0);
   const [locations, setLocations] = useState([]);
+  const [filteredLocations, setFilteredLocations] = useState([]);
+  const [errorLokasi, setErrorLokasi] = useState(""); // State untuk pesan error
 
-  const isFormValid = () => lokasi;
+  const isFormValid = () => lokasi && idLokasi; // Validasi lokasi dan idLokasi
 
   const handleTugasChange = (e) => {
     const value = e.target.value;
@@ -22,23 +26,42 @@ const StepOne = ({ handleNextStepData }) => {
 
   const handleLokasiChange = (e) => {
     const selectedLokasi = e.target.value;
-    const selectedId = locations.find((location) => location.nama === selectedLokasi)?.id || "";
     setLokasi(selectedLokasi);
-    setIdLokasi(selectedId.toString());
+
+    // Cari lokasi yang cocok dengan input
+    const matchedLocation = locations.find(
+      (location) => location.nama.toLowerCase() === selectedLokasi.toLowerCase()
+    );
+
+    if (matchedLocation) {
+      setIdLokasi(matchedLocation.id);
+      setFilteredLocations([matchedLocation]); // Menampilkan lokasi yang dipilih
+      setErrorLokasi(""); // Reset error jika lokasi valid
+    } else {
+      setIdLokasi(""); // Reset id jika lokasi tidak ditemukan
+      setFilteredLocations(
+        locations.filter((location) =>
+          location.nama.toLowerCase().includes(selectedLokasi.toLowerCase())
+        )
+      );
+      setErrorLokasi("Nama Gerai Tidak Valid"); // Tampilkan error
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (isFormValid()) {
-      const formData = {
-        userId: localStorage.getItem("userId"),
-        username: localStorage.getItem("userName"),
-        id_lokasi: idLokasi,
-        lokasi,
-        tugas,
-      };
-      handleNextStepData(formData);
+    if (!isFormValid()) {
+      setErrorLokasi("Gerai belum ditambahkan atau lokasi tidak valid.");
+      return;
     }
+    const formData = {
+      userId: localStorage.getItem("userId"),
+      username: localStorage.getItem("userName"),
+      id_lokasi: idLokasi,
+      lokasi,
+      tugas,
+    };
+    handleNextStepData(formData);
   };
 
   useEffect(() => {
@@ -48,8 +71,9 @@ const StepOne = ({ handleNextStepData }) => {
         if (!response.ok) throw new Error("Network response was not ok");
         const data = await response.json();
         setLocations(data.data);
+        setFilteredLocations(data.data);
       } catch (error) {
-        console.error(error);
+        console.error("Error fetching locations:", error);
       }
     };
     fetchLocations();
@@ -59,28 +83,56 @@ const StepOne = ({ handleNextStepData }) => {
     <MobileLayout title="ABSENSI" className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
       <div className="flex justify-center">
         <form className="w-full max-w-xl p-6 border-2 border-gray-300 rounded-lg bg-white" onSubmit={handleSubmit}>
+          {/* Lokasi Input */}
           <div className="mb-4">
             <label htmlFor="lokasi" className="block text-sm font-bold mb-2">
               Lokasi<span className="text-red-500">* </span>:
             </label>
-            <input
-              list="lokasi-options"
-              id="lokasi"
-              name="lokasi"
-              value={lokasi}
-              className="w-full p-2 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              onChange={handleLokasiChange}
-              placeholder="Pilih atau ketik lokasi"
-            />
-            <datalist id="lokasi-options">
-              {locations.map((location) => (
-                <option key={location.id} value={location.nama}>
-                  {location.nama}
-                </option>
-              ))}
-            </datalist>
+            <div className="relative">
+              <input
+                type="text"
+                id="lokasi"
+                name="lokasi"
+                autoComplete="off"
+                value={lokasi}
+                className={`w-full p-2 text-sm border-2 rounded-lg focus:outline-none ${
+                  errorLokasi ? "border-red-500" : "border-gray-300 focus:border-blue-500"
+                }`}
+                onChange={handleLokasiChange}
+                placeholder="Pilih atau ketik lokasi"
+              />
+              {errorLokasi && <p className="mt-1 text-xs text-red-500">{errorLokasi}</p>}
+            </div>
+
+            {/* Dropdown Lokasi hanya muncul jika input tidak kosong */}
+            {lokasi && filteredLocations.length > 0 && !idLokasi && (
+              <ul className="absolute max-w-full bg-white border-2 border-gray-300 rounded-lg max-h-60 overflow-auto z-10 shadow-lg">
+                {filteredLocations.map((location) => (
+                  <li
+                    key={location.id}
+                    onClick={() => {
+                      setLokasi(location.nama);
+                      setIdLokasi(location.id);
+                      setFilteredLocations([location]); // Menampilkan hanya lokasi yang dipilih
+                    }}
+                    className="p-2 cursor-pointer hover:bg-gray-200"
+                  >
+                    {location.nama}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {/* Pesan error jika lokasi tidak valid */}
+            {filteredLocations.length === 0 && lokasi && !idLokasi && (
+              <div className="mt-2 text-sm text-gray-500 flex items-center">
+                <FontAwesomeIcon icon={faStore} className="mr-2" />
+                Gerai belum ditambahkan
+              </div>
+            )}
           </div>
 
+          {/* Deskripsi Tugas */}
           <div className="mb-4">
             <div className="flex justify-between items-center mb-1">
               <label htmlFor="tugas" className="block text-sm font-bold">
@@ -100,14 +152,15 @@ const StepOne = ({ handleNextStepData }) => {
             />
           </div>
 
+          {/* Tombol Next */}
           <button
             type="submit"
-            disabled={!isFormValid()}
             className={`w-full py-2 text-lg font-bold rounded-lg transition-all ${
               isFormValid() ? "bg-green-500 text-white hover:bg-green-600" : "bg-gray-300 text-gray-500 cursor-not-allowed"
             }`}
+            disabled={!isFormValid()}
           >
-           Next ➜
+            Next ➜
           </button>
         </form>
       </div>

@@ -114,7 +114,7 @@ function App() {
             <PrivateRoute allowedRoles={["5"]}>
               <div className="flex">
                 <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} />
-                <div className="flex-grow p-6">
+                <div className="flex-grow ">
                   <DataApproval />
                 </div>
               </div>
@@ -127,7 +127,7 @@ function App() {
             <PrivateRoute allowedRoles={["5"]}>
               <div className="flex">
                 <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} />
-                <div className="flex-grow p-6">
+                <div className="flex-grow">
                   <DataLokasi />
                 </div>
               </div>
@@ -142,7 +142,7 @@ function App() {
             <PrivateRoute allowedRoles={["4"]}>
               <div className="flex">
                 <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} />
-                <div className="flex-grow p-6">
+                <div className="flex-grow ">
                   <DataAbsensi />
                 </div>
               </div>
@@ -154,7 +154,7 @@ function App() {
           <PrivateRoute allowedRoles={["1","2", "3","4","5","6"]}>
             <div className="flex">
               <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")}   />
-              <div className="flex-grow p-6">
+              <div className="flex-grow ">
                 <DataLembur />
               </div>
             </div>
@@ -165,7 +165,7 @@ function App() {
           <PrivateRoute allowedRoles={["1","2", "3","4","5","6"]}>
             <div className="flex">
               <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} />
-              <div className="flex-grow p-6">
+              <div className="flex-grow ">
                 <DetailDataLembur />
               </div>
             </div>
@@ -179,7 +179,7 @@ function App() {
             <PrivateRoute allowedRoles={["4", "6"]}>
               <div className="flex">
                 <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} />
-                <div className="flex-grow p-6">
+                <div className="flex-grow ">
                   <DataKaryawan />
                 </div>
               </div>
@@ -193,7 +193,7 @@ function App() {
             <PrivateRoute allowedRoles={["4", "6"]}>
               <div className="flex">
                 <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} />
-                <div className="flex-grow p-6">
+                <div className="flex-grow ">
                   <DataPenggajian />
                 </div>
               </div>
@@ -207,7 +207,7 @@ function App() {
             <PrivateRoute allowedRoles={["4", "6"]}>
               <div className="flex">
                 <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} />
-                <div className="flex-grow p-6">
+                <div className="flex-grow ">
                   <DetailPenggajian />
                 </div>
               </div>
