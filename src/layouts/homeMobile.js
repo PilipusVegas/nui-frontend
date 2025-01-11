@@ -2,7 +2,17 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarCheck, faClock, faBell,faHistory, faGrip, faHome, faUser,  faSignOutAlt, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCalendarCheck,
+  faClock,
+  faBell,
+  faHistory,
+  faGrip,
+  faHome,
+  faUser,
+  faSignOutAlt,
+  faQuestionCircle,
+} from "@fortawesome/free-solid-svg-icons";
 
 const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
   const navigate = useNavigate();
@@ -56,17 +66,6 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
     setHasNewNotifications(false);
   };
 
-  const TitleDivider = ({ title, onClick }) => (
-    <div className="flex justify-between items-center py-2 px-4 bg-gray-100 rounded-lg shadow-sm">
-      <div className="font-semibold text-lg">{title}</div>
-      {onClick && (
-        <div onClick={onClick} className="cursor-pointer text-sm text-green-600 hover:text-green-800">
-          Lihat semua
-        </div>
-      )}
-    </div>
-  );
-
   const MenuBantuan = ({ icon, title, color, onClick }) => (
     <div
       className="flex flex-row items-center gap-2 p-4 bg-green-100 rounded-xl cursor-pointer hover:bg-green-200 transition-all duration-300"
@@ -97,7 +96,6 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
       <span className="mt-1 text-xs font-medium">{label}</span>
     </button>
   );
-  
 
   return (
     <div className="flex flex-col font-sans bg-gray-50 min-h-screen">
@@ -116,8 +114,6 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
         </div>
       </div>
 
-      <TitleDivider title="Menu" />
-
       <div className="grid grid-cols-4 gap-4 p-4">
         <IconButton icon={faCalendarCheck} label="Absen" onClick={() => navigate("/absensi")} color="text-blue-500" />
         <IconButton icon={faClock} label="Lembur" onClick={() => navigate("/lembur")} color="text-blue-500" />
@@ -132,7 +128,9 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
       </div>
 
       <div className="flex flex-row items-center p-1">
-        <span className="text-md font-semibold pl-3 pb-3">Bantuan <FontAwesomeIcon icon={faQuestionCircle} className="text-sm" /></span>
+        <span className="text-md font-semibold pl-3 pb-3">
+          Bantuan <FontAwesomeIcon icon={faQuestionCircle} className="text-sm" />
+        </span>
       </div>
 
       <div className="flex flex-col gap-3 px-5">
@@ -156,8 +154,8 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
           icon={faHistory}
           label="Riwayat"
           hasNotification={hasNewNotifications}
-          isActive={location.pathname === "/notification"}
-          onClick={handleNotificationClick}
+          isActive={location.pathname === "/riwayat-absensi"}
+          onClick={() => navigate("/riwayat-absensi")}
         />
         <IconButton
           icon={faUser}

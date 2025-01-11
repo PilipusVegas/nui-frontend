@@ -44,7 +44,7 @@ const StepOne = ({ handleNextStepData }) => {
           location.nama.toLowerCase().includes(selectedLokasi.toLowerCase())
         )
       );
-      setErrorLokasi("Nama Gerai Tidak Valid"); // Tampilkan error
+      // setErrorLokasi("Nama Gerai Tidak Valid"); 
     }
   };
 
@@ -80,7 +80,7 @@ const StepOne = ({ handleNextStepData }) => {
   }, [apiUrl]);
 
   return (
-    <MobileLayout title="ABSENSI" className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
+    <MobileLayout title="Mulai Absensi" className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
       <div className="flex justify-center">
         <form className="w-full max-w-xl p-6 border-2 border-gray-300 rounded-lg bg-white" onSubmit={handleSubmit}>
           {/* Lokasi Input */}

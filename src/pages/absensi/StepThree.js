@@ -34,10 +34,8 @@ const StepThree = ({ formData = {} }) => {
     { label: "Deskripsi", value: deskripsi },
     { label: "Tanggal Mulai", value: tanggalMulai },
     { label: "Jam Mulai", value: jamMulai },
-    { label: "Koordinat Mulai", value: koordinatMulai },
     { label: "Tanggal Selesai", value: tanggalSelesai },
     { label: "Jam Selesai", value: jamSelesai },
-    { label: "Koordinat Selesai", value: koordinatSelesai },
   ].filter((item) => item.value);
 
   const handleSubmit = async (e) => {
@@ -54,12 +52,18 @@ const StepThree = ({ formData = {} }) => {
       formDataToSend.append("foto", file);
     }
 
-    const titikKoordinatMulai = koordinatMulai ? { latitude: parseFloat(koordinatMulai.split(",")[0]), longitude: parseFloat(koordinatMulai.split(",")[1]) } : null;
-    const titikKoordinatSelesai = koordinatSelesai ? { latitude: parseFloat(koordinatSelesai.split(",")[0]), longitude: parseFloat(koordinatSelesai.split(",")[1]) } : null;
+    const titikKoordinatMulai = koordinatMulai
+      ? { latitude: parseFloat(koordinatMulai.split(",")[0]), longitude: parseFloat(koordinatMulai.split(",")[1]) }
+      : null;
+    const titikKoordinatSelesai = koordinatSelesai
+      ? { latitude: parseFloat(koordinatSelesai.split(",")[0]), longitude: parseFloat(koordinatSelesai.split(",")[1]) }
+      : null;
 
     let endpoint;
+    let notificationTitle = "";
     if (id_absen) {
       endpoint = "/absen/selesai";
+      notificationTitle = "Absen Selesai Berhasil!";
       formDataToSend.append("id_absen", id_absen);
       if (fotoSelesai && fotoSelesai.startsWith("blob:")) {
         const response = await fetch(fotoSelesai);
@@ -74,6 +78,7 @@ const StepThree = ({ formData = {} }) => {
       }
     } else {
       endpoint = "/absen/mulai";
+      notificationTitle = "Absen Mulai Berhasil!";
       if (userId) formDataToSend.append("id_user", userId.toString());
       if (tugas) formDataToSend.append("deskripsi", tugas);
       if (id_lokasi) formDataToSend.append("id_lokasi", id_lokasi);
@@ -96,9 +101,22 @@ const StepThree = ({ formData = {} }) => {
       }
       const result = await response.json();
       setIsSuccess(true);
-      Swal.fire("Absen berhasil!", "", "success").then(() => {
+
+      const currentTime = new Intl.DateTimeFormat("id-ID", {
+        weekday: "long", // Nama hari
+        day: "numeric", // Tanggal
+        month: "long", // Nama bulan
+        year: "numeric", // Tahun
+      }).format(new Date()); // Tanggal saat ini
+
+      console.log(currentTime); // Output: "Senin, 19 Oktober 2050"
+
+      Swal.fire({
+        title: notificationTitle,
+        text: `${currentTime}`,
+        icon: "success",
+      }).then(() => {
         setTimeout(() => {
-          window.location.reload();
         }, 500);
       });
     } catch (error) {
@@ -116,41 +134,57 @@ const StepThree = ({ formData = {} }) => {
 
   useEffect(() => {
     if (isSuccess) {
-      navigate("/");
+      navigate("/riwayat-absensi");
     }
   }, [isSuccess, navigate]);
 
   return (
-    <MobileLayout title="ABSENSI" className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
-      <div style={styles.container}>
-        <form onSubmit={handleSubmit} style={styles.form}>
+    <MobileLayout title="Konfirmasi Absensi" className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
+      <div className="flex flex-col items-center">
+        <form onSubmit={handleSubmit} className="w-full max-w-xl p-4 border-2 rounded-lg bg-gray-50">
           {fotoMulai && (
-            <div style={styles.photoContainer}>
-              <img src={fotoMulai} alt="Foto Mulai" style={styles.fullImage} />
+            <div className="w-full mb-4 flex justify-center">
+              <img src={fotoMulai} alt="Foto Mulai" className="w-full h-[50vh] object-cover rounded-lg" />
             </div>
           )}
           {fotoSelesai && (
-            <div style={styles.photoContainer}>
-              <img src={fotoSelesai} alt="Foto Selesai" style={styles.fullImage} />
+            <div className="w-full mb-4 flex justify-center">
+              <img src={fotoSelesai} alt="Foto Selesai" className="w-full h-[50vh] object-cover rounded-lg" />
             </div>
           )}
-          {summaryItems.map((item, index) => (
-            <div key={index} style={styles.itemWithBorder}>
-              <strong style={styles.label}>{item.label}:</strong>
-              <span style={styles.value}>{item.value}</span>
-            </div>
-          ))}
-          <button type="submit" style={styles.submitButton} className={`${isLoading ? "opacity-50 cursor-not-allowed" : ""}`} disabled={isLoading}>
+          <div className="px-4 py-2 bg-white border rounded-lg">
+            {summaryItems.map((item, index) => (
+              <div key={index}>
+                <div className="flex justify-between py-2">
+                  <strong className="text-base font-bold">{item.label}:</strong>
+                  <span className="text-sm text-gray-800">{item.value}</span>
+                </div>
+                {index < summaryItems.length - 1 && <hr className="border-gray-300" />}
+              </div>
+            ))}
+          </div>
+          <button
+            type="submit"
+            className={`w-full mt-6 py-2 text-lg font-bold text-white rounded-lg ${
+              isLoading ? "bg-green-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"
+            }`}
+            disabled={isLoading}
+          >
             {isLoading ? (
               <span className="flex justify-center items-center">
-                <svg className="animate-spin h-5 w-5 mr-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg
+                  className="animate-spin h-5 w-5 mr-3 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                 </svg>
                 Mengirim...
               </span>
             ) : (
-              "KIRIM"
+              "Kirim"
             )}
           </button>
         </form>
@@ -161,64 +195,6 @@ const StepThree = ({ formData = {} }) => {
 
 StepThree.propTypes = {
   formData: PropTypes.object.isRequired,
-};
-
-const styles = {
-  container: {
-    display: "flex",
-    alignItems: "center",
-    flexDirection: "column",
-  },
-  form: {
-    width: "100%",
-    padding: "20px",
-    maxWidth: "600px",
-    border: "2px solid",
-    borderRadius: "10px",
-    backgroundColor: "#f9f9f9",
-  },
-  photoContainer: {
-    width: "100%",
-    display: "flex",
-    marginBottom: "20px",
-    justifyContent: "center",
-  },
-  fullImage: {
-    width: "100%",
-    maxHeight: "400px",
-    objectFit: "cover",
-    borderRadius: "10px",
-  },
-  itemWithBorder: {
-    padding: "10px",
-    borderRadius: "10px",
-    marginBottom: "10px",
-    backgroundColor: "#fff",
-    border: "1px solid #ccc",
-  },
-  label: {
-    fontSize: "1rem",
-    fontWeight: "bold",
-    marginBottom: "5px",
-  },
-  value: {
-    color: "#333",
-    display: "block",
-    fontSize: "1rem",
-    wordWrap: "break-word",
-    overflowWrap: "break-word",
-  },
-  submitButton: {
-    width: "100%",
-    padding: "10px",
-    cursor: "pointer",
-    marginTop: "10px",
-    fontSize: "1.5rem",
-    fontWeight: "bold",
-    border: "2px solid",
-    borderRadius: "10px",
-    backgroundColor: "#28a745",
-  },
 };
 
 export default StepThree;

@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { faArrowLeft, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import DetailAbsensi from "./DetailAbsensi";
 import { useNavigate } from "react-router-dom";
 
 const DataAbsensi = () => {
   const navigate = useNavigate();
   const [absenData, setAbsenData] = useState([]);
-  const [selectedAbsen, setSelectedAbsen] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchName, setSearchName] = useState("");
@@ -20,11 +18,7 @@ const DataAbsensi = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
   const handleBackClick = () => {
-    if (selectedAbsen) {
-      setSelectedAbsen(null);
-    } else {
-      navigate("/home");
-    }
+    navigate("/home");
   };
 
   const fetchAbsenData = async () => {
@@ -45,30 +39,12 @@ const DataAbsensi = () => {
     }
   };
 
-  const fetchAbsenDetail = async (id) => {
-    if (!id) {
-      console.error("Error: Missing id_absen");
-      return;
-    }
-    try {
-      const response = await fetch(`${apiUrl}/absen/${id}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setSelectedAbsen(data);
-    } catch (err) {
-      console.error("Error fetching absen detail:", err.message);
-      setError(err.message);
-    }
-  };
-
   useEffect(() => {
     fetchAbsenData();
   }, []);
 
   const handleDetailClick = (id) => {
-    fetchAbsenDetail(id);
+    navigate(`/data-absensi/${id}`);
   };
 
   const filteredAbsenData = Array.isArray(absenData) ? absenData.filter((absen) => {
@@ -88,10 +64,6 @@ const DataAbsensi = () => {
 
   if (error) {
     return <div className="text-center text-red-500">Error: {error}</div>;
-  }
-
-  if (selectedAbsen) {
-    return <DetailAbsensi absen={selectedAbsen} onBackClick={handleBackClick} />;
   }
 
   return (
@@ -175,27 +147,19 @@ const DataAbsensi = () => {
         <button
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
-          className={`px-5 rounded-full font-medium transition-all duration-200 ${
-            currentPage === 1
-              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-              : "bg-green-500 text-white hover:bg-green-900 shadow-lg"
-          }`}
+          className={`px-5 rounded-full font-medium transition-all duration-200 ${currentPage === 1 ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-green-500 text-white hover:bg-green-900 shadow-lg"}`}
         >
           &#8592;
         </button>
         <span className="px-4 rounded-full bg-white border border-gray-300 text-gray-700 shadow-sm">
-         {currentPage} / {totalPages}
+          {currentPage} / {totalPages}
         </span>
         <button
           onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
           disabled={currentPage === totalPages}
-          className={`px-5 rounded-full font-xl transition-all duration-200 ${
-            currentPage === totalPages
-              ? "bg-gray-300 text-gray-500 cursor-not-allowed "
-              : "bg-green-600 text-white hover:bg-green-900 shadow-lg"
-          }`}
+          className={`px-5 rounded-full font-xl transition-all duration-200 ${currentPage === totalPages ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-green-600 text-white hover:bg-green-900 shadow-lg"}`}
         >
-         &#8594;
+          &#8594;
         </button>
       </div>
     </div>

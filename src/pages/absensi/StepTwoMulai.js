@@ -157,9 +157,9 @@ const StepTwoMulai = ({ handleNextStepData }) => {
   }, []);
 
   return (
-    <MobileLayout title="ABSENSI MASUK" className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
+    <MobileLayout title="Absen Masuk" className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
       <div className="flex justify-center">
-        <form className="w-full max-w-lg p-6 border-2 rounded-lg bg-white">
+        <form className="w-full max-w-lg p-4 border-2 rounded-lg bg-white">
           {!fotoDiambil ? (
             <>
               <video ref={videoRef} className="w-full h-[70vh] object-cover rounded-lg" />
@@ -177,9 +177,9 @@ const StepTwoMulai = ({ handleNextStepData }) => {
             </>
           ) : (
             <div className="text-center">
-              <img src={fotoMulai} alt="Foto Mulai" className="w-full mb-6 rounded-lg" />
-              <div className="flex flex-col space-y-4">
-                <div className="flex justify-between p-4 bg-gray-100 border rounded-lg">
+              <img src={fotoMulai} alt="Foto Mulai" className="w-full h-[50vh] mb-6 rounded-lg" />
+              <div className="px-3 py-2 border rounded-lg">
+                <div className="flex justify-between py-2">
                   <p className="font-bold">Jam:</p>
                   <p>
                     {currentTime?.toLocaleTimeString([], {
@@ -190,30 +190,33 @@ const StepTwoMulai = ({ handleNextStepData }) => {
                     })}
                   </p>
                 </div>
-                <div className="flex justify-between p-4 bg-gray-100 border rounded-lg">
+                <hr className="border-gray-300 my-2" />
+                <div className="flex justify-between py-2">
                   <p className="font-bold">Tanggal:</p>
                   <p>{jamMulai?.toLocaleDateString("en-GB")}</p>
                 </div>
-                <div className="flex justify-between p-4 bg-gray-100 border rounded-lg">
+                {/* <hr className="border-gray-300 my-2" /> */}
+                {/* <div className="flex justify-between py-2">
                   <p className="font-bold">Koordinat:</p>
                   <p>
                     {koordinatMulai.latitude}, {koordinatMulai.longitude}
                   </p>
-                </div>
+                </div> */}    
               </div>
+
               <div className="flex justify-between mt-4">
-                <button onClick={handleUlangi} className="w-1/2 py-2 mr-2 text-black bg-red-500 border-2 rounded-lg">
+                <button onClick={handleUlangi} className="flex-1 py-2 px-4 text-red-600 border border-red-600 font-bold rounded-lg hover:bg-red-100">
                   ↻ Ulangi
                 </button>
                 <button
                   type="submit"
                   onClick={handleSubmit}
                   disabled={!isFormValid()}
-                  className={`w-1/2 py-2 ml-2 font-semibold text-white uppercase border-2 rounded-lg ${
+                  className={`w-1/2 py-2 ml-2 font-semibold text-white  border-2 rounded-lg ${
                     isFormValid() ? "bg-green-500" : "bg-gray-400 cursor-not-allowed"
                   }`}
                 >
-                  ➜ Submit
+                  Next ➜ 
                 </button>
               </div>
             </div>

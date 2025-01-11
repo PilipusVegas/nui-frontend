@@ -11,10 +11,12 @@ import MenuSidebar from "./layouts/menuSidebar";
 import Notification from "./pages/notification";
 import DataLokasi from "./pages/lokasi/dataLokasi";
 import DataAbsensi from "./pages/absensi/dataAbsensi";
+import DetailAbsensi from "./pages/absensi/DetailAbsensi";
 import DataKaryawan from "./pages/profile/dataKaryawan";
 import DataApproval from "./pages/approval/dataApproval";
 import DataPenggajian from "./pages/penggajian/dataPenggajian";
 import DetailPenggajian from "./pages/penggajian/detailPenggajian";
+import RiwayatAbsensi from "./pages/riwayat/riwayatAbsensi";
 // import DataLembur from "./pages/lembur/dataLembur";
 // import DetailDataLembur from "./pages/lembur/detailDataLembur";
 
@@ -69,6 +71,14 @@ function App() {
           element={
             <PrivateRoute allowedRoles={["1", "2", "3", "4", "5", "6"]}>
               <Notification />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/riwayat-absensi"
+          element={
+            <PrivateRoute allowedRoles={["1", "2", "3", "4", "5", "6"]}>
+              <RiwayatAbsensi />
             </PrivateRoute>
           }
         />
@@ -144,6 +154,20 @@ function App() {
                 <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} />
                 <div className="flex-grow ">
                   <DataAbsensi />
+                </div>
+              </div>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/data-absensi/:id_user"
+          element={
+            <PrivateRoute allowedRoles={["4"]}>
+              <div className="flex">
+                <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} />
+                <div className="flex-grow ">
+                  <DetailAbsensi />
                 </div>
               </div>
             </PrivateRoute>
