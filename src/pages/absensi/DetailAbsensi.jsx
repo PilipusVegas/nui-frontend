@@ -63,24 +63,25 @@ const DetailAbsensi = () => {
   }, []);
 
   useEffect(() => {
-    const fetchAbsenData = async () => {
-      try {
-        const response = await fetch(`${apiUrl}/absen/${id_user}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch absen data");
-        }
-        const data = await response.json();
-        setAbsen(data.absen || []);
-        setSelectedItem(data); // Set selected item from absen data
-      } catch (error) {
-        console.error("Error fetching absen data:", error);
-      }
-    };
-
-    if (id_user) {
-      fetchAbsenData();
+  const fetchAbsenData = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/absen/${id_user}`);
+      if (!response.ok) {throw new Error("Failed to fetch absen data")}
+      const data = await response.json();
+      setSelectedItem({
+        nama: data.nama,
+        role: data.role,
+      });
+      setAbsen(data.data || []); // Data absen dipisahkan
+    } catch (error) {
+      console.error("Error fetching absen data:", error);
     }
-  }, [id_user, apiUrl]);
+  };
+  if (id_user) {
+    fetchAbsenData();
+  }
+}, [id_user, apiUrl]);
+
 
   useEffect(() => {
     if (Array.isArray(absen) && absen.length > 0) {
@@ -155,14 +156,14 @@ const DetailAbsensi = () => {
         />
         <h2 className="text-3xl font-bold text-gray-800 pb-1">Detail Absensi</h2>
       </div>
- 
-          <div className="bg-white shadow-md rounded-lg p-6 mb-2 border border-gray-200 flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold">{selectedItem.nama}</h1> {/* Menampilkan nama pengguna */}
-              <p className="text-gray-600 text-sm font-semibold">{selectedItem.role}</p> {/* Menampilkan role pengguna */}
-              <span className="text-gray-600 text-sm pb-0 mb-0">Periode Absen : {period}</span>
-            </div>
-          </div>
+
+      <div className="bg-white shadow-md rounded-lg p-6 mb-2 border border-gray-200 flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold">{selectedItem?.nama || 'Loading...'}</h1>
+          <p className="text-gray-600 text-sm font-semibold">{selectedItem?.role || 'Loading...'}</p>
+          <span className="text-gray-600 text-sm pb-0 mb-0">Periode Absen : {period}</span>
+        </div>
+      </div>
 
         <div className="bg-white shadow-md rounded-lg mb-4">
           <table className="min-w-full border-collapse rounded-lg">
