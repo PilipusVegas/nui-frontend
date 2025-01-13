@@ -5,15 +5,20 @@ import StepTwoMulai from "./StepTwoMulai";
 import StepTwoSelesai from "./StepTwoSelesai";
 import StepThree from "./StepThree";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {  faCalendarCheck, faCalendarPlus, faCalendar } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from "react-router-dom";
+import { faCalendarCheck, faCalendarPlus, faHistory, faAngleDown } from "@fortawesome/free-solid-svg-icons";
 
 const Absensi = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
-  const [currentStep, setCurrentStep] = useState(null); // Default `null` sebelum user memilih mulai/selesai
+  const [currentStep, setCurrentStep] = useState(null);
   const [isSelesaiFlow, setIsSelesaiFlow] = useState(false);
   const [attendanceData, setAttendanceData] = useState({ userId: "", username: "", id_absen: "" });
+  const [attendanceHistory, setAttendanceHistory] = useState([]);
+  const [faqOpen, setFaqOpen] = useState(null);
+
+  const toggleFaq = (index) => {
+    setFaqOpen(faqOpen === index ? null : index);
+  };
 
   const handleNextStepData = (data) => {
     setAttendanceData((prev) => ({ ...prev, ...data }));
@@ -21,117 +26,151 @@ const Absensi = () => {
   };
 
   const handleNextStep = () => {
-    if (isSelesaiFlow) {
-      const stepsSelesaiFlow = ["stepTwoSelesai", "stepThree"];
-      const currentIndex = stepsSelesaiFlow.indexOf(currentStep);
-      if (currentIndex >= 0 && currentIndex < stepsSelesaiFlow.length - 1) {
-        setCurrentStep(stepsSelesaiFlow[currentIndex + 1]);
-      }
-    } else {
-      const stepsNormalFlow = ["stepOne", "stepTwoMulai", "stepThree"];
-      const currentIndex = stepsNormalFlow.indexOf(currentStep);
-      if (currentIndex >= 0 && currentIndex < stepsNormalFlow.length - 1) {
-        setCurrentStep(stepsNormalFlow[currentIndex + 1]);
-      }
+    const steps = isSelesaiFlow ? ["stepTwoSelesai", "stepThree"] : ["stepOne", "stepTwoMulai", "stepThree"];
+    const currentIndex = steps.indexOf(currentStep);
+    if (currentIndex >= 0 && currentIndex < steps.length - 1) {
+      setCurrentStep(steps[currentIndex + 1]);
     }
   };
 
-  // Fungsi untuk menampilkan langkah berdasarkan `currentStep`
-  const renderStep = () => {
-    switch (currentStep) {
-      case "stepOne":
-        return <StepOne userId={attendanceData.userId} username={attendanceData.username} attendanceData={attendanceData} handleNextStepData={handleNextStepData} />;
-      case "stepTwoMulai":
-        return <StepTwoMulai attendanceData={attendanceData} handleNextStepData={handleNextStepData} />;
-      case "stepThree":
-        return <StepThree formData={attendanceData} />;
-      case "stepTwoSelesai":
-        return <StepTwoSelesai attendanceData={attendanceData} handleNextStepData={handleNextStepData} />;
-      default:
-        return (
-          <MobileLayout title="Absensi">
-          <div className="flex flex-col items-center justify-center h-screen w-full overflow-hidden p-4">
-            <div className="w-full sm:w-2/3 md:w-1/2 lg:w-1/3 p-4 mb-4 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <button
-                className="bg-green-700 text-white px-6 py-4 rounded-md w-full hover:bg-green-800 transition duration-300 flex flex-col items-center"
-                onClick={() => {
-                  setIsSelesaiFlow(false);
-                  setCurrentStep("stepOne");
-                }}
-              >
-                <FontAwesomeIcon icon={faCalendarPlus} className="text-3xl mb-2" />
-                <span className="text-lg font-medium">Absen Mulai</span>
-              </button>
-            </div>
-        
-            <div className="w-full sm:w-2/3 md:w-1/2 lg:w-1/3 p-4 mb-4 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <button
-                className="bg-teal-600 text-white px-6 py-4 rounded-md w-full hover:bg-teal-700 transition duration-300 flex flex-col items-center"
-                onClick={() => {
-                  setIsSelesaiFlow(true);
-                  setCurrentStep("stepTwoSelesai");
-                }}
-              >
-                <FontAwesomeIcon icon={faCalendarCheck} className="text-3xl mb-2" />
-                <span className="text-lg font-medium">Absen Selesai</span>
-              </button>
-            </div>
-          </div>
-        </MobileLayout>
-        
-        );
+  const fetchAttendanceHistory = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/absen/riwayat/${attendanceData.userId}`);
+      const data = await response.json();
+      if (response.ok) {
+        const last24Hours = data.filter((item) => {
+          const now = new Date();
+          const recordTime = new Date(item.jam_mulai);
+          return now - recordTime <= 24 * 60 * 60 * 1000;
+        });
+        setAttendanceHistory(last24Hours.slice(0, 3) || []); // Limit to 3 items
+      }
+    } catch (error) {
+      console.error("Error fetching attendance history:", error);
     }
   };
 
-  // Cek kehadiran saat pertama kali load
   useEffect(() => {
     const storedUserId = localStorage.getItem("userId");
     const storedUsername = localStorage.getItem("userName");
     if (storedUserId) {
       setAttendanceData({ userId: storedUserId, username: storedUsername || "" });
-      const checkAttendance = async () => {
-        try {
-          const response = await fetch(`${apiUrl}/absen/cek/${storedUserId}`);
-          const data = await response.json();
-          if (response.ok) {
-            const currentTime = new Date();
-            const currentHour = currentTime.getHours();
-            console.log("Current hour:", currentHour);
-            if (Array.isArray(data) && data.length > 0) {
-              const { id_absen, id_user, username, id_lokasi, deskripsi, jam_mulai } = data[0];
-              setAttendanceData((prev) => {
-                const updatedData = {
-                  ...prev,
-                  id_absen: String(id_absen),
-                  userId: String(id_user),
-                  username: username || "",
-                  id_lokasi: id_lokasi || "",
-                  deskripsi: deskripsi || "",
-                  jam_mulai: String(jam_mulai),
-                };
-                return updatedData;
-              });
-              setIsSelesaiFlow(true); // Jika user sudah absen mulai sebelumnya
-              setCurrentStep("stepTwoSelesai");
-            } else {
-              setIsSelesaiFlow(false); // Jika user belum absen
-              setCurrentStep(null); // Tampilkan tombol pilihan
-            }
-          } else {
-            setIsSelesaiFlow(false);
-            setCurrentStep(null); // Tampilkan tombol pilihan
-          }
-        } catch (error) {
-          setIsSelesaiFlow(false);
-          setCurrentStep(null); // Tampilkan tombol pilihan
-        }
-      };
-      checkAttendance();
-    } else {
-      setIsSelesaiFlow(false);
-      setCurrentStep(null); // Tampilkan tombol pilihan
+      fetchAttendanceHistory();
     }
-  }, [apiUrl]);
+  }, [apiUrl, attendanceData.userId]);
+
+  useEffect(() => {
+    const checkAttendance = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/absen/cek/${attendanceData.userId}`);
+        const data = await response.json();
+        if (response.ok && Array.isArray(data) && data.length > 0) {
+          const { id_absen, id_user, username, id_lokasi, deskripsi, jam_mulai } = data[0];
+          setAttendanceData({
+            userId: String(id_user),
+            username: username || "",
+            id_absen: String(id_absen),
+            id_lokasi: id_lokasi || "",
+            deskripsi: deskripsi || "",
+            jam_mulai: String(jam_mulai),
+          });
+          setIsSelesaiFlow(true);
+          setCurrentStep("stepTwoSelesai");
+        } else {
+          setIsSelesaiFlow(false);
+          setCurrentStep(null);
+        }
+      } catch (error) {
+        console.error("Error checking attendance:", error);
+        setIsSelesaiFlow(false);
+        setCurrentStep(null);
+      }
+    };
+    if (attendanceData.userId) checkAttendance();
+  }, [apiUrl, attendanceData.userId]);
+
+  const renderStep = () => {
+    switch (currentStep) {
+      case "stepOne":
+        return <StepOne attendanceData={attendanceData} handleNextStepData={handleNextStepData} />;
+      case "stepTwoMulai":
+        return <StepTwoMulai attendanceData={attendanceData} handleNextStepData={handleNextStepData} />;
+      case "stepTwoSelesai":
+        return <StepTwoSelesai attendanceData={attendanceData} handleNextStepData={handleNextStepData} />;
+      case "stepThree":
+        return <StepThree formData={attendanceData} />;
+      default:
+        return (
+          <MobileLayout title="Absensi">
+            <div className="w-full bg-white rounded-lg shadow-md p-4">
+              {/* Riwayat Absensi */}
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                  <FontAwesomeIcon icon={faHistory} className="text-teal-500" /> Riwayat Absensi
+                </h3>
+                <a href="/riwayat-absensi" className="text-teal-600 text-sm">View All</a>
+              </div>
+              {attendanceHistory.length > 0 ? (
+                <ul className="space-y-2">
+                  {attendanceHistory.map((item, index) => (
+                    <li key={index} className="p-3 bg-gray-50 rounded-lg border">
+                      <p className="text-sm text-gray-600">
+                        <strong>Mulai:</strong> {item.jam_mulai} | <strong>Selesai:</strong> {item.jam_selesai || "-"}
+                      </p>
+                      <p className="text-xs text-gray-500">{item.deskripsi}</p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-gray-500">Belum ada riwayat absensi dalam 24 jam terakhir.</p>
+              )}
+
+              {/* FAQ */}
+              <div className="mt-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                  <FontAwesomeIcon icon={faAngleDown} className="text-teal-500" /> FAQ
+                </h3>
+                <div>
+                  <button className="text-teal-600 w-full text-left" onClick={() => toggleFaq(0)}>
+                    Apa itu absensi masuk?
+                  </button>
+                  {faqOpen === 0 && (
+                    <p className="text-sm text-gray-600 mt-2">Absensi masuk dilakukan ketika kamu memulai pekerjaan atau kegiatan.</p>
+                  )}
+                </div>
+                <div>
+                  <button className="text-teal-600 w-full text-left mt-2" onClick={() => toggleFaq(1)}>
+                    Apa itu absensi selesai?
+                  </button>
+                  {faqOpen === 1 && (
+                    <p className="text-sm text-gray-600 mt-2">Absensi selesai dilakukan ketika kamu mengakhiri pekerjaan atau kegiatan.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Absen Mulai / Absen Selesai */}
+              {isSelesaiFlow ? (
+                <button
+                  className="w-full bg-teal-600 text-white px-6 py-4 rounded-md shadow-lg hover:bg-teal-700 flex items-center justify-center gap-2 transition"
+                  onClick={() => setCurrentStep("stepTwoSelesai")}
+                >
+                  <FontAwesomeIcon icon={faCalendarCheck} className="text-2xl" />
+                  <span className="text-lg font-medium">Absen Selesai</span>
+                </button>
+              ) : (
+                <button
+                  className="w-full bg-green-700 text-white px-6 py-4 rounded-md shadow-lg hover:bg-green-800 flex items-center justify-center gap-2 transition"
+                  onClick={() => setCurrentStep("stepOne")}
+                >
+                  <FontAwesomeIcon icon={faCalendarPlus} className="text-2xl" />
+                  <span className="text-lg font-medium">Absen Mulai</span>
+                </button>
+              )}
+            </div>
+          </MobileLayout>
+        );
+    }
+  };
 
   return <div>{renderStep()}</div>;
 };

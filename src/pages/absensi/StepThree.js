@@ -7,7 +7,7 @@ import MobileLayout from "../../layouts/mobileLayout";
 const StepThree = ({ formData = {} }) => {
   const navigate = useNavigate();
   const [isSuccess, setIsSuccess] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // State untuk loading
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     userId = "",
@@ -40,10 +40,10 @@ const StepThree = ({ formData = {} }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true); // Set loading state to true when submitting
+    setIsLoading(true);
 
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
-    let formDataToSend = new FormData();
+    const formDataToSend = new FormData();
 
     if (fotoMulai && fotoMulai.startsWith("blob:")) {
       const response = await fetch(fotoMulai);
@@ -52,25 +52,30 @@ const StepThree = ({ formData = {} }) => {
       formDataToSend.append("foto", file);
     }
 
-    const titikKoordinatMulai = koordinatMulai
-      ? { latitude: parseFloat(koordinatMulai.split(",")[0]), longitude: parseFloat(koordinatMulai.split(",")[1]) }
-      : null;
-    const titikKoordinatSelesai = koordinatSelesai
-      ? { latitude: parseFloat(koordinatSelesai.split(",")[0]), longitude: parseFloat(koordinatSelesai.split(",")[1]) }
-      : null;
+    const parseCoordinates = (coordinates) => {
+      if (!coordinates) return null;
+      const [latitude, longitude] = coordinates.split(",").map(parseFloat);
+      return { latitude, longitude };
+    };
+
+    const titikKoordinatMulai = parseCoordinates(koordinatMulai);
+    const titikKoordinatSelesai = parseCoordinates(koordinatSelesai);
 
     let endpoint;
-    let notificationTitle = "";
+    let notificationTitle;
+
     if (id_absen) {
       endpoint = "/absen/selesai";
       notificationTitle = "Absen Selesai Berhasil!";
       formDataToSend.append("id_absen", id_absen);
+
       if (fotoSelesai && fotoSelesai.startsWith("blob:")) {
         const response = await fetch(fotoSelesai);
         const blob = await response.blob();
         const file = new File([blob], "fotoSelesai.jpg", { type: blob.type });
         formDataToSend.append("foto", file);
       }
+
       if (userId) formDataToSend.append("id_user", userId.toString());
       if (titikKoordinatSelesai) {
         formDataToSend.append("lat", titikKoordinatSelesai.latitude.toString());
@@ -79,48 +84,48 @@ const StepThree = ({ formData = {} }) => {
     } else {
       endpoint = "/absen/mulai";
       notificationTitle = "Absen Mulai Berhasil!";
+
       if (userId) formDataToSend.append("id_user", userId.toString());
       if (tugas) formDataToSend.append("deskripsi", tugas);
       if (id_lokasi) formDataToSend.append("id_lokasi", id_lokasi);
+
       if (titikKoordinatMulai) {
         formDataToSend.append("lat", titikKoordinatMulai.latitude.toString());
         formDataToSend.append("lon", titikKoordinatMulai.longitude.toString());
       }
-      if (!formDataToSend.has("foto")) {
-        if (fotoMulai && fotoMulai instanceof File) {
-          formDataToSend.append("foto", fotoMulai);
-        }
+
+      if (!formDataToSend.has("foto") && fotoMulai instanceof File) {
+        formDataToSend.append("foto", fotoMulai);
       }
     }
 
     try {
       const response = await fetch(`${apiUrl}${endpoint}`, { method: "POST", body: formDataToSend });
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Gagal mengirim data");
       }
-      const result = await response.json();
+
       setIsSuccess(true);
 
       const currentTime = new Intl.DateTimeFormat("id-ID", {
-        weekday: "long", // Nama hari
-        day: "numeric", // Tanggal
-        month: "long", // Nama bulan
-        year: "numeric", // Tahun
-      }).format(new Date()); // Tanggal saat ini
-
-      console.log(currentTime); // Output: "Senin, 19 Oktober 2050"
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        second: "numeric",
+      }).format(new Date());
 
       Swal.fire({
         title: notificationTitle,
-        text: `${currentTime}`,
+        text: currentTime,
         icon: "success",
-      }).then(() => {
-        setTimeout(() => {
-        }, 500);
       });
     } catch (error) {
-      console.error("Error details: ", error); // Menambahkan log error
+      console.error("Error details:", error);
       Swal.fire({
         title: "Formulir ditolak",
         text: error.message,
@@ -128,13 +133,13 @@ const StepThree = ({ formData = {} }) => {
         confirmButtonText: "Coba lagi",
       });
     } finally {
-      setIsLoading(false); // Set loading state to false after request completes
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
     if (isSuccess) {
-      navigate("/riwayat-absensi");
+      navigate("/");
     }
   }, [isSuccess, navigate]);
 
