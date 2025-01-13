@@ -63,25 +63,26 @@ const DetailAbsensi = () => {
   }, []);
 
   useEffect(() => {
-  const fetchAbsenData = async () => {
-    try {
-      const response = await fetch(`${apiUrl}/absen/${id_user}`);
-      if (!response.ok) {throw new Error("Failed to fetch absen data")}
-      const data = await response.json();
-      setSelectedItem({
-        nama: data.nama,
-        role: data.role,
-      });
-      setAbsen(data.data || []); // Data absen dipisahkan
-    } catch (error) {
-      console.error("Error fetching absen data:", error);
+    const fetchAbsenData = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/absen/${id_user}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch absen data");
+        }
+        const data = await response.json();
+        setAbsen(data.absen || []);
+        setSelectedItem({
+          nama: data.nama,
+          role: data.role,
+        });
+      } catch (error) {
+        console.error("Error fetching absen data:", error);
+      }
+    };
+    if (id_user) {
+      fetchAbsenData();
     }
-  };
-  if (id_user) {
-    fetchAbsenData();
-  }
-}, [id_user, apiUrl]);
-
+  }, [id_user, apiUrl]);
 
   useEffect(() => {
     if (Array.isArray(absen) && absen.length > 0) {
@@ -157,13 +158,18 @@ const DetailAbsensi = () => {
         <h2 className="text-3xl font-bold text-gray-800 pb-1">Detail Absensi</h2>
       </div>
 
-      <div className="bg-white shadow-md rounded-lg p-6 mb-2 border border-gray-200 flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">{selectedItem?.nama || 'Loading...'}</h1>
-          <p className="text-gray-600 text-sm font-semibold">{selectedItem?.role || 'Loading...'}</p>
-          <span className="text-gray-600 text-sm pb-0 mb-0">Periode Absen : {period}</span>
-        </div>
-      </div>
+        {selectedItem ? (
+          <div className="bg-white shadow-md rounded-lg p-6 mb-2 border border-gray-200 flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold">{selectedItem.nama}</h1>
+              <p className="text-gray-600 text-sm font-semibold">{selectedItem.role}</p>
+              <span className="text-gray-600 text-sm pb-0 mb-0">Periode Absen : {period}</span>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center text-gray-500">Data Pengguna Tidak Tersedia</div>
+        )}
+
 
         <div className="bg-white shadow-md rounded-lg mb-4">
           <table className="min-w-full border-collapse rounded-lg">
@@ -177,53 +183,24 @@ const DetailAbsensi = () => {
               </tr>
             </thead>
             <tbody>
-              {currentItems.length > 0 ? (
-                currentItems.map((item, index) => (
-                  <tr key={item.id_absen} className="border-b hover:bg-gray-100">
-                    <td className="text-center py-1 px-4">{indexOfFirstItem + index + 1}</td>
-                    <td className="text-center py-1 px-4">
-                      {new Date(item.jam_mulai).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })}
-                    </td>
-                    <td className="py-1 px-4">{item.lokasi}</td>
-                    <td className="text-center py-1 px-4">
-                      {new Date(item.jam_mulai).toLocaleTimeString("id-ID", {
-                        timeZone: "Asia/Jakarta",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: false,
-                      })}
-                    </td>
-                    <td className="text-center py-1 px-4">
-                      {item.jam_selesai
-                        ? new Date(item.jam_selesai).toLocaleTimeString("id-ID", {
-                            timeZone: "Asia/Jakarta",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: false,
-                          })
-                        : "---"}
-                    </td>
-                    <td className="text-center py-1 px-4">
-                      <span className={`font-semibold ${statusApproval[item.id_absen] ? "text-green-500" : "text-red-500"}`}>
-                        {statusApproval[item.id_absen] ? "Disetujui" : "Belum Disetujui"}
-                      </span>
-                    </td>
-                    <td className="text-center py-1 px-4">
-                      <button
-                        onClick={() => handleViewClick(item)}
-                        className="bg-blue-500 text-white py-1 px-2 rounded hover:bg-blue-600 transition-colors duration-150"
-                      >
-                        <FontAwesomeIcon icon={faEye} />
-                      </button>
-                    </td>
-                  </tr>
+              {absen.length > 0 ? (
+                absen.map((absenItem, index) => (
+                  <div key={index} className="bg-white shadow-md rounded-lg p-6 mb-2 border border-gray-200">
+                    <div>
+                      <h2 className="text-xl font-bold">Absen {index + 1}</h2>
+                      <p className="text-gray-600">Lokasi: {absenItem.lokasi}</p>
+                      <p className="text-gray-600">Deskripsi: {absenItem.deskripsi}</p>
+                      <p className="text-gray-600">Status: {absenItem.status === 0 ? "Belum Selesai" : "Selesai"}</p>
+                      <p className="text-gray-600">Mulai: {new Date(absenItem.jam_mulai).toLocaleString()}</p>
+                      <p className="text-gray-600">Selesai: {new Date(absenItem.jam_selesai).toLocaleString()}</p>
+                      <p className="text-gray-600">Jarak: {absenItem.distance_start} meter</p>
+                      <img src={absenItem.foto_mulai} alt="Foto Mulai" className="w-full h-auto mt-2" />
+                      <img src={absenItem.foto_selesai} alt="Foto Selesai" className="w-full h-auto mt-2" />
+                    </div>
+                  </div>
                 ))
               ) : (
-                <tr>
-                  <td colSpan="7" className="py-2 px-4 text-center italic">
-                    Tidak ada data absensi.
-                  </td>
-                </tr>
+                <div className="text-center text-gray-500">Tidak Ada Data Absensi</div>
               )}
             </tbody>
           </table>
