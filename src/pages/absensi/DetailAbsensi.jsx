@@ -15,7 +15,6 @@ const DetailAbsensi = () => {
   const { id_user } = useParams(); // Ambil id_user dari URL
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [userDetails, setUserDetails] = useState(null);
   const [isApproved, setIsApproved] = useState(false);
   const [statusApproval, setStatusApproval] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -77,11 +76,29 @@ const DetailAbsensi = () => {
         console.error("Error fetching absen data:", error);
       }
     };
-
     if (id_user) {
       fetchAbsenData();
     }
   }, [id_user, apiUrl]);
+
+  useEffect(() => {
+    const fetchAbsenData = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/absen/${id_user}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch absen data");
+        }
+        const data = await response.json();
+        console.log("Data fetched:", data);
+        setAbsen(data.absen || []);
+        setSelectedItem(data);
+      } catch (error) {
+        console.error("Error fetching absen data:", error);
+      }
+    };
+    if (id_user) {fetchAbsenData()}
+  }, [id_user, apiUrl]);
+    
 
   const handleViewClick = (item) => {
     setSelectedItem(item);
@@ -140,127 +157,282 @@ const DetailAbsensi = () => {
         />
         <h2 className="text-3xl font-bold text-gray-800 pb-1">Detail Absensi</h2>
       </div>
-
-      <div className="bg-white shadow-md rounded-lg p-6 mb-2 border border-gray-200 flex justify-between items-center">
-        <div>
-          {selectedItem ? (
-            <>
-              <h1 className="text-2xl font-bold">{selectedItem.nama}</h1>
-              <p className="text-gray-600 text-sm font-semibold">{selectedItem.role}</p>
-            </>
-          ) : (
-            <p className="text-gray-500 italic">Memuat data...</p>
-          )}
+ 
+      {selectedItem && selectedItem.nama && selectedItem.role && (
+        <div className="bg-white shadow-md rounded-lg p-6 mb-2 border border-gray-200 flex justify-between items-center">
+          <div>
+          <h1 className="text-2xl font-bold">{selectedItem.nama}</h1>
+          <p className="text-gray-600 text-sm font-semibold">{selectedItem.role}</p>
+          <span className="text-gray-600 text-sm pb-0 mb-0">Periode Absen : {period}</span>
         </div>
-        <div>
-          <span className="text-gray-600 text-sm">
-            Periode Absen: {period || "N/A"}
-          </span>
         </div>
-      </div>
+      )}
 
-      <div className="bg-white shadow-md rounded-lg mb-4">
-        <table className="min-w-full border-collapse rounded-lg">
-          <thead>
-            <tr className="bg-green-500 text-white">
-              {[
-                "No.",
-                "Tanggal",
-                "Lokasi",
-                "IN",
-                "OUT",
-                "Status",
-                "Aksi",
-              ].map((header, index) => (
-                <th
-                  key={index}
-                  className={`py-1 px-4 font-semibold text-center ${index === 0 ? "first:rounded-tl-lg" : ""} ${index === 6 ? "last:rounded-tr-lg" : ""}`}
-                >
-                  {header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {currentItems.length > 0 ? (
-              currentItems.map((item, index) => (
-                <tr key={item.id_absen} className="border-b hover:bg-gray-100">
-                  <td className="text-center py-1 px-4">{indexOfFirstItem + index + 1}</td>
-                  <td className="text-center py-1 px-4">
-                    {new Date(item.jam_mulai).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })}
-                  </td>
-                  <td className="py-1 px-4">{item.lokasi}</td>
-                  <td className="text-center py-1 px-4">
-                    {new Date(item.jam_mulai).toLocaleTimeString("id-ID", {
-                      timeZone: "Asia/Jakarta",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: false,
-                    })}
-                  </td>
-                  <td className="text-center py-1 px-4">
-                    {item.jam_selesai
-                      ? new Date(item.jam_selesai).toLocaleTimeString("id-ID", {
-                          timeZone: "Asia/Jakarta",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false,
-                        })
-                      : "---"}
-                  </td>
-                  <td className="text-center py-1 px-4">
-                    <span
-                      className={`font-semibold ${statusApproval[item.id_absen] ? "text-green-600" : "text-red-600"}`}
-                    >
-                      {statusApproval[item.id_absen] ? "Disetujui" : "Belum Disetujui"}
-                    </span>
-                  </td>
-                  <td className="text-center py-1 px-4">
-                    <button
-                      onClick={() => handleStatusUpdate(item.id_absen)}
-                      className="bg-blue-500 text-white py-1 px-3 rounded-lg hover:bg-blue-600 transition"
-                      disabled={statusApproval[item.id_absen] || isLoading}
-                    >
-                      {isLoading ? "Loading..." : "Setujui"}
-                    </button>
+        <div className="bg-white shadow-md rounded-lg mb-4">
+          <table className="min-w-full border-collapse rounded-lg">
+            <thead>
+              <tr className="bg-green-500 text-white">
+                {["No.", "Tanggal", "Lokasi", "IN", "OUT", "Status", "Aksi"].map((header, index) => (
+                  <th key={index} className={`py-1 px-4 font-semibold text-center ${index === 0 ? "first:rounded-tl-lg" : ""} ${index === 6 ? "last:rounded-tr-lg" : ""}`}>
+                    {header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {currentItems.length > 0 ? (
+                currentItems.map((item, index) => (
+                  <tr key={item.id_absen} className="border-b hover:bg-gray-100">
+                    <td className="text-center py-1 px-4">{indexOfFirstItem + index + 1}</td>
+                    <td className="text-center py-1 px-4">
+                      {new Date(item.jam_mulai).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })}
+                    </td>
+                    <td className="py-1 px-4">{item.lokasi}</td>
+                    <td className="text-center py-1 px-4">
+                      {new Date(item.jam_mulai).toLocaleTimeString("id-ID", {
+                        timeZone: "Asia/Jakarta",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                      })}
+                    </td>
+                    <td className="text-center py-1 px-4">
+                      {item.jam_selesai
+                        ? new Date(item.jam_selesai).toLocaleTimeString("id-ID", {
+                            timeZone: "Asia/Jakarta",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false,
+                          })
+                        : "---"}
+                    </td>
+                    <td className="text-center py-1 px-4">
+                      <span className={`font-semibold ${statusApproval[item.id_absen] ? "text-green-500" : "text-red-500"}`}>
+                        {statusApproval[item.id_absen] ? "Disetujui" : "Belum Disetujui"}
+                      </span>
+                    </td>
+                    <td className="text-center py-1 px-4">
+                      <button
+                        onClick={() => handleViewClick(item)}
+                        className="bg-blue-500 text-white py-1 px-2 rounded hover:bg-blue-600 transition-colors duration-150"
+                      >
+                        <FontAwesomeIcon icon={faEye} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="py-2 px-4 text-center italic">
+                    Tidak ada data absensi.
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan="7"
-                  className="text-center py-4 text-gray-500 italic"
-                >
-                  Tidak ada data absensi.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              )}
+            </tbody>
+          </table>
+        </div>
 
-      <div className="flex justify-between items-center mt-4">
+      <div className="flex justify-center mt-4 space-x-2">
         <button
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          className="bg-gray-300 text-gray-800 py-1 px-4 rounded-lg hover:bg-gray-400"
           disabled={currentPage === 1}
+          className={`px-5 rounded-full font-medium transition-all duration-200 ${
+            currentPage === 1
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-green-500 text-white hover:bg-green-900 shadow-lg"
+          }`}
         >
-          Previous
+          &#8592;
         </button>
-
-        <span className="text-gray-600">
-          Halaman {currentPage} dari {totalPages}
-        </span>
-
+        <span className="text-sm font-semibold pt-2">{`${currentPage} of ${totalPages}`}</span>
         <button
           onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-          className="bg-gray-300 text-gray-800 py-1 px-4 rounded-lg hover:bg-gray-400"
           disabled={currentPage === totalPages}
+          className={`px-5 rounded-full font-medium transition-all duration-200 ${
+            currentPage === totalPages
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-green-500 text-white hover:bg-green-900 shadow-lg"
+          }`}
         >
-          Next
+          &#8594;
         </button>
       </div>
+
+      {isModalOpen && selectedItem && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-full relative max-h-screen overflow-y-auto">
+            <button
+              onClick={handleCloseModal}
+              className="absolute top-1 right-5 text-4xl text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 rounded-full transition duration-200"
+            >
+              &times;
+            </button>
+
+            <h3 className="text-xl font-bold mb-4 text-left text-gray-700">Detail Lokasi : </h3>
+            {error && <p className="text-red-500">{error}</p>}
+            {/* Modal content remains unchanged */}{isModalOpen && selectedItem && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-full relative max-h-screen overflow-y-auto">
+            <button
+              onClick={handleCloseModal}
+              className="absolute top-1 right-5 text-4xl text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 rounded-full transition duration-200"
+            >
+              &times;
+            </button>
+
+            <h3 className="text-xl font-bold mb-4 text-left text-gray-700">Detail Lokasi : </h3>
+            {error && <p className="text-red-500">{error}</p>}
+            <div className="bg-white rounded-lg shadow-lg p-4 mb-3">
+              <h4 className="text-base font-semibold text-gray-700">
+                Lokasi: <span className="font-normal">{selectedItem.lokasi}</span>
+              </h4>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-lg p-4 mb-3">
+              <h4 className="text-base font-semibold text-gray-700">Rincian Tugas:</h4>
+              <p className="text-gray-600 break-words overflow-hidden">{selectedItem.deskripsi}</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+              <div className="bg-green-100 rounded-lg shadow-lg p-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                  <a
+                    href={selectedItem.foto_mulai || "#"}
+                    target={selectedItem.foto_mulai ? "_blank" : "_self"}
+                    rel="noopener noreferrer"
+                  >
+                    {selectedItem.foto_mulai ? (
+                      <img
+                        src={selectedItem.foto_mulai}
+                        alt="Foto Mulai"
+                        className="w-full h-48 object-contain rounded-xl"
+                      />
+                    ) : (
+                      <div className="w-full h-48 flex items-center justify-center bg-gray-200 rounded-xl text-gray-500">
+                        Foto tidak tersedia
+                      </div>
+                    )}
+                  </a>
+                  <div>
+                    <h4 className="text-base font-semibold text-gray-700">Absen Mulai</h4>
+                    <p className="text-gray-700 flex items-center">
+                      <FontAwesomeIcon icon={faClock} className="mr-2" />
+                      {selectedItem.jam_mulai
+                        ? new Date(selectedItem.jam_mulai).toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta" })
+                        : "-"}
+                    </p>
+                    <p className="text-gray-700 flex items-center">
+                      <FontAwesomeIcon icon={faCalendarDay} className="mr-2" />
+                      {selectedItem.jam_mulai
+                        ? new Date(selectedItem.jam_mulai).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })
+                        : "-"}
+                    </p>
+                    <p className="text-gray-700 flex items-center">
+                      <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" />
+                      {selectedItem.lokasi_mulai ? (
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                            selectedItem.lokasi_mulai
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 underline"
+                        >
+                          Open in maps
+                        </a>
+                      ) : (
+                        "-"
+                      )}
+                    </p>
+                    <p className="text-gray-700 flex items-center">
+                      <FontAwesomeIcon icon={faRulerVertical} className="mr-2" />
+                      {selectedItem.distance_start ? `${selectedItem.distance_start} Meter` : "-"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-red-100 rounded-lg shadow-lg p-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                  <a
+                    href={selectedItem.foto_selesai || "#"}
+                    target={selectedItem.foto_selesai ? "_blank" : "_self"}
+                    rel="noopener noreferrer"
+                  >
+                    {selectedItem.foto_selesai ? (
+                      <img
+                        src={selectedItem.foto_selesai}
+                        alt="Foto Selesai"
+                        className="w-full h-48 object-contain rounded-xl"
+                      />
+                    ) : (
+                      <div className="w-full h-48 flex items-center justify-center bg-gray-200 rounded-xl text-gray-500">
+                        Foto tidak tersedia
+                      </div>
+                    )}
+                  </a>
+                  <div>
+                    <h4 className="text-base font-semibold text-gray-700">Absen Selesai</h4>
+                    <p className="text-gray-700 flex items-center">
+                      <FontAwesomeIcon icon={faClock} className="mr-2" />
+                      {selectedItem.jam_selesai
+                        ? new Date(selectedItem.jam_selesai).toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta" })
+                        : "-"}
+                    </p>
+                    <p className="text-gray-700 flex items-center">
+                      <FontAwesomeIcon icon={faCalendarDay} className="mr-2" />
+                      {selectedItem.jam_selesai
+                        ? new Date(selectedItem.jam_selesai).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta" })
+                        : "-"}
+                    </p>
+                    <p className="text-gray-700 flex items-center">
+                      <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" />
+                      {selectedItem.lokasi_selesai ? (
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                            selectedItem.lokasi_selesai
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 underline"
+                        >
+                          Open in maps
+                        </a>
+                      ) : (
+                        "-"
+                      )}
+                    </p>
+                    <p className="text-gray-700 flex items-center">
+                      <FontAwesomeIcon icon={faRulerVertical} className="mr-2" />
+                      {selectedItem.distance_end ? `${selectedItem.distance_end} Meter` : "-"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 flex justify-center">
+              {!statusApproval[selectedItem?.id_absen] ? (
+                <button
+                  onClick={() => handleStatusUpdate(selectedItem.id_absen)}
+                  disabled={isLoading}
+                  className={`px-6 py-2 rounded-md text-white ${
+                    isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"
+                  }`}
+                >
+                  {isLoading ? "Mengupdate..." : "Setujui"}
+                </button>
+              ) : (
+                <button className="px-6 py-2 rounded-md bg-gray-300 text-white cursor-not-allowed">Sudah Disetujui</button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+          </div>
+        </div>
+      )}
+
+      {error && <div className="mt-4 text-red-600 text-sm">{error}</div>}
     </div>
   );
 };

@@ -99,11 +99,11 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
 
   return (
     <div className="flex flex-col font-sans bg-gray-50 min-h-screen">
-      <div className="bg-green-900 rounded-b-2xl p-8 relative shadow-lg">
+      <div className="bg-green-700 rounded-b-2xl p-8 relative shadow-lg">
         <button
           onClick={handleLogout}
           title="Logout"
-          className="absolute top-3 right-3 text-lg text-white hover:text-green-900 transition-colors hover:bg-white px-2 py-1 rounded-full"
+          className="absolute top-3 right-3 text-lg text-white hover:text-green-700 transition-colors hover:bg-white px-2 py-1 rounded-full"
         >
           <FontAwesomeIcon icon={faSignOutAlt} />
         </button>
@@ -148,7 +148,7 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
         />
       </div>
 
-      <div className="fixed bottom-0 left-0 w-full flex justify-around items-center p-2 bg-green-900 shadow-md text-white rounded-t-3xl">
+      <div className="fixed bottom-0 left-0 w-full flex justify-around items-center p-2 bg-green-700 shadow-md text-white rounded-t-2xl">
         <IconButton icon={faHome} label="Home" isActive={location.pathname === "/home"} onClick={() => navigate("/home")} />
         <IconButton
           icon={faHistory}

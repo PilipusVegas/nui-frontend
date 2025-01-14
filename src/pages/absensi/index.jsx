@@ -4,8 +4,9 @@ import StepOne from "./StepOne";
 import StepTwoMulai from "./StepTwoMulai";
 import StepTwoSelesai from "./StepTwoSelesai";
 import StepThree from "./StepThree";
+import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarCheck, faCalendarPlus, faHistory, faAngleDown } from "@fortawesome/free-solid-svg-icons";
+import { faCalendarCheck, faCalendarPlus, faHistory, faAngleDown, faSignInAlt, faSignOutAlt, faClock, faArrowRight, faAngleUp } from "@fortawesome/free-solid-svg-icons";
 
 const Absensi = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -15,6 +16,7 @@ const Absensi = () => {
   const [attendanceData, setAttendanceData] = useState({ userId: "", username: "", id_absen: "" });
   const [attendanceHistory, setAttendanceHistory] = useState([]);
   const [faqOpen, setFaqOpen] = useState(null);
+  const [allFaqOpen, setAllFaqOpen] = useState(false);
 
   const toggleFaq = (index) => {
     setFaqOpen(faqOpen === index ? null : index);
@@ -43,7 +45,7 @@ const Absensi = () => {
           const recordTime = new Date(item.jam_mulai);
           return now - recordTime <= 24 * 60 * 60 * 1000;
         });
-        setAttendanceHistory(last24Hours.slice(0, 3) || []); // Limit to 3 items
+        setAttendanceHistory(last24Hours.slice(0, 1) || []); // Limit to 3 items
       }
     } catch (error) {
       console.error("Error fetching attendance history:", error);
@@ -102,56 +104,109 @@ const Absensi = () => {
       default:
         return (
           <MobileLayout title="Absensi">
-            <div className="w-full bg-white rounded-lg shadow-md p-4">
-              {/* Riwayat Absensi */}
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                  <FontAwesomeIcon icon={faHistory} className="text-teal-500" /> Riwayat Absensi
-                </h3>
-                <a href="/riwayat-absensi" className="text-teal-600 text-sm">View All</a>
-              </div>
-              {attendanceHistory.length > 0 ? (
-                <ul className="space-y-2">
-                  {attendanceHistory.map((item, index) => (
-                    <li key={index} className="p-3 bg-gray-50 rounded-lg border">
-                      <p className="text-sm text-gray-600">
-                        <strong>Mulai:</strong> {item.jam_mulai} | <strong>Selesai:</strong> {item.jam_selesai || "-"}
-                      </p>
-                      <p className="text-xs text-gray-500">{item.deskripsi}</p>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-gray-500">Belum ada riwayat absensi dalam 24 jam terakhir.</p>
-              )}
+            <div className="w-full bg-white rounded-lg shadow-md py-5 px-4">
 
-              {/* FAQ */}
-              <div className="mt-4">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                  <FontAwesomeIcon icon={faAngleDown} className="text-teal-500" /> FAQ
-                </h3>
-                <div>
-                  <button className="text-teal-600 w-full text-left" onClick={() => toggleFaq(0)}>
-                    Apa itu absensi masuk?
-                  </button>
-                  {faqOpen === 0 && (
-                    <p className="text-sm text-gray-600 mt-2">Absensi masuk dilakukan ketika kamu memulai pekerjaan atau kegiatan.</p>
-                  )}
+              {/* Riwayat Absensi */}
+                <div className="p-3 bg-green-600 rounded-lg shadow-sm mb-4">
+                  {/* Header Tanggal dan Jam */}
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs text-white font-medium">
+                      <FontAwesomeIcon icon={faClock} className="mr-1" />
+                      Riwayat Absensi
+                    </p>
+                    <a href="/riwayat-absensi" className="text-xs text-white font-medium hover:text-gray-300 underline">
+                      View All
+                      <FontAwesomeIcon icon={faArrowRight} className="ml-1" />
+                    </a>
+                  </div>
+                  {attendanceHistory.length > 0 ? (
+                  <div className="flex flex-wrap justify-between py-2">
+                    {attendanceHistory.map((item, index) => (
+                      <div key={index} className="flex w-full sm:w-1/2 lg:w-1/2 xl:w-1/2 gap-3">
+                        {/* Card Absen Masuk */}
+                        <div className="flex-1 py-2 px-3 bg-white rounded-lg shadow border">
+                          {/* Tanggal Masuk */}
+                          <p className="text-[10px] text-gray-500 mb-1">
+                            {new Date(item.jam_mulai).toLocaleDateString('id-ID', {
+                              // weekday: 'long',
+                              day: '2-digit',
+                              month: 'short',
+                              year: 'numeric',
+                            })}
+                          </p>
+                          {/* Absen Masuk */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="pb-1 px-2 bg-blue-500 text-white rounded-full">
+                                <FontAwesomeIcon icon={faSignInAlt} className="text-xs" />
+                              </div>
+                              <div>
+                                <p className="text-[10px] text-gray-500 font-bold">Absen Masuk</p>
+                                <p className="text-[14px] font-medium text-green-500">
+                                  {new Date(item.jam_mulai).toLocaleTimeString('id-ID', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit',
+                                  })}{" "}
+                                    <span className="text-[10px] text-gray-500">WIB</span> 
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Card Absen Pulang */}
+                        {item.jam_selesai && (
+                          <div className="flex-1 py-2 px-3 bg-white rounded-lg shadow border">
+                            {/* Tanggal Pulang */}
+                            <p className="text-[10px] text-gray-500 mb-1">
+                              {new Date(item.jam_selesai).toLocaleDateString('id-ID', {
+                                // weekday: 'long',
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric',
+                              })}
+                            </p>
+
+                            {/* Absen Pulang */}
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className="pb-1 px-2 bg-orange-500 text-white rounded-full">
+                                  <FontAwesomeIcon icon={faSignOutAlt} className="text-xs transform rotate-180" />
+                                </div>
+                                <div>
+                                <p className="text-[10px] text-gray-500 font-bold">Absen Pulang</p>
+                                <p className="text-[14px] font-medium text-green-500">
+                                  {new Date(item.jam_selesai).toLocaleTimeString('id-ID', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit',
+                                  })}{" "}
+                                 <span className="text-[10px] text-gray-500">WIB</span> 
+                                </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                      ) : (
+                        <div className="flex flex-col items-center py-3 text-center">
+                        <FontAwesomeIcon icon={faClock} className="text-3xl text-gray-200 mb-2" />
+                        <p className="text-sm text-white">Belum ada riwayat absensi <br/> dalam 24 jam terakhir.</p>
+                      </div>
+                      
+                      
+                      )}
                 </div>
-                <div>
-                  <button className="text-teal-600 w-full text-left mt-2" onClick={() => toggleFaq(1)}>
-                    Apa itu absensi selesai?
-                  </button>
-                  {faqOpen === 1 && (
-                    <p className="text-sm text-gray-600 mt-2">Absensi selesai dilakukan ketika kamu mengakhiri pekerjaan atau kegiatan.</p>
-                  )}
-                </div>
-              </div>
+              {/* Riwayat Absensi */}
 
               {/* Absen Mulai / Absen Selesai */}
               {isSelesaiFlow ? (
                 <button
-                  className="w-full bg-teal-600 text-white px-6 py-4 rounded-md shadow-lg hover:bg-teal-700 flex items-center justify-center gap-2 transition"
+                  className="w-full bg-teal-600 text-white py-3 rounded-md shadow-lg hover:bg-teal-700 flex items-center justify-center gap-2 transition"
                   onClick={() => setCurrentStep("stepTwoSelesai")}
                 >
                   <FontAwesomeIcon icon={faCalendarCheck} className="text-2xl" />
@@ -159,13 +214,131 @@ const Absensi = () => {
                 </button>
               ) : (
                 <button
-                  className="w-full bg-green-700 text-white px-6 py-4 rounded-md shadow-lg hover:bg-green-800 flex items-center justify-center gap-2 transition"
+                  className="w-full border border-green-600 text-green-600 py-3 rounded-md shadow-lg hover:bg-green-200 flex items-center justify-center gap-2 transition"
                   onClick={() => setCurrentStep("stepOne")}
                 >
                   <FontAwesomeIcon icon={faCalendarPlus} className="text-2xl" />
                   <span className="text-lg font-medium">Absen Mulai</span>
                 </button>
               )}
+              {/* Absen Mulai / Absen Selesai */}
+
+            {/* FAQ */}
+              <div className="mt-6">
+                <h3
+                  className="text-sm font-semibold text-gray-800 mb-2 flex items-center justify-between cursor-pointer"
+                  onClick={() => setAllFaqOpen(!allFaqOpen)}
+                >
+                  <span className="flex items-center gap-2">
+                    <FontAwesomeIcon icon={faAngleDown} className={`text-green-500 transform ${allFaqOpen ? "rotate-180" : ""}`} />
+                    Pertanyaan yang Sering Diajukan
+                  </span>
+                </h3>
+
+        {allFaqOpen && (
+          <div>
+            {/* FAQ 1 */}
+            <div>
+              <button
+                className="text-xs w-full text-left px-4 py-2 font-semibold hover:bg-gray-50 rounded-md"
+                onClick={() => toggleFaq(0)}
+              >
+                Apa itu absensi masuk?
+                <FontAwesomeIcon icon={faqOpen === 0 ? faAngleUp : faAngleDown} className="float-right" />
+              </button>
+              {faqOpen === 0 && (
+                <p className="text-[11px] text-white rounded-lg bg-gray-700 mx-2 p-3">
+                  Absensi masuk dilakukan ketika kamu memulai pekerjaan atau kegiatan.
+                </p>
+              )}
+            </div>
+
+            {/* FAQ 2 */}
+            <div>
+              <button
+                className=" text-xs w-full text-left px-4 py-2 font-semibold mt-2 hover:bg-gray-50 rounded-md"
+                onClick={() => toggleFaq(1)}
+              >
+                Apa itu absensi selesai?
+                <FontAwesomeIcon icon={faqOpen === 1 ? faAngleUp : faAngleDown} className="float-right" />
+              </button>
+              {faqOpen === 1 && (
+                <p className="text-[11px] text-white rounded-lg bg-gray-700 mx-2 p-3">
+                  Absensi selesai dilakukan ketika kamu mengakhiri pekerjaan atau kegiatan.
+                </p>
+              )}
+            </div>
+
+            {/* FAQ 3 */}
+            <div>
+              <button
+                className=" text-xs w-full text-left px-4 py-2 font-semibold mt-2 hover:bg-gray-50 rounded-md"
+                onClick={() => toggleFaq(2)}
+              >
+                Kenapa tidak bisa absen selesai?
+                <FontAwesomeIcon icon={faqOpen === 2 ? faAngleUp : faAngleDown} className="float-right" />
+              </button>
+              {faqOpen === 2 && (
+                <p className="text-[11px] text-white rounded-lg bg-gray-700 mx-2 p-3">
+                  Anda harus absen mulai terlebih dahulu dan absen selesai lewat aplikasi sesuai dengan prosedur absensi.
+                </p>
+              )}
+            </div>
+
+            {/* FAQ 4 */}
+            <div>
+              <button
+                className=" text-xs w-full text-left px-4 py-2 font-semibold mt-2 hover:bg-gray-50 rounded-md"
+                onClick={() => toggleFaq(3)}
+              >
+                Kenapa kamera tidak bisa terbuka?
+                <FontAwesomeIcon icon={faqOpen === 3 ? faAngleUp : faAngleDown} className="float-right" />
+              </button>
+              {faqOpen === 3 && (
+                <p className="text-[11px] text-white rounded-lg bg-gray-700 mx-2 p-3">
+                  Izinkan aplikasi untuk mengakses kamera atau refresh browser Anda (Chrome).
+                </p>
+              )}
+            </div>
+
+             {/* FAQ 5 */}
+              <div>
+                <button
+                  className=" text-xs w-full text-left px-4 py-2 font-semibold mt-2 hover:bg-gray-50 rounded-md"
+                  onClick={() => toggleFaq(4)}
+                >
+                  Bagaimana jika saya ingin lembur?
+                  <FontAwesomeIcon icon={faqOpen === 4 ? faAngleUp : faAngleDown} className="float-right" />
+                </button>
+                {faqOpen === 4 && (
+                  <p className="text-[11px] text-white rounded-lg bg-gray-700 mx-2 p-3">
+                    Jika Anda ingin lembur, silakan menuju halaman{" "}
+                    <Link to="/lembur" className="text-green-600 font-bold   hover:underline">
+                      Lembur
+                    </Link>.
+                  </p>
+                )}
+              </div>
+
+            {/* FAQ 6 */}
+            <div>
+              <button
+                className=" text-xs w-full text-left px-4 py-2 font-semibold mt-2 hover:bg-gray-50 rounded-md"
+                onClick={() => toggleFaq(5)}
+              >
+                Bagaimana jika lokasi tidak tersedia?
+                <FontAwesomeIcon icon={faqOpen === 5 ? faAngleUp : faAngleDown} className="float-right" />
+              </button>
+              {faqOpen === 5 && (
+                <p className="text-[11px] text-white rounded-lg bg-gray-700 mx-2 p-3">
+                  Jika lokasi tidak ada di menu absensi maka mohon untuk menghubungi Tim IT agar segera di tambahkan lokasi nya
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+      {/* FAQ */}
             </div>
           </MobileLayout>
         );

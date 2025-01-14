@@ -177,7 +177,7 @@ const StepTwoMulai = ({ handleNextStepData }) => {
             </>
           ) : (
             <div className="text-center">
-              <img src={fotoMulai} alt="Foto Mulai" className="w-full h-[50vh] mb-6 rounded-lg" />
+              <img src={fotoMulai} alt="Foto Mulai" className="w-full h-[55vh] mb-6 rounded-lg" />
               <div className="px-3 py-2 border rounded-lg">
                 <div className="flex justify-between py-2">
                   <p className="font-bold">Jam:</p>

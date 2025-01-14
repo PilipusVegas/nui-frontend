@@ -10,7 +10,7 @@ const MobileLayout = ({ title, children }) => {
 
   return (
     <div className="h-screen flex flex-col bg-gray-100">
-      <header className="flex items-center justify-between p-4 bg-green-900 text-white shadow-md">
+      <header className="flex items-center justify-between p-4 bg-green-700 text-white shadow-md">
         <button onClick={handleBack} className="text-white">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />

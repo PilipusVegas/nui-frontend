@@ -180,7 +180,7 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
         <form className="w-full max-w-lg p-4 bg-white rounded-lg shadow">
           {!fotoDiambil ? (
             <>
-              <video ref={videoRef} className="w-full h-[60vh] object-cover rounded-md" />
+              <video ref={videoRef} className="w-full h-[72vh] object-cover rounded-md" />
               <button
                 onClick={handleSelesai}
                 disabled={!isCameraReady}

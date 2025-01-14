@@ -99,13 +99,14 @@ const DetailPenggajian = () => {
 
   const generateExcelData = (data) => {
     const excelData = [
+      [],
       ["Nama", dataUser?.nama || "-"],
       ["Total Kehadiran", `${totalKehadiran} Hari`],
       ["Periode", period],
-      ["Total Keterlambatan", totalKeterlambatan],
+      // ["Total Keterlambatan", totalKeterlambatan],
       ["Total Lembur", totalLembur],
       [],
-      ["No", "Tanggal", "IN", "L", "OUT", "T"],
+      ["No", "Tanggal", "IN", "OUT", "T"],
     ];
 
     data.forEach((item, index) => {
@@ -113,7 +114,7 @@ const DetailPenggajian = () => {
         index + 1,
         item.tanggal_absen || item.tanggal_lembur || "-",
         item.absen_mulai || "-",
-        item.keterlambatan || "-",
+        // item.keterlambatan || "-",
         item.absen_selesai || "-",
         item.lembur || "-",
       ]);
@@ -136,7 +137,7 @@ const DetailPenggajian = () => {
       { wch: 20 }, // Column 1: "Nama"
       { wch: 20 }, // Column 2: "Tanggal"
       { wch: 10 }, // Column 3: "IN"
-      { wch: 10 }, // Column 4: "L"
+      // { wch: 10 }, // Column 4: "L"
       { wch: 10 }, // Column 5: "OUT"
       { wch: 10 }, // Column 6: "T"
     ];
@@ -245,12 +246,12 @@ const DetailPenggajian = () => {
                 {totalKehadiran} Hari
               </span>
               <span>
-                <strong className="text-yellow-600">Terlambat:</strong>{" "}
-                {totalKeterlambatan}
-              </span>
-              <span>
                 <strong className="text-blue-600">Lembur:</strong> {totalLembur}
               </span>
+              {/* <span>
+                <strong className="text-yellow-600">Terlambat:</strong>{" "}
+                {totalKeterlambatan}
+              </span> */}
             </div>
           </div>
 
@@ -264,7 +265,7 @@ const DetailPenggajian = () => {
             <table className="w-full bg-white border-collapse">
               <thead className="bg-gradient-to-r from-green-500 to-green-600 text-white">
                 <tr>
-                  {["No", "Tanggal", "IN", "L", "OUT", "T"].map(
+                  {["No", "Tanggal", "IN", "OUT", "T"].map(
                     (header, index) => (
                       <th
                         key={index}
@@ -294,9 +295,9 @@ const DetailPenggajian = () => {
                       <td className="py-1 px-4 text-center border-b border-gray-200">
                         {item.absen_mulai || "-"}
                       </td>
-                      <td className="py-1 px-4 text-center border-b border-gray-200">
+                      {/* <td className="py-1 px-4 text-center border-b border-gray-200">
                         {hitungKeterlambatan('22:00', item.absen_mulai) || "-"}
-                      </td>
+                      </td> */}
                       <td className="py-1 px-4 text-center border-b border-gray-200">
                         { (item.absen_selesai === '0:00') ? '-' : item.absen_selesai}
                       </td>
