@@ -152,7 +152,7 @@ const StepOne = ({ handleNextStepData }) => {
                     }}
                     className="p-2 cursor-pointer hover:bg-gray-200"
                   >
-                    lainnya
+                    Lainnya
                   </li>
                 
               </ul>
