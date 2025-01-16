@@ -9,6 +9,7 @@ const StepOne = ({ handleNextStepData }) => {
   const [lokasi, setLokasi] = useState('');
   const [tanggal, setTanggal] = useState('');
   const [idLokasi, setIdLokasi] = useState('');
+  const [NamaLokasi, setNamaLokasi] = useState('');
   const [jamMulai, setJamMulai] = useState('');
   const [charCount, setCharCount] = useState(0);
   const [locations, setLocations] = useState([]);
@@ -52,114 +53,39 @@ const StepOne = ({ handleNextStepData }) => {
 
   return (
     <MobileLayout title="LEMBUR" className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
-      <div style={styles.container}>
-        <form style={styles.form} onSubmit={handleSubmit}>
-          <div style={styles.formGroup}>
-            <label htmlFor="tanggal" style={styles.label}>Tanggal:</label>
-            <input type="date" id="tanggal" name="tanggal" value={tanggal} style={styles.input} onChange={(e) => setTanggal(e.target.value)}/>
+      <div className="flex justify-center">
+        <form className="w-full p-5 max-w-lg border-2 rounded-lg bg-gray-50" onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label htmlFor="tanggal" className="block text-lg font-bold mb-2">Tanggal:</label>
+            <input type="date" id="tanggal" name="tanggal" value={tanggal} className="w-full p-2 text-lg border-2 rounded-lg" onChange={(e) => setTanggal(e.target.value)} />
           </div>
-          <div style={styles.formGroup}>
-            <label htmlFor="lokasi" style={styles.label}>Lokasi:</label>
-            <select id="lokasi" name="lokasi" value={lokasi} style={styles.select} onChange={handleLokasiChange}>
+          <div className="mb-4">
+            <label htmlFor="lokasi" className="block text-lg font-bold mb-2">Lokasi:</label>
+            <select id="lokasi" name="lokasi" value={lokasi} className="w-full p-2 text-lg border-2 rounded-lg" onChange={handleLokasiChange}>
               <option value="">Pilih Lokasi</option>
               {locations.map(location => (<option key={location.id} value={location.nama}>{location.nama}</option>))}
             </select>
           </div>
-          <div style={styles.formGroup}>
-            <div style={styles.taskContainer}>
-              <label htmlFor="tugas" style={styles.label}>Tugas yang diberikan:</label>
-              <div style={styles.charCount}>{charCount} / {CHAR_LIMIT}</div>
+          <div className="mb-4">
+            <div className="flex justify-between items-center">
+              <label htmlFor="tugas" className="block text-lg font-bold mb-2">Tugas yang diberikan:</label>
+              <div className="text-sm">{charCount} / {CHAR_LIMIT}</div>
             </div>
-            <textarea required rows="4" id="tugas" name="tugas" value={tugas} style={styles.textarea} onChange={handleTugasChange}/>
+            <textarea required rows="4" id="tugas" name="tugas" value={tugas} className="w-full p-2 text-lg border-2 rounded-lg resize-vertical" onChange={handleTugasChange} />
           </div>
-          <div style={styles.formGroup}>
-            <label htmlFor="jamMulai" style={styles.label}>Jam Mulai:</label>
-            <input type="time" id="jamMulai" name="jamMulai" value={jamMulai} style={styles.input} onChange={(e) => setJamMulai(e.target.value)}/>
+          <div className="mb-4">
+            <label htmlFor="jamMulai" className="block text-lg font-bold mb-2">Jam Mulai:</label>
+            <input type="time" id="jamMulai" name="jamMulai" value={jamMulai} className="w-full p-2 text-lg border-2 rounded-lg" onChange={(e) => setJamMulai(e.target.value)} />
           </div>
-          <div style={styles.formGroup}>
-            <label htmlFor="jamSelesai" style={styles.label}>Jam Selesai:</label>
-            <input type="time" id="jamSelesai" name="jamSelesai" value={jamSelesai} style={styles.input} onChange={(e) => setJamSelesai(e.target.value)}/>
+          <div className="mb-4">
+            <label htmlFor="jamSelesai" className="block text-lg font-bold mb-2">Jam Selesai:</label>
+            <input type="time" id="jamSelesai" name="jamSelesai" value={jamSelesai} className="w-full p-2 text-lg border-2 rounded-lg" onChange={(e) => setJamSelesai(e.target.value)} />
           </div>
-          <button type="submit" disabled={!isFormValid()} style={isFormValid() ? styles.buttonActive : styles.buttonInactive}>➜</button>
+          <button type="submit" disabled={!isFormValid()} className={`w-full p-3 text-lg font-bold rounded-lg border-2 ${isFormValid() ? 'bg-green-500 border-green-700' : 'bg-gray-400 border-gray-600 cursor-not-allowed'}`}>➜</button>
         </form>
       </div>
     </MobileLayout>
   );
-};
-
-const styles = {
-  container: {
-    display: 'flex',
-    justifyContent: 'center',
-  },
-  form: {
-    width: '100%',
-    padding: '20px',
-    maxWidth: '600px',
-    border: '2px solid',
-    borderRadius: '10px',
-    backgroundColor: '#f9f9f9',
-  },
-  formGroup: {
-    marginBottom: '10px',
-  },
-  label: {
-    fontSize: '1rem',
-    fontWeight: 'bold',
-    marginBottom: '2px',
-  },
-  select: {
-    width: '100%',
-    padding: '10px',
-    fontSize: '1rem',
-    appearance: 'none',
-    borderRadius: '10px',
-    border: '2px solid #ccc',
-  },
-  input: {
-    width: '100%',
-    padding: '10px',
-    fontSize: '1rem',
-    borderRadius: '10px',
-    border: '2px solid #ccc',
-  },
-  taskContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  charCount: {
-    fontSize: '1rem',
-    marginRight: '10px',
-  },
-  textarea: {
-    width: '100%',
-    padding: '10px',
-    fontSize: '1rem',
-    resize: 'vertical',
-    borderRadius: '10px',
-    border: '2px solid #ccc',
-  },
-  buttonActive: {
-    width: '100%',
-    padding: '10px',
-    cursor: 'pointer',
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
-    borderRadius: '10px',
-    backgroundColor: '#28a745',
-    border: '2px solid #000000',
-  },
-  buttonInactive: {
-    width: '100%',
-    padding: '10px',
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
-    borderRadius: '10px',
-    cursor: 'not-allowed',
-    backgroundColor: '#b0b0b0',
-    border: '2px solid #000000',
-  },
 };
 
 export default StepOne;

@@ -19,7 +19,7 @@ const MobileLayout = ({ title, children }) => {
         <h1 className="text-lg font-semibold">{title}</h1>
         <div className="w-6"></div>
       </header>
-      <main className="flex-grow p-4 overflow-auto">
+      <main className="flex-grow p-3 overflow-auto">
         {children}
       </main>
     </div>

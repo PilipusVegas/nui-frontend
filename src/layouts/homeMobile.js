@@ -2,20 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCalendarCheck,
-  faClock,
-  faBell,
-  faHistory,
-  faThList,
-  faHome,
-  faUser,
-  faSignOutAlt,
-  faQuestionCircle,
-  faMapMarkerAlt,
-  faArrowRight,
-  faTable,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCalendarCheck, faClock, faBell, faHistory, faThList, faHome, faUser, faSignOutAlt, faQuestionCircle, faMapMarkerAlt, faArrowRight,} from "@fortawesome/free-solid-svg-icons";
 
 const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
   const navigate = useNavigate();
@@ -134,7 +121,7 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
   return (
     <div className="flex flex-col font-sans bg-gray-50 min-h-screen">
       {/* Header Hero */}
-      <div className="bg-green-700 rounded-b-2xl p-8 relative shadow-lg">
+      <div className="bg-green-700 rounded-b-2xl px-8 py-4 relative shadow-lg">
         <button
           onClick={handleLogout}
           title="Logout"
@@ -152,7 +139,7 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
       </div>
 
       {/* MENU UTAMA */}
-      <div className="flex flex-row items-center p-1 mt-3">
+      <div className="flex flex-row items-center p-1 mt-2">
         <span className="text-md font-semibold pl-3">Menu Utama</span>
       </div>
       <div className="grid grid-cols-4 gap-3 px-4">
@@ -160,26 +147,26 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
           icon={faCalendarCheck}
           label="Absen"
           onClick={() => navigate("/absensi")}
-          color="p-4 rounded-lg bg-green-100 text-lg text-emerald-500"
+          color="p-4 rounded-lg bg-green-100 text-xl text-emerald-500"
         />
         <IconButton
           icon={faClock}
           label="Lembur"
           onClick={() => navigate("/lembur")}
-          color="p-4 rounded-lg bg-green-100 text-lg text-teal-500"
+          color="p-4 rounded-lg bg-green-100 text-xl text-teal-500"
         />
         <IconButton
           icon={faBell}
           label="Notifikasi"
           onClick={handleNotificationClick}
           hasNotification={hasNewNotifications}
-          color="p-4 rounded-lg bg-green-100 text-lg text-amber-600"
+          color="p-4 rounded-lg bg-green-100 text-xl text-amber-600"
         />
         <IconButton
           icon={faThList}
           label="Lainnya"
           onClick={() => navigate("/menu")}
-          color="p-4 rounded-lg bg-green-100 text-lg text-indigo-600"
+          color="p-4 rounded-lg bg-green-100 text-xl text-indigo-600"
         />
       </div>
 
@@ -213,20 +200,20 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
 
       {/* RIWAYAT */}
       <div className="p-4">
-        <div className="flex justify-between items-center mb-4 py-2 bg-gray-50 rounded-lg">
+        <div className="flex justify-between items-center mb-2 py-2 bg-gray-50 rounded-lg">
           {/* Icon History */}
           <div className="flex items-center space-x-2">
             <FontAwesomeIcon icon={faHistory} className="text-sm text-green-600" />
-            <h2 className="text-md font-bold text-gray-800">Attendance History</h2>
+            <h2 className="text-md font-bold text-gray-800">Riwayat Absensi</h2>
           </div>
 
           {/* Link "See all" */}
-          <p className="text-sm text-green-600 hover:text-green-800">
+          <p className="text-md text-green-600 hover:text-green-800">
             <a
               href="/riwayat-absensi"
               className="transition duration-200 ease-in-out hover:underline"
             >
-              see all <FontAwesomeIcon icon={faArrowRight} />
+              see more <FontAwesomeIcon icon={faArrowRight} />
             </a>
           </p>
         </div>
@@ -237,14 +224,14 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
               {/* Baris Utama: Tanggal, Check In, Check Out, Total Jam */}
               <div className="flex items-center justify-between text-center">
                 {/* Bagian Tanggal */}
-                <div className="flex flex-col items-center bg-green-600 py-3 px-6 rounded-lg">
-                  <div className="text-2xl font-bold text-white">
+                <div className="flex flex-col items-center bg-green-600 py-4 px-4 rounded-lg">
+                  <div className="text-4xl font-bold text-white">
                     {new Date(item.jam_mulai).getDate()}
                   </div>
 
-                  <div className="text-sm text-white">
+                  <div className="text-xs text-white">
                     {new Date(item.jam_mulai).toLocaleDateString("id-ID", {
-                      weekday: "short",
+                      weekday: "long",
                     })}
                   </div>
                 </div>
@@ -254,22 +241,25 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
                   {/* Baris pertama: Waktu (Check In, Check Out, Total) */}
                   <div className="grid grid-cols-3 gap-1">
                     <div className="border-r border-gray-400">
-                      <div className="text-md font-bold text-gray-700">
+                      <div className="text-lg font-bold text-gray-700">
                         {formatTime(item.jam_mulai)}
                       </div>
-                      <span className="text-xs text-gray-600">Check In</span>
+                      <span className="text-xs text-gray-600 ">Check In</span>
                     </div>
                     <div className="border-r border-gray-400">
-                      <div className="text-md text-gray-700 font-bold">
-                        {formatTime(item.jam_selesai)}
+                      <div className="text-lg text-gray-700 font-bold">
+                        {item.jam_selesai ? formatTime(item.jam_selesai) : "-"}
                       </div>
                       <span className="text-xs text-gray-600">Check Out</span>
                     </div>
+
                     <div>
-                      <div className="text-sm text-green-700 font-bold">
-                        {calculateTotalHours(item.jam_mulai, item.jam_selesai)}
+                      <div className="text-lg text-green-700 font-bold">
+                        {item.jam_selesai
+                          ? calculateTotalHours(item.jam_mulai, item.jam_selesai)
+                          : "-"}
                       </div>
-                      <span className="text-xs text-gray-600 font-semibold">Total</span>
+                      <span className="text-xs text-gray-600">Total Jam</span>
                     </div>
                   </div>
 
@@ -288,7 +278,7 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
       </div>
 
       {/* MENU FOOTER */}
-      <div className="fixed bottom-0 left-0 w-full flex justify-around items-center p-2 bg-green-700 shadow-md text-white rounded-t-2xl">
+      <div className="fixed bottom-[-5px] left-0 w-full flex justify-around items-center p-2 bg-green-700 shadow-md text-white rounded-t-2xl">
         <IconButton
           icon={faHome}
           label="Home"

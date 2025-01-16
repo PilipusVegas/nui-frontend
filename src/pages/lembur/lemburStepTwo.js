@@ -6,18 +6,16 @@ import MobileLayout from "../../layouts/mobileLayout";
 
 const StepTwo = ({ lemburData = {} }) => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
-  
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  
-  const { userId = '', id_lokasi = '', tugas = '', tanggal = '', jamMulai = '', jamSelesai = '' } = lemburData;
-  const dataToSend = {id_user: userId, tanggal, id_lokasi, deskripsi: tugas, jam_mulai: jamMulai, jam_selesai: jamSelesai};
+
+  const { userId = '', username = '', id_lokasi = '', lokasi = '', tugas = '', tanggal = '', jamMulai = '', jamSelesai = '' } = lemburData;
+  const dataToSend = { id_user: userId, tanggal, id_lokasi, deskripsi: tugas, jam_mulai: jamMulai, jam_selesai: jamSelesai };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    console.log('Data yang akan dikirim:', dataToSend);
     try {
       Swal.fire('Data akan dikirim!', '', 'info');
       const response = await fetch(`${apiUrl}/lembur/simpan`, {
@@ -26,19 +24,14 @@ const StepTwo = ({ lemburData = {} }) => {
         body: JSON.stringify(dataToSend),
       });
       if (response.ok) {
-        const result = await response.json();
-        console.log('Data lembur berhasil dikirim:', result);
+        await response.json();
         Swal.fire('Lembur berhasil!', '', 'success');
         setIsSuccess(true);
       } else {
         const errorResult = await response.json();
-        console.error('Gagal mengirim data lembur:', errorResult);
-        const errorMessage = errorResult.message || 'Terjadi kesalahan';
-        Swal.fire('Gagal mengirim data lembur', errorMessage, 'error');
-        console.log('Pesan kesalahan dari API:', errorMessage);
+        Swal.fire('Gagal mengirim data lembur', errorResult.message || 'Terjadi kesalahan', 'error');
       }
     } catch (error) {
-      console.error('Terjadi kesalahan saat mengirim data lembur:', error);
       Swal.fire('Gagal mengirim data lembur', error.message || 'Terjadi kesalahan', 'error');
     } finally {
       setLoading(false);
@@ -46,29 +39,39 @@ const StepTwo = ({ lemburData = {} }) => {
   };
 
   const summaryItems = [
-    { label: 'Nama', value: userId },
-    { label: 'Lokasi', value: id_lokasi },
-    { label: 'Deskripsi', value: tugas },
+    { label: 'Nama', value: username },
+    { label: 'Lokasi', value: lokasi },
     { label: 'Tanggal', value: tanggal },
     { label: 'Jam Mulai', value: jamMulai },
     { label: 'Jam Selesai', value: jamSelesai },
+    { label: 'Deskripsi', value: tugas },
   ].filter(item => item.value);
 
   useEffect(() => {
-    if (isSuccess) {navigate('/')}
+    if (isSuccess) navigate('/');
   }, [isSuccess, navigate]);
 
   return (
     <MobileLayout title="LEMBUR" className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
-      <div style={styles.container}>
-        <form onSubmit={handleSubmit} style={styles.form}>
-          {summaryItems.map((item, index) => (
-            <div key={index} style={styles.itemWithBorder}>
-              <strong style={styles.label}>{item.label}:</strong>
-              <span style={styles.value}>{item.value}</span>
-            </div>
-          ))}
-          <button type="submit" style={{ ...styles.submitButton, backgroundColor: loading ? '#ccc' : '#28a745' }} disabled={loading}>
+      <div className="flex flex-col items-center">
+        <form onSubmit={handleSubmit} className="w-full max-w-xl p-5 bg-white border border-gray-300 rounded-lg">
+          <h3 className="text-2xl font-semibold mb-4 text-center">Detail Lembur</h3>
+          <div className="p-3">
+            {summaryItems.map((item, index) => (
+              <div key={index}>
+                <div className="flex justify-between text-justify py-2">
+                  <strong className="text-sm font-semibold pr-3 text-justify">{item.label}: </strong>
+                  <span className="text-gray-700 text-sm break-words">{item.value}</span>
+                </div>
+                {index < summaryItems.length - 1 && <hr className="border-gray-300" />}
+              </div>
+            ))}
+          </div>
+          <button
+            type="submit"
+            className={`w-full py-2 mt-3 text-lg font-semibold text-white rounded-md ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'}`}
+            disabled={loading}
+          >
             {loading ? 'Mengirim...' : 'KIRIM'}
           </button>
         </form>
@@ -79,51 +82,6 @@ const StepTwo = ({ lemburData = {} }) => {
 
 StepTwo.propTypes = {
   lemburData: PropTypes.object.isRequired,
-};
-
-const styles = {
-  container: {
-    display: 'flex',
-    alignItems: 'center',
-    flexDirection: 'column',
-  },
-  form: {
-    width: '100%',
-    padding: '20px',
-    maxWidth: '600px',
-    border: '2px solid',
-    borderRadius: '10px',
-    backgroundColor: '#f9f9f9',
-  },
-  itemWithBorder: {
-    padding: '10px',
-    borderRadius: '10px',
-    marginBottom: '10px',
-    backgroundColor: '#fff',
-    border: '1px solid #ccc',
-  },
-  label: {
-    fontSize: '1rem',
-    fontWeight: 'bold',
-    marginBottom: '5px',
-  },
-  value: {
-    color: '#333',
-    display: 'block',
-    fontSize: '1rem',
-    wordWrap: 'break-word',
-    overflowWrap: 'break-word',
-  },
-  submitButton: {
-    width: '100%',
-    padding: '10px',
-    cursor: 'pointer',
-    marginTop: '10px',
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
-    border: '2px solid',
-    borderRadius: '10px',
-  },
 };
 
 export default StepTwo;

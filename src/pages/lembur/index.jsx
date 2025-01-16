@@ -4,7 +4,7 @@ import StepTwo from './lemburStepTwo';
 
 const Lembur = () => {
   const [currentStep, setCurrentStep] = useState('stepOne');
-  const [lemburData, setLemburData] = useState({ userId: "", username: "", tugas: "", lokasi: "", tanggal: "", jamMulai: "", jamSelesai: "" });
+  const [lemburData, setLemburData] = useState({ userId: "", username: "", tugas: "", lokasi: "", nama_lokasi: "", tanggal: "", jamMulai: "", jamSelesai: "" });
 
   const handleNextStep = () => {
     if (currentStep === 'stepOne') {setCurrentStep('stepTwo')}

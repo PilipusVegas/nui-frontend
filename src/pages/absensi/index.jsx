@@ -113,7 +113,7 @@ const Absensi = () => {
         Swal.fire({
           icon: "warning",
           title: "Perizinan Dibutuhkan",
-          text: "Mohon untuk menyalakanGPS dan perizinan kamera pada perangkat Anda.",
+          text: "Mohon untuk menyalakan GPS dan perizinan kamera pada perangkat Anda.",
           confirmButtonText: "OK",
         });
         return false; // Permissions not granted
