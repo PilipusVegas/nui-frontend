@@ -117,7 +117,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
   return (
     <div className="desktop-layout flex min-h-screen bg-gray-100">
       <MenuSidebar handleLogout={handleLogout} roleId={roleId} />
-      <div className="flex-1 px-8 bg-white shadow-lg rounded-lg transition-all duration-300 ease-in-out">
+      <div className="flex-1 px-5 bg-white shadow-lg rounded-lg transition-all duration-300 ease-in-out">
         <div className="mt-6 p-8 bg-gradient-to-b from-green-900 to-green-600 text-white rounded-lg shadow-md relative">
           <div className="w-full hidden md:block md:text-right">
             {GetNamaDivisi(roleId)} • Kantor Palem

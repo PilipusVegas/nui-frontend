@@ -11,7 +11,7 @@ const DekstopLayout = ({ title, header, body, customElements, currentPage, total
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-start p-6">
+    <div className="min-h-screen flex flex-col justify-start p-2">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <FontAwesomeIcon

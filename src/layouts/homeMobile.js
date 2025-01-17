@@ -288,7 +288,7 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
         <IconButton
           icon={faHistory}
           label="Riwayat"
-          hasNotification={hasNewNotifications}
+          // hasNotification={hasNewNotifications}
           isActive={location.pathname === "/riwayat-absensi"}
           onClick={() => navigate("/riwayat-absensi")}
         />

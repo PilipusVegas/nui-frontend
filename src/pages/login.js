@@ -39,16 +39,50 @@ const Login = ({ onLoginSuccess }) => {
         localStorage.setItem("userId", dataUser.id);
         localStorage.setItem("nama", dataUser.name);
         localStorage.setItem("userName", dataUser.username);
-        localStorage.setItem("roleId", dataUser.id_role);
         localStorage.setItem("isLoggedIn", "true");
-        onLoginSuccess();
-        Swal.fire({
-          icon: "success",
-          title: "Login Berhasil!",
-          text: "Selamat Datang!",
-        }).then(() => {
-          navigate("/home");
-        });
+  
+        if (dataUser.id === 16) {
+          // Jika id adalah 16, tampilkan dialog untuk memilih role
+          Swal.fire({
+            title: "Selamat Datang Bu Aby",
+            text: "Login sebagai Teknisi atau PA?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Teknisi",
+            cancelButtonText: "PA",
+            customClass: {
+              confirmButton: "btn-confirm",
+              cancelButton: "btn-warning",
+            },
+          }).then((result) => {
+            if (result.isConfirmed) {
+              // Jika user memilih Teknisi
+              localStorage.setItem("roleId", "3");
+            } else {
+              // Jika user memilih PA
+              localStorage.setItem("roleId", "5");
+            }
+            onLoginSuccess();
+            Swal.fire({
+              icon: "success",
+              title: "Login Berhasil!",
+              text: "Selamat Datang!",
+            }).then(() => {
+              navigate("/home");
+            });
+          });
+        } else {
+          // Jika id bukan 16, login seperti biasa
+          localStorage.setItem("roleId", dataUser.id_role);
+          onLoginSuccess();
+          Swal.fire({
+            icon: "success",
+            title: "Login Berhasil!",
+            text: "Selamat Datang!",
+          }).then(() => {
+            navigate("/home");
+          });
+        }
       } else {
         Swal.fire({
           icon: "error",
@@ -64,6 +98,7 @@ const Login = ({ onLoginSuccess }) => {
       });
     }
   };
+  
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
