@@ -2,7 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faEyeSlash, faUser, faLock } from "@fortawesome/free-solid-svg-icons";
+import {
+  faEye,
+  faEyeSlash,
+  faUser,
+  faLock,
+} from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 
 const Login = ({ onLoginSuccess }) => {
@@ -37,7 +42,11 @@ const Login = ({ onLoginSuccess }) => {
         localStorage.setItem("roleId", dataUser.id_role);
         localStorage.setItem("isLoggedIn", "true");
         onLoginSuccess();
-        Swal.fire({ icon: "success", title: "Login Berhasil!", text: "Selamat Datang!" }).then(() => {
+        Swal.fire({
+          icon: "success",
+          title: "Login Berhasil!",
+          text: "Selamat Datang!",
+        }).then(() => {
           navigate("/home");
         });
       } else {
@@ -63,16 +72,35 @@ const Login = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen px-7 bg-gradient-to-br from-teal-500 to-green-600 font-poppins">
+    <div
+      className="flex items-center justify-center h-screen px-7 font-poppins"
+      style={{
+        backgroundImage: "url('/wall.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed",
+        backgroundBlendMode: "overlay",
+        backgroundColor: "rgba(0, 0, 0, 0.25)", // Tambahkan warna overlay gelap
+      }}
+    >
       <div className="w-full max-w-md px-7 py-10 bg-white rounded-lg shadow-lg">
         <img src={logo} alt="Logo" className="w-16 mx-auto mb-2" />
         <h5 className="text-xl font-bold text-[#326058] text-center mb-4 transition-all duration-300 cursor-pointer">
           PT Nico Urban Indonesia
         </h5>
-        <form onSubmit={(e) => e.preventDefault()} className="space-y-2 pt-7 pb-10">
-          <label className="block text-sm font-medium text-gray-700">Username</label>
+        <form
+          onSubmit={(e) => e.preventDefault()}
+          className="space-y-2 pt-7 pb-10"
+        >
+          <label className="block text-sm font-medium text-gray-700">
+            Username
+          </label>
           <div className="relative">
-            <FontAwesomeIcon icon={faUser} className="absolute top-1/2 left-3 text-gray-500 -translate-y-1/2" />
+            <FontAwesomeIcon
+              icon={faUser}
+              className="absolute top-1/2 left-3 text-gray-500 -translate-y-1/2"
+            />
             <input
               type="text"
               value={username}
@@ -82,9 +110,14 @@ const Login = ({ onLoginSuccess }) => {
               onKeyDown={handleKeyPress}
             />
           </div>
-          <label className="block text-sm font-medium text-gray-700">Password</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Password
+          </label>
           <div className="relative">
-            <FontAwesomeIcon icon={faLock} className="absolute top-1/2 left-3 text-gray-500 -translate-y-1/2" />
+            <FontAwesomeIcon
+              icon={faLock}
+              className="absolute top-1/2 left-3 text-gray-500 -translate-y-1/2"
+            />
             <input
               type={showPassword ? "text" : "password"}
               value={password}
