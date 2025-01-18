@@ -44,7 +44,7 @@ const Login = ({ onLoginSuccess }) => {
         if (dataUser.id === 16) {
           // Jika id adalah 16, tampilkan dialog untuk memilih role
           Swal.fire({
-            title: "Selamat Datang Bu Aby",
+            title: "Selamat Datang",
             text: "Login sebagai Teknisi atau PA?",
             icon: "question",
             showCancelButton: true,

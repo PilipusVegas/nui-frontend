@@ -1,4 +1,5 @@
 import { useState } from "react";
+import React from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 
 import Menu from "./pages/menu";
@@ -7,7 +8,6 @@ import Absen from "./pages/absensi";
 import Lembur from "./pages/lembur";
 import Profile from "./pages/profile";
 import Dashboard from "./pages/dashboard";
-import MenuSidebar from "./layouts/menuSidebar";
 import Notification from "./pages/notification";
 import DataLokasi from "./pages/lokasi/dataLokasi";
 import DataAbsensi from "./pages/absensi/dataAbsensi";
@@ -17,47 +17,52 @@ import DataApproval from "./pages/approval/dataApproval";
 import DataPenggajian from "./pages/penggajian/dataPenggajian";
 import DetailPenggajian from "./pages/penggajian/detailPenggajian";
 import RiwayatAbsensi from "./pages/riwayat/riwayatAbsensi";
-// import DataLembur from "./pages/lembur/dataLembur";
-// import DetailDataLembur from "./pages/lembur/detailDataLembur";
+import MenuSidebar from "./layouts/menuSidebar";
 
-function App() {
-  const handleLoginSuccess = () => {
-    setIsLoggedIn(true);
-  };
+const App = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem("isLoggedIn") === "true");
+
+  const handleLoginSuccess = () => setIsLoggedIn(true);
   const handleLogout = () => {
     localStorage.clear();
     setIsLoggedIn(false);
   };
 
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem("isLoggedIn") === "true";
-  });
-
-  const checkRolePermission = (allowedRoles) => {
-    const roleId = localStorage.getItem("roleId");
-    return allowedRoles.includes(roleId);
-  };
+  const checkRolePermission = (allowedRoles) => allowedRoles.includes(localStorage.getItem("roleId"));
 
   const PrivateRoute = ({ children, allowedRoles }) => {
-    if (!isLoggedIn) {
-      return <Navigate to="/login" />;
-    }
-
-    if (!checkRolePermission(allowedRoles)) {
-      return <Navigate to="/home" />; // Redirect to home if user doesn't have permission
-    }
-
+    if (!isLoggedIn) return <Navigate to="/login" />;
+    if (!checkRolePermission(allowedRoles)) return <Navigate to="/home" />;
     return children;
   };
+
+  const SidebarLayout = ({ children }) => (
+    <div className="flex">
+      <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} />
+      <div className="flex-grow">{children}</div>
+    </div>
+  );
+
+  const routes = [
+    { path: "/notification", component: <Notification />, roles: [ "2", "3", "4", "5", "6"] },
+    { path: "/riwayat-absensi", component: <RiwayatAbsensi />, roles: [ "2", "3", "4", "5", "6"] },
+    { path: "/profile", component: <Profile />, roles: ["1", "2", "3", "4", "5", "6"] },
+    { path: "/menu", component: <Menu />, roles: ["1", "2", "3", "4", "5", "6"] },
+    { path: "/absensi", component: <Absen />, roles: ["1", "2", "3", "4", "5", "6"] },
+    { path: "/lembur", component: <Lembur />, roles: ["1", "2", "3", "4", "5", "6"] },
+    { path: "/data-approval", component: <DataApproval />, roles: ["1","5"], layout: SidebarLayout },
+    { path: "/data-lokasi", component: <DataLokasi />, roles: ["1","5"], layout: SidebarLayout },
+    { path: "/data-absensi", component: <DataAbsensi />, roles: ["1","4","6"], layout: SidebarLayout },
+    { path: "/data-absensi/:id_user", component: <DetailAbsensi />, roles: ["1","4","6"], layout: SidebarLayout },
+    { path: "/data-karyawan", component: <DataKaryawan />, roles: ["1","4", "6"], layout: SidebarLayout },
+    { path: "/data-penggajian", component: <DataPenggajian />, roles: ["1","4", "6"], layout: SidebarLayout },
+    { path: "/data-penggajian/:id_user", component: <DetailPenggajian />, roles: ["1","4", "6"], layout: SidebarLayout },
+  ];
 
   return (
     <Router>
       <Routes>
-        <Route
-          path="/login"
-          element={isLoggedIn ? <Navigate to="/home" /> : <Login onLoginSuccess={handleLoginSuccess} />}
-        />
-        {/* Tampilan Mobile & Deskstop */}
+        <Route path="/login" element={isLoggedIn ? <Navigate to="/home" /> : <Login onLoginSuccess={handleLoginSuccess} />} />
         <Route
           path="/home"
           element={
@@ -66,183 +71,21 @@ function App() {
             </PrivateRoute>
           }
         />
-        <Route
-          path="/notification"
-          element={
-            <PrivateRoute allowedRoles={["1", "2", "3", "4", "5", "6"]}>
-              <Notification />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/riwayat-absensi"
-          element={
-            <PrivateRoute allowedRoles={["1", "2", "3", "4", "5", "6"]}>
-              <RiwayatAbsensi />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <PrivateRoute allowedRoles={["1", "2", "3", "4", "5", "6"]}>
-              <Profile />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/menu"
-          element={
-            <PrivateRoute allowedRoles={["1", "2", "3", "4", "5", "6"]}>
-              <Menu />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/absensi"
-          element={
-            <PrivateRoute allowedRoles={["1", "2", "3", "4", "5", "6"]}>
-              <Absen />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/lembur"
-          element={
-            <PrivateRoute allowedRoles={["1", "2", "3", "4", "5", "6"]}>
-              <Lembur />
-            </PrivateRoute>
-          }
-        />
-
-        {/* TAMPILAN DEKSTOP */}
-
-        {/* ROLE 5 = PA */}
-        <Route
-          path="/data-approval"
-          element={
-            <PrivateRoute allowedRoles={["5"]}>
-              <div className="flex">
-                <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} />
-                <div className="flex-grow ">
-                  <DataApproval />
-                </div>
-              </div>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/data-lokasi"
-          element={
-            <PrivateRoute allowedRoles={["5"]}>
-              <div className="flex">
-                <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} />
-                <div className="flex-grow">
-                  <DataLokasi />
-                </div>
-              </div>
-            </PrivateRoute>
-          }
-        />
-
-        {/* ROLE 4 = Manajer HRD */}
-        <Route
-          path="/data-absensi"
-          element={
-            <PrivateRoute allowedRoles={["4"]}>
-              <div className="flex">
-                <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} />
-                <div className="flex-grow ">
-                  <DataAbsensi />
-                </div>
-              </div>
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/data-absensi/:id_user"
-          element={
-            <PrivateRoute allowedRoles={["4"]}>
-              <div className="flex">
-                <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} />
-                <div className="flex-grow ">
-                  <DetailAbsensi />
-                </div>
-              </div>
-            </PrivateRoute>
-          }
-        />
-
-        {/* <Route path="/data-lembur" element={
-          <PrivateRoute allowedRoles={["1","2", "3","4","5","6"]}>
-            <div className="flex">
-              <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")}   />
-              <div className="flex-grow ">
-                <DataLembur />
-              </div>
-            </div>
-          </PrivateRoute>
-        }/> */}
-
-        {/* <Route path="/detail-data-lembur/:id_user" element={
-          <PrivateRoute allowedRoles={["1","2", "3","4","5","6"]}>
-            <div className="flex">
-              <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} />
-              <div className="flex-grow ">
-                <DetailDataLembur />
-              </div>
-            </div>
-          </PrivateRoute>
-        }/> */}
-
-        {/* ROLE 6 = Staff HRD */}
-        <Route
-          path="/data-karyawan"
-          element={
-            <PrivateRoute allowedRoles={["4", "6"]}>
-              <div className="flex">
-                <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} />
-                <div className="flex-grow ">
-                  <DataKaryawan />
-                </div>
-              </div>
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/data-penggajian"
-          element={
-            <PrivateRoute allowedRoles={["4", "6"]}>
-              <div className="flex">
-                <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} />
-                <div className="flex-grow ">
-                  <DataPenggajian />
-                </div>
-              </div>
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/data-penggajian/:id_user"
-          element={
-            <PrivateRoute allowedRoles={["4", "6"]}>
-              <div className="flex">
-                <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} />
-                <div className="flex-grow ">
-                  <DetailPenggajian />
-                </div>
-              </div>
-            </PrivateRoute>
-          }
-        />
-
+        {routes.map(({ path, component, roles, layout: Layout = React.Fragment }) => (
+          <Route
+            key={path}
+            path={path}
+            element={
+              <PrivateRoute allowedRoles={roles}>
+                <Layout>{component}</Layout>
+              </PrivateRoute>
+            }
+          />
+        ))}
         <Route path="*" element={isLoggedIn ? <Navigate to="/home" /> : <Navigate to="/login" />} />
       </Routes>
     </Router>
   );
-}
+};
 
 export default App;

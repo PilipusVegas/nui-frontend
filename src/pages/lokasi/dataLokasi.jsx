@@ -159,54 +159,54 @@ const DataLokasi = () => {
 
   return (
     <>
-    <DekstopLayout
-      title="Data Lokasi"
-      header={header}
-      body={body}
-      customElements={customElements}
-      currentPage={currentPage}
-      totalPages={totalPages}
-      handlePageChange={(page) => setCurrentPage(page)}
-    />
+      <DekstopLayout
+        title="Data Lokasi"
+        header={header}
+        body={body}
+        customElements={customElements}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        handlePageChange={(page) => setCurrentPage(page)}
+      />
 
-    {/* Modal for Add/Edit */}
-    {isModalOpen && (
-      <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
-        <div className="bg-white p-6 rounded-lg w-96">
-          <h3 className="text-xl font-bold mb-4">{isEdit ? "Edit Lokasi" : "Tambah Lokasi"}</h3>
-          <input
-            type="text"
-            name="nama"
-            placeholder="Nama Lokasi"
-            value={newLocation.nama}
-            onChange={handleInputChange}
-            className="border px-4 py-2 w-full mb-2"
-          />
-          <input
-            type="text"
-            name="koordinat"
-            placeholder="Koordinat"
-            value={newLocation.koordinat}
-            onChange={handleInputChange}
-            className="border px-4 py-2 w-full mb-2"
-          />
-          <div className="flex justify-end mt-4">
-            <button
-              onClick={isEdit ? updateLocation : addNewLocation}
-              className={`px-4 py-2 text-white ${isEdit ? "bg-yellow-500 hover:bg-yellow-600" : "bg-blue-500 hover:bg-blue-600"} transition-colors duration-150 rounded`}
-            >
-              {isEdit ? "Update" : "Tambah"}
-            </button>
-            <button
-              onClick={() => { setIsModalOpen(false); resetForm(); }}
-              className="px-4 py-2 bg-gray-300 hover:bg-gray-400 transition-colors duration-150 rounded ml-2"
-            >
-              Batal
-            </button>
+      {/* Modal for Add/Edit */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg w-full sm:w-96">
+            <h3 className="text-xl font-bold mb-4">{isEdit ? "Edit Lokasi" : "Tambah Lokasi"}</h3>
+            <input
+              type="text"
+              name="nama"
+              placeholder="Nama Lokasi"
+              value={newLocation.nama}
+              onChange={handleInputChange}
+              className="border px-4 py-2 w-full mb-2"
+            />
+            <input
+              type="text"
+              name="koordinat"
+              placeholder="Koordinat"
+              value={newLocation.koordinat}
+              onChange={handleInputChange}
+              className="border px-4 py-2 w-full mb-2"
+            />
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={isEdit ? updateLocation : addNewLocation}
+                className={`px-4 py-2 text-white ${isEdit ? "bg-yellow-500 hover:bg-yellow-600" : "bg-blue-500 hover:bg-blue-600"} transition-colors duration-150 rounded`}
+              >
+                {isEdit ? "Update" : "Tambah"}
+              </button>
+              <button
+                onClick={() => { setIsModalOpen(false); resetForm(); }}
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 transition-colors duration-150 rounded ml-2"
+              >
+                Batal
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    )}
+      )}
     </>
   );
 };

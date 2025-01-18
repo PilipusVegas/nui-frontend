@@ -1,6 +1,4 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Swal from "sweetalert2";
 
 import HomeMobile from "../layouts/homeMobile";
 import HomeDesktop from "../layouts/homeDesktop";
@@ -11,29 +9,15 @@ const Home = ({ onLogout }) => {
   const roleId = localStorage.getItem("roleId");
 
   const handleLogout = () => {
-    Swal.fire({
-      title: "Konfirmasi Logout",
-      text: "Apakah Anda yakin ingin logout?",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Ya, Logout",
-      cancelButtonText: "Batal",
-      customClass: {
-        confirmButton: 'btn-confirm',
-        cancelButton: 'btn-cancel'
-      }
-    }).then((result) => {
-      if (result.isConfirmed) {
-        onLogout();
-      }
-    });
-  };  
+    // Langsung jalankan fungsi logout tanpa konfirmasi
+    onLogout();
+  };
 
   const GetNamaDivisi = (id) => {
     let role = "";
     switch (id) {
       case "1":
-        role = "Admin";
+        role = "Admin Utama";
         break;
       case "2":
         role = "IT";
@@ -47,22 +31,41 @@ const Home = ({ onLogout }) => {
       case "5":
         role = "PA";
         break;
-        case "6":
+      case "6":
         role = "Staff HRD";
         break;
       default:
         role = "Divisi Tidak Diketahui";
     }
-    return <span className="bg-yellow-500 px-3 py-0 rounded-full text-xs text-primary font-bold">{role}</span>;
+    return (
+      <span className="bg-yellow-500 px-3 py-0 rounded-full text-xs text-primary font-bold">
+        {role}
+      </span>
+    );
   };
 
   const renderViewBasedOnRole = () => {
-    if (roleId === "4" || roleId === "5" || roleId === "6") {
-      return <HomeDesktop username={username} roleId={roleId} GetNamaDivisi={GetNamaDivisi} handleLogout={handleLogout} />;
+    if (roleId === "4" || roleId === "5" || roleId === "6" || roleId === "1") {
+      return (
+        <HomeDesktop
+          username={username}
+          roleId={roleId}
+          GetNamaDivisi={GetNamaDivisi}
+          handleLogout={handleLogout}
+        />
+      );
     } else {
-      return <HomeMobile username={username} roleId={roleId} handleLogout={handleLogout} GetNamaDivisi={GetNamaDivisi} />;
+      return (
+        <HomeMobile
+          username={username}
+          roleId={roleId}
+          handleLogout={handleLogout}
+          GetNamaDivisi={GetNamaDivisi}
+        />
+      );
     }
   };
+
   return <div>{renderViewBasedOnRole()}</div>;
 };
 

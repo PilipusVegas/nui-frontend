@@ -212,9 +212,9 @@ const DataKaryawan = ({}) => {
                 });
                 setIsEditing(false);
               }}
-              className="bg-green-600 flex text-white px-12 py-1 font-bold rounded-md hover:bg-green-700 transition duration-150 sm:mt-0"
+              className="bg-green-600 flex text-white px-4 sm:px-4 py-1 font-bold rounded-md hover:bg-green-700 transition duration-150 sm:mt-0"
             >
-              <FontAwesomeIcon icon={faPlus} className="pt-1 mr-2 sm:block" />
+              <FontAwesomeIcon icon={faPlus} className="pt-1 sm:mr-2 sm:block" />
               <span className="hidden sm:block">Tambah</span>{" "}
               {/* Menyembunyikan teks pada mobile */}
             </button>

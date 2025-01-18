@@ -41,7 +41,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
       const result = await response.json();
       setTotalLocations(result.data || []);
     } catch (error) {
-      console.error("Error fetching employees:", error);
+      console.error("Error fetching locations:", error);
     }
   };
 
@@ -49,7 +49,6 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     try {
       const response = await fetch(`${apiUrl}/absen/`);
       const result = await response.json();
-
       if (Array.isArray(result)) {
         const totalStatus = result.reduce((acc, item) => acc + Number(item.unapproved), 0);
         setTotalAbsences(totalStatus);
@@ -65,7 +64,6 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     try {
       const response = await fetch(`${apiUrl}/lembur/approve`);
       const result = await response.json();
-
       if (result.success && Array.isArray(result.data)) {
         const unapprovedOvertime = result.data.filter((item) => item.status_lembur === 0).length;
         setTotalApprovals(unapprovedOvertime);
@@ -111,6 +109,14 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
       fetchPayroll();
     }
 
+    if (roleId === "1") {
+      fetchAbsences();
+      fetchPayroll();
+      fetchApprovedByHRDAndPA();
+      fetchLocation();
+      fetchEmployees();
+    }
+
     return () => clearInterval(intervalId);
   }, [roleId]);
 
@@ -127,12 +133,11 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
             <h3 className="text-4xl font-extrabold">{username || "User"}</h3>
             <p className="text-gray-200 text-lg mt-2">{localTime}</p>
           </div>
-          
         </div>
 
         <div className="mt-6">
-          {/* Cards for HRD */}
-          {roleId === "4" && (
+          {/* Cards for Role 1 (Admin, bisa lihat semua) */}
+          {roleId === "1" && (
             <div className="flex flex-col md:flex-row gap-4">
               <div
                 onClick={() => handleCardClick("/data-absensi")}
@@ -148,45 +153,66 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
                 <h4 className="text-5xl font-bold text-purple-600 mb-3">{totalPayroll}</h4>
                 <p className="text-xl font-semibold text-gray-700">Penggajian</p>
               </div>
-            </div>
-          )}
-
-          {/* Cards for HRD Staff */}
-          {roleId === "6" && (
-            <div className="flex flex-col md:flex-row gap-4">
-              <div
-                onClick={() => handleCardClick("/data-karyawan")}
-                className="w-full p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
-              >
-                <h4 className="text-5xl font-bold text-green-600 mb-3">{employees.length || "0"}</h4>
-                <p className="text-xl font-semibold text-gray-700">Karyawan</p>
-              </div>
-              <div
-                onClick={() => handleCardClick("/data-penggajian")}
-                className="w-full p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
-              >
-                <h4 className="text-5xl font-bold text-purple-600 mb-3">{totalPayroll}</h4>
-                <p className="text-xl font-semibold text-gray-700">Penggajian</p>
-              </div>
-            </div>
-          )}
-
-          {/* Cards for BU ABI */}
-          {roleId === "5" && (
-            <div className="flex flex-col md:flex-row gap-4">
               <div
                 onClick={() => handleCardClick("/data-approval")}
-                className="w-full p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
+                className="w-full p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
               >
                 <h4 className="text-5xl font-bold text-green-600 mb-3">{totalApprovals}</h4>
                 <p className="text-xl font-semibold text-gray-700">Approval Lembur</p>
               </div>
               <div
                 onClick={() => handleCardClick("/data-lokasi")}
-                className="w-full p-4 bg-white rounded-lg shadow-md text-center transition-transform transform hover:shadow-xl cursor-pointer"
+                className="w-full p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
               >
-                <h4 className="text-5xl font-bold text-purple-600 mb-3">{totalLocations.length || "0"}</h4>
+                <h4 className="text-5xl font-bold text-green-600 mb-3">{totalLocations.length || "0"}</h4>
                 <p className="text-xl font-semibold text-gray-700">Data Lokasi</p>
+              </div>
+              <div
+                onClick={() => handleCardClick("/data-karyawan")}
+                className="w-full p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
+              >
+                <h4 className="text-5xl font-bold text-green-600 mb-3">{employees.length || "0"}</h4>
+                <p className="text-xl font-semibold text-gray-700">Karyawan</p>
+              </div>
+            </div>
+          )}
+
+          {/* MANAGER HRD Role Cards */}
+          {roleId === "5" && (
+            <div className="flex flex-col md:flex-row gap-4">
+              <div
+                onClick={() => handleCardClick("/data-lokasi")}
+                className="w-full p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
+              >
+                <h4 className="text-5xl font-bold text-green-600 mb-3">{totalLocations.length || "0"}</h4>
+                <p className="text-xl font-semibold text-gray-700">Data Lokasi</p>
+              </div>
+              <div
+                onClick={() => handleCardClick("/data-approval")}
+                className="w-full p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
+              >
+                <h4 className="text-5xl font-bold text-green-600 mb-3">{totalApprovals}</h4>
+                <p className="text-xl font-semibold text-gray-700">Approval Lembur</p>
+              </div>
+            </div>
+          )}
+
+          {/* Staff HRD Role Cards */}
+          {roleId === "6" && (
+            <div className="flex flex-col md:flex-row gap-4">
+              <div
+                onClick={() => handleCardClick("/data-karyawan")}
+                className="w-full p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
+              >
+                <h4 className="text-5xl font-bold text-green-600 mb-3">{employees.length || "0"}</h4>
+                <p className="text-xl font-semibold text-gray-700">Karyawan</p>
+              </div>
+              <div
+                onClick={() => handleCardClick("/data-penggajian")}
+                className="w-full p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
+              >
+                <h4 className="text-5xl font-bold text-purple-600 mb-3">{totalPayroll}</h4>
+                <p className="text-xl font-semibold text-gray-700">Penggajian</p>
               </div>
             </div>
           )}
