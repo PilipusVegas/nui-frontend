@@ -23,7 +23,7 @@ const DataLokasi = () => {
 
   useEffect(() => {
     fetchLokasiData();
-  }, []); 
+  }, []);
 
   const fetchLokasiData = async () => {
     try {
@@ -40,7 +40,9 @@ const DataLokasi = () => {
   };
 
   const handleSubmit = async () => {
-    const endpoint = isEdit ? `${apiUrl}/lokasi/update/${editId}` : `${apiUrl}/lokasi/create`;
+    const endpoint = isEdit
+      ? `${apiUrl}/lokasi/update/${editId}`
+      : `${apiUrl}/lokasi/create`;
     const method = isEdit ? "PUT" : "POST";
 
     try {
@@ -50,7 +52,11 @@ const DataLokasi = () => {
         body: JSON.stringify(formState),
       });
       if (response.ok) {
-        Swal.fire("Success!", `Data berhasil ${isEdit ? "diupdate" : "ditambahkan"}!`, "success");
+        Swal.fire(
+          "Success!",
+          `Data berhasil ${isEdit ? "diupdate" : "ditambahkan"}!`,
+          "success"
+        );
         fetchLokasiData();
         closeModal();
       }
@@ -79,7 +85,9 @@ const DataLokasi = () => {
 
     if (result.isConfirmed) {
       try {
-        const response = await fetch(`${apiUrl}/lokasi/delete/${id}`, { method: "DELETE" });
+        const response = await fetch(`${apiUrl}/lokasi/delete/${id}`, {
+          method: "DELETE",
+        });
         if (response.ok) {
           Swal.fire("Deleted!", "Data berhasil dihapus!", "success");
           fetchLokasiData();
@@ -112,8 +120,13 @@ const DataLokasi = () => {
     const currentItems = lokasiData.slice(indexOfFirstItem, indexOfLastItem);
 
     return currentItems.map((lokasi, index) => (
-      <tr key={lokasi.id} className="hover:bg-gray-50 transition-colors duration-150">
-        <td className="px-4 py-1 border text-sm text-center">{indexOfFirstItem + index + 1}</td>
+      <tr
+        key={lokasi.id}
+        className="hover:bg-gray-50 transition-colors duration-150"
+      >
+        <td className="px-4 py-1 border text-sm text-center">
+          {indexOfFirstItem + index + 1}
+        </td>
         <td className="px-4 py-1 border text-sm">{lokasi.nama}</td>
         <td className="px-4 py-1 border text-sm">{lokasi.koordinat}</td>
         <td className="px-4 py-1 border text-sm text-center">
@@ -127,7 +140,7 @@ const DataLokasi = () => {
             onClick={() => handleDelete(lokasi.id)}
             className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition-colors duration-150"
           >
-            <FontAwesomeIcon  icon={faTrash} />
+            <FontAwesomeIcon icon={faTrash} />
           </button>
         </td>
       </tr>
@@ -137,7 +150,9 @@ const DataLokasi = () => {
   const renderModal = () => (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
       <div className="bg-white p-6 rounded-lg w-full sm:w-96">
-        <h3 className="text-xl font-bold mb-4">{isEdit ? "Edit Lokasi" : "Tambah Lokasi"}</h3>
+        <h3 className="text-xl font-bold mb-4">
+          {isEdit ? "Edit Lokasi" : "Tambah Lokasi"}
+        </h3>
         <input
           type="text"
           name="nama"
@@ -157,7 +172,11 @@ const DataLokasi = () => {
         <div className="flex justify-end mt-4">
           <button
             onClick={handleSubmit}
-            className={`px-4 py-2  text-white ${isEdit ? "bg-yellow-500 hover:bg-yellow-600" : "bg-blue-500 hover:bg-blue-600"} transition-colors duration-150 rounded`}
+            className={`px-4 py-2  text-white ${
+              isEdit
+                ? "bg-yellow-500 hover:bg-yellow-600"
+                : "bg-blue-500 hover:bg-blue-600"
+            } transition-colors duration-150 rounded`}
           >
             {isEdit ? "Update" : "Tambah"}
           </button>
@@ -174,23 +193,123 @@ const DataLokasi = () => {
 
   return (
     <>
-      <DekstopLayout
-        title="Data Lokasi"
-        header={renderHeader()}
-        body={renderBody()}
-        customElements={
+      {/* Tampilan Desktop */}
+      <div className="hidden md:block">
+        <DekstopLayout
+          title="Data Lokasi"
+          header={renderHeader()}
+          body={renderBody()}
+          customElements={
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-150"
+            >
+              Tambah Lokasi
+            </button>
+          }
+          currentPage={currentPage}
+          totalPages={Math.ceil(lokasiData.length / itemsPerPage)}
+          handlePageChange={setCurrentPage}
+        />
+      </div>
+
+      {/* Tampilan Mobile */}
+      <div className="md:hidden p-4 mx-auto w-full max-w-screen-sm overflow-x-hidden">
+        <h1 className="text-2xl font-bold mb-4">Data Lokasi</h1>
+
+        {/* Button Tambah Lokasi */}
+        <div className="flex justify-between items-center mb-4">
           <button
             onClick={() => setIsModalOpen(true)}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-150"
           >
             Tambah Lokasi
           </button>
-        }
-        currentPage={currentPage}
-        totalPages={Math.ceil(lokasiData.length / itemsPerPage)}
-        handlePageChange={setCurrentPage}
-      />
+          <p className="text-sm text-gray-600">
+            Halaman {currentPage} dari{" "}
+            {Math.ceil(lokasiData.length / itemsPerPage)}
+          </p>
+        </div>
 
+        {/* List Data */}
+        <div className="space-y-4">
+          {lokasiData.length > 0 ? (
+            lokasiData
+              .slice(
+                (currentPage - 1) * itemsPerPage,
+                currentPage * itemsPerPage
+              )
+              .map((lokasi, index) => (
+                <div
+                  key={lokasi.id}
+                  className="bg-white p-4 rounded-lg shadow flex flex-col space-y-4 w-full overflow-hidden"
+                >
+                  <div className="w-full">
+                    <h2 className="font-semibold text-lg truncate">
+                      {lokasi.nama}
+                    </h2>
+                    <p className="text-gray-600 text-sm word-wrap">
+                      Koordinat: {lokasi.koordinat}
+                    </p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleEdit(lokasi)}
+                      className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600 transition-colors duration-150"
+                    >
+                      <FontAwesomeIcon icon={faEdit} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(lokasi.id)}
+                      className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition-colors duration-150"
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </div>
+                </div>
+              ))
+          ) : (
+            <p className="text-gray-500">Tidak ada data lokasi.</p>
+          )}
+        </div>
+
+        {/* Pagination */}
+        <div className="flex justify-center items-center mt-4 space-x-2">
+          <button
+            onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
+            className={`px-4 py-2 rounded ${
+              currentPage === 1
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-blue-500 text-white hover:bg-blue-600"
+            }`}
+            disabled={currentPage === 1}
+          >
+            Sebelumnya
+          </button>
+          <span className="text-sm text-gray-600">
+            Halaman {currentPage} dari{" "}
+            {Math.ceil(lokasiData.length / itemsPerPage)}
+          </span>
+          <button
+            onClick={() =>
+              currentPage < Math.ceil(lokasiData.length / itemsPerPage) &&
+              setCurrentPage(currentPage + 1)
+            }
+            className={`px-4 py-2 rounded ${
+              currentPage === Math.ceil(lokasiData.length / itemsPerPage)
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-blue-500 text-white hover:bg-blue-600"
+            }`}
+            disabled={
+              currentPage === Math.ceil(lokasiData.length / itemsPerPage)
+            }
+          >
+            Berikutnya
+          </button>
+        </div>
+      </div>
+
+      {/* Modal */}
       {isModalOpen && renderModal()}
     </>
   );

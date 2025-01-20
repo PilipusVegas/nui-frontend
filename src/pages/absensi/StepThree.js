@@ -79,7 +79,10 @@ const StepThree = ({ formData = {} }) => {
       if (userId) formDataToSend.append("id_user", userId.toString());
       if (titikKoordinatSelesai) {
         formDataToSend.append("lat", titikKoordinatSelesai.latitude.toString());
-        formDataToSend.append("lon", titikKoordinatSelesai.longitude.toString());
+        formDataToSend.append(
+          "lon",
+          titikKoordinatSelesai.longitude.toString()
+        );
       }
     } else {
       endpoint = "/absen/mulai";
@@ -100,7 +103,10 @@ const StepThree = ({ formData = {} }) => {
     }
 
     try {
-      const response = await fetch(`${apiUrl}${endpoint}`, { method: "POST", body: formDataToSend });
+      const response = await fetch(`${apiUrl}${endpoint}`, {
+        method: "POST",
+        body: formDataToSend,
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -127,8 +133,8 @@ const StepThree = ({ formData = {} }) => {
     } catch (error) {
       console.error("Error details:", error);
       Swal.fire({
-        title: "Formulir ditolak",
-        text: error.message,
+        title: "Gagal Menyimpan Data",
+        text: "Terjadi kesalahan saat menyimpan data. Silakan cek koneksi internet Anda dan coba lagi.",
         icon: "error",
         confirmButtonText: "Coba lagi",
       });
@@ -144,17 +150,31 @@ const StepThree = ({ formData = {} }) => {
   }, [isSuccess, navigate]);
 
   return (
-    <MobileLayout title="Konfirmasi Absensi" className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
+    <MobileLayout
+      title="Konfirmasi Absensi"
+      className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm"
+    >
       <div className="flex flex-col items-center">
-        <form onSubmit={handleSubmit} className="w-full max-w-xl p-4 border-2 rounded-lg bg-gray-50">
+        <form
+          onSubmit={handleSubmit}
+          className="w-full max-w-xl p-4 border-2 rounded-lg bg-gray-50"
+        >
           {fotoMulai && (
             <div className="w-full mb-4 flex justify-center">
-              <img src={fotoMulai} alt="Foto Mulai" className="w-full h-[50vh] object-cover rounded-lg" />
+              <img
+                src={fotoMulai}
+                alt="Foto Mulai"
+                className="w-full h-[50vh] object-cover rounded-lg"
+              />
             </div>
           )}
           {fotoSelesai && (
             <div className="w-full mb-4 flex justify-center">
-              <img src={fotoSelesai} alt="Foto Selesai" className="w-full h-[50vh] object-cover rounded-lg" />
+              <img
+                src={fotoSelesai}
+                alt="Foto Selesai"
+                className="w-full h-[50vh] object-cover rounded-lg"
+              />
             </div>
           )}
           <div className="px-4 py-2 bg-white border rounded-lg">
@@ -164,14 +184,18 @@ const StepThree = ({ formData = {} }) => {
                   <strong className="text-base font-bold">{item.label}:</strong>
                   <span className="text-sm text-gray-800">{item.value}</span>
                 </div>
-                {index < summaryItems.length - 1 && <hr className="border-gray-300" />}
+                {index < summaryItems.length - 1 && (
+                  <hr className="border-gray-300" />
+                )}
               </div>
             ))}
           </div>
           <button
             type="submit"
             className={`w-full mt-6 py-2 text-lg font-bold text-white rounded-lg ${
-              isLoading ? "bg-green-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"
+              isLoading
+                ? "bg-green-400 cursor-not-allowed"
+                : "bg-green-500 hover:bg-green-600"
             }`}
             disabled={isLoading}
           >
@@ -183,8 +207,19 @@ const StepThree = ({ formData = {} }) => {
                   fill="none"
                   viewBox="0 0 24 24"
                 >
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  ></path>
                 </svg>
                 Mengirim...
               </span>
