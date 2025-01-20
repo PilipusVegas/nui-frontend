@@ -3,7 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-const DekstopLayout = ({ title, header, body, customElements, currentPage, totalPages, handlePageChange }) => {
+const DekstopLayout = ({
+  title,
+  header,
+  body,
+  customElements,
+  currentPage,
+  totalPages,
+  handlePageChange,
+}) => {
   const navigate = useNavigate();
 
   const handleBack = () => {
@@ -11,7 +19,7 @@ const DekstopLayout = ({ title, header, body, customElements, currentPage, total
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-start p-2">
+    <div className="min-h-screen flex flex-col justify-start p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <FontAwesomeIcon
@@ -35,7 +43,7 @@ const DekstopLayout = ({ title, header, body, customElements, currentPage, total
               body
             ) : (
               <tr>
-                <td colSpan={6} className="text-center px-4 py-2">
+                <td colSpan={6} className="text-center px-4 py-1">
                   No Data Found
                 </td>
               </tr>
@@ -51,25 +59,25 @@ const DekstopLayout = ({ title, header, body, customElements, currentPage, total
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className={`px-5 py-2 font-medium text-white rounded-lg shadow-md transition-colors duration-200 
-        ${currentPage === 1 ? "bg-gray-300 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"}`}
+              className={`px-4 py-2 text-white bg-green-500 rounded-xl transition-colors duration-200 
+        ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-green-600"}`}
             >
               Previous
             </button>
-            <span className="px-5 py-2 font-semibold text-gray-700 bg-gray-100 rounded-lg shadow-md">
+            <span className="px-4 py-2 text-gray-700 bg-gray-100 rounded-xl">
               {currentPage} / {totalPages}
             </span>
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className={`px-5 py-2 font-medium text-white rounded-lg shadow-md transition-colors duration-200 
-        ${currentPage === totalPages ? "bg-gray-300 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"}`}
+              className={`px-4 py-2 text-white bg-green-500 rounded-xl transition-colors duration-200 
+        ${currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "hover:bg-green-600"}`}
             >
               Next
             </button>
           </>
         ) : (
-          <span className="px-5 py-2 font-semibold text-gray-700 bg-gray-100 rounded-lg shadow-md">0 / 0</span>
+          <span className="px-4 py-2 text-gray-700 bg-gray-100 rounded-xl">0 / 0</span>
         )}
       </div>
     </div>

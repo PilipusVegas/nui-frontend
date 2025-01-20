@@ -50,6 +50,7 @@ const App = () => {
     { path: "/menu", component: <Menu />, roles: ["1", "2", "3", "4", "5", "6"] },
     { path: "/absensi", component: <Absen />, roles: ["1", "2", "3", "4", "5", "6"] },
     { path: "/lembur", component: <Lembur />, roles: ["1", "2", "3", "4", "5", "6"] },
+    
     { path: "/data-approval", component: <DataApproval />, roles: ["1","5"], layout: SidebarLayout },
     { path: "/data-lokasi", component: <DataLokasi />, roles: ["1","5"], layout: SidebarLayout },
     { path: "/data-absensi", component: <DataAbsensi />, roles: ["1","4","6"], layout: SidebarLayout },

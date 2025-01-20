@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MenuSidebar from "../layouts/menuSidebar";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCalendarAlt,
+  faMoneyCheckAlt,
+  faThumbsUp,
+  faMapMarkerAlt,
+  faUsers,
+} from "@fortawesome/free-solid-svg-icons";
 
 const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -16,7 +24,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     const time = new Date().toLocaleString("id-ID", {
       weekday: "long",
       year: "numeric",
-      month: "long",
+      month: "short",
       day: "numeric",
       hour: "numeric",
       minute: "numeric",
@@ -60,7 +68,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     }
   };
 
-  const fetchApprovedByHRDAndPA = async () => {
+  const fetchApprovedByPA = async () => {
     try {
       const response = await fetch(`${apiUrl}/lembur/approve`);
       const result = await response.json();
@@ -100,7 +108,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     }
 
     if (roleId === "5") {
-      fetchApprovedByHRDAndPA();
+      fetchApprovedByPA();
       fetchLocation();
     }
 
@@ -112,7 +120,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     if (roleId === "1") {
       fetchAbsences();
       fetchPayroll();
-      fetchApprovedByHRDAndPA();
+      fetchApprovedByPA();
       fetchLocation();
       fetchEmployees();
     }
@@ -124,25 +132,107 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     <div className="desktop-layout flex min-h-screen bg-gray-100">
       <MenuSidebar handleLogout={handleLogout} roleId={roleId} />
       <div className="flex-1 px-5 bg-white shadow-lg rounded-lg transition-all duration-300 ease-in-out">
-        <div className="mt-6 p-8 bg-gradient-to-b from-green-900 to-green-600 text-white rounded-lg shadow-md relative">
-          <div className="w-full hidden md:block md:text-right">
-            {GetNamaDivisi(roleId)} • Kantor Palem
-          </div>
-          <div className="flex flex-col">
+        <div className="mt-6 p-6 sm:p-12 bg-gradient-to-b from-green-900 to-green-600 text-white rounded-lg shadow-md flex flex-col md:flex-row items-center md:items-start justify-between">
+          {/* Divisi dan Lokasi */}
+          <div className="text-center md:text-left mb-4 md:mb-0">
             <h2 className="text-xl font-semibold">Selamat Datang,</h2>
             <h3 className="text-4xl font-extrabold">{username || "User"}</h3>
             <p className="text-gray-200 text-lg mt-2">{localTime}</p>
           </div>
+
+          {/* Divisi Info */}
+          <div className="text-right hidden md:block">{GetNamaDivisi(roleId)} • Kantor Palem</div>
         </div>
 
         <div className="mt-6">
           {/* Cards for Role 1 (Admin, bisa lihat semua) */}
           {roleId === "1" && (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div
+        onClick={() => handleCardClick("/data-absensi")}
+        className="flex items-center justify-between p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
+      >
+        <div className="flex flex-col">
+          <p className="text-xl font-semibold text-gray-700">Absensi</p>
+          <h4 className="text-5xl font-bold text-red-600">{totalAbsences}</h4>
+        </div>
+        <FontAwesomeIcon icon={faCalendarAlt} className="text-red-600 text-3xl" />
+      </div>
+      <div
+        onClick={() => handleCardClick("/data-penggajian")}
+        className="flex items-center justify-between p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
+      >
+        <div className="flex flex-col">
+          <p className="text-xl font-semibold text-gray-700">Penggajian</p>
+          <h4 className="text-5xl font-bold text-purple-600">{totalPayroll}</h4>
+        </div>
+        <FontAwesomeIcon icon={faMoneyCheckAlt} className="text-purple-600 text-3xl" />
+      </div>
+      <div
+        onClick={() => handleCardClick("/data-approval")}
+        className="flex items-center justify-between p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
+      >
+        <div className="flex flex-col">
+          <p className="text-xl font-semibold text-gray-700">Approval Lembur</p>
+          <h4 className="text-5xl font-bold text-green-600">{totalApprovals}</h4>
+        </div>
+        <FontAwesomeIcon icon={faThumbsUp} className="text-green-600 text-3xl" />
+      </div>
+      <div
+        onClick={() => handleCardClick("/data-lokasi")}
+        className="flex items-center justify-between p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
+      >
+        <div className="flex flex-col">
+          <p className="text-xl font-semibold text-gray-700">Data Lokasi</p>
+          <h4 className="text-5xl font-bold text-green-600">{totalLocations.length || "0"}</h4>
+        </div>
+        <FontAwesomeIcon icon={faMapMarkerAlt} className="text-green-600 text-3xl" />
+      </div>
+      <div
+        onClick={() => handleCardClick("/data-karyawan")}
+        className="flex items-center justify-between p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
+      >
+        <div className="flex flex-col">
+          <p className="text-xl font-semibold text-gray-700">Karyawan</p>
+          <h4 className="text-5xl font-bold text-green-600">{employees.length || "0"}</h4>
+        </div>
+        <FontAwesomeIcon icon={faUsers} className="text-green-600 text-3xl" />
+      </div>
+    </div>
+  )}
+
+          {/* PA Role Cards */}
+          {roleId === "5" && (
+            <div className="flex flex-col md:flex-row gap-4">
+              <div
+                onClick={() => handleCardClick("/data-lokasi")}
+                className="w-full p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
+              >
+                <FontAwesomeIcon icon={faMapMarkerAlt} className="text-green-600 text-3xl mb-3" />
+                <h4 className="text-5xl font-bold text-green-600 mb-3">
+                  {totalLocations.length || "0"}
+                </h4>
+                <p className="text-xl font-semibold text-gray-700">Data Lokasi</p>
+              </div>
+              <div
+                onClick={() => handleCardClick("/data-approval")}
+                className="w-full p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
+              >
+                <FontAwesomeIcon icon={faThumbsUp} className="text-green-600 text-3xl mb-3" />
+                <h4 className="text-5xl font-bold text-green-600 mb-3">{totalApprovals}</h4>
+                <p className="text-xl font-semibold text-gray-700">Approval Lembur</p>
+              </div>
+            </div>
+          )}
+
+          {/* MANAGER HRD Role Cards */}
+          {roleId === "4" && (
             <div className="flex flex-col md:flex-row gap-4">
               <div
                 onClick={() => handleCardClick("/data-absensi")}
                 className="w-full p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
               >
+                <FontAwesomeIcon icon={faCalendarAlt} className="text-red-600 text-3xl mb-3" />
                 <h4 className="text-5xl font-bold text-red-600 mb-3">{totalAbsences}</h4>
                 <p className="text-xl font-semibold text-gray-700">Absensi</p>
               </div>
@@ -150,49 +240,9 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
                 onClick={() => handleCardClick("/data-penggajian")}
                 className="w-full p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
               >
+                <FontAwesomeIcon icon={faMoneyCheckAlt} className="text-purple-600 text-3xl mb-3" />
                 <h4 className="text-5xl font-bold text-purple-600 mb-3">{totalPayroll}</h4>
                 <p className="text-xl font-semibold text-gray-700">Penggajian</p>
-              </div>
-              <div
-                onClick={() => handleCardClick("/data-approval")}
-                className="w-full p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
-              >
-                <h4 className="text-5xl font-bold text-green-600 mb-3">{totalApprovals}</h4>
-                <p className="text-xl font-semibold text-gray-700">Approval Lembur</p>
-              </div>
-              <div
-                onClick={() => handleCardClick("/data-lokasi")}
-                className="w-full p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
-              >
-                <h4 className="text-5xl font-bold text-green-600 mb-3">{totalLocations.length || "0"}</h4>
-                <p className="text-xl font-semibold text-gray-700">Data Lokasi</p>
-              </div>
-              <div
-                onClick={() => handleCardClick("/data-karyawan")}
-                className="w-full p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
-              >
-                <h4 className="text-5xl font-bold text-green-600 mb-3">{employees.length || "0"}</h4>
-                <p className="text-xl font-semibold text-gray-700">Karyawan</p>
-              </div>
-            </div>
-          )}
-
-          {/* MANAGER HRD Role Cards */}
-          {roleId === "5" && (
-            <div className="flex flex-col md:flex-row gap-4">
-              <div
-                onClick={() => handleCardClick("/data-lokasi")}
-                className="w-full p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
-              >
-                <h4 className="text-5xl font-bold text-green-600 mb-3">{totalLocations.length || "0"}</h4>
-                <p className="text-xl font-semibold text-gray-700">Data Lokasi</p>
-              </div>
-              <div
-                onClick={() => handleCardClick("/data-approval")}
-                className="w-full p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
-              >
-                <h4 className="text-5xl font-bold text-green-600 mb-3">{totalApprovals}</h4>
-                <p className="text-xl font-semibold text-gray-700">Approval Lembur</p>
               </div>
             </div>
           )}
@@ -204,13 +254,17 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
                 onClick={() => handleCardClick("/data-karyawan")}
                 className="w-full p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
               >
-                <h4 className="text-5xl font-bold text-green-600 mb-3">{employees.length || "0"}</h4>
+                <FontAwesomeIcon icon={faUsers} className="text-green-600 text-3xl mb-3" />
+                <h4 className="text-5xl font-bold text-green-600 mb-3">
+                  {employees.length || "0"}
+                </h4>
                 <p className="text-xl font-semibold text-gray-700">Karyawan</p>
               </div>
               <div
                 onClick={() => handleCardClick("/data-penggajian")}
                 className="w-full p-8 bg-white rounded-lg shadow-md transition-transform transform hover:shadow-xl cursor-pointer"
               >
+                <FontAwesomeIcon icon={faMoneyCheckAlt} className="text-purple-600 text-3xl mb-3" />
                 <h4 className="text-5xl font-bold text-purple-600 mb-3">{totalPayroll}</h4>
                 <p className="text-xl font-semibold text-gray-700">Penggajian</p>
               </div>

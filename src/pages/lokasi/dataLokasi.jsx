@@ -1,84 +1,72 @@
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import DekstopLayout from "../../layouts/dekstopLayout";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faPlus,
+  faSearch,
+  faEye,
+  faEdit,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 
 const DataLokasi = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  const itemsPerPage = 10;
+
   const [lokasiData, setLokasiData] = useState([]);
-  const [newLocation, setNewLocation] = useState({ nama: "", koordinat: "" });
+  const [formState, setFormState] = useState({ nama: "", koordinat: "" });
   const [isEdit, setIsEdit] = useState(false);
   const [editId, setEditId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+
+  useEffect(() => {
+    fetchLokasiData();
+  }, []); 
 
   const fetchLokasiData = async () => {
     try {
       const response = await fetch(`${apiUrl}/lokasi/`);
-      const result = await response.json();
-      setLokasiData(result.data || []);
+      const data = await response.json();
+      setLokasiData(data.data);
     } catch (error) {
       console.error("Error fetching locations:", error);
     }
   };
 
-  useEffect(() => {
-    fetchLokasiData();
-  }, []);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewLocation({ ...newLocation, [name]: value });
+  const handleInputChange = ({ target: { name, value } }) => {
+    setFormState((prev) => ({ ...prev, [name]: value }));
   };
 
-  const addNewLocation = async () => {
+  const handleSubmit = async () => {
+    const endpoint = isEdit ? `${apiUrl}/lokasi/update/${editId}` : `${apiUrl}/lokasi/create`;
+    const method = isEdit ? "PUT" : "POST";
+
     try {
-      const response = await fetch(`${apiUrl}/lokasi/create`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newLocation),
+      const response = await fetch(endpoint, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formState),
       });
       if (response.ok) {
-        Swal.fire("Success!", "Data berhasil ditambahkan!", "success");
+        Swal.fire("Success!", `Data berhasil ${isEdit ? "diupdate" : "ditambahkan"}!`, "success");
         fetchLokasiData();
-        resetForm();
-        setIsModalOpen(false);
+        closeModal();
       }
     } catch (error) {
-      console.error("Error adding location:", error);
+      console.error(`Error ${isEdit ? "updating" : "adding"} location:`, error);
     }
   };
 
-  const handleEditClick = (lokasi) => {
+  const handleEdit = (lokasi) => {
     setIsEdit(true);
     setEditId(lokasi.id);
-    setNewLocation({ nama: lokasi.nama, koordinat: lokasi.koordinat });
+    setFormState({ nama: lokasi.nama, koordinat: lokasi.koordinat });
     setIsModalOpen(true);
   };
 
-  const updateLocation = async () => {
-    try {
-      const response = await fetch(`${apiUrl}/lokasi/update/${editId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newLocation),
-      });
-      if (response.ok) {
-        Swal.fire("Success!", "Data berhasil diupdate!", "success");
-        fetchLokasiData();
-        resetForm();
-        setIsModalOpen(false);
-      }
-    } catch (error) {
-      console.error("Error updating location:", error);
-    }
-  };
-
-  const deleteLocation = async (id) => {
+  const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: "Anda yakin ingin menghapus?",
       text: "Data ini akan dihapus secara permanen!",
@@ -91,9 +79,7 @@ const DataLokasi = () => {
 
     if (result.isConfirmed) {
       try {
-        const response = await fetch(`${apiUrl}/lokasi/delete/${id}`, {
-          method: "DELETE",
-        });
+        const response = await fetch(`${apiUrl}/lokasi/delete/${id}`, { method: "DELETE" });
         if (response.ok) {
           Swal.fire("Deleted!", "Data berhasil dihapus!", "success");
           fetchLokasiData();
@@ -104,109 +90,108 @@ const DataLokasi = () => {
     }
   };
 
-  const resetForm = () => {
-    setNewLocation({ nama: "", koordinat: "" });
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setFormState({ nama: "", koordinat: "" });
     setIsEdit(false);
     setEditId(null);
   };
 
-  const customElements = (
-    <div className="flex items-center space-x-2">
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-150"
-      >
-        Tambah Lokasi
-      </button>
-    </div>
-  );
-
-  const header = (
+  const renderHeader = () => (
     <>
-      <th className="px-4 py-2 border text-xs">No</th>
-      <th className="px-4 py-2 border text-xs">Lokasi</th>
-      <th className="px-4 py-2 border text-xs">Koordinat</th>
-      <th className="px-4 py-2 border text-xs">Aksi</th>
+      <th className="px-4 py-1 border text-xs">No</th>
+      <th className="px-4 py-1 border text-xs">Lokasi</th>
+      <th className="px-4 py-1 border text-xs">Koordinat</th>
+      <th className="px-4 py-1 border text-xs">Aksi</th>
     </>
   );
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = lokasiData.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(lokasiData.length / itemsPerPage);
+  const renderBody = () => {
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = lokasiData.slice(indexOfFirstItem, indexOfLastItem);
 
-  const body = currentItems.map((lokasi, index) => (
-    <tr key={lokasi.id} className="hover:bg-gray-50 transition-colors duration-150">
-      <td className="px-4 py-1 border text-sm text-center">{indexOfFirstItem + index + 1}</td>
-      <td className="px-4 py-1 border text-sm">{lokasi.nama}</td>
-      <td className="px-4 py-1 border text-sm">{lokasi.koordinat}</td>
-      <td className="px-4 py-1 border text-sm text-center">
-        <button
-          onClick={() => handleEditClick(lokasi)}
-          className="bg-yellow-500 text-white px-2 py-1 rounded mr-2 hover:bg-yellow-600 transition-colors duration-150"
-        >
-          Edit
-        </button>
-        <button
-          onClick={() => deleteLocation(lokasi.id)}
-          className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition-colors duration-150"
-        >
-          Delete
-        </button>
-      </td>
-    </tr>
-  ));
+    return currentItems.map((lokasi, index) => (
+      <tr key={lokasi.id} className="hover:bg-gray-50 transition-colors duration-150">
+        <td className="px-4 py-1 border text-sm text-center">{indexOfFirstItem + index + 1}</td>
+        <td className="px-4 py-1 border text-sm">{lokasi.nama}</td>
+        <td className="px-4 py-1 border text-sm">{lokasi.koordinat}</td>
+        <td className="px-4 py-1 border text-sm text-center">
+          <button
+            onClick={() => handleEdit(lokasi)}
+            className="bg-yellow-500 text-white px-2 py-1 rounded mr-2 hover:bg-yellow-600 transition-colors duration-150"
+          >
+            <FontAwesomeIcon icon={faEdit} />
+          </button>
+          <button
+            onClick={() => handleDelete(lokasi.id)}
+            className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition-colors duration-150"
+          >
+            <FontAwesomeIcon  icon={faTrash} />
+          </button>
+        </td>
+      </tr>
+    ));
+  };
+
+  const renderModal = () => (
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
+      <div className="bg-white p-6 rounded-lg w-full sm:w-96">
+        <h3 className="text-xl font-bold mb-4">{isEdit ? "Edit Lokasi" : "Tambah Lokasi"}</h3>
+        <input
+          type="text"
+          name="nama"
+          placeholder="Nama Lokasi"
+          value={formState.nama}
+          onChange={handleInputChange}
+          className="border px-4 py-2 w-full mb-2"
+        />
+        <input
+          type="text"
+          name="koordinat"
+          placeholder="Koordinat"
+          value={formState.koordinat}
+          onChange={handleInputChange}
+          className="border px-4 py-2 w-full mb-2"
+        />
+        <div className="flex justify-end mt-4">
+          <button
+            onClick={handleSubmit}
+            className={`px-4 py-2  text-white ${isEdit ? "bg-yellow-500 hover:bg-yellow-600" : "bg-blue-500 hover:bg-blue-600"} transition-colors duration-150 rounded`}
+          >
+            {isEdit ? "Update" : "Tambah"}
+          </button>
+          <button
+            onClick={closeModal}
+            className="px-4 py-2 bg-gray-300 hover:bg-gray-400 transition-colors duration-150 rounded ml-2"
+          >
+            Batal
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <>
       <DekstopLayout
         title="Data Lokasi"
-        header={header}
-        body={body}
-        customElements={customElements}
+        header={renderHeader()}
+        body={renderBody()}
+        customElements={
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-150"
+          >
+            Tambah Lokasi
+          </button>
+        }
         currentPage={currentPage}
-        totalPages={totalPages}
-        handlePageChange={(page) => setCurrentPage(page)}
+        totalPages={Math.ceil(lokasiData.length / itemsPerPage)}
+        handlePageChange={setCurrentPage}
       />
 
-      {/* Modal for Add/Edit */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg w-full sm:w-96">
-            <h3 className="text-xl font-bold mb-4">{isEdit ? "Edit Lokasi" : "Tambah Lokasi"}</h3>
-            <input
-              type="text"
-              name="nama"
-              placeholder="Nama Lokasi"
-              value={newLocation.nama}
-              onChange={handleInputChange}
-              className="border px-4 py-2 w-full mb-2"
-            />
-            <input
-              type="text"
-              name="koordinat"
-              placeholder="Koordinat"
-              value={newLocation.koordinat}
-              onChange={handleInputChange}
-              className="border px-4 py-2 w-full mb-2"
-            />
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={isEdit ? updateLocation : addNewLocation}
-                className={`px-4 py-2 text-white ${isEdit ? "bg-yellow-500 hover:bg-yellow-600" : "bg-blue-500 hover:bg-blue-600"} transition-colors duration-150 rounded`}
-              >
-                {isEdit ? "Update" : "Tambah"}
-              </button>
-              <button
-                onClick={() => { setIsModalOpen(false); resetForm(); }}
-                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 transition-colors duration-150 rounded ml-2"
-              >
-                Batal
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {isModalOpen && renderModal()}
     </>
   );
 };

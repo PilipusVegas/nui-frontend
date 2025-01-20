@@ -7,13 +7,11 @@ import {
   faDashboard,
   faCheckSquare,
   faBook,
-  faBars,
   faChevronRight,
   faTimes,
   faArrowAltCircleLeft,
   faArrowAltCircleRight,
   faLocationArrow,
-  faPeopleArrows,
   faPeopleGroup,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -94,7 +92,7 @@ const MenuSidebar = ({ handleLogout }) => {
       label: "Data Karyawan",
       icon: faPeopleGroup,
       path: "/data-karyawan",
-      roles: [ "1","5","6"], // Contoh hanya role 4 dan 6 yang bisa akses
+      roles: [ "1","6"], // Contoh hanya role 4 dan 6 yang bisa akses
     },
     {
       label: "Penggajian",
