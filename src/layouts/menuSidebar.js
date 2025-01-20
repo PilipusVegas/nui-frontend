@@ -130,12 +130,12 @@ const MenuSidebar = ({ handleLogout }) => {
       <div
         className={`${
           isMobile
-            ? `fixed top-0 left-0 h-full bg-gradient-to-b from-green-900 to-green-600 text-white p-4 shadow-md z-40 transition-transform duration-300 ${
+            ? `fixed top-0 left-0 h-full bg-gradient-to-b from-green-600 to-green-700 text-white p-4 shadow-md z-40 transition-transform duration-700 ${
                 isOpen ? "translate-x-0 w-full" : "-translate-x-full"
               }`
             : `flex ${
-                hidden ? "w-16" : "w-64"
-              } h-screen sticky top-0 left-0 bg-gradient-to-b from-green-900 to-green-600 text-white flex-col p-4 shadow-md transition-all duration-300`
+                hidden ? "w-16" : "w-60"
+              } h-screen sticky top-0 left-0 bg-gradient-to-b from-green-600 to-green-700 text-white flex-col p-4 shadow-md transition-all duration-700`
         }`}
       >
         {/* Tombol Close (Mobile) */}

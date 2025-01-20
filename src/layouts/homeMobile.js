@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {swal} from "sweetalert2";
 import { faCalendarCheck, faClock, faBell, faHistory, faThList, faHome, faUser, faSignOutAlt, faQuestionCircle, faMapMarkerAlt, faArrowRight,} from "@fortawesome/free-solid-svg-icons";
 
 const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
@@ -73,16 +74,6 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
     navigate("/notification");
     setHasNewNotifications(false);
   };
-
-  //   const MenuBantuan = ({ icon, title, color, onClick }) => (
-  //   <div
-  //     className="flex items-center gap-3 p-4 bg-green-100 rounded-lg cursor-pointer hover:bg-green-200 transition-all duration-300"
-  //     onClick={onClick}
-  //   >
-  //     <FontAwesomeIcon className={`${color} text-xl`} icon={icon} />
-  //     <span className="font-medium text-gray-800">{title}</span>
-  //   </div>
-  // );
 
   const IconButton = ({ icon, label, onClick, color, hasNotification, isActive }) => (
     <button

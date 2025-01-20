@@ -228,14 +228,14 @@ const DataKaryawan = ({}) => {
         ) : errorMessage ? (
           <p className="text-red-500 text-center">{errorMessage}</p>
         ) : (
-          <div className="relative mb-4 hidden md:block">
-            <table className="min-w-full table-auto bg-white border-collapse  shadow-md rounded-md">
+          <div className="relative mb-0 hidden md:block">
+            <table className="min-w-full table-auto bg-white border-collapse shadow-md rounded-md">
               <thead>
                 <tr className="bg-green-500 text-white">
                   {["No.", "Nama Karyawan", "Jabatan", "Telepon", "Menu"].map((header, index) => (
                     <th
                       key={index}
-                      className={`py-2 px-4 font-semibold text-center ${
+                      className={`py-1 px-4 font-semibold text-center ${
                         index === 0 ? "first:rounded-tl-xl" : ""
                       } ${index === 4 ? "last:rounded-tr-xl" : ""}`}
                     >

@@ -36,32 +36,33 @@ const Login = ({ onLoginSuccess }) => {
       const data = await response.json();
       if (data.message === "Login berhasil") {
         const dataUser = data.data;
-        localStorage.setItem("userId", dataUser.id);
-        localStorage.setItem("nama", dataUser.name);
-        localStorage.setItem("userName", dataUser.username);
-        localStorage.setItem("isLoggedIn", "true");
-  
+
         if (dataUser.id === 16) {
-          // Jika id adalah 16, tampilkan dialog untuk memilih role
+          // Jangan simpan data sebelum memilih role
           Swal.fire({
             title: "Selamat Datang",
-            text: "Login sebagai Teknisi atau PA?",
+            text: "Login sebagai Teknisi atau Personal Assistant (PA)?",
             icon: "question",
-            showCancelButton: true,
+            showCancelButton: true,  // Pastikan cancel button ditampilkan
             confirmButtonText: "Teknisi",
-            cancelButtonText: "PA",
-            customClass: {
-              confirmButton: "btn-confirm",
-              cancelButton: "btn-warning",
-            },
+            cancelButtonText: "Personal Assistant (PA)",
+            confirmButtonColor: "#0D92F4", // Warna hijau untuk Teknisi
+            cancelButtonColor: "#6f42c1", // Warna ungu untuk PA
           }).then((result) => {
             if (result.isConfirmed) {
-              // Jika user memilih Teknisi
+              // Jika memilih Teknisi
               localStorage.setItem("roleId", "3");
-            } else {
-              // Jika user memilih PA
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+              // Jika memilih PA (Cancel)
               localStorage.setItem("roleId", "5");
             }
+
+            // Simpan data user setelah memilih role
+            localStorage.setItem("userId", dataUser.id);
+            localStorage.setItem("nama", dataUser.name);
+            localStorage.setItem("userName", dataUser.username);
+            localStorage.setItem("isLoggedIn", "true");
+
             onLoginSuccess();
             Swal.fire({
               icon: "success",
@@ -70,10 +71,18 @@ const Login = ({ onLoginSuccess }) => {
             }).then(() => {
               navigate("/home");
             });
+          }).catch(() => {
+            // Mengembalikan ke login page jika modal ditutup
+            navigate("/login");
           });
         } else {
-          // Jika id bukan 16, login seperti biasa
+          // Simpan data langsung jika id bukan 16
+          localStorage.setItem("userId", dataUser.id);
+          localStorage.setItem("nama", dataUser.name);
+          localStorage.setItem("userName", dataUser.username);
           localStorage.setItem("roleId", dataUser.id_role);
+          localStorage.setItem("isLoggedIn", "true");
+
           onLoginSuccess();
           Swal.fire({
             icon: "success",
@@ -98,7 +107,6 @@ const Login = ({ onLoginSuccess }) => {
       });
     }
   };
-  
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
@@ -124,13 +132,8 @@ const Login = ({ onLoginSuccess }) => {
         <h5 className="text-xl font-bold text-[#326058] text-center mb-4 transition-all duration-300 cursor-pointer">
           PT Nico Urban Indonesia
         </h5>
-        <form
-          onSubmit={(e) => e.preventDefault()}
-          className="space-y-2 pt-7 pb-10"
-        >
-          <label className="block text-sm font-medium text-gray-700">
-            Username
-          </label>
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-2 pt-7 pb-10">
+          <label className="block text-sm font-medium text-gray-700">Username</label>
           <div className="relative">
             <FontAwesomeIcon
               icon={faUser}
@@ -145,9 +148,7 @@ const Login = ({ onLoginSuccess }) => {
               onKeyDown={handleKeyPress}
             />
           </div>
-          <label className="block text-sm font-medium text-gray-700">
-            Password
-          </label>
+          <label className="block text-sm font-medium text-gray-700">Password</label>
           <div className="relative">
             <FontAwesomeIcon
               icon={faLock}

@@ -18,6 +18,8 @@ import DataPenggajian from "./pages/penggajian/dataPenggajian";
 import DetailPenggajian from "./pages/penggajian/detailPenggajian";
 import RiwayatAbsensi from "./pages/riwayat/riwayatAbsensi";
 import MenuSidebar from "./layouts/menuSidebar";
+import Header from "./layouts/header";
+import Footer from "./layouts/footer";
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem("isLoggedIn") === "true");
@@ -37,33 +39,44 @@ const App = () => {
   };
 
   const SidebarLayout = ({ children }) => (
-    <div className="flex">
+    <div className="flex min-h-screen">
+      {/* Sidebar */}
       <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} />
-      <div className="flex-grow">{children}</div>
+      <div className="flex-grow flex flex-col sticky z-10">
+        {/* Header */}
+        <Header />
+        {/* Main Content */}
+        <main className="flex-grow bg-gray-100">{children}</main>
+        {/* Footer */}
+        {/* <Footer /> */}
+      </div>
     </div>
   );
 
   const routes = [
-    { path: "/notification", component: <Notification />, roles: [ "2", "3", "4", "5", "6"] },
-    { path: "/riwayat-absensi", component: <RiwayatAbsensi />, roles: [ "2", "3", "4", "5", "6"] },
+    { path: "/notification", component: <Notification />, roles: ["2", "3", "4", "5", "6"] },
+    { path: "/riwayat-absensi", component: <RiwayatAbsensi />, roles: ["2", "3", "4", "5", "6"] },
     { path: "/profile", component: <Profile />, roles: ["1", "2", "3", "4", "5", "6"] },
     { path: "/menu", component: <Menu />, roles: ["1", "2", "3", "4", "5", "6"] },
     { path: "/absensi", component: <Absen />, roles: ["1", "2", "3", "4", "5", "6"] },
     { path: "/lembur", component: <Lembur />, roles: ["1", "2", "3", "4", "5", "6"] },
-    
-    { path: "/data-approval", component: <DataApproval />, roles: ["1","5"], layout: SidebarLayout },
-    { path: "/data-lokasi", component: <DataLokasi />, roles: ["1","5"], layout: SidebarLayout },
-    { path: "/data-absensi", component: <DataAbsensi />, roles: ["1","4","6"], layout: SidebarLayout },
-    { path: "/data-absensi/:id_user", component: <DetailAbsensi />, roles: ["1","4","6"], layout: SidebarLayout },
-    { path: "/data-karyawan", component: <DataKaryawan />, roles: ["1","4", "6"], layout: SidebarLayout },
-    { path: "/data-penggajian", component: <DataPenggajian />, roles: ["1","4", "6"], layout: SidebarLayout },
-    { path: "/data-penggajian/:id_user", component: <DetailPenggajian />, roles: ["1","4", "6"], layout: SidebarLayout },
+
+    { path: "/data-approval", component: <DataApproval />, roles: ["1", "5"], layout: SidebarLayout },
+    { path: "/data-lokasi", component: <DataLokasi />, roles: ["1", "5"], layout: SidebarLayout },
+    { path: "/data-absensi", component: <DataAbsensi />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/data-absensi/:id_user", component: <DetailAbsensi />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/data-karyawan", component: <DataKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/data-penggajian", component: <DataPenggajian />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/data-penggajian/:id_user", component: <DetailPenggajian />, roles: ["1", "4", "6"], layout: SidebarLayout },
   ];
 
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={isLoggedIn ? <Navigate to="/home" /> : <Login onLoginSuccess={handleLoginSuccess} />} />
+        <Route
+          path="/login"
+          element={isLoggedIn ? <Navigate to="/home" /> : <Login onLoginSuccess={handleLoginSuccess} />}
+        />
         <Route
           path="/home"
           element={
