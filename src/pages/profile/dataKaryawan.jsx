@@ -175,7 +175,7 @@ const DataKaryawan = ({}) => {
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex-grow px-6 pt-8 md:pt-6">
-        <div className="flex flex-wrap justify-between items-center mb-4">
+        <div className="flex flex-wrap justify-between items-center mb-6">
           <div className="flex items-center space-x-2 w-full sm:w-auto">
             <FontAwesomeIcon
               icon={faArrowLeft}
@@ -197,7 +197,7 @@ const DataKaryawan = ({}) => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari Karyawan..."
                 aria-label="Search Karyawan"
-                className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 px-2 py-1 pl-10 pr-4 w-full max-w-xs sm:max-w-md rounded-md transition duration-200 ease-in-out"
+                className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 px-2 py-1 pl-10 pr-4 w-full max-w-lg sm:max-w-lg rounded-md transition duration-200 ease-in-out"
               />
             </div>
             <button
@@ -222,45 +222,122 @@ const DataKaryawan = ({}) => {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center items-center h-64">
+          <div className="flex justify-center items-center">
             <div className="loader">Loading...</div>
           </div>
         ) : errorMessage ? (
           <p className="text-red-500 text-center">{errorMessage}</p>
         ) : (
-          <div className="relative mb-0 hidden md:block">
-            <table className="min-w-full table-auto bg-white border-collapse shadow-md rounded-md">
-              <thead>
-                <tr className="bg-green-500 text-white">
-                  {["No.", "Nama Karyawan", "Jabatan", "Telepon", "Menu"].map((header, index) => (
-                    <th
-                      key={index}
-                      className={`py-1 px-4 font-semibold text-center ${
-                        index === 0 ? "first:rounded-tl-xl" : ""
-                      } ${index === 4 ? "last:rounded-tr-xl" : ""}`}
-                    >
-                      {header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="text-gray-800 text-sm">
-                {Array.isArray(currentUsers) && currentUsers.length > 0 ? (
-                  currentUsers.map((user, index) => (
-                    <tr key={user.id} className="hover:bg-gray-100 transition duration-150">
-                      <td className="py-2 px-4 text-center border-b border-gray-200">
-                        {index + 1}
+          <>
+            {/* Tabel untuk desktop */}
+            <div className="relative mb-0 hidden md:block">
+              <table className="min-w-full table-auto bg-white border-collapse shadow-md rounded-lg">
+                <thead>
+                  <tr className="bg-green-500 text-white py-1">
+                    {["No.", "Nama Karyawan", "Jabatan", "Telepon", "Menu"].map((header, index) => (
+                      <th
+                        key={index}
+                        className={`px-4 font-semibold text-center ${
+                          index === 0 ? "first:rounded-tl-lg" : ""
+                        } ${index === 4 ? "last:rounded-tr-lg" : ""}`}
+                      >
+                        {header}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="text-gray-800 text-sm">
+                  {Array.isArray(currentUsers) && currentUsers.length > 0 ? (
+                    currentUsers.map((user, index) => (
+                      <tr key={user.id} className="hover:bg-gray-100 transition duration-150">
+                        <td className="py-2 px-4 text-center border-b border-gray-200">
+                          {index + 1}
+                        </td>
+                        <td className="py-2 px-4 text-center border-b border-gray-200">
+                          {user.nama || "Unknown Name"}
+                        </td>
+                        <td className="py-2 px-4 text-center border-b border-gray-200">
+                          {user.role}
+                        </td>
+                        <td className="py-2 px-4 text-center border-b border-gray-200">
+                          {user.telp || "-"}
+                        </td>
+                        <td className="py-2 px-4 text-center border-b border-gray-200 flex justify-center gap-6">
+                          <button
+                            onClick={() => handleEdit(user)}
+                            className="text-green-600 hover:text-green-800"
+                            title="Edit"
+                          >
+                            <FontAwesomeIcon icon={faEdit} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(user.id)}
+                            className="text-red-600 hover:text-red-800"
+                            title="Delete"
+                          >
+                            <FontAwesomeIcon icon={faTrash} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan="5"
+                        className="py-3 px-4 text-center text-gray-500 border-b border-gray-200"
+                      >
+                        Tidak ada karyawan ditemukan
                       </td>
-                      <td className="py-2 px-4 text-center border-b border-gray-200">
-                        {user.nama || "Unknown Name"}
-                      </td>
-                      <td className="py-2 px-4 text-center border-b border-gray-200">
-                        {user.role}
-                      </td>
-                      <td className="py-2 px-4 text-center border-b border-gray-200">
-                        {user.telp || "-"}
-                      </td>
-                      <td className="py-2 px-4 text-center border-b border-gray-200 flex justify-center gap-6">
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination untuk desktop */}
+            <div className="flex justify-center text-center space-x-2 mt-4 hidden md:block">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className={`px-5 rounded-full font-medium transition-all duration-200 ${
+                  currentPage === 1
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-green-500 text-white hover:bg-green-900 shadow-lg"
+                }`}
+              >
+                <FontAwesomeIcon icon={faArrowLeft} />
+              </button>
+
+              {/* Nomor Halaman */}
+              <span className="px-4 rounded-full bg-white border border-gray-300 text-gray-700 shadow-sm">
+                {currentPage} / {Math.ceil(filteredUsers.length / itemsPerPage)}
+              </span>
+
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) =>
+                    Math.min(prev + 1, Math.ceil(filteredUsers.length / itemsPerPage))
+                  )
+                }
+                disabled={currentPage === Math.ceil(filteredUsers.length / itemsPerPage)}
+                className={`px-5 rounded-full font-xl transition-all duration-200 ${
+                  currentPage === Math.ceil(filteredUsers.length / itemsPerPage)
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-green-600 text-white hover:bg-green-900 shadow-lg"
+                }`}
+              >
+                <FontAwesomeIcon icon={faArrowRight} />
+              </button>
+            </div>
+
+            {/* Card yang ditampilkan pada layar kecil (mobile) */}
+            <div className="md:hidden">
+              {Array.isArray(currentUsers) && currentUsers.length > 0 ? (
+                currentUsers.map((user) => (
+                  <div key={user.id} className="bg-white p-4 mb-4 shadow-md rounded-md">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-semibold">{user.nama || "Unknown Name"}</h3>
+                      <div className="flex gap-2">
                         <button
                           onClick={() => handleEdit(user)}
                           className="text-green-600 hover:text-green-800"
@@ -275,93 +352,53 @@ const DataKaryawan = ({}) => {
                         >
                           <FontAwesomeIcon icon={faTrash} />
                         </button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan="5"
-                      className="py-3 px-4 text-center text-gray-500 border-b border-gray-200"
-                    >
-                      Tidak ada karyawan ditemukan
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600">Jabatan: {user.role}</p>
+                    <p className="text-sm text-gray-600">Telepon: {user.telp || "-"}</p>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center text-gray-500">Tidak ada karyawan ditemukan</div>
+              )}
 
-      {/* Card yang ditampilkan pada layar kecil (mobile) */}
-      <div className="md:hidden px-4">
-        {Array.isArray(currentUsers) && currentUsers.length > 0 ? (
-          currentUsers.map((user) => (
-            <div key={user.id} className="bg-white p-4 mb-4 shadow-md rounded-md">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">{user.nama || "Unknown Name"}</h3>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleEdit(user)}
-                    className="text-green-600 hover:text-green-800"
-                    title="Edit"
-                  >
-                    <FontAwesomeIcon icon={faEdit} />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(user.id)}
-                    className="text-red-600 hover:text-red-800"
-                    title="Delete"
-                  >
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
-                </div>
+              {/* Pagination untuk mobile */}
+              <div className="flex justify-center space-x-2 my-10">
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className={`px-5 rounded-full font-medium transition-all duration-200 ${
+                    currentPage === 1
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-green-500 text-white hover:bg-green-900 shadow-lg"
+                  }`}
+                >
+                  <FontAwesomeIcon icon={faArrowLeft} />
+                </button>
+
+                <span className="px-4 rounded-full bg-white border border-gray-300 text-gray-700 shadow-sm">
+                  {currentPage} / {Math.ceil(filteredUsers.length / itemsPerPage)}
+                </span>
+
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) =>
+                      Math.min(prev + 1, Math.ceil(filteredUsers.length / itemsPerPage))
+                    )
+                  }
+                  disabled={currentPage === Math.ceil(filteredUsers.length / itemsPerPage)}
+                  className={`px-5 rounded-full font-xl transition-all duration-200 ${
+                    currentPage === Math.ceil(filteredUsers.length / itemsPerPage)
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-green-600 text-white hover:bg-green-900 shadow-lg"
+                  }`}
+                >
+                  <FontAwesomeIcon icon={faArrowRight} />
+                </button>
               </div>
-              <p className="text-sm text-gray-600">Jabatan: {user.role}</p>
-              <p className="text-sm text-gray-600">Telepon: {user.telp || "-"}</p>
             </div>
-          ))
-        ) : (
-          <div className="text-center text-gray-500">Tidak ada karyawan ditemukan</div>
+          </>
         )}
-      </div>
-
-      <div className="flex justify-center mb-10 space-x-2">
-        {/* Tombol Kiri */}
-        <button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-          className={`px-5 rounded-full font-medium transition-all duration-200 ${
-            currentPage === 1
-              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-              : "bg-green-500 text-white hover:bg-green-900 shadow-lg"
-          }`}
-        >
-          <FontAwesomeIcon icon={faArrowLeft} />
-        </button>
-
-        {/* Nomor Halaman */}
-        <span className="px-4 rounded-full bg-white border border-gray-300 text-gray-700 shadow-sm">
-          {currentPage} / {Math.ceil(filteredUsers.length / itemsPerPage)}
-        </span>
-
-        {/* Tombol Kanan */}
-        <button
-          onClick={() =>
-            setCurrentPage((prev) =>
-              Math.min(prev + 1, Math.ceil(filteredUsers.length / itemsPerPage))
-            )
-          }
-          disabled={currentPage === Math.ceil(filteredUsers.length / itemsPerPage)}
-          className={`px-5 rounded-full font-xl transition-all duration-200 ${
-            currentPage === Math.ceil(filteredUsers.length / itemsPerPage)
-              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-              : "bg-green-600 text-white hover:bg-green-900 shadow-lg"
-          }`}
-        >
-          <FontAwesomeIcon icon={faArrowRight} />
-        </button>
       </div>
 
       {isAdding || isEditing ? (

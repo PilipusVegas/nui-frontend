@@ -8,10 +8,10 @@ const Header = () => {
   const toggleProfile = () => setIsProfileOpen(!isProfileOpen);
 
   return (
-    <header className="bg-green-50 text-white px-6 py-3 sticky top-0 z-10">
+    <header className="bg-gradient-to-b from-green-600 to-green-400 text-white px-6 py-2 sticky top-0 z-10 rounded-b-2xl  ">
       <div className="flex items-center justify-between">
         {/* Logo or Title */}
-        <h1 className="text-sm font-bold text-green-600">PT. Nico Urban Indonesia</h1>
+        <h1 className="text-md font-bold text-white tracking-wider">PT. Nico Urban Indonesia</h1>
 
         {/* Profile Section */}
         <div className="relative">
@@ -20,20 +20,17 @@ const Header = () => {
             className="flex items-center space-x-2 text-white focus:outline-none"
           >
             {/* Profile Icon */}
-            <div className="w-8 h-8 rounded-full bg-gray-200 flex justify-center items-center">
-              <FontAwesomeIcon icon={faUser} className="text-green-600 text-xl" />
+            <div className="w-8 h-8 rounded-full bg-gray-200 flex justify-center items-center border-2 border-white">
+              <FontAwesomeIcon icon={faUser} className="text-white text-xl" />
             </div>
-            {/* <span className="hidden md:inline text-sm">User Name</span> */}
-            {/* Dropdown Icon */}
-            <FontAwesomeIcon icon={faChevronDown} className="text-white" />
           </button>
 
           {/* Profile Dropdown */}
           {isProfileOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-lg border border-gray-300">
+            <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-xl border border-gray-300">
               {/* User Info */}
               <div className="flex items-center space-x-2 px-4 py-2 text-green-600 font-semibold">
-                <FontAwesomeIcon icon={faUser} />
+                <FontAwesomeIcon icon={faUser}  />
                 <span>User Name</span>
               </div>
 

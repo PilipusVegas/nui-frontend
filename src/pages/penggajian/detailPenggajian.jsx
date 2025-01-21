@@ -161,7 +161,7 @@ const DetailPenggajian = () => {
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Payroll Data");
-    XLSX.writeFile(workbook, "PayrollData.xlsx");
+    XLSX.writeFile(workbook, "${startDate} - ${endDate}.xlsx");
   };
 
   useEffect(() => {
