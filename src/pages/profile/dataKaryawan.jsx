@@ -153,27 +153,9 @@ const DataKaryawan = ({}) => {
     }
   };
 
-  // const GetNamaDivisi = (id_role) => {
-  //   switch (id_role) {
-  //     case 1:
-  //       return "Admin";
-  //     case 2:
-  //       return "IT Programmer";
-  //     case 3:
-  //       return "Teknisi";
-  //     case 4:
-  //       return "Manajer HRD";
-  //     case 5:
-  //       return "PA";
-  //     case 6:
-  //       return "Staff HRD";
-  //     default:
-  //       return "Unknown Role";
-  //   }
-  // };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col max-h-screen">
       <div className="flex-grow px-6 pt-8 md:pt-6">
         <div className="flex flex-wrap justify-between items-center mb-6">
           <div className="flex items-center space-x-2 w-full sm:w-auto">
@@ -233,11 +215,11 @@ const DataKaryawan = ({}) => {
             <div className="relative mb-0 hidden md:block">
               <table className="min-w-full table-auto bg-white border-collapse shadow-md rounded-lg">
                 <thead>
-                  <tr className="bg-green-500 text-white py-1">
+                  <tr className="bg-green-500 text-white py-1 text-sm px-4">
                     {["No.", "Nama Karyawan", "Jabatan", "Telepon", "Menu"].map((header, index) => (
                       <th
                         key={index}
-                        className={`px-4 font-semibold text-center ${
+                        className={`px-4 py-1 font-semibold text-center ${
                           index === 0 ? "first:rounded-tl-lg" : ""
                         } ${index === 4 ? "last:rounded-tr-lg" : ""}`}
                       >

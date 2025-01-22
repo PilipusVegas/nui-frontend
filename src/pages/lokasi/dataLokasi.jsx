@@ -1,25 +1,31 @@
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import DekstopLayout from "../../layouts/dekstopLayout";
+import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPlus,
-  faSearch,
-  faEye,
   faEdit,
   faTrash,
+  faArrowLeft,
+  faArrowRight,
+  faSearch,
 } from "@fortawesome/free-solid-svg-icons";
 
 const DataLokasi = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
-  const itemsPerPage = 10;
-
+  const itemsPerPageDesktop = 10;
+  const itemsPerPageMobile = 5;
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
   const [lokasiData, setLokasiData] = useState([]);
   const [formState, setFormState] = useState({ nama: "", koordinat: "" });
   const [isEdit, setIsEdit] = useState(false);
   const [editId, setEditId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPageDesktop, setCurrentPageDesktop] = useState(1);
+  const [currentPageMobile, setCurrentPageMobile] = useState(1);
+
+  const handleBackClick = () => navigate("/home");
 
   useEffect(() => {
     fetchLokasiData();
@@ -35,14 +41,16 @@ const DataLokasi = () => {
     }
   };
 
+  const filteredLokasiData = lokasiData.filter((lokasi) =>
+    lokasi.nama.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const handleInputChange = ({ target: { name, value } }) => {
     setFormState((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async () => {
-    const endpoint = isEdit
-      ? `${apiUrl}/lokasi/update/${editId}`
-      : `${apiUrl}/lokasi/create`;
+    const endpoint = isEdit ? `${apiUrl}/lokasi/update/${editId}` : `${apiUrl}/lokasi/create`;
     const method = isEdit ? "PUT" : "POST";
 
     try {
@@ -52,11 +60,7 @@ const DataLokasi = () => {
         body: JSON.stringify(formState),
       });
       if (response.ok) {
-        Swal.fire(
-          "Success!",
-          `Data berhasil ${isEdit ? "diupdate" : "ditambahkan"}!`,
-          "success"
-        );
+        Swal.fire("Success!", `Data berhasil ${isEdit ? "diupdate" : "ditambahkan"}!`, "success");
         fetchLokasiData();
         closeModal();
       }
@@ -82,7 +86,6 @@ const DataLokasi = () => {
       confirmButtonText: "Hapus",
       cancelButtonText: "Batal",
     });
-
     if (result.isConfirmed) {
       try {
         const response = await fetch(`${apiUrl}/lokasi/delete/${id}`, {
@@ -106,30 +109,23 @@ const DataLokasi = () => {
   };
 
   const renderHeader = () => (
-    <>
-      <th className="px-4 py-1 border text-xs">No</th>
-      <th className="px-4 py-1 border text-xs">Lokasi</th>
-      <th className="px-4 py-1 border text-xs">Koordinat</th>
-      <th className="px-4 py-1 border text-xs">Aksi</th>
-    </>
+    <thead>
+      <tr className="bg-green-500 text-white">
+        <th className="px-4 py-1 border-b text-sm font-semibold">No</th>
+        <th className="px-4 py-1 border-b text-sm font-semibold">Lokasi</th>
+        <th className="px-4 py-1 border-b text-sm font-semibold">Koordinat</th>
+        <th className="px-4 py-1 border-b text-sm font-semibold">Aksi</th>
+      </tr>
+    </thead>
   );
 
-  const renderBody = () => {
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = lokasiData.slice(indexOfFirstItem, indexOfLastItem);
-
+  const renderBody = (currentItems) => {
     return currentItems.map((lokasi, index) => (
-      <tr
-        key={lokasi.id}
-        className="hover:bg-gray-50 transition-colors duration-150"
-      >
-        <td className="px-4 py-1 border text-sm text-center">
-          {indexOfFirstItem + index + 1}
-        </td>
-        <td className="px-4 py-1 border text-sm">{lokasi.nama}</td>
-        <td className="px-4 py-1 border text-sm">{lokasi.koordinat}</td>
-        <td className="px-4 py-1 border text-sm text-center">
+      <tr key={lokasi.id} className="hover:bg-gray-200 transition-colors duration-150">
+        <td className="px-4 py-1 border-b text-sm text-center">{index + 1}</td>
+        <td className="px-4 py-1 border-b text-sm">{lokasi.nama}</td>
+        <td className="px-4 py-1 border-b text-sm">{lokasi.koordinat}</td>
+        <td className="px-4 py-1 border-b text-sm text-center">
           <button
             onClick={() => handleEdit(lokasi)}
             className="bg-yellow-500 text-white px-2 py-1 rounded mr-2 hover:bg-yellow-600 transition-colors duration-150"
@@ -147,12 +143,33 @@ const DataLokasi = () => {
     ));
   };
 
+  const renderBodyMobile = (currentItems) => {
+    return currentItems.map((lokasi) => (
+      <div key={lokasi.id} className="bg-white rounded-lg mb-2 p-4 border border-gray-200">
+        <h3 className="text-md font-medium text-gray-800">{lokasi.nama}</h3>
+        <p className="text-sm text-gray-500">Koordinat: {lokasi.koordinat}</p>
+        <div className="mt-4 flex space-x-2 justify-end">
+          <button
+            onClick={() => handleEdit(lokasi)}
+            className="bg-yellow-200 text-yellow-700 text-xs px-3 py-1 rounded-md hover:bg-yellow-300 transition duration-150"
+          >
+            Edit
+          </button>
+          <button
+            onClick={() => handleDelete(lokasi.id)}
+            className="bg-red-200 text-red-700 text-xs px-3 py-1 rounded-md hover:bg-red-300 transition duration-150"
+          >
+            Hapus
+          </button>
+        </div>
+      </div>
+    ));
+  };
+
   const renderModal = () => (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center px-6">
       <div className="bg-white p-6 rounded-lg w-full sm:w-96">
-        <h3 className="text-xl font-bold mb-4">
-          {isEdit ? "Edit Lokasi" : "Tambah Lokasi"}
-        </h3>
+        <h3 className="text-xl font-bold mb-4">{isEdit ? "Edit Lokasi" : "Tambah Lokasi"}</h3>
         <input
           type="text"
           name="nama"
@@ -172,10 +189,8 @@ const DataLokasi = () => {
         <div className="flex justify-end mt-4">
           <button
             onClick={handleSubmit}
-            className={`px-4 py-2  text-white ${
-              isEdit
-                ? "bg-yellow-500 hover:bg-yellow-600"
-                : "bg-blue-500 hover:bg-blue-600"
+            className={`px-4 py-2 text-white ${
+              isEdit ? "bg-yellow-500 hover:bg-yellow-600" : "bg-green-500 hover:bg-green-600"
             } transition-colors duration-150 rounded`}
           >
             {isEdit ? "Update" : "Tambah"}
@@ -191,127 +206,151 @@ const DataLokasi = () => {
     </div>
   );
 
+// Pagination Logic
+const totalPagesDesktop = Math.ceil(filteredLokasiData.length / itemsPerPageDesktop);
+const totalPagesMobile = Math.ceil(filteredLokasiData.length / itemsPerPageMobile);
+
+// Menghitung halaman saat ini dengan data yang sudah difilter
+const currentItemsDesktop = filteredLokasiData.slice(
+  (currentPageDesktop - 1) * itemsPerPageDesktop,
+  currentPageDesktop * itemsPerPageDesktop
+);
+const currentItemsMobile = filteredLokasiData.slice(
+  (currentPageMobile - 1) * itemsPerPageMobile,
+  currentPageMobile * itemsPerPageMobile
+);
+
+// Reset halaman ketika search term berubah
+useEffect(() => {
+  setCurrentPageDesktop(1);
+  setCurrentPageMobile(1);
+}, [searchTerm]);
+
+
   return (
-    <>
-      {/* Tampilan Desktop */}
-      <div className="hidden md:block">
-        <DekstopLayout
-          title="Data Lokasi"
-          header={renderHeader()}
-          body={renderBody()}
-          customElements={
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-150"
-            >
-              Tambah Lokasi
-            </button>
-          }
-          currentPage={currentPage}
-          totalPages={Math.ceil(lokasiData.length / itemsPerPage)}
-          handlePageChange={setCurrentPage}
-        />
-      </div>
+    <div className="max-h-screen flex flex-col px-6 pt-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6 flex-wrap">
+        <div className="flex items-center space-x-2 w-full sm:w-auto mb-4 sm:mb-0">
+          <FontAwesomeIcon
+            icon={faArrowLeft}
+            className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-2 sm:p-3 shadow-lg"
+            onClick={handleBackClick}
+            title="Back to Home"
+          />
+          <h1 className="text-xl sm:text-3xl font-bold text-gray-800 pb-1">Data Lokasi Gerai</h1>
+        </div>
 
-      {/* Tampilan Mobile */}
-      <div className="md:hidden p-4 mx-auto w-full max-w-screen-sm overflow-x-hidden">
-        <h1 className="text-2xl font-bold mb-4">Data Lokasi</h1>
+        <div className="flex items-center space-x-1 sm:space-x-3 w-full sm:w-auto">
+          {/* Search Bar */}
+          <div className="relative w-full sm:w-64 mb-2 sm:mb-0">
+            <input
+              type="text"
+              placeholder="Cari Lokasi..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-1 border rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+            <FontAwesomeIcon icon={faSearch} className="absolute top-2 right-2 text-gray-500" />
+          </div>
 
-        {/* Button Tambah Lokasi */}
-        <div className="flex justify-between items-center mb-4">
+          {/* Add Location Button */}
           <button
             onClick={() => setIsModalOpen(true)}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-150"
+            className="bg-green-500 text-white px-4 py-1 mb-2 rounded flex items-center justify-center hover:bg-green-600 transition-colors duration-150"
           >
-            Tambah Lokasi
+            <FontAwesomeIcon icon={faPlus} />
+            <span className="hidden sm:inline ml-2">Tambah Lokasi</span>
           </button>
-          <p className="text-sm text-gray-600">
-            Halaman {currentPage} dari{" "}
-            {Math.ceil(lokasiData.length / itemsPerPage)}
-          </p>
         </div>
+      </div>
 
-        {/* List Data */}
-        <div className="space-y-4">
-          {lokasiData.length > 0 ? (
-            lokasiData
-              .slice(
-                (currentPage - 1) * itemsPerPage,
-                currentPage * itemsPerPage
-              )
-              .map((lokasi, index) => (
-                <div
-                  key={lokasi.id}
-                  className="bg-white p-4 rounded-lg shadow flex flex-col space-y-4 w-full overflow-hidden"
-                >
-                  <div className="w-full">
-                    <h2 className="font-semibold text-lg truncate">
-                      {lokasi.nama}
-                    </h2>
-                    <p className="text-gray-600 text-sm word-wrap">
-                      Koordinat: {lokasi.koordinat}
-                    </p>
-                  </div>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => handleEdit(lokasi)}
-                      className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600 transition-colors duration-150"
-                    >
-                      <FontAwesomeIcon icon={faEdit} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(lokasi.id)}
-                      className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition-colors duration-150"
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
-                  </div>
-                </div>
-              ))
-          ) : (
-            <p className="text-gray-500">Tidak ada data lokasi.</p>
-          )}
-        </div>
+      <div className="rounded-lg shadow-md overflow-hidden hidden md:block">
+        <table className="table-auto w-full border-collapse rounded-lg">
+          {renderHeader()}
+          <tbody>
+            {filteredLokasiData.length > 0 ? (
+              renderBody(currentItemsDesktop) // Render dengan data halaman yang terpilih
+            ) : (
+              <tr>
+                <td colSpan={4} className="text-center px-4 py-1">
+                  No Data Found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
-        {/* Pagination */}
-        <div className="flex justify-center items-center mt-4 space-x-2">
-          <button
-            onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
-            className={`px-4 py-2 rounded ${
-              currentPage === 1
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-blue-500 text-white hover:bg-blue-600"
-            }`}
-            disabled={currentPage === 1}
-          >
-            Sebelumnya
-          </button>
-          <span className="text-sm text-gray-600">
-            Halaman {currentPage} dari{" "}
-            {Math.ceil(lokasiData.length / itemsPerPage)}
-          </span>
-          <button
-            onClick={() =>
-              currentPage < Math.ceil(lokasiData.length / itemsPerPage) &&
-              setCurrentPage(currentPage + 1)
-            }
-            className={`px-4 py-2 rounded ${
-              currentPage === Math.ceil(lokasiData.length / itemsPerPage)
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-blue-500 text-white hover:bg-blue-600"
-            }`}
-            disabled={
-              currentPage === Math.ceil(lokasiData.length / itemsPerPage)
-            }
-          >
-            Berikutnya
-          </button>
-        </div>
+      <div className="md:hidden">{renderBodyMobile(currentItemsMobile)}</div>
+
+      {/* Pagination untuk mobile */}
+      <div className="flex justify-center text-center space-x-2 mt-4 md:hidden">
+        <button
+          onClick={() => setCurrentPageMobile((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPageMobile === 1}
+          className={`px-5 rounded-full font-medium transition-all duration-200 ${
+            currentPageMobile === 1
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-green-500 text-white hover:bg-green-900 shadow-lg"
+          }`}
+        >
+          <FontAwesomeIcon icon={faArrowLeft} />
+        </button>
+
+        {/* Nomor Halaman */}
+        <span className="px-4 rounded-full bg-white border border-gray-300 text-gray-700 shadow-sm">
+          {currentPageMobile} / {totalPagesMobile}
+        </span>
+
+        <button
+          onClick={() => setCurrentPageMobile((prev) => Math.min(prev + 1, totalPagesMobile))}
+          disabled={currentPageMobile === totalPagesMobile}
+          className={`px-5 rounded-full font-xl transition-all duration-200 ${
+            currentPageMobile === totalPagesMobile
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-green-600 text-white hover:bg-green-900 shadow-lg"
+          }`}
+        >
+          <FontAwesomeIcon icon={faArrowRight} />
+        </button>
+      </div>
+
+      {/* Pagination untuk desktop */}
+      <div className="flex justify-center text-center space-x-2 mt-4 md:block hidden">
+        <button
+          onClick={() => setCurrentPageDesktop((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPageDesktop === 1}
+          className={`px-5 rounded-full font-medium transition-all duration-200 ${
+            currentPageDesktop === 1
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-green-500 text-white hover:bg-green-900 shadow-lg"
+          }`}
+        >
+          <FontAwesomeIcon icon={faArrowLeft} />
+        </button>
+
+        {/* Nomor Halaman */}
+        <span className="px-4 rounded-full bg-white border border-gray-300 text-gray-700 shadow-sm">
+          {currentPageDesktop} / {totalPagesDesktop}
+        </span>
+
+        <button
+          onClick={() => setCurrentPageDesktop((prev) => Math.min(prev + 1, totalPagesDesktop))}
+          disabled={currentPageDesktop === totalPagesDesktop}
+          className={`px-5 rounded-full font-xl transition-all duration-200 ${
+            currentPageDesktop === totalPagesDesktop
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-green-600 text-white hover:bg-green-900 shadow-lg"
+          }`}
+        >
+          <FontAwesomeIcon icon={faArrowRight} />
+        </button>
       </div>
 
       {/* Modal */}
       {isModalOpen && renderModal()}
-    </>
+    </div>
   );
 };
 

@@ -6,6 +6,7 @@ import {
   faCalendarDay,
   faRulerVertical,
   faEye,
+  faMapLocation,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Swal from "sweetalert2";
@@ -51,11 +52,11 @@ const DetailAbsensi = () => {
       setPeriod(
         `${startDate.toLocaleDateString("id-ID", {
           year: "numeric",
-          month: "long",
+          month: "short",
           day: "numeric",
         })} - ${endDate.toLocaleDateString("id-ID", {
           year: "numeric",
-          month: "long",
+          month: "short",
           day: "numeric",
         })}`
       );
@@ -195,7 +196,7 @@ const DetailAbsensi = () => {
       )}
 
       {/* Card-Style Absensi Table for Mobile */}
-      <div className="bg-white shadow-md rounded-lg mb-4 overflow-hidden">
+      <div className="rounded-lg mb-4 overflow-hidden">
         <div className="hidden md:block">
           <table className="min-w-full border-collapse rounded-lg">
             <thead>
@@ -279,51 +280,35 @@ const DetailAbsensi = () => {
             currentItems.map((item) => (
               <div
                 key={item.id_absen}
-                className="shadow-lg rounded-xl p-6 max-w-xs w-full mx-auto mb-6"
+                className="p-4 sm:p-6 mb-2 border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 bg-white"
               >
-
                 {/* Status */}
-                <div className="mb-4 justify-between flex">
-                  <p className="text-sm text-gray-500">Status :</p>
-                  <span
-                    className={`text-sm font-semibold ${
-                      statusApproval[item.id_absen] ? "text-green-500" : "text-red-500"
-                    }`}
-                  >
-                    {statusApproval[item.id_absen] ? "Disetujui" : "Belum Disetujui"}
-                  </span>
-                </div>
-
-                {/* Divider */}
-                <div className="border-t border-gray-200 my-4"></div>
-
-                {/* Lokasi and Action Button (Eye Icon) */}
                 <div className="flex justify-between items-center mb-4">
-                  <div className="text-sm text-gray-500">
-                    <strong>Lokasi:</strong>
-                    <p>{item.lokasi}</p>
-                  </div>
+                  <p className="text-sm text-gray-500 items-center">
+                    <FontAwesomeIcon icon={faMapMarkerAlt} className="text-lg mr-1 text-green-600" />
 
-                  {/* Action Button (Eye Icon) */}
-                  <button
-                    onClick={() => handleViewClick(item)}
-                    className=" text-white hover:text-blue-600 px-4 py-2 bg-blue-600 rounded-lg"
-                  >
-                    <FontAwesomeIcon icon={faEye} className="text-lg" />
-                  </button>
+                    {item.lokasi}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm text-gray-500">Status:</p>
+                    <div
+                      className={`w-3 h-3 rounded-full ${
+                        statusApproval[item.id_absen] ? "bg-green-500" : "bg-red-500"
+                      }`}
+                    ></div>
+                  </div>
                 </div>
 
+                <hr className="border-gray-500 mb-4" />
 
-                
+                {/* Lokasi */}
+                <div className="mb-0"></div>
 
-                {/* Divider */}
-                <div className="border-t border-gray-200 my-4"></div>
-
-                {/* Jam Masuk dan Jam Keluar (Sejajar) */}
-                <div className="flex justify-between items-center">
+                {/* Jam Masuk dan Keluar */}
+                <div className="grid grid-cols-3 gap-4 items-center">
                   <div>
-                    <strong className="text-gray-700">Masuk</strong>
                     <p className="text-sm text-gray-500">
+                      <strong className="text-gray-700">Masuk:</strong>{" "}
                       {new Date(item.jam_mulai).toLocaleTimeString("id-ID", {
                         timeZone: "Asia/Jakarta",
                         hour: "2-digit",
@@ -332,10 +317,9 @@ const DetailAbsensi = () => {
                       })}
                     </p>
                   </div>
-
                   <div>
-                    <strong className="text-gray-700">Keluar</strong>
                     <p className="text-sm text-gray-500">
+                      <strong className="text-gray-700">Keluar:</strong>{" "}
                       {item.jam_selesai
                         ? new Date(item.jam_selesai).toLocaleTimeString("id-ID", {
                             timeZone: "Asia/Jakarta",
@@ -346,11 +330,19 @@ const DetailAbsensi = () => {
                         : "---"}
                     </p>
                   </div>
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => handleViewClick(item)}
+                      className="bg-blue-600 text-white hover:bg-blue-700 px-3 py-1 rounded-lg transition-colors duration-200"
+                    >
+                      <FontAwesomeIcon icon={faEye} className="text-sm" />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))
           ) : (
-            <p className="italic text-center">Tidak ada data absensi.</p>
+            <p className="italic text-center text-gray-500">Tidak ada data absensi.</p>
           )}
         </div>
       </div>

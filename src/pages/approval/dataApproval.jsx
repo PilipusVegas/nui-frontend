@@ -144,17 +144,17 @@ const DataApproval = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col p-4">
+    <div className="min-h-screen flex flex-col p-6">
       {/* Header */}
       <div className="flex items-center space-x-3 mb-6 justify-between">
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center">
           <FontAwesomeIcon
             icon={faArrowLeft}
             title="Back to Home"
             onClick={handleBackClick}
             className="mr-2 cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"
           />
-          <h1 className="text-2xl font-semibold text-gray-800">
+          <h1 className="text-3xl font-bold text-gray-800 pb-1">
             Data Approval Lembur
           </h1>
         </div>
@@ -431,7 +431,7 @@ const DataApproval = () => {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 px-4">
           <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-lg mx-auto">
             <button
               onClick={() => setIsModalOpen(false)}

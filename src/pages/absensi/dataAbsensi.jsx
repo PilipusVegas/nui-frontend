@@ -75,7 +75,7 @@ const DataAbsensi = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-start p-6">
+    <div className="max-h-screen flex flex-col justify-start px-6 pt-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 space-y-4 md:space-y-0">
         {/* Kembali ke Home dan Judul */}
         <div className="flex items-center">
@@ -205,7 +205,7 @@ const DataAbsensi = () => {
     </div>
 
       {/* Pagination Controls */}
-      <div className="flex justify-center mt-4 space-x-2">
+      <div className="flex justify-center pb-6 pt-3 space-x-2">
         <button
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
