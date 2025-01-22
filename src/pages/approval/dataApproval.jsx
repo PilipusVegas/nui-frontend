@@ -2,7 +2,16 @@ import { useEffect, useState } from "react";
 import "sweetalert2/dist/sweetalert2.min.css";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import { faArrowLeft, faTimes } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCheck,
+  faArrowLeft,
+  faClock,
+  faUser,
+  faInfoCircle,
+  faMapMarkerAlt,
+  faTimes,
+  faSearch,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const DataApproval = () => {
@@ -231,11 +240,16 @@ const DataApproval = () => {
                           onClick={() =>
                             openModalWithDescription(approval.deskripsi)
                           }
-                          className="text-blue-500 underline"
+                          className="text-blue-500"
                         >
-                          Lihat Deskripsi
+                          <FontAwesomeIcon
+                            icon={faSearch}
+                            className="mr-2 text-blue-500"
+                          />
+                          View
                         </button>
                       </td>
+
                       <td className="py-2 px-4 text-center">
                         {approval.jam_mulai}
                       </td>
@@ -252,17 +266,28 @@ const DataApproval = () => {
                             Ditolak
                           </span>
                         ) : (
-                          <div className="flex flex-col space-y-2">
+                          <div className="flex flex-col space-y-3">
+                            {/* Tombol Setujui */}
                             <button
                               onClick={() => handleApprove(approval.id_lembur)}
-                              className="bg-green-500 text-white rounded-lg px-4 py-2"
+                              className="flex items-center justify-center bg-green-500 text-white font-medium rounded-lg py-2 shadow-md hover:bg-green-600 hover:shadow-lg transition-transform transform hover:scale-105"
                             >
+                              <FontAwesomeIcon
+                                icon={faCheck}
+                                className="mr-2"
+                              />
                               Setujui
                             </button>
+
+                            {/* Tombol Tolak */}
                             <button
                               onClick={() => handleReject(approval.id_lembur)}
-                              className="bg-red-500 text-white rounded-lg px-4 py-2"
+                              className="flex items-center justify-center bg-red-500 text-white font-medium rounded-lg py-2 shadow-md hover:bg-red-600 hover:shadow-lg transition-transform transform hover:scale-105"
                             >
+                              <FontAwesomeIcon
+                                icon={faTimes}
+                                className="mr-2"
+                              />
                               Tolak
                             </button>
                           </div>
@@ -287,63 +312,116 @@ const DataApproval = () => {
       </div>
 
       {/* Tabel untuk Mobile */}
-      <div className="md:hidden space-y-4">
+      <div className="md:hidden space-y-6">
         {filteredApproval.length > 0 ? (
           filteredApproval.map((approval, index) => (
             <div
               key={approval.id_lembur}
-              className="bg-white shadow-lg rounded-lg p-4 flex flex-col space-y-2"
+              className={`bg-white border-l-4 ${
+                approval.status_lembur === 1
+                  ? "border-green-500"
+                  : approval.status_lembur === 2
+                  ? "border-red-500"
+                  : "border-yellow-400"
+              } shadow-md rounded-lg p-4 flex flex-col space-y-4`}
             >
-              <div>
-                <p className="text-sm font-semibold">No. {index + 1}</p>
-                <p className="text-sm">
-                  Tanggal:{" "}
-                  <span className="font-medium">
-                    {new Date(approval.tanggal).toLocaleDateString("id-ID")}
+              {/* Header Card */}
+              <div className="flex justify-between items-center">
+                <p className="text-gray-600 text-sm">
+                  {" "}
+                  <span className="font-semibold text-gray-800">
+                    {new Date(approval.tanggal).toLocaleDateString("id-ID", {
+                      day: "2-digit",
+                      month: "long",
+                      year: "numeric",
+                    })}
                   </span>
                 </p>
-              </div>
-              <div>
-                <p className="text-sm">Username: {approval.nama_user}</p>
-                <p className="text-sm">Lokasi: {approval.lokasi}</p>
-              </div>
-              <div>
-                <p className="text-sm">
-                  Jam: {approval.jam_mulai} - {approval.jam_selesai}
-                </p>
-                <button
-                  onClick={() => openModalWithDescription(approval.deskripsi)}
-                  className="text-blue-500 underline text-sm"
+                <span
+                  className={`px-1 py-1 rounded-full text-xs font-semibold ${
+                    approval.status_lembur === 1
+                      ? "bg-green-100 text-green-600"
+                      : approval.status_lembur === 2
+                      ? "bg-red-100 text-red-600"
+                      : "bg-yellow-200 text-yellow-600"
+                  }`}
                 >
-                  Lihat Deskripsi
-                </button>
+                  {approval.status_lembur === 1
+                    ? "Disetujui"
+                    : approval.status_lembur === 2
+                    ? "Ditolak"
+                    : "Pending"}
+                </span>
               </div>
-              <div>
-                {approval.status_lembur === 1 ? (
-                  <span className="text-green-500 font-semibold text-sm">
-                    Disetujui
-                  </span>
-                ) : approval.status_lembur === 2 ? (
-                  <span className="text-red-500 font-semibold text-sm">
-                    Ditolak
-                  </span>
-                ) : (
-                  <div className="flex flex-col space-y-2">
-                    <button
-                      onClick={() => handleApprove(approval.id_lembur)}
-                      className="bg-green-500 text-white rounded-lg px-3 py-2 text-sm"
-                    >
-                      Setujui
-                    </button>
-                    <button
-                      onClick={() => handleReject(approval.id_lembur)}
-                      className="bg-red-500 text-white rounded-lg px-3 py-2 text-sm"
-                    >
-                      Tolak
-                    </button>
+
+              {/* Body Card */}
+              <div className="grid grid-cols-1 gap-4 p-4 bg-white rounded-lg shadow-md">
+                {/* Nama User & Lokasi */}
+                <div className="flex items-center gap-2">
+                  <FontAwesomeIcon
+                    icon={faUser}
+                    className="text-green-500 text-base"
+                  />
+                  <div className="flex flex-col w-full">
+                    <div className="flex justify-between items-center">
+                      <p className="text-gray-800 font-semibold text-xs">
+                        {approval.nama_user}
+                      </p>
+                      <span className="text-gray-700 text-xs font-normal">
+                        <FontAwesomeIcon
+                          icon={faMapMarkerAlt}
+                          className="text-green-700 text-base mr-1"
+                        />
+                        {approval.lokasi}
+                      </span>
+                    </div>
                   </div>
-                )}
+                </div>
+
+                {/* Jam Mulai - Jam Selesai */}
+                <div className="flex items-center gap-2">
+                  <FontAwesomeIcon
+                    icon={faClock}
+                    className="text-yellow-500 text-base"
+                  />
+                  <p className="text-gray-800 text-xs">
+                    <span className="font-medium">{approval.jam_mulai}</span> -{" "}
+                    <span className="font-medium">{approval.jam_selesai}</span>
+                  </p>
+                </div>
+
+                {/* Deskripsi */}
+                <div className="flex items-center gap-2">
+                  <FontAwesomeIcon
+                    icon={faInfoCircle}
+                    className="text-blue-500 text-base"
+                  />
+                  <button
+                    onClick={() => openModalWithDescription(approval.deskripsi)}
+                    className="text-blue-500 font-medium text-xs hover:text-blue-700 hover:underline transition duration-150"
+                  >
+                    Lihat Deskripsi
+                  </button>
+                </div>
               </div>
+
+              {/* Action Buttons */}
+              {approval.status_lembur === 0 && (
+                <div className="flex space-x-20">
+                  <button
+                    onClick={() => handleReject(approval.id_lembur)}
+                    className="flex-1 flex items-center justify-center bg-red-500 text-white rounded-lg px-0 py-2 text-sm font-semibold hover:bg-red-600 transition-all"
+                  >
+                    <FontAwesomeIcon icon={faTimes} className="mr-2" />
+                  </button>
+                  <button
+                    onClick={() => handleApprove(approval.id_lembur)}
+                    className="flex-1 flex items-center justify-center bg-green-500 text-white rounded-lg px-0 py-2 text-sm font-semibold hover:bg-green-600 transition-all"
+                  >
+                    <FontAwesomeIcon icon={faCheck} className="mr-2" />
+                  </button>
+                </div>
+              )}
             </div>
           ))
         ) : (
