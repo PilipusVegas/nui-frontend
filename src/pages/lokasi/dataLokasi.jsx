@@ -206,31 +206,31 @@ const DataLokasi = () => {
     </div>
   );
 
-// Pagination Logic
-const totalPagesDesktop = Math.ceil(filteredLokasiData.length / itemsPerPageDesktop);
-const totalPagesMobile = Math.ceil(filteredLokasiData.length / itemsPerPageMobile);
+  // Pagination Logic
+  const totalPagesDesktop = Math.ceil(filteredLokasiData.length / itemsPerPageDesktop);
+  const totalPagesMobile = Math.ceil(filteredLokasiData.length / itemsPerPageMobile);
 
-// Menghitung halaman saat ini dengan data yang sudah difilter
-const currentItemsDesktop = filteredLokasiData.slice(
-  (currentPageDesktop - 1) * itemsPerPageDesktop,
-  currentPageDesktop * itemsPerPageDesktop
-);
-const currentItemsMobile = filteredLokasiData.slice(
-  (currentPageMobile - 1) * itemsPerPageMobile,
-  currentPageMobile * itemsPerPageMobile
-);
+  // Menghitung halaman saat ini dengan data yang sudah difilter
+  const currentItemsDesktop = filteredLokasiData.slice(
+    (currentPageDesktop - 1) * itemsPerPageDesktop,
+    currentPageDesktop * itemsPerPageDesktop
+  );
+  const currentItemsMobile = filteredLokasiData.slice(
+    (currentPageMobile - 1) * itemsPerPageMobile,
+    currentPageMobile * itemsPerPageMobile
+  );
 
-// Reset halaman ketika search term berubah
-useEffect(() => {
-  setCurrentPageDesktop(1);
-  setCurrentPageMobile(1);
-}, [searchTerm]);
-
+  // Reset halaman ketika search term berubah
+  useEffect(() => {
+    setCurrentPageDesktop(1);
+    setCurrentPageMobile(1);
+  }, [searchTerm]);
 
   return (
     <div className="max-h-screen flex flex-col px-6 pt-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap">
+        {/* Back Button and Title */}
         <div className="flex items-center space-x-2 w-full sm:w-auto mb-4 sm:mb-0">
           <FontAwesomeIcon
             icon={faArrowLeft}
@@ -241,23 +241,27 @@ useEffect(() => {
           <h1 className="text-xl sm:text-3xl font-bold text-gray-800 pb-1">Data Lokasi Gerai</h1>
         </div>
 
-        <div className="flex items-center space-x-1 sm:space-x-3 w-full sm:w-auto">
+        {/* Search Bar and Add Location Button */}
+        <div className="flex items-center space-x-3 w-full sm:w-auto">
           {/* Search Bar */}
-          <div className="relative w-full sm:w-64 mb-2 sm:mb-0">
+          <div className="relative w-full sm:w-64">
             <input
               type="text"
               placeholder="Cari Lokasi..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-1 border rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-2 border rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
             />
-            <FontAwesomeIcon icon={faSearch} className="absolute top-2 right-2 text-gray-500" />
+            <FontAwesomeIcon
+              icon={faSearch}
+              className="absolute top-2/4 -translate-y-1/2 right-3 text-gray-500"
+            />
           </div>
 
           {/* Add Location Button */}
           <button
             onClick={() => setIsModalOpen(true)}
-            className="bg-green-500 text-white px-4 py-1 mb-2 rounded flex items-center justify-center hover:bg-green-600 transition-colors duration-150"
+            className="bg-green-500 text-white px-4 py-2 sm:py-1 rounded flex items-center justify-center hover:bg-green-600 transition-colors duration-150"
           >
             <FontAwesomeIcon icon={faPlus} />
             <span className="hidden sm:inline ml-2">Tambah Lokasi</span>

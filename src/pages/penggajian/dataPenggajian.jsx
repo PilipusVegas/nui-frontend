@@ -62,8 +62,8 @@ const DataPenggajian = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen p-6">
-      <div className="flex-grow px-6 ">
+    <div className="flex-grow min-h-screen px-6 pt-4">
+      <div className="">
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center space-x-2">
             <FontAwesomeIcon
