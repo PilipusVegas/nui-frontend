@@ -166,7 +166,7 @@ const DataApproval = () => {
           {["Permohonan Lembur", "Disetujui", "Ditolak"].map((label, i) => (
             <button
               key={i}
-              className={`px-3 py-2 text-sm rounded-lg font-semibold ${
+              className={`px-2 py-2 text-sm rounded-lg font-semibold ${
                 selectedStatus === i
                   ? ["bg-yellow-400", "bg-green-500", "bg-red-500"][i] +
                     " text-white"
@@ -329,12 +329,12 @@ const DataApproval = () => {
               <div className="flex justify-between items-center">
                 <p className="text-gray-600 text-sm">
                   {" "}
-                  <span className="font-semibold text-gray-800">
-                    {new Date(approval.tanggal).toLocaleDateString("id-ID", {
-                      day: "2-digit",
-                      month: "long",
-                      year: "numeric",
-                    })}
+                  <span className="text-gray-700 text-xs font-normal">
+                    <FontAwesomeIcon
+                      icon={faMapMarkerAlt}
+                      className="text-green-700 text-base mr-1"
+                    />
+                    {approval.lokasi}
                   </span>
                 </p>
                 <span
@@ -360,21 +360,23 @@ const DataApproval = () => {
                 <div className="flex items-center gap-2">
                   <FontAwesomeIcon
                     icon={faUser}
-                    className="text-green-500 text-base"
+                    className="text-gray-500 text-base"
                   />
                   <div className="flex flex-col w-full">
                     <div className="flex justify-between items-center">
-                      <p className="text-gray-800 font-semibold text-xs">
+                      <p className="text-gray-800 font-semibold text-sm">
                         {approval.nama_user}
                       </p>
-                      <span className="text-gray-700 text-xs font-normal">
-                        <FontAwesomeIcon
-                          icon={faMapMarkerAlt}
-                          className="text-green-700 text-base mr-1"
-                        />
-                        {approval.lokasi}
-                      </span>
                     </div>
+                  </div>
+                  <div>
+                    <p className="text-gray-800 font-semibold text-xs">
+                      {new Date(approval.tanggal).toLocaleDateString("id-ID", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </p>
                   </div>
                 </div>
 
@@ -382,7 +384,7 @@ const DataApproval = () => {
                 <div className="flex items-center gap-2">
                   <FontAwesomeIcon
                     icon={faClock}
-                    className="text-yellow-500 text-base"
+                    className="text-gray-500 text-base"
                   />
                   <p className="text-gray-800 text-xs">
                     <span className="font-medium">{approval.jam_mulai}</span> -{" "}
@@ -394,11 +396,11 @@ const DataApproval = () => {
                 <div className="flex items-center gap-2">
                   <FontAwesomeIcon
                     icon={faInfoCircle}
-                    className="text-blue-500 text-base"
+                    className="text-gray-500 text-base"
                   />
                   <button
                     onClick={() => openModalWithDescription(approval.deskripsi)}
-                    className="text-blue-500 font-medium text-xs hover:text-blue-700 hover:underline transition duration-150"
+                    className="text font-medium text-xs underline hover:text-blue-700 hover:underline transition duration-150"
                   >
                     Lihat Deskripsi
                   </button>
