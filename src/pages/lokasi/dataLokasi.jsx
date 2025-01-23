@@ -298,7 +298,7 @@ const DataLokasi = () => {
             title="Back to Home"
           />
           <h1 className="text-xl sm:text-3xl font-bold text-gray-800 pb-1">
-            Data Lokasi Gerai
+            Lokasi Gerai
           </h1>
         </div>
 

@@ -56,9 +56,7 @@ const DataApproval = () => {
 
   // Filtered approval data based on selected status and search query
   const filteredApproval = approvalData.filter((approval) => {
-    const matchesSearch = approval.nama_user
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+    const matchesSearch = approval.nama_user.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus =
       selectedStatus === 0
         ? approval.status_lembur === 0
@@ -145,58 +143,55 @@ const DataApproval = () => {
 
   return (
     <div className="min-h-screen flex flex-col p-6">
-      {/* Header */}
-      <div className="flex items-center space-x-3 mb-6 justify-between">
-        <div className="flex items-center">
+      {/* Header and Filter Section */}
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        {/* Header */}
+        <div className="flex items-center w-full sm:w-auto">
           <FontAwesomeIcon
             icon={faArrowLeft}
             title="Back to Home"
             onClick={handleBackClick}
             className="mr-2 cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"
           />
-          <h1 className="text-3xl font-bold text-gray-800 pb-1">
-            Data Approval Lembur
-          </h1>
-        </div>
-      </div>
-
-      {/* Filter Section */}
-      <div className="mb-6 flex flex-wrap gap-3 justify-between items-center">
-        <div className="flex flex-wrap gap-2">
-          {["Permohonan Lembur", "Disetujui", "Ditolak"].map((label, i) => (
-            <button
-              key={i}
-              className={`px-2 py-2 text-sm rounded-lg font-semibold ${
-                selectedStatus === i
-                  ? ["bg-yellow-400", "bg-green-500", "bg-red-500"][i] +
-                    " text-white"
-                  : "bg-gray-200"
-              }`}
-              onClick={() => setSelectedStatus(i)}
-            >
-              {label}
-            </button>
-          ))}
+          <h1 className="text-xl sm:text-3xl font-bold text-gray-800 pb-1">Persetujuan Lembur</h1>
         </div>
 
-        {/* Search Input */}
-        <div className="w-full sm:w-auto">
-          <input
-            type="text"
-            value={searchQuery}
-            placeholder="Cari Nama Karyawan..."
-            className="w-full sm:max-w-md border border-gray-300 p-2 rounded-lg"
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        {/* Wrapper untuk Search Bar dan Filter */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
+          {/* Wrapper untuk ikon dan input */}
+          <div className="relative flex items-center w-full sm:w-auto">
+            {/* Ikon pencarian */}
+            <FontAwesomeIcon
+              icon={faSearch}
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+            />
+            {/* Search Input */}
+            <input
+              type="text"
+              value={searchQuery}
+              placeholder="Cari Nama Karyawan..."
+              className="border border-gray-300 p-2 pl-10 rounded-lg w-full sm:max-w-md"
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          {/* Filter Dropdown */}
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(Number(e.target.value))}
+            className="border border-gray-300 p-2 rounded-lg w-full sm:w-auto"
+          >
+            <option value={0}>Permohonan Lembur</option>
+            <option value={1}>Disetujui</option>
+            <option value={2}>Ditolak</option>
+          </select>
         </div>
       </div>
 
       {/* Tabel untuk Desktop */}
       <div className="hidden md:block">
         {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            Loading...
-          </div>
+          <div className="flex justify-center items-center h-64">Loading...</div>
         ) : errorMessage ? (
           <p className="text-red-500 text-center">{errorMessage}</p>
         ) : (
@@ -207,89 +202,64 @@ const DataApproval = () => {
                   {[
                     "No.",
                     "Tanggal",
-                    "Username",
+                    "Nama Karyawan",
                     "Lokasi",
                     "Deskripsi",
                     "Jam Mulai",
                     "Jam Selesai",
-                    selectedStatus === 1 || selectedStatus === 2
-                      ? "Status"
-                      : "Aksi",
+                    selectedStatus === 1 || selectedStatus === 2 ? "Status" : "Menu",
                   ].map((header) => (
-                    <th key={header} className="py-2 px-4 text-center">
+                    <th key={header} className="py-1 px-4 text-center">
                       {header}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="text-gray-700">
+              <tbody className="text-gray-700 text-center">
                 {filteredApproval.length > 0 ? (
                   filteredApproval.map((approval, index) => (
                     <tr
                       key={approval.id_lembur}
                       className="hover:bg-gray-100 border-b border-gray-200"
                     >
-                      <td className="py-2 px-4 text-center">{index + 1}</td>
-                      <td className="py-2 px-4 text-center">
+                      <td className="py-2 px-4">{index + 1}</td>
+                      <td className="py-2 px-4">
                         {new Date(approval.tanggal).toLocaleDateString("id-ID")}
                       </td>
                       <td className="py-2 px-4">{approval.nama_user}</td>
                       <td className="py-2 px-4">{approval.lokasi}</td>
-                      <td className="py-2 px-4 text-center">
+                      <td className="py-2 px-4">
                         <button
-                          onClick={() =>
-                            openModalWithDescription(approval.deskripsi)
-                          }
+                          onClick={() => openModalWithDescription(approval.deskripsi)}
                           className="text-blue-500"
                         >
-                          <FontAwesomeIcon
-                            icon={faSearch}
-                            className="mr-2 text-blue-500"
-                          />
+                          <FontAwesomeIcon icon={faSearch} className="mr-2 text-blue-500" />
                           View
                         </button>
                       </td>
 
-                      <td className="py-2 px-4 text-center">
-                        {approval.jam_mulai}
-                      </td>
-                      <td className="py-2 px-4 text-center">
-                        {approval.jam_selesai}
-                      </td>
-                      <td className="py-2 px-4 text-center">
+                      <td className="py-2 px-4">{approval.jam_mulai}</td>
+                      <td className="py-2 px-4">{approval.jam_selesai}</td>
+                      <td className="py-2 px-4">
                         {approval.status_lembur === 1 ? (
-                          <span className="text-green-600 font-semibold">
-                            Disetujui
-                          </span>
+                          <span className="text-green-600 font-semibold">Disetujui</span>
                         ) : approval.status_lembur === 2 ? (
-                          <span className="text-red-600 font-semibold">
-                            Ditolak
-                          </span>
+                          <span className="text-red-600 font-semibold">Ditolak</span>
                         ) : (
-                          <div className="flex flex-col space-y-3">
-                            {/* Tombol Setujui */}
-                            <button
+                          <div className="flex space-x-4">
+                            {/* Ikon Setujui */}
+                            <FontAwesomeIcon
+                              icon={faCheck}
+                              className="text-green-500 text-2xl cursor-pointer hover:text-green-600 transition-transform transform hover:scale-110"
                               onClick={() => handleApprove(approval.id_lembur)}
-                              className="flex items-center justify-center bg-green-500 text-white font-medium rounded-lg py-2 shadow-md hover:bg-green-600 hover:shadow-lg transition-transform transform hover:scale-105"
-                            >
-                              <FontAwesomeIcon
-                                icon={faCheck}
-                                className="mr-2"
-                              />
-                              Setujui
-                            </button>
+                            />
 
-                            {/* Tombol Tolak */}
-                            <button
+                            {/* Ikon Tolak */}
+                            <FontAwesomeIcon
+                              icon={faTimes}
+                              className="text-red-500 text-2xl cursor-pointer hover:text-red-600 transition-transform transform hover:scale-110"
                               onClick={() => handleReject(approval.id_lembur)}
-                              className="flex items-center justify-center bg-red-500 text-white font-medium rounded-lg py-2 shadow-md hover:bg-red-600 hover:shadow-lg transition-transform transform hover:scale-105"
-                            >
-                              <FontAwesomeIcon
-                                icon={faTimes}
-                                className="mr-2"
-                              />
-                              Tolak
-                            </button>
+                            />
                           </div>
                         )}
                       </td>
@@ -297,10 +267,7 @@ const DataApproval = () => {
                   ))
                 ) : (
                   <tr>
-                    <td
-                      colSpan="8"
-                      className="text-center py-4 text-gray-500 italic"
-                    >
+                    <td colSpan="8" className="text-center py-4 text-gray-500 italic">
                       Data tidak ditemukan.
                     </td>
                   </tr>
@@ -358,15 +325,10 @@ const DataApproval = () => {
               <div className="grid grid-cols-1 gap-4 p-4 bg-white rounded-lg shadow-md">
                 {/* Nama User & Lokasi */}
                 <div className="flex items-center gap-2">
-                  <FontAwesomeIcon
-                    icon={faUser}
-                    className="text-gray-500 text-base"
-                  />
+                  <FontAwesomeIcon icon={faUser} className="text-gray-500 text-base" />
                   <div className="flex flex-col w-full">
                     <div className="flex justify-between items-center">
-                      <p className="text-gray-800 font-semibold text-sm">
-                        {approval.nama_user}
-                      </p>
+                      <p className="text-gray-800 font-semibold text-sm">{approval.nama_user}</p>
                     </div>
                   </div>
                   <div>
@@ -382,10 +344,7 @@ const DataApproval = () => {
 
                 {/* Jam Mulai - Jam Selesai */}
                 <div className="flex items-center gap-2">
-                  <FontAwesomeIcon
-                    icon={faClock}
-                    className="text-gray-500 text-base"
-                  />
+                  <FontAwesomeIcon icon={faClock} className="text-gray-500 text-base" />
                   <p className="text-gray-800 text-xs">
                     <span className="font-medium">{approval.jam_mulai}</span> -{" "}
                     <span className="font-medium">{approval.jam_selesai}</span>
@@ -394,10 +353,7 @@ const DataApproval = () => {
 
                 {/* Deskripsi */}
                 <div className="flex items-center gap-2">
-                  <FontAwesomeIcon
-                    icon={faInfoCircle}
-                    className="text-gray-500 text-base"
-                  />
+                  <FontAwesomeIcon icon={faInfoCircle} className="text-gray-500 text-base" />
                   <button
                     onClick={() => openModalWithDescription(approval.deskripsi)}
                     className="text font-medium text-xs underline hover:text-blue-700 hover:underline transition duration-150"

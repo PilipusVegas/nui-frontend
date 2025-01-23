@@ -83,7 +83,7 @@ const MenuSidebar = ({ handleLogout }) => {
       roles: ["1", "2", "3", "4", "5", "6"],
     },
     {
-      label: "Absensi",
+      label: "Data Absensi",
       icon: faCheckSquare,
       path: "/data-absensi",
       roles: ["1","4"], // Contoh hanya role 4 dan 6 yang bisa akses
@@ -95,19 +95,19 @@ const MenuSidebar = ({ handleLogout }) => {
       roles: [ "1","6"], // Contoh hanya role 4 dan 6 yang bisa akses
     },
     {
-      label: "Penggajian",
+      label: "Data Penggajian",
       icon: faBook,
       path: "/data-penggajian",
       roles: ["1","4","6"], // Contoh hanya role 4 dan 6 yang bisa akses
     },
     {
       label: "Persetujuan Lembur",
-      icon: faBook,
+      icon: faCheckSquare,
       path: "/data-approval",
       roles: ["1","5"], // Contoh hanya role 4 dan 6 yang bisa akses
     },
     {
-      label: "Data Lokasi",
+      label: "Data Lokasi Gerai",
       icon: faLocationArrow,
       path: "/data-lokasi",
       roles: [ "1","5"], // Contoh hanya role 4 dan 6 yang bisa akses

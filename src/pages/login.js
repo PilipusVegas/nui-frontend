@@ -37,7 +37,7 @@ const Login = ({ onLoginSuccess }) => {
       if (data.message === "Login berhasil") {
         const dataUser = data.data;
 
-        if (dataUser.id === 16) {
+        if (dataUser  .id === 16) {
           // Jangan simpan data sebelum memilih role
           Swal.fire({
             title: "Selamat Datang",

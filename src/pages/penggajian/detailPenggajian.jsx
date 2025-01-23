@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faCalendar, faCalendarAlt, faDownload } from "@fortawesome/free-solid-svg-icons";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import * as XLSX from "xlsx";
 
@@ -18,9 +18,7 @@ const DetailPenggajian = () => {
   const [totalKeterlambatan, setTotalKeterlambatan] = useState("-");
   const [totalLembur, setTotalLembur] = useState("-");
 
-  const handleBackClick = () => {
-    navigate(-1);
-  };
+  const handleBackClick = () => navigate(-1);
 
   const fetchPayrollDetail = async () => {
     const startDate = sessionStorage.getItem("startDate");
@@ -43,32 +41,22 @@ const DetailPenggajian = () => {
       const result = await response.json();
       setDataUser(result);
       setPayrollData(result.data || []);
-
-      // Calculate total kehadiran, keterlambatan, and lembur
       const kehadiranCount = result.data.filter(
         (item) => item.id_absen !== null && item.tanggal_absen !== "-"
       ).length;
 
-      // Keterlambatan: hitung total keterlambatan berdasarkan waktu absen_mulai lebih dari jam 22:00
       const keterlambatanTotal = result.data.reduce((acc, item) => {
         if (item.absen_mulai) {
-          // Ambil waktu mulai absen (absen_mulai) dan konversi ke format 24 jam
           const [hours, minutes] = item.absen_mulai.split(":").map(Number);
           const absenTimeInMinutes = hours * 60 + minutes;
-
-          // Bandingkan dengan jam 22:00 (22:00 = 1320 menit)
-          const lateThresholdInMinutes = 22 * 60; // 22:00 dalam menit
-
-          // Jika waktu absen lebih dari 22:00, hitung keterlambatan
+          const lateThresholdInMinutes = 22 * 60;
           if (absenTimeInMinutes > lateThresholdInMinutes) {
-            const lateMinutes = absenTimeInMinutes - lateThresholdInMinutes;
-            acc += lateMinutes;
+            acc += absenTimeInMinutes - lateThresholdInMinutes;
           }
         }
         return acc;
       }, 0);
 
-      // Lembur: hitung total lembur dalam menit
       const lemburTotal = result.data.reduce((acc, item) => {
         if (item.lembur && item.lembur !== "null" && item.lembur !== "0:00") {
           const [hours, minutes] = item.lembur.split(":").map(Number);
@@ -79,13 +67,9 @@ const DetailPenggajian = () => {
 
       setTotalKehadiran(kehadiranCount);
       setTotalKeterlambatan(
-        `${Math.floor(keterlambatanTotal / 60)} Jam ${
-          keterlambatanTotal % 60
-        } Menit`
+        `${Math.floor(keterlambatanTotal / 60)} Jam ${keterlambatanTotal % 60} Menit`
       );
-      setTotalLembur(
-        `${Math.floor(lemburTotal / 60)} Jam ${lemburTotal % 60} Menit`
-      );
+      setTotalLembur(`${Math.floor(lemburTotal / 60)} Jam ${lemburTotal % 60} Menit`);
     } catch (error) {
       setError(error.message);
     } finally {
@@ -96,73 +80,6 @@ const DetailPenggajian = () => {
   useEffect(() => {
     fetchPayrollDetail();
   }, [location.search]);
-
-  const generateExcelData = (data) => {
-    const excelData = [
-      [],
-      ["Nama", dataUser?.nama || "-"],
-      ["Total Kehadiran", `${totalKehadiran} Hari`],
-      ["Periode", period],
-      // ["Total Keterlambatan", totalKeterlambatan],
-      ["Total Lembur", totalLembur],
-      [],
-      ["No", "Tanggal", "IN", "OUT", "T"],
-    ];
-
-    data.forEach((item, index) => {
-      excelData.push([
-        index + 1,
-        item.tanggal_absen || item.tanggal_lembur || "-",
-        item.absen_mulai || "-",
-        // item.keterlambatan || "-",
-        item.absen_selesai || "-",
-        item.lembur || "-",
-      ]);
-    });
-
-    return excelData;
-  };
-
-  const handleDownload = () => {
-    if (!payrollData.length) {
-      console.warn("No payroll data available for download.");
-      return;
-    }
-
-    const excelData = generateExcelData(payrollData);
-    const worksheet = XLSX.utils.aoa_to_sheet(excelData);
-
-    // Set column widths
-    worksheet["!cols"] = [
-      { wch: 20 }, // Column 1: "Nama"
-      { wch: 20 }, // Column 2: "Tanggal"
-      { wch: 10 }, // Column 3: "IN"
-      // { wch: 10 }, // Column 4: "L"
-      { wch: 10 }, // Column 5: "OUT"
-      { wch: 10 }, // Column 6: "T"
-    ];
-
-    // Add border to all cells
-    const borderStyle = {
-      top: { style: "thin" },
-      left: { style: "thin" },
-      bottom: { style: "thin" },
-      right: { style: "thin" },
-    };
-
-    // Loop through each cell and apply border
-    for (let row = 0; row < excelData.length; row++) {
-      for (let col = 0; col < excelData[row].length; col++) {
-        const cellAddress = { r: row, c: col };
-        if (!worksheet[cellAddress]) worksheet[cellAddress] = {};
-        worksheet[cellAddress].s = { border: borderStyle };
-      }
-    }
-
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Payroll Data");
-    XLSX.writeFile(workbook, "${startDate} - ${endDate}.xlsx");
-  };
 
   useEffect(() => {
     const startDate = sessionStorage.getItem("startDate");
@@ -182,30 +99,50 @@ const DetailPenggajian = () => {
     }
   }, []);
 
-  function hitungKeterlambatan(jamMasuk, jamAbsen) {
-    // Parsing waktu ke dalam objek Date dengan mempertimbangkan lintas hari
-    const masuk = new Date(`1970-01-01T${jamMasuk}`);
-    let absen = new Date(`1970-01-01T${jamAbsen}`);
-    
-    // Jika `jamAbsen` lebih awal atau sama dengan `jamMasuk`, berarti tidak ada keterlambatan
-    if (absen <= masuk) {
-      return "00:00";
+  const generateExcelData = (data) => {
+    const excelData = [
+      ["Nama", dataUser?.nama || "-"],
+      ["Total Kehadiran", `${totalKehadiran} Hari`],
+      ["Periode", period],
+      ["Total Lembur", totalLembur],
+      [],
+      ["No", "Tanggal", "IN", "OUT", "T"],
+    ];
+
+    data.forEach((item, index) => {
+      excelData.push([
+        index + 1,
+        item.tanggal_absen || item.tanggal_lembur || "-",
+        item.absen_mulai || "-",
+        item.absen_selesai === "0:00" ? "-" : item.absen_selesai,
+        item.lembur || "-",
+      ]);
+    });
+
+    return excelData;
+  };
+
+  const handleDownload = () => {
+    if (!payrollData.length) {
+      console.warn("No payroll data available for download.");
+      return;
     }
-  
-    // Hitung selisih waktu dalam milidetik
-    const selisihMilidetik = absen - masuk;
-  
-    // Konversi milidetik ke menit dan jam
-    const menit = Math.floor(selisihMilidetik / (1000 * 60));
-    const jam = Math.floor(menit / 60);
-    const sisaMenit = menit % 60;
-  
-    // Format jam dan menit ke dalam format hh:mm
-    const jamFormatted = String(jam).padStart(2, '0');
-    const menitFormatted = String(sisaMenit).padStart(2, '0');
-  
-    return `${jamFormatted}:${menitFormatted}`;
-  }
+
+    const excelData = generateExcelData(payrollData);
+    const worksheet = XLSX.utils.aoa_to_sheet(excelData);
+    worksheet["!cols"] = [{ wch: 20 }, { wch: 20 }, { wch: 10 }, { wch: 10 }];
+
+    const today = new Date();
+    const formattedDate = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}${String(today.getDate()).padStart(2, "0")}`;
+    const fileName = `${formattedDate}_${dataUser?.nama}_${dataUser?.role}.xlsx`;
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Payroll Data");
+    XLSX.writeFile(workbook, fileName);
+  };
 
   return (
     <div className="flex flex-col min-h-screen p-6">
@@ -213,102 +150,129 @@ const DetailPenggajian = () => {
         <div className="flex items-center">
           <FontAwesomeIcon
             icon={faArrowLeft}
-            title="Back"
             onClick={handleBackClick}
-            className="mr-2 cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-2 shadow-md"
+            className="mr-2 cursor-pointer text-white bg-green-600 hover:bg-green-700 p-2 rounded-full"
           />
-          <h2 className="text-2xl font-bold text-gray-800 pb-1">
-            Detail Penggajian
-          </h2>
+          <h2 className="text-2xl font-bold pb-1 text-gray-800">Detail Penggajian</h2>
         </div>
         <button
           onClick={handleDownload}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150"
+          className="bg-blue-600 flex text-white px-4 py-2 rounded-lg hover:bg-blue-700"
         >
-          Unduh Data
+          <FontAwesomeIcon icon={faDownload} className="pt-1" />
+          <span className="sm:block hidden ml-2 ">Unduh Data</span>
         </button>
       </div>
-
       {loading ? (
-        <p className="text-center text-lg">Loading...</p>
+        <p className="text-center">Loading...</p>
       ) : error ? (
-        <p className="text-center text-red-500">Error fetching data: {error}</p>
+        <p className="text-center text-red-500">{error}</p>
       ) : (
-        <div className="min-h-screen">
-          {/* Informasi Karyawan Card */}
-          <div className="bg-white shadow-md rounded-lg p-6 mb-6 text-gray-800">
-            <p className="text-2xl font-semibold text-gray-900">
-              {dataUser?.nama}
-            </p>
-            <div className="flex justify-between mt-3 text-sm text-gray-600">
-              <span>
-                <strong className="text-green-600">Kehadiran:</strong>{" "}
-                {totalKehadiran} Hari
-              </span>
-              <span>
-                <strong className="text-blue-600">Lembur:</strong> {totalLembur}
-              </span>
-              {/* <span>
-                <strong className="text-yellow-600">Terlambat:</strong>{" "}
-                {totalKeterlambatan}
-              </span> */}
+        <div>
+          <div className="bg-white shadow rounded-lg p-4 mb-4">
+            {/* Header */}
+            <div className="mb-3 text-center">
+              <p className="text-lg font-bold text-gray-900">
+                {dataUser?.nama || "Nama Tidak Tersedia"}
+              </p>
+              <p className="text-sm font-medium text-gray-500">
+                {dataUser?.role || "Role Tidak Tersedia"}
+              </p>
+            </div>
+
+            {/* Informasi Periode */}
+            <div className="text-center mb-4">
+              <p className="text-xs text-gray-500">
+                <strong className="text-gray-700">Periode:</strong> {period || "Tidak Tersedia"}
+              </p>
+            </div>
+
+            {/* Kehadiran, Jam Kerja, dan Lembur */}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-2">
+              <div className="px-3 py-2 rounded-lg bg-blue-100 text-center">
+                <p className="text-xl font-bold text-blue-600">{totalKehadiran || 0}</p>
+                <p className="text-sm text-blue-800">Kehadiran</p>
+              </div>
+              <div className="px-3 py-2 rounded-lg bg-yellow-100 text-center">
+                <p className="text-lg sm:text-xl font-bold text-yellow-600">{totalLembur || 0}</p>
+                <p className="text-sm text-yellow-800">Lembur (Jam)</p>
+              </div>
             </div>
           </div>
 
-          {/* Periode */}
-          <p className="text-sm text-gray-600 mb-2 font-medium">
-            Rentang Periode: {period}
-          </p>
-
-          {/* Tabel */}
-          <div className="overflow-hidden rounded-lg shadow-lg">
-            <table className="w-full bg-white border-collapse">
-              <thead className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-                <tr>
-                  {["No", "Tanggal", "IN", "OUT", "T"].map(
-                    (header, index) => (
-                      <th
-                        key={index}
-                        className="py-1 px-4 font-semibold text-sm uppercase border-b border-green-400 text-center"
-                      >
-                        {header}
-                      </th>
-                    )
-                  )}
+          <div className="overflow-hidden rounded-lg">
+            {/* Tabel untuk layar besar */}
+            <table className="table-auto w-full hidden md:table">
+              <thead>
+                <tr className="bg-green-600 text-white text-sm">
+                  {["No", "Tanggal", "IN", "OUT", "T"].map((header, i) => (
+                    <th
+                      key={i}
+                      className={`px-4 py-1 ${
+                        i === 0 ? "rounded-tl-lg " : i === 4 ? "rounded-tr-lg " : ""
+                      }`}
+                    >
+                      {header}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {payrollData.map((item, index) => {
-                  const displayTanggal =
-                    item.tanggal_absen || item.tanggal_lembur || "-";
-                  return (
-                    <tr
-                      key={item.id_absen || index}
-                      className="hover:bg-green-50 transition-all duration-150"
-                    >
-                      <td className="py-1 px-4 text-center border-b border-gray-200">
-                        {index + 1}
-                      </td>
-                      <td className="py-1 px-4 text-center border-b border-gray-200">
-                        {displayTanggal}
-                      </td>
-                      <td className="py-1 px-4 text-center border-b border-gray-200">
-                        {item.absen_mulai || "-"}
-                      </td>
-                      {/* <td className="py-1 px-4 text-center border-b border-gray-200">
-                        {hitungKeterlambatan('22:00', item.absen_mulai) || "-"}
-                      </td> */}
-                      <td className="py-1 px-4 text-center border-b border-gray-200">
-                        { (item.absen_selesai === '0:00') ? '-' : item.absen_selesai}
-                      </td>
-                      <td className="py-1 px-4 text-center border-b border-gray-200">
-                        {item.lembur || "-"}
-                      </td>
-                    </tr>
-                  );
-                })}
+                {payrollData.map((item, i) => (
+                  <tr key={i} className="text-center">
+                    <td className="border px-4">{i + 1}</td>
+                    <td className="border px-4">
+                      {item.tanggal_absen || item.tanggal_lembur || "-"}
+                    </td>
+                    <td className="border px-4">{item.absen_mulai || "-"}</td>
+                    <td className="border px-4">
+                      {item.absen_selesai === "0:00" ? "-" : item.absen_selesai}
+                    </td>
+                    <td className="border px-4">{item.lembur || "-"}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
+
+            {/* Card untuk layar kecil */}
+<div className="md:hidden">
+  {payrollData.map((item, i) => (
+    <div
+      key={i}
+      className="bg-white shadow-lg rounded-xl p-5 mb-2 border border-gray-200 hover:shadow-2xl transition-all duration-300"
+    >
+      {/* Tanggal */}
+      <div className="flex items-center justify-center mb-4">
+        <FontAwesomeIcon icon={faCalendarAlt} className="text-green-500 mr-2 text-lg" />
+        <span className="text-lg font-semibold text-gray-900">
+          {item.tanggal_absen || item.tanggal_lembur || "Tidak Tersedia"}
+        </span>
+      </div>
+
+      {/* Informasi Kehadiran */}
+      <div className="grid grid-cols-3 gap-4 bg-gray-200 rounded-xl p-3">
+        {/* IN */}
+        <div className="flex flex-col items-center text-center bg-white p-2 rounded-lg shadow-md">
+          <span className="text-sm font-semibold text-green-600">IN</span>
+          <span className="text-md text-gray-700">{item.absen_mulai || "-"}</span>
+        </div>
+
+        {/* OUT */}
+        <div className="flex flex-col items-center text-center bg-white p-2 rounded-lg shadow-md">
+          <span className="text-sm font-semibold text-red-600">OUT</span>
+          <span className="text-md text-gray-700">{item.absen_selesai || "-"}</span>
+        </div>
+
+        {/* T (Lembur) */}
+        <div className="flex flex-col items-center text-center bg-white p-2 rounded-lg shadow-md">
+          <span className="text-sm font-semibold text-blue-600">T</span>
+          <span className="text-md text-gray-700">{item.lembur || "-"}</span>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+
           </div>
         </div>
       )}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser, faKey, faSignOutAlt, faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import { faUser, faKey, faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 
 const Header = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);

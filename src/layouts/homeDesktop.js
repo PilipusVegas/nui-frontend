@@ -283,6 +283,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
                 <FontAwesomeIcon icon={faMoneyCheckAlt} className="text-purple-600 text-4xl" />
               </div>
             </div>
+            
           )}
         </div>
       </div>

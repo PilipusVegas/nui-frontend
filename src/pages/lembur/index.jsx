@@ -28,7 +28,11 @@ const Lembur = () => {
     const storedUserId = localStorage.getItem("userId");
     const storedUsername = localStorage.getItem("userName");
     if (storedUserId) {
-      setLemburData((prev) => ({ ...prev, userId: storedUserId, username: storedUsername || "" }));
+      setLemburData((prev) => ({
+        ...prev,
+        userId: storedUserId,
+        username: storedUsername || "",
+      }));
     }
     fetchLocations();
   }, []);
@@ -71,7 +75,7 @@ const Lembur = () => {
       });
       if (response.ok) {
         await response.json();
-        Swal.fire("Lembur berhasil!", "", "success");
+        Swal.fire("berhasil Terkirim!", "", "success");
         setIsSuccess(true);
       } else {
         Swal.fire("Gagal Menyimpan Data", "Terjadi kesalahan, Silahkan coba lagi", "error");
@@ -88,7 +92,10 @@ const Lembur = () => {
   }, [isSuccess, navigate]);
 
   const renderStepOne = () => (
-    <MobileLayout title="LEMBUR" className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
+    <MobileLayout
+      title="LEMBUR"
+      className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm"
+    >
       <form
         className="w-full max-w-lg p-5 bg-gray-50 border-2 rounded-lg"
         onSubmit={(e) => {
@@ -99,8 +106,12 @@ const Lembur = () => {
           }
         }}
       >
+        {/* Form fields */}
+
         <div className="mb-4">
-          <label htmlFor="tanggal" className="block text-lg font-bold mb-2">Tanggal:</label>
+          <label htmlFor="tanggal" className="block text-lg font-bold mb-2">
+            Tanggal:
+          </label>
           <input
             type="date"
             id="tanggal"
@@ -111,7 +122,9 @@ const Lembur = () => {
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="lokasi" className="block text-lg font-bold mb-2">Lokasi:</label>
+          <label htmlFor="lokasi" className="block text-lg font-bold mb-2">
+            Lokasi:
+          </label>
           <select
             id="lokasi"
             name="lokasi"
@@ -120,17 +133,25 @@ const Lembur = () => {
             onChange={(e) => {
               const selectedLokasi = e.target.value;
               const selectedId = locations.find((loc) => loc.nama === selectedLokasi)?.id || "";
-              setLemburData((prev) => ({ ...prev, lokasi: selectedLokasi, nama_lokasi: selectedId }));
+              setLemburData((prev) => ({
+                ...prev,
+                lokasi: selectedLokasi,
+                nama_lokasi: selectedId,
+              }));
             }}
           >
             <option value="">Pilih Lokasi</option>
             {locations.map((loc) => (
-              <option key={loc.id} value={loc.nama}>{loc.nama}</option>
+              <option key={loc.id} value={loc.nama}>
+                {loc.nama}
+              </option>
             ))}
           </select>
         </div>
         <div className="mb-4">
-          <label htmlFor="tugas" className="block text-lg font-bold mb-2">Tugas yang diberikan:</label>
+          <label htmlFor="tugas" className="block text-lg font-bold mb-2">
+            Tugas yang diberikan:
+          </label>
           <textarea
             rows="4"
             id="tugas"
@@ -146,7 +167,9 @@ const Lembur = () => {
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="jamMulai" className="block text-lg font-bold mb-2">Jam Mulai:</label>
+          <label htmlFor="jamMulai" className="block text-lg font-bold mb-2">
+            Jam Mulai:
+          </label>
           <input
             type="time"
             id="jamMulai"
@@ -157,7 +180,9 @@ const Lembur = () => {
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="jamSelesai" className="block text-lg font-bold mb-2">Jam Selesai:</label>
+          <label htmlFor="jamSelesai" className="block text-lg font-bold mb-2">
+            Jam Selesai:
+          </label>
           <input
             type="time"
             id="jamSelesai"
@@ -169,7 +194,15 @@ const Lembur = () => {
         </div>
         <button
           type="submit"
-          className={`w-full p-3 text-lg font-bold rounded-lg border-2 ${lemburData.lokasi && lemburData.tugas && lemburData.tanggal && lemburData.jamMulai && lemburData.jamSelesai ? "bg-green-500 border-green-700" : "bg-gray-400 border-gray-600 cursor-not-allowed"}`}
+          className={`w-full p-3 text-lg font-bold rounded-lg border-2 ${
+            lemburData.lokasi &&
+            lemburData.tugas &&
+            lemburData.tanggal &&
+            lemburData.jamMulai &&
+            lemburData.jamSelesai
+              ? "bg-green-500 border-green-700"
+              : "bg-gray-400 border-gray-600 cursor-not-allowed"
+          }`}
         >
           ➜
         </button>
@@ -192,21 +225,32 @@ const Lembur = () => {
         >
           <h3 className="text-2xl font-semibold mb-4 text-center">Detail Lembur</h3>
           <div className="p-3">
-            {["username", "lokasi", "tanggal", "jamMulai", "jamSelesai", "tugas"].map((key, index) => (
-              <div key={index}>
-                <div className="flex justify-between text-justify py-2">
-                  <strong className="text-sm font-semibold pr-3 text-justify">
-                    {key.charAt(0).toUpperCase() + key.slice(1)}:
-                  </strong>
-                  <span className="text-gray-700 text-sm break-words">{lemburData[key]}</span>
+            {["username", "lokasi", "tanggal", "jamMulai", "jamSelesai", "tugas"].map(
+              (key, index) => (
+                <div key={index}>
+                  <div className="flex justify-between text-justify py-2">
+                    <strong className="text-sm font-semibold pr-3 text-justify">
+                      {key.charAt(0).toUpperCase() + key.slice(1)}:
+                    </strong>
+                    <span className="text-gray-700 text-sm break-words">{lemburData[key]}</span>
+                  </div>
+                  {index < 5 && <hr className="border-gray-300" />}
                 </div>
-                {index < 5 && <hr className="border-gray-300" />}
-              </div>
-            ))}
+              )
+            )}
           </div>
           <button
+            type="button"
+            className="w-full py-2 mt-3 text-lg font-semibold text-white bg-blue-500 rounded-md hover:bg-blue-600"
+            onClick={() => setCurrentStep("stepOne")}
+          >
+            KEMBALI
+          </button>
+          <button
             type="submit"
-            className={`w-full py-2 mt-3 text-lg font-semibold text-white rounded-md ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"}`}
+            className={`w-full py-2 mt-3 text-lg font-semibold text-white rounded-md ${
+              loading ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"
+            }`}
             disabled={loading}
           >
             {loading ? "Mengirim..." : "KIRIM"}
