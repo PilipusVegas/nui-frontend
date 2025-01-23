@@ -331,12 +331,7 @@ const DataLokasi = () => {
 
       <div className="rounded-lg shadow-md overflow-hidden hidden md:block">
         <table className="table-auto w-full border-collapse rounded-lg text-sm">
-          <thead>
-            <tr className="bg-gray-100">
-              {/* Header */}
-              {renderHeader()}
-            </tr>
-          </thead>
+          {renderHeader()}
           <tbody>
             {filteredLokasiData.length > 0 ? (
               renderBody(currentItemsDesktop)
@@ -354,7 +349,7 @@ const DataLokasi = () => {
       <div className="md:hidden">{renderBodyMobile(currentItemsMobile)}</div>
 
       {/* Pagination untuk mobile */}
-      <div className="flex justify-center text-center space-x-2 mt-4 md:hidden">
+      <div className="flex justify-center text-center space-x-2 pb-10 mt-2 md:hidden">
         <button
           onClick={() => setCurrentPageMobile((prev) => Math.max(prev - 1, 1))}
           disabled={currentPageMobile === 1}
@@ -388,7 +383,7 @@ const DataLokasi = () => {
       </div>
 
       {/* Pagination untuk desktop */}
-      <div className="flex justify-center text-center space-x-2 mt-4 md:block hidden">
+      <div className="flex justify-center text-center space-x-2 py-10 mt-4 md:block hidden">
         <button
           onClick={() => setCurrentPageDesktop((prev) => Math.max(prev - 1, 1))}
           disabled={currentPageDesktop === 1}
@@ -413,7 +408,7 @@ const DataLokasi = () => {
             )
           }
           disabled={currentPageDesktop === totalPagesDesktop}
-          className={`px-5 rounded-full font-xl transition-all duration-200 ${
+          className={`px-5  rounded-full font-xl transition-all duration-200 ${
             currentPageDesktop === totalPagesDesktop
               ? "bg-gray-300 text-gray-500 cursor-not-allowed"
               : "bg-green-600 text-white hover:bg-green-900 shadow-lg"
