@@ -9,6 +9,8 @@ import {
   faArrowLeft,
   faArrowRight,
   faSearch,
+  faMapMarkerAlt,
+  faCalendarAlt,
 } from "@fortawesome/free-solid-svg-icons";
 
 const DataLokasi = () => {
@@ -50,7 +52,9 @@ const DataLokasi = () => {
   };
 
   const handleSubmit = async () => {
-    const endpoint = isEdit ? `${apiUrl}/lokasi/update/${editId}` : `${apiUrl}/lokasi/create`;
+    const endpoint = isEdit
+      ? `${apiUrl}/lokasi/update/${editId}`
+      : `${apiUrl}/lokasi/create`;
     const method = isEdit ? "PUT" : "POST";
 
     try {
@@ -60,7 +64,11 @@ const DataLokasi = () => {
         body: JSON.stringify(formState),
       });
       if (response.ok) {
-        Swal.fire("Success!", `Data berhasil ${isEdit ? "diupdate" : "ditambahkan"}!`, "success");
+        Swal.fire(
+          "Success!",
+          `Data berhasil ${isEdit ? "diupdate" : "ditambahkan"}!`,
+          "success"
+        );
         fetchLokasiData();
         closeModal();
       }
@@ -121,7 +129,10 @@ const DataLokasi = () => {
 
   const renderBody = (currentItems) => {
     return currentItems.map((lokasi, index) => (
-      <tr key={lokasi.id} className="hover:bg-gray-200 transition-colors duration-150">
+      <tr
+        key={lokasi.id}
+        className="hover:bg-gray-200 transition-colors duration-150"
+      >
         <td className="px-4 py-1 border-b text-sm text-center">{index + 1}</td>
         <td className="px-4 py-1 border-b text-sm">{lokasi.nama}</td>
         <td className="px-4 py-1 border-b text-sm">{lokasi.koordinat}</td>
@@ -145,21 +156,62 @@ const DataLokasi = () => {
 
   const renderBodyMobile = (currentItems) => {
     return currentItems.map((lokasi) => (
-      <div key={lokasi.id} className="bg-white rounded-lg mb-2 p-4 border border-gray-200">
-        <h3 className="text-md font-medium text-gray-800">{lokasi.nama}</h3>
-        <p className="text-sm text-gray-500">Koordinat: {lokasi.koordinat}</p>
-        <div className="mt-4 flex space-x-2 justify-end">
+      <div className="bg-gradient-to-br from-f to-gray-50 rounded-xl shadow-lg mb-6 p-4 border border-gray-200 hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out">
+        {/* Header Card */}
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-lg font-semibold text-gray-800">{lokasi.nama}</h3>
+          <span className="text-xs font-medium bg-green-300 text-gray-600 px-3 py-1 rounded-full"></span>
+        </div>
+
+        {/* Koordinat dengan Map Icon */}
+        <div className="flex items-center text-sm text-gray-600 mb-4">
+          <div className="flex items-center gap-3 bg-gray-100 rounded-md px-3 py-2 shadow-inner">
+            <FontAwesomeIcon
+              icon={faMapMarkerAlt}
+              className="text-green-500 text-lg"
+            />
+            <span
+              className="font-medium break-words w-full"
+              style={{ wordBreak: "break-word" }}
+            >
+              {lokasi.koordinat}
+            </span>
+          </div>
+        </div>
+
+        {/* Informasi Tambahan */}
+        {/* <div className="mb-4 text-gray-500 text-sm">
+          <p className="flex items-center gap-2">
+            <FontAwesomeIcon icon={faCalendarAlt} className="text-blue-500" />
+            <span>
+              Dibuat pada:{" "}
+              <span className="font-medium">
+                {new Date(lokasi.createdAt).toLocaleDateString("id-ID", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </span>
+            </span>
+          </p>
+        </div> */}
+
+        {/* Tombol Aksi */}
+        <div className="flex justify-end space-x-3 items-center pt-3 border-t border-gray-200">
+          {/* Tombol Edit */}
           <button
             onClick={() => handleEdit(lokasi)}
-            className="bg-yellow-200 text-yellow-700 text-xs px-3 py-1 rounded-md hover:bg-yellow-300 transition duration-150"
+            className="flex items-center gap-2 bg-yellow-500 text-yellow-100 text-sm font-medium px-4 py-2 rounded-md shadow hover:bg-yellow-200 hover:shadow-lg transition duration-200"
           >
-            Edit
+            <FontAwesomeIcon icon={faEdit} />
           </button>
+
+          {/* Tombol Delete */}
           <button
             onClick={() => handleDelete(lokasi.id)}
-            className="bg-red-200 text-red-700 text-xs px-3 py-1 rounded-md hover:bg-red-300 transition duration-150"
+            className="flex items-center gap-2 bg-red-500 text-red-100 text-sm font-medium px-4 py-2 rounded-md shadow hover:bg-red-200 hover:shadow-lg transition duration-200"
           >
-            Hapus
+            <FontAwesomeIcon icon={faTrash} />
           </button>
         </div>
       </div>
@@ -169,7 +221,9 @@ const DataLokasi = () => {
   const renderModal = () => (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center px-6">
       <div className="bg-white p-6 rounded-lg w-full sm:w-96">
-        <h3 className="text-xl font-bold mb-4">{isEdit ? "Edit Lokasi" : "Tambah Lokasi"}</h3>
+        <h3 className="text-xl font-bold mb-4">
+          {isEdit ? "Edit Lokasi" : "Tambah Lokasi"}
+        </h3>
         <input
           type="text"
           name="nama"
@@ -190,7 +244,9 @@ const DataLokasi = () => {
           <button
             onClick={handleSubmit}
             className={`px-4 py-2 text-white ${
-              isEdit ? "bg-yellow-500 hover:bg-yellow-600" : "bg-green-500 hover:bg-green-600"
+              isEdit
+                ? "bg-yellow-500 hover:bg-yellow-600"
+                : "bg-green-500 hover:bg-green-600"
             } transition-colors duration-150 rounded`}
           >
             {isEdit ? "Update" : "Tambah"}
@@ -207,8 +263,12 @@ const DataLokasi = () => {
   );
 
   // Pagination Logic
-  const totalPagesDesktop = Math.ceil(filteredLokasiData.length / itemsPerPageDesktop);
-  const totalPagesMobile = Math.ceil(filteredLokasiData.length / itemsPerPageMobile);
+  const totalPagesDesktop = Math.ceil(
+    filteredLokasiData.length / itemsPerPageDesktop
+  );
+  const totalPagesMobile = Math.ceil(
+    filteredLokasiData.length / itemsPerPageMobile
+  );
 
   // Menghitung halaman saat ini dengan data yang sudah difilter
   const currentItemsDesktop = filteredLokasiData.slice(
@@ -227,10 +287,9 @@ const DataLokasi = () => {
   }, [searchTerm]);
 
   return (
-    <div className="max-h-screen flex flex-col px-6 pt-6">
+    <div className="max-h-screen flex flex-col px-6 pt-6 bg-white">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 flex-wrap">
-        {/* Back Button and Title */}
+      <div className=" flex items-center justify-between mb-6 flex-wrap">
         <div className="flex items-center space-x-2 w-full sm:w-auto mb-4 sm:mb-0">
           <FontAwesomeIcon
             icon={faArrowLeft}
@@ -238,11 +297,12 @@ const DataLokasi = () => {
             onClick={handleBackClick}
             title="Back to Home"
           />
-          <h1 className="text-xl sm:text-3xl font-bold text-gray-800 pb-1">Data Lokasi Gerai</h1>
+          <h1 className="text-xl sm:text-3xl font-bold text-gray-800 pb-1">
+            Data Lokasi Gerai
+          </h1>
         </div>
 
-        {/* Search Bar and Add Location Button */}
-        <div className="flex items-center space-x-3 w-full sm:w-auto">
+        <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto">
           {/* Search Bar */}
           <div className="relative w-full sm:w-64">
             <input
@@ -250,35 +310,40 @@ const DataLokasi = () => {
               placeholder="Cari Lokasi..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-green-100 text-sm"
             />
             <FontAwesomeIcon
               icon={faSearch}
-              className="absolute top-2/4 -translate-y-1/2 right-3 text-gray-500"
+              className="absolute top-2 right-3 text-gray-500"
             />
           </div>
 
           {/* Add Location Button */}
           <button
             onClick={() => setIsModalOpen(true)}
-            className="bg-green-500 text-white px-4 py-2 sm:py-1 rounded flex items-center justify-center hover:bg-green-600 transition-colors duration-150"
+            className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg shadow hover:from-green-600 hover:to-green-700 transition-all duration-200"
           >
             <FontAwesomeIcon icon={faPlus} />
-            <span className="hidden sm:inline ml-2">Tambah Lokasi</span>
+            <span className="hidden sm:inline">Tambah Lokasi</span>
           </button>
         </div>
       </div>
 
       <div className="rounded-lg shadow-md overflow-hidden hidden md:block">
-        <table className="table-auto w-full border-collapse rounded-lg">
-          {renderHeader()}
+        <table className="table-auto w-full border-collapse rounded-lg text-sm">
+          <thead>
+            <tr className="bg-gray-100">
+              {/* Header */}
+              {renderHeader()}
+            </tr>
+          </thead>
           <tbody>
             {filteredLokasiData.length > 0 ? (
-              renderBody(currentItemsDesktop) // Render dengan data halaman yang terpilih
+              renderBody(currentItemsDesktop)
             ) : (
               <tr>
-                <td colSpan={4} className="text-center px-4 py-1">
-                  No Data Found
+                <td colSpan={4} className="text-center px-4 py-2 text-gray-500">
+                  Tidak ada data ditemukan
                 </td>
               </tr>
             )}
@@ -308,7 +373,9 @@ const DataLokasi = () => {
         </span>
 
         <button
-          onClick={() => setCurrentPageMobile((prev) => Math.min(prev + 1, totalPagesMobile))}
+          onClick={() =>
+            setCurrentPageMobile((prev) => Math.min(prev + 1, totalPagesMobile))
+          }
           disabled={currentPageMobile === totalPagesMobile}
           className={`px-5 rounded-full font-xl transition-all duration-200 ${
             currentPageMobile === totalPagesMobile
@@ -340,7 +407,11 @@ const DataLokasi = () => {
         </span>
 
         <button
-          onClick={() => setCurrentPageDesktop((prev) => Math.min(prev + 1, totalPagesDesktop))}
+          onClick={() =>
+            setCurrentPageDesktop((prev) =>
+              Math.min(prev + 1, totalPagesDesktop)
+            )
+          }
           disabled={currentPageDesktop === totalPagesDesktop}
           className={`px-5 rounded-full font-xl transition-all duration-200 ${
             currentPageDesktop === totalPagesDesktop
