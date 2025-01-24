@@ -2,8 +2,20 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {swal} from "sweetalert2";
-import { faCalendarCheck, faClock, faBell, faHistory, faThList, faHome, faUser, faSignOutAlt, faQuestionCircle, faMapMarkerAlt, faArrowRight,} from "@fortawesome/free-solid-svg-icons";
+import Swal from "sweetalert2";
+import {
+  faCalendarCheck,
+  faClock,
+  faBell,
+  faHistory,
+  faThList,
+  faHome,
+  faUser,
+  faSignOutAlt,
+  faQuestionCircle,
+  faMapMarkerAlt,
+  faArrowRight,
+} from "@fortawesome/free-solid-svg-icons";
 
 const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
   const navigate = useNavigate();
@@ -99,7 +111,7 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
   const calculateTotalHours = (startTime, endTime) => {
     const start = new Date(startTime);
     const end = new Date(endTime);
-    const diffMs = end - start; // Selisih waktu dalam milidetik
+    const diffMs = end - start;
     const hours = Math.floor(diffMs / (1000 * 60 * 60));
     const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
     return `${hours}:${minutes < 10 ? "0" : ""}${minutes}`;
@@ -109,12 +121,28 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
     return new Date(date).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
   };
 
+  const confirmLogout = () => {
+    Swal.fire({
+      title: "Konfirmasi Logout",
+      text: "Terimakasih atas kerja keras anda! Tetap semangat",
+      icon: "question",
+      cancelButtonText: "Batal",
+      showCancelButton: true,
+      confirmButtonText: "Ya, logout",
+      confirmButtonColor: "#3085d6",
+      reverseButtons: true,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        handleLogout(); // Panggil handleLogout jika user mengonfirmasi
+      }
+    });
+  };
   return (
     <div className="flex flex-col font-sans bg-gray-50 min-h-screen">
       {/* Header Hero */}
       <div className="bg-green-700 rounded-b-2xl px-8 py-4 relative shadow-lg">
         <button
-          onClick={handleLogout}
+          onClick={confirmLogout} // Ubah ke confirmLogout
           title="Logout"
           className="absolute top-3 right-3 text-lg text-white hover:text-green-700 transition-colors hover:bg-white px-2 py-1 rounded-full"
         >

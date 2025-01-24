@@ -67,7 +67,7 @@ const Login = ({ onLoginSuccess }) => {
             Swal.fire({
               icon: "success",
               title: "Login Berhasil!",
-              text: "Selamat Datang!",
+              text: "Selamat Datang! Selamat Bekerja!",
             }).then(() => {
               navigate("/home");
             });
@@ -87,7 +87,7 @@ const Login = ({ onLoginSuccess }) => {
           Swal.fire({
             icon: "success",
             title: "Login Berhasil!",
-            text: "Selamat Datang!",
+            text: "Selamat Datang! Selamat Berkerja!",
           }).then(() => {
             navigate("/home");
           });

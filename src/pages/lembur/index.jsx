@@ -93,7 +93,7 @@ const Lembur = () => {
 
   const renderStepOne = () => (
     <MobileLayout
-      title="LEMBUR"
+      title="Formulir Lembur"
       className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm"
     >
       <form
@@ -109,7 +109,7 @@ const Lembur = () => {
         {/* Form fields */}
 
         <div className="mb-4">
-          <label htmlFor="tanggal" className="block text-lg font-bold mb-2">
+          <label htmlFor="tanggal" className="block text-sm font-bold mb-1">
             Tanggal:
           </label>
           <input
@@ -122,7 +122,7 @@ const Lembur = () => {
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="lokasi" className="block text-lg font-bold mb-2">
+          <label htmlFor="lokasi" className="block text-sm font-bold mb-1">
             Lokasi:
           </label>
           <select
@@ -149,11 +149,11 @@ const Lembur = () => {
           </select>
         </div>
         <div className="mb-4">
-          <label htmlFor="tugas" className="block text-lg font-bold mb-2">
+          <label htmlFor="tugas" className="block text-sm font-bold mb-1">
             Tugas yang diberikan:
           </label>
           <textarea
-            rows="4"
+            rows="2"
             id="tugas"
             name="tugas"
             value={lemburData.tugas}
@@ -167,7 +167,7 @@ const Lembur = () => {
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="jamMulai" className="block text-lg font-bold mb-2">
+          <label htmlFor="jamMulai" className="block text-sm font-bold mb-1">
             Jam Mulai:
           </label>
           <input
@@ -180,7 +180,7 @@ const Lembur = () => {
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="jamSelesai" className="block text-lg font-bold mb-2">
+          <label htmlFor="jamSelesai" className="block text-sm font-bold mb-1">
             Jam Selesai:
           </label>
           <input
@@ -194,7 +194,7 @@ const Lembur = () => {
         </div>
         <button
           type="submit"
-          className={`w-full p-3 text-lg font-bold rounded-lg border-2 ${
+          className={`w-full p-2 text-white text-lg font-bold rounded-xl border-2 hover:bg-green-600 ${
             lemburData.lokasi &&
             lemburData.tugas &&
             lemburData.tanggal &&
@@ -204,7 +204,7 @@ const Lembur = () => {
               : "bg-gray-400 border-gray-600 cursor-not-allowed"
           }`}
         >
-          ➜
+          Next ➜
         </button>
       </form>
     </MobileLayout>

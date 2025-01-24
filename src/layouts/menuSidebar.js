@@ -39,14 +39,13 @@ const ButtonHide = ({ onClick, hidden }) => (
   </button>
 );
 
-// Komponen Sidebar
-const MenuSidebar = ({ handleLogout }) => {
+
+const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [hidden, setHidden] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const roleId = localStorage.getItem("roleId"); // Dapatkan roleId dari localStorage
+  const roleId = localStorage.getItem("roleId");
 
   // Deteksi layar mobile
   useEffect(() => {
@@ -86,46 +85,36 @@ const MenuSidebar = ({ handleLogout }) => {
       label: "Data Absensi",
       icon: faCheckSquare,
       path: "/data-absensi",
-      roles: ["1","4"], // Contoh hanya role 4 dan 6 yang bisa akses
+      roles: ["1", "4"], // Contoh hanya role 4 dan 6 yang bisa akses
     },
     {
       label: "Data Karyawan",
       icon: faPeopleGroup,
       path: "/data-karyawan",
-      roles: [ "1","6"], // Contoh hanya role 4 dan 6 yang bisa akses
+      roles: [ "1", "6"], // Contoh hanya role 4 dan 6 yang bisa akses
     },
     {
       label: "Data Penggajian",
       icon: faBook,
       path: "/data-penggajian",
-      roles: ["1","4","6"], // Contoh hanya role 4 dan 6 yang bisa akses
+      roles: ["1", "4", "6"], // Contoh hanya role 4 dan 6 yang bisa akses
     },
     {
       label: "Persetujuan Lembur",
       icon: faCheckSquare,
       path: "/data-approval",
-      roles: ["1","5"], // Contoh hanya role 4 dan 6 yang bisa akses
+      roles: ["1", "5"], // Contoh hanya role 4 dan 6 yang bisa akses
     },
     {
       label: "Data Lokasi Gerai",
       icon: faLocationArrow,
       path: "/data-lokasi",
-      roles: [ "1","5"], // Contoh hanya role 4 dan 6 yang bisa akses
+      roles: [ "1", "5"], // Contoh hanya role 4 dan 6 yang bisa akses
     },
   ];
 
   return (
     <>
-      {/* Toggle Button untuk Mobile */}
-      {isMobile && !isOpen && (
-        <button
-          onClick={() => setIsOpen((prev) => !prev)}
-          className="fixed top-[600px] left-[-9px] z-50 px-2 py-5 bg-green-600 text-white rounded-lg shadow-lg"
-        >
-          <FontAwesomeIcon icon={faChevronRight} className="text-xl" />
-        </button>
-      )}
-
       {/* Sidebar */}
       <div
         className={`${
@@ -141,7 +130,7 @@ const MenuSidebar = ({ handleLogout }) => {
         {/* Tombol Close (Mobile) */}
         {isMobile && isOpen && (
           <button
-            onClick={() => setIsOpen(false)}
+            onClick={toggleSidebar} // Memanggil fungsi toggleSidebar
             className="absolute top-5 right-5 px-3 py-2 bg-green-600 text-white rounded-full shadow-lg"
           >
             <FontAwesomeIcon icon={faTimes} className="text-xl" />
@@ -167,7 +156,7 @@ const MenuSidebar = ({ handleLogout }) => {
                     label={menu.label}
                     onClick={() => {
                       navigate(menu.path);
-                      if (isMobile) setIsOpen(false);
+                      if (isMobile) toggleSidebar(); // Pastikan sidebar ditutup setelah memilih menu
                     }}
                     isActive={location.pathname === menu.path}
                   />
@@ -189,7 +178,7 @@ const MenuSidebar = ({ handleLogout }) => {
       {/* Background Overlay untuk Mobile */}
       {isMobile && isOpen && (
         <div
-          onClick={() => setIsOpen(false)}
+          onClick={toggleSidebar} // Memanggil fungsi toggleSidebar untuk menutup sidebar ketika klik di luar
           className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-30"
         ></div>
       )}
@@ -198,3 +187,4 @@ const MenuSidebar = ({ handleLogout }) => {
 };
 
 export default MenuSidebar;
+

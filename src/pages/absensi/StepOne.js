@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import MobileLayout from "../../layouts/mobileLayout";
-import { faStore } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const StepOne = ({ handleNextStepData }) => {
   const CHAR_LIMIT = 250;
@@ -14,7 +12,7 @@ const StepOne = ({ handleNextStepData }) => {
   const [filteredLocations, setFilteredLocations] = useState([]);
   const [errorLokasi, setErrorLokasi] = useState("");
   const [dropdownVisible, setDropdownVisible] = useState(false);
-  const dropdownRef = useRef(null); // Ref untuk mendeteksi klik di dalam elemen dropdown
+  const dropdownRef = useRef(null);
 
   const isFormValid = () => lokasi && idLokasi;
 

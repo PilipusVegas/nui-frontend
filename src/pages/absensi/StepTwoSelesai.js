@@ -211,13 +211,6 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
                   <p className="font-bold">Tanggal:</p>
                   <p>{jamSelesai?.toLocaleDateString("en-GB")}</p>
                 </div>
-                {/* <hr className="border-gray-200" />
-                    <div className="flex justify-between">
-                      <p className="font-bold">Koordinat:</p>
-                      <p>
-                        {koordinatSelesai.latitude}, {koordinatSelesai.longitude}
-                      </p>
-                    </div> */}
               </div>
 
               <div className="flex flex-row items-center gap-x-4 w-full mt-4">

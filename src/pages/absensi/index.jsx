@@ -58,7 +58,7 @@ const Absensi = () => {
           const recordTime = new Date(item.jam_mulai);
           return now - recordTime <= 24 * 60 * 60 * 1000;
         });
-        setAttendanceHistory(last24Hours.slice(0, 1) || []); // Limit to 3 items
+        setAttendanceHistory(last24Hours.slice(0, 1) || []); 
       }
     } catch (error) {
       console.error("Error fetching attendance history:", error);
@@ -116,28 +116,28 @@ const Absensi = () => {
           text: "Mohon untuk menyalakan GPS dan perizinan kamera pada perangkat Anda.",
           confirmButtonText: "OK",
         });
-        return false; // Permissions not granted
+        return false;
       }
-      return true; // Permissions granted
+      return true;
     } catch (error) {
       console.error("Error checking permissions:", error);
       return false;
     }
   };
 
-  // Handle "Mulai" button click
+
   const handleMulaiClick = async () => {
     const permissionsGranted = await checkPermissions();
     if (permissionsGranted) {
-      setCurrentStep("stepOne"); // Ganti step sesuai dengan alur absensi
+      setCurrentStep("stepOne");
     }
   };
 
-  // Handle "Selesai" button click
+
   const handleSelesaiClick = async () => {
     const permissionsGranted = await checkPermissions();
     if (permissionsGranted) {
-      setCurrentStep("stepTwoSelesai"); // Ganti step sesuai dengan alur absensi selesai
+      setCurrentStep("stepTwoSelesai"); 
     }
   };
 
@@ -145,7 +145,6 @@ const Absensi = () => {
     const permissionCheck = async () => {
       const permissionsGranted = await checkPermissions();
       if (!permissionsGranted) {
-        // Prevent proceeding with attendance if permissions are not granted
         setCurrentStep(null);
       }
     };
@@ -277,11 +276,10 @@ const Absensi = () => {
               {/* Riwayat Absensi */}
 
               {/* Absen Mulai / Absen Selesai */}
-              {/* Absen Mulai / Absen Selesai */}
               {isSelesaiFlow ? (
                 <button
                   className="w-full bg-teal-600 text-white py-3 rounded-md shadow-lg hover:bg-teal-700 flex items-center justify-center gap-2 transition"
-                  onClick={handleSelesaiClick} // Gunakan handler baru untuk "Selesai"
+                  onClick={handleSelesaiClick} 
                 >
                   <FontAwesomeIcon icon={faCalendarCheck} className="text-2xl" />
                   <span className="text-lg font-medium">Absen Selesai</span>
@@ -289,7 +287,7 @@ const Absensi = () => {
               ) : (
                 <button
                   className="w-full border border-green-600 text-green-600 py-3 rounded-md shadow-lg hover:bg-green-200 flex items-center justify-center gap-2 transition"
-                  onClick={handleMulaiClick} // Gunakan handler baru untuk "Mulai"
+                  onClick={handleMulaiClick} 
                 >
                   <FontAwesomeIcon icon={faCalendarPlus} className="text-2xl" />
                   <span className="text-lg font-medium">Absen Mulai</span>

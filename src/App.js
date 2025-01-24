@@ -38,20 +38,32 @@ const App = () => {
     return children;
   };
 
-  const SidebarLayout = ({ children }) => (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
-      <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} />
-      <div className="flex-grow flex flex-col sticky z-10">
-        {/* Header */}
-        <Header />
-        {/* Main Content */}
-        <main className="flex-grow bg-gray-100">{children}</main>
-        {/* Footer */}
-        {/* <Footer /> */}
+  const SidebarLayout = ({ children }) => {
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Menambahkan state untuk sidebar
+  
+    const toggleSidebar = () => {
+      setIsSidebarOpen(prevState => !prevState);
+    };
+  
+    return (
+      <div className="flex min-h-screen">
+        {/* Sidebar */}
+        <MenuSidebar 
+          handleLogout={handleLogout} 
+          roleId={localStorage.getItem("roleId")} 
+          isOpen={isSidebarOpen} 
+          toggleSidebar={toggleSidebar} 
+        />
+        <div className="flex-grow flex flex-col sticky z-10">
+          {/* Header */}
+          <Header toggleSidebar={toggleSidebar} />
+          {/* Main Content */}
+          <main className="flex-grow bg-gray-100">{children}</main>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
+  
 
   const routes = [
     { path: "/notification", component: <Notification />, roles: ["2", "3", "4", "5", "6"] },

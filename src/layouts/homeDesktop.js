@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MenuSidebar from "../layouts/menuSidebar";
-import Header from "../layouts/header";
-import Footer from "../layouts/footer";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCalendarAlt,
@@ -210,25 +208,25 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div
                 onClick={() => handleCardClick("/data-approval")}
-                className="flex items-center justify-between px-8 py-6 bg-white rounded-lg shadow-md border border-gray-300 transition-transform transform hover:shadow-xl cursor-pointer"
+                className="flex items-center justify-between px-8 py-6 bg-white rounded-lg shadow-md border border-gray-200 transition-transform transform hover:shadow-xl cursor-pointer"
               >
                 <div className="flex flex-col">
                   <p className="text-xl font-semibold text-gray-700">Approval Lembur</p>
-                  <h4 className="text-5xl font-bold text-green-600">{totalApprovals}</h4>
+                  <h4 className="text-5xl font-bold text-emerald-500">{totalApprovals}</h4>
                 </div>
-                <FontAwesomeIcon icon={faThumbsUp} className="text-green-600 text-4xl" />
+                <FontAwesomeIcon icon={faThumbsUp} className="text-emerald-500 text-4xl" />
               </div>
               <div
                 onClick={() => handleCardClick("/data-lokasi")}
-                className="flex items-center justify-between px-8 py-6 bg-white rounded-lg shadow-md border border-gray-300 transition-transform transform hover:shadow-xl cursor-pointer"
+                className="flex items-center justify-between px-8 py-6 bg-white rounded-lg shadow-md border border-gray-200 transition-transform transform hover:shadow-xl cursor-pointer"
               >
                 <div className="flex flex-col">
                   <p className="text-xl font-semibold text-gray-700">Data Lokasi</p>
-                  <h4 className="text-5xl font-bold text-green-600">
+                  <h4 className="text-5xl font-bold text-orange-500">
                     {totalLocations.length || "0"}
                   </h4>
                 </div>
-                <FontAwesomeIcon icon={faMapMarkerAlt} className="text-green-600 text-4xl" />
+                <FontAwesomeIcon icon={faMapMarkerAlt} className="text-orange-500 text-4xl" />
               </div>
             </div>
           )}
@@ -238,23 +236,23 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div
                 onClick={() => handleCardClick("/data-absensi")}
-                className="flex items-center justify-between px-8 py-6 bg-white rounded-lg shadow-md border border-gray-300 transition-transform transform hover:shadow-xl cursor-pointer"
+                className="flex items-center justify-between px-8 py-6 bg-white rounded-lg shadow-md border border-gray-200 transition-transform transform hover:shadow-xl cursor-pointer"
               >
                 <div className="flex flex-col">
                   <p className="text-xl font-semibold text-gray-700">Absensi</p>
-                  <h4 className="text-5xl font-bold text-red-600">{totalAbsences}</h4>
+                  <h4 className="text-5xl font-bold text-blue-500">{totalAbsences}</h4>
                 </div>
-                <FontAwesomeIcon icon={faCalendarAlt} className="text-red-600 text-4xl" />
+                <FontAwesomeIcon icon={faCalendarAlt} className="text-blue-500 text-4xl" />
               </div>
               <div
                 onClick={() => handleCardClick("/data-penggajian")}
-                className="flex items-center justify-between px-8 py-6 bg-white rounded-lg shadow-md border border-gray-300 transition-transform transform hover:shadow-xl cursor-pointer"
+                className="flex items-center justify-between px-8 py-6 bg-white rounded-lg shadow-md border border-gray-200 transition-transform transform hover:shadow-xl cursor-pointer"
               >
                 <div className="flex flex-col">
                   <p className="text-xl font-semibold text-gray-700">Penggajian</p>
-                  <h4 className="text-5xl font-bold text-purple-600">{totalPayroll}</h4>
+                  <h4 className="text-5xl font-bold text-amber-500">{totalPayroll}</h4>
                 </div>
-                <FontAwesomeIcon icon={faMoneyCheckAlt} className="text-purple-600 text-4xl" />
+                <FontAwesomeIcon icon={faMoneyCheckAlt} className="text-amber-500 text-4xl" />
               </div>
             </div>
           )}
@@ -264,23 +262,23 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div
                 onClick={() => handleCardClick("/data-karyawan")}
-                className="flex items-center justify-between px-8 py-6 bg-white rounded-lg shadow-md border border-gray-300 transition-transform transform hover:shadow-xl cursor-pointer"
+                className="flex items-center justify-between px-8 py-6 bg-white rounded-lg shadow-md border border-gray-200 transition-transform transform hover:shadow-xl cursor-pointer"
               >
                 <div className="flex flex-col">
                   <p className="text-xl font-semibold text-gray-700">Karyawan</p>
-                  <h4 className="text-5xl font-bold text-green-600">{employees.length || "0"}</h4>
+                  <h4 className="text-5xl font-bold text-violet-500">{employees.length || "0"}</h4>
                 </div>
-                <FontAwesomeIcon icon={faUsers} className="text-green-600 text-4xl" />
+                <FontAwesomeIcon icon={faUsers} className="text-violet-500 text-4xl" />
               </div>
               <div
                 onClick={() => handleCardClick("/data-penggajian")}
-                className="flex items-center justify-between px-8 py-6 bg-white rounded-lg shadow-md border border-gray-300 transition-transform transform hover:shadow-xl cursor-pointer"
+                className="flex items-center justify-between px-8 py-6 bg-white rounded-lg shadow-md border border-gray-200 transition-transform transform hover:shadow-xl cursor-pointer"
               >
                 <div className="flex flex-col">
                   <p className="text-xl font-semibold text-gray-700">Penggajian</p>
-                  <h4 className="text-5xl font-bold text-purple-600">{totalPayroll}</h4>
+                  <h4 className="text-5xl font-bold text-amber-500">{totalPayroll}</h4>
                 </div>
-                <FontAwesomeIcon icon={faMoneyCheckAlt} className="text-purple-600 text-4xl" />
+                <FontAwesomeIcon icon={faMoneyCheckAlt} className="text-amber-500 text-4xl" />
               </div>
             </div>
             

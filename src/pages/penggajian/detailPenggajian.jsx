@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faCalendar, faCalendarAlt, faDownload } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowLeft,
+  faCalendarAlt,
+  faDownload,
+} from "@fortawesome/free-solid-svg-icons";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import * as XLSX from "xlsx";
 
@@ -101,6 +105,7 @@ const DetailPenggajian = () => {
 
   const generateExcelData = (data) => {
     const excelData = [
+      [], 
       ["Nama", dataUser?.nama || "-"],
       ["Total Kehadiran", `${totalKehadiran} Hari`],
       ["Periode", period],
@@ -219,7 +224,7 @@ const DetailPenggajian = () => {
               </thead>
               <tbody>
                 {payrollData.map((item, i) => (
-                  <tr key={i} className="text-center">
+                  <tr key={i} className="text-center text-sm">
                     <td className="border px-4">{i + 1}</td>
                     <td className="border px-4">
                       {item.tanggal_absen || item.tanggal_lembur || "-"}
@@ -235,44 +240,43 @@ const DetailPenggajian = () => {
             </table>
 
             {/* Card untuk layar kecil */}
-<div className="md:hidden">
-  {payrollData.map((item, i) => (
-    <div
-      key={i}
-      className="bg-white shadow-lg rounded-xl p-5 mb-2 border border-gray-200 hover:shadow-2xl transition-all duration-300"
-    >
-      {/* Tanggal */}
-      <div className="flex items-center justify-center mb-4">
-        <FontAwesomeIcon icon={faCalendarAlt} className="text-green-500 mr-2 text-lg" />
-        <span className="text-lg font-semibold text-gray-900">
-          {item.tanggal_absen || item.tanggal_lembur || "Tidak Tersedia"}
-        </span>
-      </div>
+            <div className="md:hidden">
+              {payrollData.map((item, i) => (
+                <div
+                  key={i}
+                  className="bg-white shadow-lg rounded-xl p-5 mb-2 border border-gray-200 hover:shadow-2xl transition-all duration-300"
+                >
+                  {/* Tanggal */}
+                  <div className="flex items-center justify-center mb-4">
+                    <FontAwesomeIcon icon={faCalendarAlt} className="text-green-500 mr-2 text-lg" />
+                    <span className="text-lg font-semibold text-gray-900">
+                      {item.tanggal_absen || item.tanggal_lembur || "Tidak Tersedia"}
+                    </span>
+                  </div>
 
-      {/* Informasi Kehadiran */}
-      <div className="grid grid-cols-3 gap-4 bg-gray-200 rounded-xl p-3">
-        {/* IN */}
-        <div className="flex flex-col items-center text-center bg-white p-2 rounded-lg shadow-md">
-          <span className="text-sm font-semibold text-green-600">IN</span>
-          <span className="text-md text-gray-700">{item.absen_mulai || "-"}</span>
-        </div>
+                  {/* Informasi Kehadiran */}
+                  <div className="grid grid-cols-3 gap-4 bg-gray-200 rounded-xl p-3">
+                    {/* IN */}
+                    <div className="flex flex-col items-center text-center bg-white p-2 rounded-lg shadow-md">
+                      <span className="text-sm font-semibold text-green-600">IN</span>
+                      <span className="text-md text-gray-700">{item.absen_mulai || "-"}</span>
+                    </div>
 
-        {/* OUT */}
-        <div className="flex flex-col items-center text-center bg-white p-2 rounded-lg shadow-md">
-          <span className="text-sm font-semibold text-red-600">OUT</span>
-          <span className="text-md text-gray-700">{item.absen_selesai || "-"}</span>
-        </div>
+                    {/* OUT */}
+                    <div className="flex flex-col items-center text-center bg-white p-2 rounded-lg shadow-md">
+                      <span className="text-sm font-semibold text-red-600">OUT</span>
+                      <span className="text-md text-gray-700">{item.absen_selesai || "-"}</span>
+                    </div>
 
-        {/* T (Lembur) */}
-        <div className="flex flex-col items-center text-center bg-white p-2 rounded-lg shadow-md">
-          <span className="text-sm font-semibold text-blue-600">T</span>
-          <span className="text-md text-gray-700">{item.lembur || "-"}</span>
-        </div>
-      </div>
-    </div>
-  ))}
-</div>
-
+                    {/* T (Lembur) */}
+                    <div className="flex flex-col items-center text-center bg-white p-2 rounded-lg shadow-md">
+                      <span className="text-sm font-semibold text-blue-600">T</span>
+                      <span className="text-md text-gray-700">{item.lembur || "-"}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
