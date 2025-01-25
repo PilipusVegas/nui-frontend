@@ -111,7 +111,7 @@ const DetailPenggajian = () => {
       ["Periode", period],
       ["Total Lembur", totalLembur],
       [],
-      ["No", "Tanggal", "IN", "OUT", "T"],
+      ["No", "Tanggal", "Masuk", "Keluar", "Lembur"],
     ];
 
     data.forEach((item, index) => {
@@ -196,11 +196,11 @@ const DetailPenggajian = () => {
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-2">
               <div className="px-3 py-2 rounded-lg bg-blue-100 text-center">
                 <p className="text-xl font-bold text-blue-600">{totalKehadiran || 0}</p>
-                <p className="text-sm text-blue-800">Kehadiran</p>
+                <p className="text-sm text-blue-800">Total Kehadiran</p>
               </div>
               <div className="px-3 py-2 rounded-lg bg-yellow-100 text-center">
                 <p className="text-lg sm:text-xl font-bold text-yellow-600">{totalLembur || 0}</p>
-                <p className="text-sm text-yellow-800">Lembur (Jam)</p>
+                <p className="text-sm text-yellow-800">Total Lembur</p>
               </div>
             </div>
           </div>
@@ -258,19 +258,19 @@ const DetailPenggajian = () => {
                   <div className="grid grid-cols-3 gap-4 bg-gray-200 rounded-xl p-3">
                     {/* IN */}
                     <div className="flex flex-col items-center text-center bg-white p-2 rounded-lg shadow-md">
-                      <span className="text-sm font-semibold text-green-600">IN</span>
+                      <span className="text-sm font-semibold text-green-600">Masuk</span>
                       <span className="text-md text-gray-700">{item.absen_mulai || "-"}</span>
                     </div>
 
                     {/* OUT */}
                     <div className="flex flex-col items-center text-center bg-white p-2 rounded-lg shadow-md">
-                      <span className="text-sm font-semibold text-red-600">OUT</span>
+                      <span className="text-sm font-semibold text-red-600">Keluar</span>
                       <span className="text-md text-gray-700">{item.absen_selesai || "-"}</span>
                     </div>
 
                     {/* T (Lembur) */}
                     <div className="flex flex-col items-center text-center bg-white p-2 rounded-lg shadow-md">
-                      <span className="text-sm font-semibold text-blue-600">T</span>
+                      <span className="text-sm font-semibold text-blue-600">Lembur</span>
                       <span className="text-md text-gray-700">{item.lembur || "-"}</span>
                     </div>
                   </div>

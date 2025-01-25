@@ -41,7 +41,7 @@ const Login = ({ onLoginSuccess }) => {
             denyButtonColor: "#d33",
             showCancelButton: true, 
             confirmButtonText: "Teknisi",
-            cancelButtonText: "Personal Assistant (PA)",
+            cancelButtonText: "PA",
             confirmButtonColor: "#0D92F4",
             cancelButtonColor: "#6f42c1",
             showDenyButton: true,

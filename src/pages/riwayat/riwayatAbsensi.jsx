@@ -26,26 +26,44 @@ const Riwayat = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        // Mengambil data dari kedua API secara bersamaan
         const [absensiRes, lemburRes] = await Promise.all([
           fetch(`${apiUrl}/absen/riwayat/${id_user}`),
           fetch(`${apiUrl}/lembur/riwayat/${id_user}`),
         ]);
-        if (!absensiRes.ok || !lemburRes.ok) throw new Error("Gagal memuat data.");
-        const absensiData = await absensiRes.json();
-        const lemburData = await lemburRes.json();
-
+  
+        // Mengecek apakah salah satu API gagal
+        if (!absensiRes.ok && !lemburRes.ok) throw new Error("Gagal memuat data.");
+  
+        // Mengambil data JSON dari API yang berhasil
+        const absensiData = absensiRes.ok ? await absensiRes.json() : [];
+        const lemburData = lemburRes.ok ? await lemburRes.json() : [];
+  
         console.log("Absensi Data:", absensiData); // Debug data API
         console.log("Lembur Data:", lemburData);
-
-        const sortedAbsensi = absensiData.filter(item => item.jam_mulai).sort(
-          (a, b) => new Date(b.jam_mulai) - new Date(a.jam_mulai)
-        );
-        const sortedLembur = lemburData.filter(item => item.tanggal).sort(
-          (a, b) => new Date(b.tanggal) - new Date(a.tanggal)
-        );        
-        setAbsensi(sortedAbsensi);
-        setLembur(sortedLembur);
-        setGroupedData(groupDataByTag(sortedAbsensi, "jam_mulai"));
+  
+        // Cek apakah ada data dari absensi atau lembur
+        if (absensiData.length > 0) {
+          const sortedAbsensi = absensiData.sort(
+            (a, b) => new Date(b.jam_mulai) - new Date(a.jam_mulai)
+          );
+          setAbsensi(sortedAbsensi);
+          setGroupedData(groupDataByTag(sortedAbsensi, "jam_mulai"));
+        } else {
+          setAbsensi([]); // Jika tidak ada data absensi, set sebagai array kosong
+        }
+  
+        if (lemburData.length > 0) {
+          const sortedLembur = lemburData.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+          setLembur(sortedLembur);
+        } else {
+          setLembur([]); // Jika tidak ada data lembur, set sebagai array kosong
+        }
+  
+        // Jika keduanya kosong, bisa memilih untuk menampilkan error atau pesan lainnya
+        if (absensiData.length === 0 && lemburData.length === 0) {
+          setError("Data absensi dan lembur tidak ditemukan.");
+        }
       } catch (err) {
         console.error(err); // Log error untuk debug
         setError(err.message);
@@ -53,9 +71,10 @@ const Riwayat = () => {
         setLoading(false);
       }
     };
-
+  
     fetchData();
   }, [apiUrl, id_user]);
+  
 
   const groupDataByTag = (data, dateField) => {
     const now = new Date();
@@ -290,7 +309,7 @@ const Riwayat = () => {
                           <div className="flex justify-between mb-2">
                             <span className="font-semibold">Status:</span>
                             <span
-                              className={`px-2 rounded-full text-white font-semibold text-xs ${
+                              className={`px-2  rounded-full text-white font-semibold text-sm ${
                                 item.status === 0
                                   ? "bg-yellow-500"
                                   : item.status === 1
