@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from "react";
 import MobileLayout from "../../layouts/mobileLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch, faCalendarCheck, faClock, faExclamationTriangle, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import {
+  faSearch,
+  faCalendarCheck,
+  faClock,
+  faExclamationTriangle,
+  faSpinner,
+} from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 
 const Riwayat = () => {
@@ -28,17 +34,20 @@ const Riwayat = () => {
         const absensiData = await absensiRes.json();
         const lemburData = await lemburRes.json();
 
-        const sortedAbsensi = absensiData.sort(
+        console.log("Absensi Data:", absensiData); // Debug data API
+        console.log("Lembur Data:", lemburData);
+
+        const sortedAbsensi = absensiData.filter(item => item.jam_mulai).sort(
           (a, b) => new Date(b.jam_mulai) - new Date(a.jam_mulai)
         );
-        const sortedLembur = lemburData.sort(
+        const sortedLembur = lemburData.filter(item => item.tanggal).sort(
           (a, b) => new Date(b.tanggal) - new Date(a.tanggal)
-        );
-
+        );        
         setAbsensi(sortedAbsensi);
         setLembur(sortedLembur);
         setGroupedData(groupDataByTag(sortedAbsensi, "jam_mulai"));
       } catch (err) {
+        console.error(err); // Log error untuk debug
         setError(err.message);
       } finally {
         setLoading(false);
@@ -50,12 +59,15 @@ const Riwayat = () => {
 
   const groupDataByTag = (data, dateField) => {
     const now = new Date();
-    const tags = { "Hari ini": [], "Kemarin": [], "Lusa": [], "Sudah Lama": [] };
+    const tags = { "Hari ini": [], Kemarin: [], Lusa: [], "Sudah Lama": [] };
 
     data.forEach((item) => {
-      const date = new Date(item[dateField]);
-      const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+      const dateValue = item[dateField];
+      if (!dateValue) return; // Abaikan jika nilai tanggal tidak valid
+      const date = new Date(dateValue);
+      if (isNaN(date.getTime())) return; // Abaikan tanggal yang tidak valid
 
+      const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
       if (diffDays === 0) tags["Hari ini"].push(item);
       else if (diffDays === 1) tags["Kemarin"].push(item);
       else if (diffDays === 2) tags["Lusa"].push(item);
@@ -75,12 +87,16 @@ const Riwayat = () => {
       if (activeTab === "absensi") {
         const nameMatch = item.nama_user?.toLowerCase().includes(query);
         const locationMatch = item.lokasi_absen?.toLowerCase().includes(query);
-        const dateMatch = formatDateTime(item.jam_mulai || "").toLowerCase().includes(query);
+        const dateMatch = formatDateTime(item.jam_mulai || "")
+          .toLowerCase()
+          .includes(query);
         return nameMatch || locationMatch || dateMatch;
       } else {
         const nameMatch = item.nama_user?.toLowerCase().includes(query);
         const locationMatch = item.lokasi?.toLowerCase().includes(query);
-        const dateMatch = formatDateTime(item.tanggal || "").toLowerCase().includes(query);
+        const dateMatch = formatDateTime(item.tanggal || "")
+          .toLowerCase()
+          .includes(query);
         return nameMatch || locationMatch || dateMatch;
       }
     });
@@ -89,6 +105,9 @@ const Riwayat = () => {
   };
 
   const formatDateTime = (dateTime) => {
+    if (!dateTime || isNaN(new Date(dateTime).getTime())) {
+      return "Tanggal tidak valid"; // Validasi jika nilai tanggal tidak valid
+    }
     const options = {
       weekday: "long",
       year: "numeric",
@@ -99,7 +118,16 @@ const Riwayat = () => {
       second: "2-digit",
       hour12: false,
     };
-    return new Date(dateTime).toLocaleString("id-ID", options);
+    const date = new Date(dateTime);
+    return date.toLocaleString("id-ID", options);
+  };
+
+  const formatTime = (time) => {
+    if (!time) return "Jam tidak valid"; // Validasi jika kosong
+    const [hour, minute, second] = time.split(":"); // Pecah string "HH:mm:ss"
+    const date = new Date(); // Gunakan tanggal hari ini
+    date.setHours(parseInt(hour), parseInt(minute), parseInt(second));
+    return date.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
   };
 
   return (
@@ -157,7 +185,7 @@ const Riwayat = () => {
                   : "Tidak Ada Role"}
               </p>
               <p className="text-xs text-gray-500 mt-2">
-                Total Riwayat {activeTab === "absensi" ? "Absen" : "Lembur"}: {" "}
+                Total Riwayat {activeTab === "absensi" ? "Absen" : "Lembur"}:{" "}
                 {(activeTab === "absensi" ? absensi : lembur).length}
               </p>
             </div>
@@ -184,13 +212,19 @@ const Riwayat = () => {
                 <div className="spinner-border text-green-500" role="status">
                   <span className="sr-only">Loading...</span>
                 </div>
-                <FontAwesomeIcon color="gray" icon={faSpinner} className="text-5xl mb-2 animate-spin" />
-                <p className="text-sm text-gray-600">Sabar, ini bukan error tetapi sedang loading</p>
+                <FontAwesomeIcon
+                  color="gray"
+                  icon={faSpinner}
+                  className="text-5xl mb-2 animate-spin"
+                />
+                <p className="text-sm text-gray-600">
+                  Sabar, ini bukan error tetapi sedang loading
+                </p>
               </div>
             ) : error ? (
               <div className="text-center py-4 text-gray-500">
                 <FontAwesomeIcon icon={faExclamationTriangle} className="text-5xl mb-2" />
-                <p>{"Data riwayat tidak ditemukan coba cek jaringan anda" || {error}}</p>
+                <p>{"Data riwayat tidak ditemukan coba cek jaringan anda" || { error }}</p>
               </div>
             ) : Object.keys(groupedData).length === 0 ? (
               <div className="text-center py-4 text-gray-500">
@@ -213,9 +247,7 @@ const Riwayat = () => {
                       {/* Lokasi */}
                       <div className="flex justify-between mb-2">
                         <span className="font-semibold">Lokasi:</span>
-                        <span>
-                          {activeTab === "absensi" ? item.lokasi_absen : item.lokasi}
-                        </span>
+                        <span>{activeTab === "absensi" ? item.lokasi_absen : item.lokasi}</span>
                       </div>
                       {/* Tanggal atau Absen Masuk */}
                       <div className="flex justify-between mb-2">
@@ -225,7 +257,12 @@ const Riwayat = () => {
                         <span>
                           {activeTab === "absensi"
                             ? formatDateTime(item.jam_mulai)
-                            : new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(item.tanggal))}
+                            : new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric",
+                              }).format(new Date(item.tanggal))}
                         </span>
                       </div>
                       {/* Absen Keluar atau Jam Mulai */}
@@ -233,22 +270,49 @@ const Riwayat = () => {
                         <span className="font-semibold">
                           {activeTab === "absensi" ? "Absen Keluar:" : "Jam Mulai:"}
                         </span>
-                        <span className={item.jam_selesai ? "" : "text-red-500 font-semibold"}>
+                        <span>
                           {activeTab === "absensi"
                             ? item.jam_selesai
                               ? formatDateTime(item.jam_selesai)
                               : "Belum Selesai"
-                            : item.jam_mulai}
+                            : item.jam_mulai
+                            ? formatTime(item.jam_mulai)
+                            : "Tanggal tidak valid"}
                         </span>
                       </div>
                       {/* Jam Selesai (Lembur) */}
                       {activeTab === "lembur" && (
-                        <div className="flex justify-between mb-2">
-                          <span className="font-semibold">Jam Selesai:</span>
-                          <span>{item.jam_selesai || "Belum Selesai"}</span>
-                        </div>
+                        <>
+                          <div className="flex justify-between mb-2">
+                            <span className="font-semibold">Jam Selesai:</span>
+                            <span>{formatTime(item.jam_selesai) || "Belum Selesai"}</span>
+                          </div>
+                          <div className="flex justify-between mb-2">
+                            <span className="font-semibold">Status:</span>
+                            <span
+                              className={`px-2 rounded-full text-white font-semibold text-xs ${
+                                item.status === 0
+                                  ? "bg-yellow-500"
+                                  : item.status === 1
+                                  ? "bg-green-500"
+                                  : item.status === 2
+                                  ? "bg-red-500"
+                                  : "bg-gray-400"
+                              }`}
+                            >
+                              {item.status === 0
+                                ? "Pending"
+                                : item.status === 1
+                                ? "Disetujui"
+                                : item.status === 2
+                                ? "Ditolak"
+                                : "Belum Selesai"}
+                            </span>
+                          </div>
+                        </>
                       )}
-                      <div className="border-t border-green-900 mt-4"></div>
+
+                      <div className="border-t border-green-900 mt-4 "></div>
                     </div>
                   ))}
                 </div>

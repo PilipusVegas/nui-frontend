@@ -2,12 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faEye,
-  faEyeSlash,
-  faUser,
-  faLock,
-} from "@fortawesome/free-solid-svg-icons";
+import { faEye, faEyeSlash, faUser, faLock } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 
 const Login = ({ onLoginSuccess }) => {
@@ -37,44 +32,54 @@ const Login = ({ onLoginSuccess }) => {
       if (data.message === "Login berhasil") {
         const dataUser = data.data;
 
-        if (dataUser  .id === 16) {
-          // Jangan simpan data sebelum memilih role
+        if (dataUser.id === 16) {
           Swal.fire({
             title: "Selamat Datang",
             text: "Login sebagai Teknisi atau Personal Assistant (PA)?",
             icon: "question",
-            showCancelButton: true,  // Pastikan cancel button ditampilkan
+            denyButtonText: "Batal",
+            denyButtonColor: "#d33",
+            showCancelButton: true, 
             confirmButtonText: "Teknisi",
             cancelButtonText: "Personal Assistant (PA)",
-            confirmButtonColor: "#0D92F4", // Warna hijau untuk Teknisi
-            cancelButtonColor: "#6f42c1", // Warna ungu untuk PA
-          }).then((result) => {
-            if (result.isConfirmed) {
-              // Jika memilih Teknisi
-              localStorage.setItem("roleId", "3");
-            } else if (result.dismiss === Swal.DismissReason.cancel) {
-              // Jika memilih PA (Cancel)
-              localStorage.setItem("roleId", "5");
-            }
+            confirmButtonColor: "#0D92F4",
+            cancelButtonColor: "#6f42c1",
+            showDenyButton: true,
+            customClass: {
+              actions: "flex-row-reverse justify-between",
+            },
+          })
+            .then((result) => {
+              if (result.isConfirmed) {
+                localStorage.setItem("roleId", "3");
+              } else if (result.dismiss === Swal.DismissReason.cancel) {
+                localStorage.setItem("roleId", "5");
+              } else if (result.isDenied) {
+                localStorage.setItem("isLoggedIn", "false");
+                Swal.fire({
+                  icon: "info",
+                  title: "Login Dibatalkan",
+                  text: "Anda membatalkan login.",
+                });
+                return; 
+              }
 
-            // Simpan data user setelah memilih role
-            localStorage.setItem("userId", dataUser.id);
-            localStorage.setItem("nama", dataUser.name);
-            localStorage.setItem("userName", dataUser.username);
-            localStorage.setItem("isLoggedIn", "true");
+              localStorage.setItem("userId", dataUser.id);
+              localStorage.setItem("nama", dataUser.name);
+              localStorage.setItem("userName", dataUser.username);
+              localStorage.setItem("isLoggedIn", "true");
 
-            onLoginSuccess();
-            Swal.fire({
-              icon: "success",
-              title: "Login Berhasil!",
-              text: "Selamat Datang! Selamat Bekerja!",
-            }).then(() => {
-              navigate("/home");
+              onLoginSuccess();
+              Swal.fire({
+                icon: "success",
+                title: "Login Berhasil!",
+                text: "Selamat Datang! Selamat Bekerja!",
+              }).then(() => {
+                navigate("/home");
+              });
+            })
+            .catch(() => {
             });
-          }).catch(() => {
-            // Mengembalikan ke login page jika modal ditutup
-            navigate("/login");
-          });
         } else {
           // Simpan data langsung jika id bukan 16
           localStorage.setItem("userId", dataUser.id);
