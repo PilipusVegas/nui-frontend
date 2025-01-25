@@ -228,12 +228,12 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
 
           {/* Link "See all" */}
           <p className="text-md text-green-600 hover:text-green-800">
-            <a
-              href="/riwayat-absensi"
+            <button
+              onClick={() => navigate("/riwayat-absensi")}
               className="transition duration-200 ease-in-out hover:underline"
             >
               see more <FontAwesomeIcon icon={faArrowRight} />
-            </a>
+            </button>
           </p>
         </div>
 
