@@ -58,7 +58,7 @@ const Absensi = () => {
           const recordTime = new Date(item.jam_mulai);
           return now - recordTime <= 24 * 60 * 60 * 1000;
         });
-        setAttendanceHistory(last24Hours.slice(0, 1) || []); 
+        setAttendanceHistory(last24Hours.slice(0, 1) || []);
       }
     } catch (error) {
       console.error("Error fetching attendance history:", error);
@@ -118,6 +118,29 @@ const Absensi = () => {
         });
         return false;
       }
+
+      // Jika izin belum diberikan, coba meminta akses
+      if (locationPermission.state === "prompt" || cameraPermission.state === "prompt") {
+        // Mengaktifkan izin kamera dan lokasi
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            console.log("Location permission granted", position);
+          },
+          (error) => {
+            console.error("Geolocation error:", error);
+          }
+        );
+
+        navigator.mediaDevices
+          .getUserMedia({ video: true })
+          .then((stream) => {
+            console.log("Camera permission granted");
+          })
+          .catch((error) => {
+            console.error("Camera permission error:", error);
+          });
+      }
+
       return true;
     } catch (error) {
       console.error("Error checking permissions:", error);
@@ -125,6 +148,29 @@ const Absensi = () => {
     }
   };
 
+  // Meminta izin untuk mendapatkan lokasi
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      // Jika izin diberikan
+      console.log("Lokasi diperoleh:", position);
+    },
+    (error) => {
+      // Jika terjadi error atau izin ditolak
+      console.error("Lokasi tidak dapat diakses:", error);
+    }
+  );
+
+  // Meminta izin untuk akses kamera
+  navigator.mediaDevices
+    .getUserMedia({ video: true })
+    .then((stream) => {
+      // Jika izin diberikan dan kamera diakses
+      console.log("Kamera berhasil diakses.");
+    })
+    .catch((error) => {
+      // Jika terjadi error atau izin ditolak
+      console.error("Akses kamera ditolak:", error);
+    });
 
   const handleMulaiClick = async () => {
     const permissionsGranted = await checkPermissions();
@@ -133,11 +179,10 @@ const Absensi = () => {
     }
   };
 
-
   const handleSelesaiClick = async () => {
     const permissionsGranted = await checkPermissions();
     if (permissionsGranted) {
-      setCurrentStep("stepTwoSelesai"); 
+      setCurrentStep("stepTwoSelesai");
     }
   };
 
@@ -279,7 +324,7 @@ const Absensi = () => {
               {isSelesaiFlow ? (
                 <button
                   className="w-full bg-teal-600 text-white py-3 rounded-md shadow-lg hover:bg-teal-700 flex items-center justify-center gap-2 transition"
-                  onClick={handleSelesaiClick} 
+                  onClick={handleSelesaiClick}
                 >
                   <FontAwesomeIcon icon={faCalendarCheck} className="text-2xl" />
                   <span className="text-lg font-medium">Absen Selesai</span>
@@ -287,7 +332,7 @@ const Absensi = () => {
               ) : (
                 <button
                   className="w-full border border-green-600 text-green-600 py-3 rounded-md shadow-lg hover:bg-green-200 flex items-center justify-center gap-2 transition"
-                  onClick={handleMulaiClick} 
+                  onClick={handleMulaiClick}
                 >
                   <FontAwesomeIcon icon={faCalendarPlus} className="text-2xl" />
                   <span className="text-lg font-medium">Absen Mulai</span>

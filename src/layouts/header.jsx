@@ -10,7 +10,6 @@ const Header = ({ toggleSidebar }) => {
   const profileMenuRef = useRef(null);
   const navigate = useNavigate();
 
-  // Fungsi GetNamaDivisi
   const GetNamaDivisi = (id) => {
     const roles = {
       1: "Admin Utama",
