@@ -31,7 +31,7 @@ const Login = ({ onLoginSuccess }) => {
       const data = await response.json();
       if (data.message === "Login berhasil") {
         const dataUser = data.data;
-
+  
         if (dataUser.id === 16) {
           Swal.fire({
             title: "Selamat Datang",
@@ -39,7 +39,7 @@ const Login = ({ onLoginSuccess }) => {
             icon: "question",
             denyButtonText: "Batal",
             denyButtonColor: "#d33",
-            showCancelButton: true, 
+            showCancelButton: true,
             confirmButtonText: "Teknisi",
             cancelButtonText: "PA",
             confirmButtonColor: "#0D92F4",
@@ -50,25 +50,29 @@ const Login = ({ onLoginSuccess }) => {
             },
           })
             .then((result) => {
-              if (result.isConfirmed) {
-                localStorage.setItem("roleId", "3");
-              } else if (result.dismiss === Swal.DismissReason.cancel) {
-                localStorage.setItem("roleId", "5");
-              } else if (result.isDenied) {
-                localStorage.setItem("isLoggedIn", "false");
+              // Jika modal ditutup dengan mengklik di luar modal (dismiss reason: backdrop)
+              if (result.dismiss === Swal.DismissReason.backdrop || result.isDenied) {
+                localStorage.setItem("isLoggedIn", "false"); // Set login gagal
                 Swal.fire({
                   icon: "info",
                   title: "Login Dibatalkan",
                   text: "Anda membatalkan login.",
                 });
-                return; 
+                return; // Hentikan proses login
               }
-
+  
+              // Jika memilih Teknisi atau PA
+              if (result.isConfirmed) {
+                localStorage.setItem("roleId", "3"); // Teknisi
+              } else {
+                localStorage.setItem("roleId", "5"); // PA
+              }
+  
               localStorage.setItem("userId", dataUser.id);
               localStorage.setItem("nama", dataUser.name);
               localStorage.setItem("userName", dataUser.username);
               localStorage.setItem("isLoggedIn", "true");
-
+  
               onLoginSuccess();
               Swal.fire({
                 icon: "success",
@@ -79,6 +83,11 @@ const Login = ({ onLoginSuccess }) => {
               });
             })
             .catch(() => {
+              Swal.fire({
+                icon: "error",
+                title: "Login Gagal",
+                text: "Terjadi kesalahan dalam proses login.",
+              });
             });
         } else {
           // Simpan data langsung jika id bukan 16
@@ -87,12 +96,12 @@ const Login = ({ onLoginSuccess }) => {
           localStorage.setItem("userName", dataUser.username);
           localStorage.setItem("roleId", dataUser.id_role);
           localStorage.setItem("isLoggedIn", "true");
-
+  
           onLoginSuccess();
           Swal.fire({
             icon: "success",
             title: "Login Berhasil!",
-            text: "Selamat Datang! Selamat Berkerja!",
+            text: "Selamat Datang! Selamat Bekerja!",
           }).then(() => {
             navigate("/home");
           });
@@ -112,6 +121,8 @@ const Login = ({ onLoginSuccess }) => {
       });
     }
   };
+  
+  
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
@@ -129,7 +140,7 @@ const Login = ({ onLoginSuccess }) => {
         backgroundRepeat: "no-repeat",
         backgroundAttachment: "fixed",
         backgroundBlendMode: "overlay",
-        backgroundColor: "rgba(0, 0, 0, 0.25)", // Tambahkan warna overlay gelap
+        backgroundColor: "rgba(0, 0, 0, 0.25)",
       }}
     >
       <div className="w-full max-w-md px-7 py-10 bg-white rounded-lg shadow-lg">
