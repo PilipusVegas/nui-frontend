@@ -76,15 +76,22 @@ const StepTwoMulai = ({ handleNextStepData }) => {
 
   const getLocation = () => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
+      setLoadingLocation(true);
+      const watchId = navigator.geolocation.watchPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           setKoordinatMulai({ latitude, longitude });
           setLoadingLocation(false);
+          navigator.geolocation.clearWatch(watchId);
         },
         () => {
           alert("Gagal mendapatkan lokasi.");
           setLoadingLocation(false);
+        },
+        {
+          enableHighAccuracy: false,  
+          timeout: 5000,  
+          maximumAge: 0,  
         }
       );
     } else {
@@ -92,6 +99,7 @@ const StepTwoMulai = ({ handleNextStepData }) => {
       setLoadingLocation(false);
     }
   };
+  
 
   const startVideo = async () => {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -116,10 +124,10 @@ const StepTwoMulai = ({ handleNextStepData }) => {
     canvas.height = video.videoHeight;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     canvas.toBlob(async (blob) => {
-      setTimeout(() => { // Simulasi delay loading foto
+      setTimeout(() => {
         setFotoMulai(URL.createObjectURL(blob));
         setLoadingPhoto(false);
-      }, 1000);
+      }, 500);
     }, "image/png");
   };
 
@@ -127,7 +135,7 @@ const StepTwoMulai = ({ handleNextStepData }) => {
     if (fotoDiambil) {
       const interval = setInterval(() => {
         setCurrentTime(new Date());
-      }, 1000);
+      }, 500);
       return () => clearInterval(interval);
     }
   }, [fotoDiambil]);
