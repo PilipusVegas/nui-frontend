@@ -11,6 +11,8 @@ const StepTwoMulai = ({ handleNextStepData }) => {
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [isMulaiSelected, setIsMulaiSelected] = useState(false);
   const [koordinatMulai, setKoordinatMulai] = useState({ latitude: null, longitude: null });
+  const [loadingLocation, setLoadingLocation] = useState(false);
+  const [loadingPhoto, setLoadingPhoto] = useState(false);
 
   const isFormValid = () => {
     return jamMulai && koordinatMulai.latitude && fotoMulai;
@@ -21,7 +23,9 @@ const StepTwoMulai = ({ handleNextStepData }) => {
       const now = new Date();
       setJamMulai(now);
       setCurrentTime(now);
+      setLoadingLocation(true);
       getLocation();
+      setLoadingPhoto(true);
       capturePhoto();
       setIsMulaiSelected(true);
       setFotoDiambil(true);
@@ -38,6 +42,8 @@ const StepTwoMulai = ({ handleNextStepData }) => {
     setIsCameraReady(false);
     setIsMulaiSelected(false);
     setKoordinatMulai({ latitude: null, longitude: null });
+    setLoadingLocation(false);
+    setLoadingPhoto(false);
   };
 
   const stopVideoStream = () => {
@@ -48,6 +54,9 @@ const StepTwoMulai = ({ handleNextStepData }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!isFormValid() || loadingLocation || loadingPhoto) {
+      return;
+    }
     const formattedJamMulai = jamMulai;
     const tanggalMulai = formattedJamMulai?.toLocaleDateString("en-GB");
     const jamMulaiFormatted = formattedJamMulai?.toLocaleTimeString([], {
@@ -67,12 +76,20 @@ const StepTwoMulai = ({ handleNextStepData }) => {
 
   const getLocation = () => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        const { latitude, longitude } = position.coords;
-        setKoordinatMulai({ latitude, longitude });
-      });
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setKoordinatMulai({ latitude, longitude });
+          setLoadingLocation(false);
+        },
+        () => {
+          alert("Gagal mendapatkan lokasi.");
+          setLoadingLocation(false);
+        }
+      );
     } else {
-      alert("Geolocation is not supported by this browser.");
+      alert("Geolocation tidak didukung oleh browser ini.");
+      setLoadingLocation(false);
     }
   };
 
@@ -91,36 +108,6 @@ const StepTwoMulai = ({ handleNextStepData }) => {
     }
   };
 
-  const resizeImage = (blob) => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.src = URL.createObjectURL(blob);
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        const MAX_WIDTH = 1280;
-        const MAX_HEIGHT = 720;
-        let width = img.width;
-        let height = img.height;
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width;
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width *= MAX_HEIGHT / height;
-            height = MAX_HEIGHT;
-          }
-        }
-        canvas.width = width;
-        canvas.height = height;
-        ctx.drawImage(img, 0, 0, width, height);
-        canvas.toBlob((newBlob) => resolve(newBlob), "image/png", 0.7);
-      };
-    });
-  };
-
   const capturePhoto = () => {
     const video = videoRef.current;
     const canvas = document.createElement("canvas");
@@ -129,13 +116,10 @@ const StepTwoMulai = ({ handleNextStepData }) => {
     canvas.height = video.videoHeight;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     canvas.toBlob(async (blob) => {
-      const fileSize = blob.size / (1024 * 1024);
-      if (fileSize > 5) {
-        const compressedBlob = await resizeImage(blob);
-        setFotoMulai(URL.createObjectURL(compressedBlob));
-      } else {
+      setTimeout(() => { // Simulasi delay loading foto
         setFotoMulai(URL.createObjectURL(blob));
-      }
+        setLoadingPhoto(false);
+      }, 1000);
     }, "image/png");
   };
 
@@ -177,8 +161,14 @@ const StepTwoMulai = ({ handleNextStepData }) => {
             </>
           ) : (
             <div className="text-center">
-              <img src={fotoMulai} alt="Foto Mulai" className="w-full h-[55vh] mb-6 rounded-lg" />
-              <div className="px-3 py-2 border rounded-lg">
+              <div className="w-full h-[55vh] flex justify-center items-center bg-gray-200 rounded-lg relative">
+                {loadingPhoto ? (
+                  <div className="animate-spin w-10 h-10 border-4 border-gray-400 border-t-transparent rounded-full"></div>
+                ) : (
+                  <img src={fotoMulai} alt="Foto Mulai" className="w-full h-full object-cover rounded-lg" />
+                )}
+              </div>
+              <div className="px-3 py-2 border rounded-lg mt-4">
                 <div className="flex justify-between py-2">
                   <p className="font-bold">Jam:</p>
                   <p>
@@ -195,13 +185,6 @@ const StepTwoMulai = ({ handleNextStepData }) => {
                   <p className="font-bold">Tanggal:</p>
                   <p>{jamMulai?.toLocaleDateString("en-GB")}</p>
                 </div>
-                {/* <hr className="border-gray-300 my-2" /> */}
-                {/* <div className="flex justify-between py-2">
-                  <p className="font-bold">Koordinat:</p>
-                  <p>
-                    {koordinatMulai.latitude}, {koordinatMulai.longitude}
-                  </p>
-                </div> */}    
               </div>
 
               <div className="flex justify-between mt-4">
@@ -211,12 +194,19 @@ const StepTwoMulai = ({ handleNextStepData }) => {
                 <button
                   type="submit"
                   onClick={handleSubmit}
-                  disabled={!isFormValid()}
-                  className={`w-1/2 py-2 ml-2 font-semibold text-white  border-2 rounded-lg ${
-                    isFormValid() ? "bg-green-500" : "bg-gray-400 cursor-not-allowed"
+                  disabled={!isFormValid() || loadingLocation || loadingPhoto} 
+                  className={`w-1/2 py-2 ml-2 font-semibold text-white border-2 rounded-lg ${
+                    isFormValid() && !loadingLocation && !loadingPhoto ? "bg-green-500" : "bg-gray-400 cursor-not-allowed"
                   }`}
                 >
-                  Next ➜ 
+                  {loadingLocation || loadingPhoto ? ( 
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                      Loading...
+                    </div>
+                  ) : (
+                    "Next ➜"
+                  )}
                 </button>
               </div>
             </div>

@@ -130,7 +130,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
 
   return (
     <div className="desktop-layout flex min-h-screen bg-gray-100">
-      <MenuSidebar handleLogout={handleLogout} roleId={roleId} />
+      {/* <MenuSidebar handleLogout={handleLogout} roleId={roleId} /> */}
       <div className="flex-1 px-5 bg-white shadow-md rounded-lg transition-all duration-300 ease-in-out pb-10">
         <div className="mt-6 p-6 sm:p-8 bg-gradient-to-b from-green-900 to-green-600 text-white rounded-lg shadow-md border border-gray-300 flex flex-col md:flex-row items-center md:items-start justify-between">
           {/* Divisi dan Lokasi */}

@@ -10,7 +10,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCalendarCheck,
   faCalendarPlus,
-  faHistory,
   faAngleDown,
   faSignInAlt,
   faSignOutAlt,
@@ -119,9 +118,7 @@ const Absensi = () => {
         return false;
       }
 
-      // Jika izin belum diberikan, coba meminta akses
       if (locationPermission.state === "prompt" || cameraPermission.state === "prompt") {
-        // Mengaktifkan izin kamera dan lokasi
         navigator.geolocation.getCurrentPosition(
           (position) => {
             console.log("Location permission granted", position);
@@ -148,27 +145,21 @@ const Absensi = () => {
     }
   };
 
-  // Meminta izin untuk mendapatkan lokasi
   navigator.geolocation.getCurrentPosition(
     (position) => {
-      // Jika izin diberikan
       console.log("Lokasi diperoleh:", position);
     },
     (error) => {
-      // Jika terjadi error atau izin ditolak
       console.error("Lokasi tidak dapat diakses:", error);
     }
   );
 
-  // Meminta izin untuk akses kamera
   navigator.mediaDevices
     .getUserMedia({ video: true })
     .then((stream) => {
-      // Jika izin diberikan dan kamera diakses
       console.log("Kamera berhasil diakses.");
     })
     .catch((error) => {
-      // Jika terjadi error atau izin ditolak
       console.error("Akses kamera ditolak:", error);
     });
 

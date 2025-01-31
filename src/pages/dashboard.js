@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import HomeMobile from "../layouts/homeMobile";
 import HomeDesktop from "../layouts/homeDesktop";
+import MenuSidebar from "../layouts/menuSidebar";
+import Header from "../layouts/header";
 
 const Home = ({ onLogout }) => {
   const navigate = useNavigate();
@@ -9,8 +11,7 @@ const Home = ({ onLogout }) => {
   const roleId = localStorage.getItem("roleId");
 
   const handleLogout = () => {
-    // Langsung jalankan fungsi logout tanpa konfirmasi
-    onLogout();
+    onLogout(); // Logout langsung tanpa konfirmasi
   };
 
   const GetNamaDivisi = (id) => {
@@ -44,17 +45,49 @@ const Home = ({ onLogout }) => {
     );
   };
 
+  const SidebarLayout = ({ children }) => {
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State untuk sidebar
+
+    const toggleSidebar = () => {
+      setIsSidebarOpen((prevState) => !prevState); // Toggle sidebar
+    };
+
+    return (
+      <div className="flex min-h-screen">
+        {/* Sidebar hanya muncul jika roleId memenuhi kriteria */}
+        {["1", "4", "5", "6"].includes(roleId) && (
+          <MenuSidebar
+            handleLogout={handleLogout}
+            roleId={roleId}
+            isOpen={isSidebarOpen}
+            toggleSidebar={toggleSidebar}
+          />
+        )}
+        <div className="flex-grow flex flex-col sticky z-10">
+          {/* Header dengan tombol untuk toggle sidebar */}
+          <Header toggleSidebar={toggleSidebar} />
+          {/* Main Content */}
+          <main className="flex-grow bg-gray-100">{children}</main>
+        </div>
+      </div>
+    );
+  };
+
   const renderViewBasedOnRole = () => {
-    if (roleId === "4" || roleId === "5" || roleId === "6" || roleId === "1") {
+    if (["1", "4", "5", "6"].includes(roleId)) {
+      // Tampilkan Sidebar pada HomeDesktop jika roleId valid
       return (
-        <HomeDesktop
-          username={username}
-          roleId={roleId}
-          GetNamaDivisi={GetNamaDivisi}
-          handleLogout={handleLogout}
-        />
+        <SidebarLayout>
+          <HomeDesktop
+            username={username}
+            roleId={roleId}
+            GetNamaDivisi={GetNamaDivisi}
+            handleLogout={handleLogout}
+          />
+        </SidebarLayout>
       );
     } else {
+      // Tidak ada Sidebar untuk HomeMobile
       return (
         <HomeMobile
           username={username}
