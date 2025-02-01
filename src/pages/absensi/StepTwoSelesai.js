@@ -5,6 +5,7 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
   const videoRef = useRef(null);
 
   const [jamSelesai, setJamSelesai] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(null);
   const [fotoSelesai, setFotoSelesai] = useState(null);
   const [fotoDiambil, setFotoDiambil] = useState(false);
@@ -16,6 +17,10 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
   });
 
   const isFormValid = () => jamSelesai && koordinatSelesai.latitude && fotoSelesai;
+
+  useEffect(() => {
+    setLoading(!(koordinatSelesai?.latitude && koordinatSelesai?.longitude));
+  }, [koordinatSelesai]);
 
   const handleSelesai = () => {
     if (!fotoDiambil) {
@@ -210,6 +215,15 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
                 <div className="flex justify-between">
                   <p className="font-bold">Tanggal:</p>
                   <p>{jamSelesai?.toLocaleDateString("en-GB")}</p>
+                </div>
+                <hr className="border-gray-300 my-2" />
+                <div className="flex justify-between py-2">
+                  <p className="font-bold">Lokasi:</p>
+                  {loading ? (
+                    <p className="animate-pulse text-gray-500">Mencari lokasi...</p>
+                  ) : (
+                    <p className="text-green-500 font-semibold">Berhasil melacak lokasi</p>
+                  )}
                 </div>
               </div>
 
