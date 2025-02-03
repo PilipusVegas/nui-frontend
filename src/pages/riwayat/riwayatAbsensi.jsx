@@ -26,23 +26,19 @@ const Riwayat = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Mengambil data dari kedua API secara bersamaan
         const [absensiRes, lemburRes] = await Promise.all([
           fetch(`${apiUrl}/absen/riwayat/${id_user}`),
           fetch(`${apiUrl}/lembur/riwayat/${id_user}`),
         ]);
   
-        // Mengecek apakah salah satu API gagal
         if (!absensiRes.ok && !lemburRes.ok) throw new Error("Gagal memuat data.");
   
-        // Mengambil data JSON dari API yang berhasil
         const absensiData = absensiRes.ok ? await absensiRes.json() : [];
         const lemburData = lemburRes.ok ? await lemburRes.json() : [];
   
-        console.log("Absensi Data:", absensiData); // Debug data API
+        console.log("Absensi Data:", absensiData); 
         console.log("Lembur Data:", lemburData);
   
-        // Cek apakah ada data dari absensi atau lembur
         if (absensiData.length > 0) {
           const sortedAbsensi = absensiData.sort(
             (a, b) => new Date(b.jam_mulai) - new Date(a.jam_mulai)
@@ -50,22 +46,21 @@ const Riwayat = () => {
           setAbsensi(sortedAbsensi);
           setGroupedData(groupDataByTag(sortedAbsensi, "jam_mulai"));
         } else {
-          setAbsensi([]); // Jika tidak ada data absensi, set sebagai array kosong
+          setAbsensi([]); 
         }
   
         if (lemburData.length > 0) {
           const sortedLembur = lemburData.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
           setLembur(sortedLembur);
         } else {
-          setLembur([]); // Jika tidak ada data lembur, set sebagai array kosong
+          setLembur([]); 
         }
   
-        // Jika keduanya kosong, bisa memilih untuk menampilkan error atau pesan lainnya
         if (absensiData.length === 0 && lemburData.length === 0) {
           setError("Data absensi dan lembur tidak ditemukan.");
         }
       } catch (err) {
-        console.error(err); // Log error untuk debug
+        console.error(err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -82,9 +77,9 @@ const Riwayat = () => {
 
     data.forEach((item) => {
       const dateValue = item[dateField];
-      if (!dateValue) return; // Abaikan jika nilai tanggal tidak valid
+      if (!dateValue) return; 
       const date = new Date(dateValue);
-      if (isNaN(date.getTime())) return; // Abaikan tanggal yang tidak valid
+      if (isNaN(date.getTime())) return;
 
       const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
       if (diffDays === 0) tags["Hari ini"].push(item);
@@ -125,7 +120,7 @@ const Riwayat = () => {
 
   const formatDateTime = (dateTime) => {
     if (!dateTime || isNaN(new Date(dateTime).getTime())) {
-      return "Tanggal tidak valid"; // Validasi jika nilai tanggal tidak valid
+      return "Tanggal tidak valid"; 
     }
     const options = {
       weekday: "long",
@@ -142,9 +137,9 @@ const Riwayat = () => {
   };
 
   const formatTime = (time) => {
-    if (!time) return "Jam tidak valid"; // Validasi jika kosong
-    const [hour, minute, second] = time.split(":"); // Pecah string "HH:mm:ss"
-    const date = new Date(); // Gunakan tanggal hari ini
+    if (!time) return "Jam tidak valid";
+    const [hour, minute, second] = time.split(":"); 
+    const date = new Date(); 
     date.setHours(parseInt(hour), parseInt(minute), parseInt(second));
     return date.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
   };

@@ -108,7 +108,7 @@ const DataKaryawan = ({}) => {
   const handleUpdate = async () => {
     try {
       setLoadingAction(true);
-      const response = await fetch(`${apiUrl}/profil/${currentUser.id}`, {
+      const response = await fetch(`${apiUrl}/profil/update/${currentUser.id}`, {
         method: "PUT",
         body: JSON.stringify(currentUser),
         headers: { "Content-Type": "application/json" },

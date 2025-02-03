@@ -1,7 +1,18 @@
 import { useEffect, useState } from "react";
 import MobileLayout from "../../layouts/mobileLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBuilding, faPhone, faCamera, faUser, faPen, faKey, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBuilding,
+  faPhone,
+  faCamera,
+  faUser,
+  faPen,
+  faKey,
+  faArrowRight,
+  faEye,
+  faEyeSlash,
+  faUserCircle,
+} from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2"; // Import SweetAlert2
 
 const Profile = () => {
@@ -42,7 +53,7 @@ const Profile = () => {
         if (userProfile) {
           const userProfileData = {
             name: userProfile.nama,
-            phone: userProfile.telp || "No phone number",
+            phone: userProfile.telp || "",
             division: userProfile.role_name || "No division",
             avatar: userProfile.foto || profileData.avatar,
           };
@@ -79,7 +90,7 @@ const Profile = () => {
     }
 
     if (avatarFile) {
-      formData.append("foto", avatarFile); // Avatar file diambil dari input file
+      formData.append("foto", avatarFile);
       hasData = true;
     }
 
@@ -93,7 +104,7 @@ const Profile = () => {
     }
 
     // Kirim FormData ke API
-    fetch(`${apiUrl}/profil/user/${id_user}`, {
+    fetch(`${apiUrl}/profil/update/${id_user}`, {
       method: "PUT",
       body: formData, // Mengirimkan formData
     })
@@ -204,7 +215,6 @@ const Profile = () => {
             });
           });
       } else {
-        // Jika pengguna membatalkan
         Swal.fire({
           title: "Dibatalkan",
           text: "Perubahan password dibatalkan.",
@@ -216,105 +226,125 @@ const Profile = () => {
   };
 
   if (isLoading) {
-    return <div className="loading animate-pulse text-center py-20 text-xl font-semibold text-gray-500">Loading...</div>;
+    return (
+      <div className="loading animate-pulse text-center py-20 text-xl font-semibold text-gray-500">
+        Loading...
+      </div>
+    );
   }
 
   return (
     <MobileLayout title="Profile">
-      <div className="p-3">
-        <div className="flex items-center bg-gradient-to-br from-green-700 via-green-700 to-green-700 rounded-xl shadow-lg p-6 mb-4 relative">
-          {/* <img
-            src={profileData.avatar}
-            alt="User Avatar"
-            className="w-24 h-24 rounded-full border-4 border-white shadow-lg"
-          /> */}
-          <div className="flex flex-col justify-center flex-grow ml-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white">{profileData.name || "Loading..."}</h2>
-              <FontAwesomeIcon
-                icon={faPen}
-                className="text-white text-sm cursor-pointer hover:text-gray-300 relative top-1"
-                onClick={() => setIsEditing(true)}
-                title="Edit Profile"
-              />
-            </div>
-            <p className="text-white text-sm opacity-90">{profileData.division || "Loading..."}</p>
-          </div>
-        </div>
+      <div className="py-8 px-7 min-w-full mx-auto bg-white rounded-xl shadow-xl space-y-4">
+        {/* Avatar Section */}
+        <div className="flex justify-center items-center mb-10">
+          <div className="relative w-32 h-32">
+            {/* Gradient background with shadow */}
+            <div className="absolute inset-0 bg-gradient-to-r rounded-full shadow-md"></div>
 
-        <div className="bg-white p-6 rounded-xl shadow-md space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center text-gray-500 font-semibold">
-              <FontAwesomeIcon icon={faUser} className="mr-2" style={{ color: "#555" }} />
-              Nama
-            </div>
-            <div className="text-gray-900 font-medium">: {profileData.name || "Loading..."}</div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center text-gray-500 font-semibold">
-              <FontAwesomeIcon icon={faBuilding} className="mr-2" style={{ color: "#555" }} />
-              Divisi
-            </div>
-            <div className="text-gray-900 font-medium">: {profileData.division || "Loading..."}</div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center text-gray-500 font-semibold">
-              <FontAwesomeIcon icon={faPhone} className="mr-2" style={{ color: "#555" }} />
-              Phone
-            </div>
-            {!isEditing ? (
-              <div className="text-gray-900 font-medium">: {profileData.phone || "Loading..."}</div>
-            ) : (
-              <input
-                name="phone"
-                type="tel"
-                className="col-span-2 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                value={editData.phone}
-                onChange={handleChange}
-                placeholder="Masukkan nomor telepon"
-                pattern="[0-9]*"
-                inputMode="numeric"
+            {/* Display photo if available, else show icon */}
+            {profileData.foto ? (
+              <img
+                src={profileData.foto}
+                alt="User Avatar"
+                className="w-full h-full rounded-full object-cover shadow-lg border-4 border-white"
               />
+            ) : (
+              <div className="w-full h-full rounded-full bg-white flex items-center justify-center shadow-lg border-4 border-white">
+                <FontAwesomeIcon icon={faUserCircle} className="text-gray-400 w-32 h-32" />
+              </div>
             )}
           </div>
-
-          {/* {isEditing && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center text-gray-500 font-semibold">
-                <FontAwesomeIcon icon={faCamera} className="mr-2" style={{ color: "#555" }} />
-                Foto Profil
-              </div>
-              <input
-                type="file"
-                onChange={handleFileChange}
-                className="col-span-2 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-          )} */}
         </div>
 
-        <div className="flex justify-between mt-6">
+        {/* Profile Info (Single Card with dividers) */}
+        {/* Name */}
+        <div className="flex items-center space-x-4 text-gray-600 font-medium mt-6">
+          <FontAwesomeIcon icon={faUser} className="text-green-600 text-lg" />
+          <div className="flex flex-col space-y-0">
+            <span>Nama:</span>
+            <span className="font-semibold text-gray-900 text-sm">
+              {profileData.name || "Loading..."}
+            </span>
+          </div>
+        </div>
+        <hr className="border-gray-300" />
+        {/* Division */}
+        <div className="flex items-center space-x-4 text-gray-600 font-medium">
+          <FontAwesomeIcon icon={faBuilding} className="text-green-600 text-lg" />
+          <div className="flex flex-col space-y-1">
+            <span>Divisi:</span>
+            <span className="font-semibold text-gray-900 text-sm">
+              {profileData.division || "Loading..."}
+            </span>
+          </div>
+        </div>
+        <hr className="border-gray-300" />
+
+        {/* Phone */}
+        <div className="flex items-center space-x-4 text-gray-600 font-medium">
+          <FontAwesomeIcon icon={faPhone} className="text-green-600 text-lg" />
+          <div className="flex flex-col w-full">
+            <span className="text-sm">Phone:</span>
+            <div className="flex justify-between items-center space-x-4">
+              <span className="font-semibold text-gray-900 text-sm">
+                {!isEditing ? (
+                  profileData.phone || "-"
+                ) : (
+                  <input
+                    name="phone"
+                    type="tel"
+                    className="w-full p-2 mt-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300"
+                    value={editData.phone}
+                    onChange={handleChange}
+                    placeholder="Masukkan nomor telepon"
+                    pattern="[0-9]*"
+                    inputMode="numeric"
+                  />
+                )}
+              </span>
+              <FontAwesomeIcon
+                icon={faPen}
+                className="text-green-600 cursor-pointer hover:text-green-800 transition-all duration-300 transform hover:scale-110 "
+                onClick={() => setIsEditing(true)}
+                title="Edit Phone"
+              />
+            </div>
+          </div>
+        </div>
+        <hr className="border-gray-300" />
+
+        {/* Action Buttons */}
+        <div className="flex justify-between mt-0">
           {!isEditing ? (
-            <>
-              <button onClick={openPasswordModal} className="bg-yellow-600 text-white py-2 px-4 rounded-lg">
-                <div className="change-password" style={{ display: "flex", alignItems: "center" }}>
-                  <FontAwesomeIcon icon={faKey} className="mr-2 text-white text-base" />
-                  <span>Ganti Password</span>
-                </div>
-              </button>
-            </>
+            <button
+              onClick={openPasswordModal}
+              className="bg-green-500 hover:bg-green-600 text-white p-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 transition-all duration-300 ease-in-out transform flex items-center space-x-2 w-full justify-between"
+            >
+              <span className="font-semibold">Ganti Password</span>
+              <FontAwesomeIcon icon={faArrowRight} className="text-white" />
+            </button>
           ) : (
-            <>
-              <button onClick={handleSave} className="bg-green-600 text-white py-2 px-4 rounded-lg">
-                Simpan
-              </button>
-              <button onClick={() => setIsEditing(false)} className="bg-red-600 text-white py-2 px-4 rounded-lg">
-                Batal
-              </button>
-            </>
+            <div className="space-x-2 flex-grow">
+              <div className="flex w-full gap-4">
+                <button
+                  onClick={() => setIsEditing(false)}
+                  className="bg-red-400 hover:bg-red-500 text-white p-3 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all duration-300 ease-in-out transform flex-grow"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleSave}
+                  className="bg-green-400 hover:bg-green-600 text-white p-3 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 transition-all duration-300 ease-in-out transform flex-grow"
+                >
+                  Simpan
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>
+
       {/* Password Modal */}
       {isPasswordModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
@@ -335,8 +365,15 @@ const Profile = () => {
                   })
                 }
               />
-              <span className="absolute right-2 top-2 cursor-pointer" onClick={() => setShowOldPassword(!showOldPassword)}>
-                {showOldPassword ? <FontAwesomeIcon icon={faEyeSlash} /> : <FontAwesomeIcon icon={faEye} />}
+              <span
+                className="absolute right-2 top-2 cursor-pointer"
+                onClick={() => setShowOldPassword(!showOldPassword)}
+              >
+                {showOldPassword ? (
+                  <FontAwesomeIcon icon={faEyeSlash} />
+                ) : (
+                  <FontAwesomeIcon icon={faEye} />
+                )}
               </span>
             </div>
 
@@ -354,17 +391,31 @@ const Profile = () => {
                   })
                 }
               />
-              <span className="absolute right-2 top-2 cursor-pointer" onClick={() => setShowNewPassword(!showNewPassword)}>
-                {showNewPassword ? <FontAwesomeIcon icon={faEyeSlash} /> : <FontAwesomeIcon icon={faEye} />}
+              <span
+                className="absolute right-2 top-2 cursor-pointer"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+              >
+                {showNewPassword ? (
+                  <FontAwesomeIcon icon={faEyeSlash} />
+                ) : (
+                  <FontAwesomeIcon icon={faEye} />
+                )}
               </span>
             </div>
 
             <div className="flex justify-between">
-              <button onClick={handlePasswordSubmit} className="bg-green-600 text-white py-2 px-4 rounded-lg">
-                Simpan
-              </button>
-              <button onClick={closePasswordModal} className="bg-red-600 text-white py-2 px-4 rounded-lg">
+              
+              <button
+                onClick={closePasswordModal}
+                className="bg-red-600 text-white py-2 px-4 rounded-lg"
+              >
                 Batal
+              </button>
+              <button
+                onClick={handlePasswordSubmit}
+                className="bg-green-600 text-white py-2 px-4 rounded-lg"
+              >
+                Simpan
               </button>
             </div>
           </div>
