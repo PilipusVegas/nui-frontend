@@ -67,7 +67,6 @@ const DataKaryawan = ({}) => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  // Fungsi-fungsi tambahan Anda
   const handleDelete = (id) => {
     Swal.fire({
       title: "Apakah Anda yakin?",
@@ -152,7 +151,6 @@ const DataKaryawan = ({}) => {
       setLoadingAction(false);
     }
   };
-
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -411,7 +409,7 @@ const DataKaryawan = ({}) => {
               </label>
               <select
                 id="id_role"
-                value={currentUser.id_role}
+                value={currentUser.id_role || ""}
                 onChange={(e) => setCurrentUser({ ...currentUser, id_role: e.target.value })}
                 className="border p-2 w-full rounded-md"
               >

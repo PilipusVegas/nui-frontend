@@ -4,16 +4,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBuilding,
   faPhone,
-  faCamera,
   faUser,
   faPen,
-  faKey,
   faArrowRight,
   faEye,
   faEyeSlash,
   faUserCircle,
 } from "@fortawesome/free-solid-svg-icons";
-import Swal from "sweetalert2"; // Import SweetAlert2
+import Swal from "sweetalert2"; 
 
 const Profile = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -32,7 +30,7 @@ const Profile = () => {
     newPassword: "",
   });
   const [avatarFile, setAvatarFile] = useState(null);
-  const [isLoading, setIsLoading] = useState(true); // Loading state
+  const [isLoading, setIsLoading] = useState(true); 
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
@@ -58,7 +56,7 @@ const Profile = () => {
             avatar: userProfile.foto || profileData.avatar,
           };
           setProfileData(userProfileData);
-          setEditData(userProfileData); // Update editData as well
+          setEditData(userProfileData); 
         }
       })
       .catch((error) => console.error("Error fetching profile data:", error))
@@ -103,10 +101,9 @@ const Profile = () => {
       });
     }
 
-    // Kirim FormData ke API
     fetch(`${apiUrl}/profil/update/${id_user}`, {
       method: "PUT",
-      body: formData, // Mengirimkan formData
+      body: formData, 
     })
       .then((response) => {
         console.log("Status Kode:", response.status);
