@@ -92,7 +92,7 @@ const DetailAbsensi = () => {
           throw new Error("Failed to fetch absen data");
         }
         const data = await response.json();
-        console.log("Data fetched:", data);
+        // console.log("Data fetched:", data);
         setAbsen(data.absen || []);
         setSelectedItem(data);
       } catch (error) {

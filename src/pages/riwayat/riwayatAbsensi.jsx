@@ -50,7 +50,7 @@ const Riwayat = () => {
         }
   
         if (lemburData.length > 0) {
-          const sortedLembur = lemburData.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+          const sortedLembur = lemburData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
           setLembur(sortedLembur);
         } else {
           setLembur([]); 
@@ -115,7 +115,7 @@ const Riwayat = () => {
       }
     });
 
-    setGroupedData(groupDataByTag(filtered, activeTab === "absensi" ? "jam_mulai" : "tanggal"));
+    setGroupedData(groupDataByTag(filtered, activeTab === "absensi" ? "jam_mulai" : "created_at"));
   };
 
   const formatDateTime = (dateTime) => {
@@ -171,7 +171,7 @@ const Riwayat = () => {
             }`}
             onClick={() => {
               setActiveTab("lembur");
-              setGroupedData(groupDataByTag(lembur, "tanggal"));
+              setGroupedData(groupDataByTag(lembur, "created_at"));
             }}
           >
             <FontAwesomeIcon icon={faClock} className="mr-2" />

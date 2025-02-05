@@ -1,16 +1,7 @@
 import { useEffect, useState } from "react";
 import MobileLayout from "../../layouts/mobileLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faBuilding,
-  faPhone,
-  faUser,
-  faPen,
-  faArrowRight,
-  faEye,
-  faEyeSlash,
-  faUserCircle,
-} from "@fortawesome/free-solid-svg-icons";
+import { faBuilding, faPhone, faUser, faPen, faArrowRight, faEye, faEyeSlash, faUserCircle} from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2"; 
 
 const Profile = () => {
@@ -41,7 +32,6 @@ const Profile = () => {
       setIsLoading(false);
       return;
     }
-
     fetch(`${apiUrl}/profil/user/${id_user}`)
       .then((response) => {
         if (!response.ok) throw new Error("Network response was not ok");
@@ -68,7 +58,6 @@ const Profile = () => {
     const ERROR_USER_ID_NOT_FOUND = "User ID tidak ditemukan.";
     const ERROR_NO_DATA_TO_UPDATE = "Tidak ada data untuk diperbarui.";
     const SUCCESS_PROFILE_UPDATED = "Profil berhasil diperbarui!";
-
     if (!id_user) {
       console.error(ERROR_USER_ID_NOT_FOUND);
       return Swal.fire({
@@ -106,7 +95,6 @@ const Profile = () => {
       body: formData, 
     })
       .then((response) => {
-        console.log("Status Kode:", response.status);
         if (!response.ok) {
           return response.json().then((errorData) => {
             console.error("Detail kesalahan:", errorData);
@@ -316,10 +304,10 @@ const Profile = () => {
           {!isEditing ? (
             <button
               onClick={openPasswordModal}
-              className="bg-green-500 hover:bg-green-600 text-white p-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 transition-all duration-300 ease-in-out transform flex items-center space-x-2 w-full justify-between"
+              className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 transition-all duration-300 ease-in-out transform flex items-center space-x-2 w-full justify-between"
             >
-              <span className="font-semibold">Ganti Password</span>
-              <FontAwesomeIcon icon={faArrowRight} className="text-white" />
+              <span className="font-semibold text-lg">Ganti Password</span>
+              <FontAwesomeIcon icon={faArrowRight} className="text-green-600 p-3 bg-white rounded-full" />
             </button>
           ) : (
             <div className="space-x-2 flex-grow">
