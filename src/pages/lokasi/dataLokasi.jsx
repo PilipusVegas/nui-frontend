@@ -10,7 +10,6 @@ import {
   faArrowRight,
   faSearch,
   faMapMarkerAlt,
-  faCalendarAlt,
 } from "@fortawesome/free-solid-svg-icons";
 
 const DataLokasi = () => {
@@ -287,7 +286,7 @@ const DataLokasi = () => {
   }, [searchTerm]);
 
   return (
-    <div className="max-h-screen flex flex-col px-6 pt-6 bg-white">
+    <div className="min-h-screen flex flex-col px-6 pt-6 bg-white">
       {/* Header */}
       <div className=" flex items-center justify-between mb-6 flex-wrap">
         <div className="flex items-center space-x-2 w-full sm:w-auto mb-4 sm:mb-0">
@@ -314,7 +313,7 @@ const DataLokasi = () => {
             />
             <FontAwesomeIcon
               icon={faSearch}
-              className="absolute top-2 right-3 text-gray-500"
+              className="absolute top-2 text-xl right-3 text-gray-500"
             />
           </div>
 
@@ -383,7 +382,7 @@ const DataLokasi = () => {
       </div>
 
       {/* Pagination untuk desktop */}
-      <div className="flex justify-center text-center space-x-2 py-10 mt-4 md:block hidden">
+      <div className="flex justify-center text-center space-x-2 pb-10 pt-2 mt-4 md:block hidden">
         <button
           onClick={() => setCurrentPageDesktop((prev) => Math.max(prev - 1, 1))}
           disabled={currentPageDesktop === 1}
