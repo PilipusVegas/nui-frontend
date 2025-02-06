@@ -121,17 +121,17 @@ const Absensi = () => {
       if (locationPermission.state === "prompt" || cameraPermission.state === "prompt") {
         navigator.geolocation.getCurrentPosition(
           (position) => {
-            console.log("Location permission granted", position);
+            // console.log("Location permission granted", position);
           },
           (error) => {
-            console.error("Geolocation error:", error);
+            // console.error("Geolocation error:", error);
           }
         );
 
         navigator.mediaDevices
           .getUserMedia({ video: true })
           .then((stream) => {
-            console.log("Camera permission granted");
+            // console.log("Camera permission granted");
           })
           .catch((error) => {
             console.error("Camera permission error:", error);
@@ -147,20 +147,20 @@ const Absensi = () => {
 
   navigator.geolocation.getCurrentPosition(
     (position) => {
-      console.log("Lokasi diperoleh:", position);
+      // console.log("Lokasi diperoleh:", position);
     },
     (error) => {
-      console.error("Lokasi tidak dapat diakses:", error);
+      // console.error("Lokasi tidak dapat diakses:", error);
     }
   );
 
   navigator.mediaDevices
     .getUserMedia({ video: true })
     .then((stream) => {
-      console.log("Kamera berhasil diakses.");
+      // console.log("Kamera berhasil diakses.");
     })
     .catch((error) => {
-      console.error("Akses kamera ditolak:", error);
+      // console.error("Akses kamera ditolak:", error);
     });
 
   const handleMulaiClick = async () => {

@@ -108,7 +108,7 @@ const StepOne = React.memo(({ formData, handleNextStepData }) => {
         device: localData.device,
         jumlah: localData.jumlah,
       };
-      console.log('Data Masuk:', masukData);
+      // console.log('Data Masuk:', masukData);
       localStorage.setItem('masukData', JSON.stringify(masukData));
     } else if (localData.inOut === '2') {
       const keluarData = {
@@ -120,7 +120,7 @@ const StepOne = React.memo(({ formData, handleNextStepData }) => {
         penerima: localData.penerima,
         keterangan: localData.keterangan,
       };
-      console.log('Data Keluar:', keluarData);
+      // console.log('Data Keluar:', keluarData);
       localStorage.setItem('keluarData', JSON.stringify(keluarData));
     }
     localStorage.removeItem('stepOneData');

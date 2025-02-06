@@ -36,8 +36,8 @@ const Riwayat = () => {
         const absensiData = absensiRes.ok ? await absensiRes.json() : [];
         const lemburData = lemburRes.ok ? await lemburRes.json() : [];
   
-        console.log("Absensi Data:", absensiData); 
-        console.log("Lembur Data:", lemburData);
+        // console.log("Absensi Data:", absensiData); 
+        // console.log("Lembur Data:", lemburData);
   
         if (absensiData.length > 0) {
           const sortedAbsensi = absensiData.sort(
