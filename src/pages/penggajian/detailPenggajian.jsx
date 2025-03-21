@@ -59,20 +59,12 @@ const DetailPenggajian = () => {
       setDataUser(result);
       setPayrollData(result.data || []);
       const kehadiranCount = result.data.filter(
-        (item) => item.id_absen !== null && item.tanggal_absen !== "-"
+        (item) =>
+          item.id_absen !== null &&
+          item.tanggal_absen !== "-" &&
+          !item.id_lembur
       ).length;
-
-      const keterlambatanTotal = result.data.reduce((acc, item) => {
-        if (item.absen_mulai) {
-          const [hours, minutes] = item.absen_mulai.split(":").map(Number);
-          const absenTimeInMinutes = hours * 60 + minutes;
-          const lateThresholdInMinutes = 22 * 60;
-          if (absenTimeInMinutes > lateThresholdInMinutes) {
-            acc += absenTimeInMinutes - lateThresholdInMinutes;
-          }
-        }
-        return acc;
-      }, 0);
+      
 
       const lemburTotal = result.data.reduce((acc, item) => {
         if (item.lembur && item.lembur !== "null" && item.lembur !== "0:00") {
@@ -229,47 +221,45 @@ const DetailPenggajian = () => {
           <div className="overflow-hidden rounded-lg">
             {/* Tabel untuk layar besar */}
             <table className="table-auto w-full hidden md:table">
-  <thead>
-    <tr className="bg-green-600 text-white text-sm">
-      {["No",]
-      .concat(activeTab === "absen" ? ["Tanggal absen", "IN", "OUT" ] : []) 
-        .concat(activeTab === "lembur" ? ["Tanggal Lembur","Start", "End" ,"Lembur"] : []) 
-        .map((header, i, arr) => (
-          <th
-            key={i}
-            className={`px-4 py-1 ${
-              i === 0 ? "rounded-tl-lg " : i === arr.length - 1 ? "rounded-tr-lg " : ""
-            }`}
-          >
-            {header}
-          </th>
-        ))}
-    </tr>
-  </thead>
-  <tbody>
-    {filteredData.map((item, i) => (
-      <tr key={i} className="text-center text-sm">
-        <td className="border px-4">{i + 1}</td>
-        <td className="border px-4">
-          {activeTab === "absen" ? item.tanggal_absen : item.tanggal_lembur || "-"}
-        </td>
-        <td className="border px-4">
-          {activeTab === "absen" ? item.absen_mulai : item.mulai_lembur || "-"}
-        </td>
-        <td className="border px-4">
-          {activeTab === "absen"
-            ? item.absen_selesai === "0:00"
-              ? "-"
-              : item.absen_selesai
-            : item.selesai_lembur || "-"}
-        </td>
-        {activeTab === "lembur" && <td className="border px-4">{item.lembur || "-"}</td>}
-      </tr>
-    ))}
-  </tbody>
-</table>
-
-
+            <thead>
+              <tr className="bg-green-600 text-white text-sm">
+                {["No",]
+                .concat(activeTab === "absen" ? ["Tanggal absen", "IN", "OUT" ] : []) 
+                  .concat(activeTab === "lembur" ? ["Tanggal Lembur","Start", "End" ,"Lembur"] : []) 
+                  .map((header, i, arr) => (
+                    <th
+                      key={i}
+                      className={`px-4 py-1 ${
+                        i === 0 ? "rounded-tl-lg " : i === arr.length - 1 ? "rounded-tr-lg " : ""
+                      }`}
+                    >
+                      {header}
+                    </th>
+                  ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredData.map((item, i) => (
+                <tr key={i} className="text-center text-sm">
+                  <td className="border px-4">{i + 1}</td>
+                  <td className="border px-4">
+                    {activeTab === "absen" ? item.tanggal_absen : item.tanggal_lembur || "-"}
+                  </td>
+                  <td className="border px-4">
+                    {activeTab === "absen" ? item.absen_mulai : item.mulai_lembur || "-"}
+                  </td>
+                  <td className="border px-4">
+                    {activeTab === "absen"
+                      ? item.absen_selesai === "0:00"
+                        ? "-"
+                        : item.absen_selesai
+                      : item.selesai_lembur || "-"}
+                  </td>
+                  {activeTab === "lembur" && <td className="border px-4">{item.lembur || "-"}</td>}
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
 {/* Card untuk layar kecil */}
 <div className="md:hidden">
