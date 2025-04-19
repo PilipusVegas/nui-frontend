@@ -1,6 +1,6 @@
 import MobileLayout from "../layouts/mobileLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBell, faUser, faCalendarCheck,faHistory } from "@fortawesome/free-solid-svg-icons";
+import { faBell, faUser, faCalendarCheck,faHistory,faPenFancy } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 
 const Menu = () => {
@@ -10,11 +10,17 @@ const Menu = () => {
     <MobileLayout title="Menu">
       <div className="min-h-screen py-6 px-4 bg-white rounded-xl"> 
         <h2 className="text-lg font-semibold mb-4">Menu</h2> 
-        <div className="grid grid-cols-4 gap-4"> 
+        <div className="grid grid-cols-4 gap-5"> 
           <ActionButton
             icon={faCalendarCheck}
             label="Absensi"
             onClick={() => navigate("/absensi")}
+            color="text-blue-500"
+          />
+          <ActionButton
+            icon={faPenFancy}
+            label="Form"
+            onClick={() => navigate("/form")}
             color="text-blue-500"
           />
           <ActionButton

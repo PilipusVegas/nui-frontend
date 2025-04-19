@@ -13,6 +13,7 @@ import {
   faArrowAltCircleRight,
   faLocationArrow,
   faPeopleGroup,
+  faPenFancy,
 } from "@fortawesome/free-solid-svg-icons";
 
 // Komponen untuk Tombol Ikon Menu
@@ -85,31 +86,37 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
       label: "Data Absensi",
       icon: faCheckSquare,
       path: "/data-absensi",
-      roles: ["1", "4"], // Contoh hanya role 4 dan 6 yang bisa akses
+      roles: ["1", "4"], 
     },
     {
       label: "Data Karyawan",
       icon: faPeopleGroup,
       path: "/data-karyawan",
-      roles: [ "1", "6"], // Contoh hanya role 4 dan 6 yang bisa akses
+      roles: [ "1", "6"], 
     },
     {
       label: "Data Penggajian",
       icon: faBook,
       path: "/data-penggajian",
-      roles: ["1", "4", "6"], // Contoh hanya role 4 dan 6 yang bisa akses
+      roles: ["1", "4", "6"], 
+    },
+    {
+      label: "Data Surat Dinas",
+      icon: faPenFancy,
+      path: "/surat-dinas",
+      roles: ["1", "4", "6"], 
     },
     {
       label: "Persetujuan Lembur",
       icon: faCheckSquare,
       path: "/data-approval",
-      roles: ["1", "5"], // Contoh hanya role 4 dan 6 yang bisa akses
+      roles: ["1", "5"], 
     },
     {
       label: "Data Lokasi Gerai",
       icon: faLocationArrow,
       path: "/data-lokasi",
-      roles: [ "1", "5"], // Contoh hanya role 4 dan 6 yang bisa akses
+      roles: [ "1", "5"], 
     },
   ];
 

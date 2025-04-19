@@ -8,6 +8,8 @@ import {
   faThumbsUp,
   faMapMarkerAlt,
   faUsers,
+  faClipboardCheck, 
+  faPenFancy
 } from "@fortawesome/free-solid-svg-icons";
 
 const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
@@ -19,6 +21,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
   const [totalAbsences, setTotalAbsences] = useState(0);
   const [totalApprovals, setTotalApprovals] = useState(0);
   const [totalLocations, setTotalLocations] = useState(0);
+  const [TotalSuratDinas, setTotalSuratDinas] = useState(0);
 
   const updateLocalTime = () => {
     const time = new Date().toLocaleString("id-ID", {
@@ -93,7 +96,16 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     }
   };
 
-  // Handlers for navigation
+  const fetchSuratDinas = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/surat-dinas/`);
+      const result = await response.json();
+      setTotalSuratDinas(Array.isArray(result) ? result.length : 0);
+    } catch (error) {
+      console.error("Error fetching surat dinas:", error);
+    }
+  };
+
   const handleCardClick = (path) => {
     navigate(path);
   };
@@ -105,6 +117,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     if (roleId === "4") {
       fetchAbsences();
       fetchPayroll();
+      fetchSuratDinas();
     }
 
     if (roleId === "5") {
@@ -115,6 +128,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     if (roleId === "6") {
       fetchEmployees();
       fetchPayroll();
+      fetchSuratDinas();
     }
 
     if (roleId === "1") {
@@ -200,6 +214,16 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
                 </div>
                 <FontAwesomeIcon icon={faUsers} className="text-violet-500 text-4xl" />
               </div>
+              <div
+                onClick={() => handleCardClick("/survey")}
+                className="flex items-center justify-between px-8 py-6 bg-white rounded-lg shadow-md border border-gray-200 transition-transform transform hover:shadow-xl cursor-pointer"
+              >
+                <div className="flex flex-col">
+                  <p className="text-xl font-semibold text-gray-700">Bukti Survey</p>
+                  {/* <h4 className="text-5xl font-bold text-emerald-500">{employees.length || "0"}</h4> */}
+                </div>
+                <FontAwesomeIcon icon={faClipboardCheck } className="text-emerald-500 text-4xl" />
+              </div>
             </div>
           )}
 
@@ -233,16 +257,20 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
 
           {/* MANAGER HRD Role Cards */}
           {roleId === "4" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div
-                onClick={() => handleCardClick("/data-absensi")}
-                className="flex items-center justify-between px-8 py-6 bg-white rounded-lg shadow-md border border-gray-200 transition-transform transform hover:shadow-xl cursor-pointer"
-              >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div onClick={() => handleCardClick("/data-absensi")} className="flex items-center justify-between px-8 py-6 bg-white rounded-lg shadow-md border border-gray-200 transition-transform transform hover:shadow-xl cursor-pointer">
                 <div className="flex flex-col">
                   <p className="text-xl font-semibold text-gray-700">Absensi</p>
                   <h4 className="text-5xl font-bold text-blue-500">{totalAbsences}</h4>
                 </div>
                 <FontAwesomeIcon icon={faCalendarAlt} className="text-blue-500 text-4xl" />
+              </div>
+              <div onClick={() => handleCardClick("/surat-dinas")} className="flex items-center justify-between px-8 py-6 bg-white rounded-lg shadow-md border border-gray-200 transition-transform transform hover:shadow-xl cursor-pointer">
+                <div className="flex flex-col">
+                  <p className="text-xl font-semibold text-gray-700">Surat Dinas</p>
+                  <h4 className="text-5xl font-bold text-blue-500">{TotalSuratDinas}</h4>
+                </div>
+                <FontAwesomeIcon icon={faPenFancy} className="text-blue-500 text-4xl" />
               </div>
               <div
                 onClick={() => handleCardClick("/data-penggajian")}
@@ -260,20 +288,21 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
           {/* Staff HRD Role Cards */}
           {roleId === "6" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div
-                onClick={() => handleCardClick("/data-karyawan")}
-                className="flex items-center justify-between px-8 py-6 bg-white rounded-lg shadow-md border border-gray-200 transition-transform transform hover:shadow-xl cursor-pointer"
-              >
+              <div onClick={() => handleCardClick("/data-karyawan")} className="flex items-center justify-between px-8 py-6 bg-white rounded-lg shadow-md border border-gray-200 transition-transform transform hover:shadow-xl cursor-pointer">
                 <div className="flex flex-col">
                   <p className="text-xl font-semibold text-gray-700">Karyawan</p>
                   <h4 className="text-5xl font-bold text-violet-500">{employees.length || "0"}</h4>
                 </div>
                 <FontAwesomeIcon icon={faUsers} className="text-violet-500 text-4xl" />
               </div>
-              <div
-                onClick={() => handleCardClick("/data-penggajian")}
-                className="flex items-center justify-between px-8 py-6 bg-white rounded-lg shadow-md border border-gray-200 transition-transform transform hover:shadow-xl cursor-pointer"
-              >
+              <div onClick={() => handleCardClick("/surat-dinas")} className="flex items-center justify-between px-8 py-6 bg-white rounded-lg shadow-md border border-gray-200 transition-transform transform hover:shadow-xl cursor-pointer">
+                <div className="flex flex-col">
+                  <p className="text-xl font-semibold text-gray-700">Surat Dinas</p>
+                  <h4 className="text-5xl font-bold text-blue-500">{TotalSuratDinas}</h4>
+                </div>
+                <FontAwesomeIcon icon={faPenFancy} className="text-blue-500 text-4xl" />
+              </div>
+              <div onClick={() => handleCardClick("/data-penggajian")} className="flex items-center justify-between px-8 py-6 bg-white rounded-lg shadow-md border border-gray-200 transition-transform transform hover:shadow-xl cursor-pointer">
                 <div className="flex flex-col">
                   <p className="text-xl font-semibold text-gray-700">Penggajian</p>
                   <h4 className="text-5xl font-bold text-amber-500">{totalPayroll}</h4>

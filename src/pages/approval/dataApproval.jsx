@@ -229,10 +229,7 @@ const DataApproval = () => {
                       <td className="py-2 px-4">{approval.nama_user}</td>
                       <td className="py-2 px-4">{approval.lokasi}</td>
                       <td className="py-2 px-4">
-                        <button
-                          onClick={() => openModalWithDescription(approval.deskripsi)}
-                          className="text-blue-500"
-                        >
+                        <button onClick={() => openModalWithDescription(approval.deskripsi)} className="text-blue-500">
                           <FontAwesomeIcon icon={faSearch} className="mr-2 text-blue-500" />
                           View
                         </button>

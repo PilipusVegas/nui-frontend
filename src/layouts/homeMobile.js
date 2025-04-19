@@ -3,19 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Swal from "sweetalert2";
-import {
-  faCalendarCheck,
-  faClock,
-  faBell,
-  faHistory,
-  faThList,
-  faHome,
-  faUser,
-  faSignOutAlt,
-  faQuestionCircle,
-  faMapMarkerAlt,
-  faArrowRight,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCalendarCheck, faClock, faBell, faHistory, faThList, faHome, faUser, faSignOutAlt, faQuestionCircle, faMapMarkerAlt, faArrowRight, faList, faPen, faPenFancy,} from "@fortawesome/free-solid-svg-icons";
 
 const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
   const navigate = useNavigate();
@@ -161,7 +149,7 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
       <div className="flex flex-row items-center p-1 mt-2">
         <span className="text-md font-semibold pl-3">Menu Utama</span>
       </div>
-      <div className="grid grid-cols-4 gap-3 px-4">
+      <div className="grid grid-cols-5 gap-3 px-4">
         <IconButton
           icon={faCalendarCheck}
           label="Absen"
@@ -173,6 +161,12 @@ const HomeMobile = ({ username, roleId, handleLogout, GetNamaDivisi }) => {
           label="Lembur"
           onClick={() => navigate("/lembur")}
           color="p-4 rounded-lg bg-green-100 text-xl text-teal-500"
+        />
+        <IconButton
+          icon={faPenFancy}
+          label="Form"
+          onClick={() => navigate("/form")}
+          color="p-4 rounded-lg bg-green-100 text-xl text-blue-500"
         />
         <IconButton
           icon={faBell}

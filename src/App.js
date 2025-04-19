@@ -6,6 +6,7 @@ import Menu from "./pages/menu";
 import Login from "./pages/login";
 import Absen from "./pages/absensi";
 import Lembur from "./pages/lembur";
+import Form from "./pages/form";
 import Profile from "./pages/profile";
 import Dashboard from "./pages/dashboard";
 import Notification from "./pages/notification";
@@ -19,7 +20,9 @@ import DetailPenggajian from "./pages/penggajian/detailPenggajian";
 import RiwayatAbsensi from "./pages/riwayat/riwayatAbsensi";
 import MenuSidebar from "./layouts/menuSidebar";
 import Header from "./layouts/header";
-import Footer from "./layouts/footer";
+import SuratDinas from "./pages/form/dataSuratDinas";
+import FormDinas from "./pages/form/formDinas";
+// import Footer from "./layouts/footer";
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem("isLoggedIn") === "true");
@@ -80,6 +83,12 @@ const App = () => {
     { path: "/data-karyawan", component: <DataKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
     { path: "/data-penggajian", component: <DataPenggajian />, roles: ["1", "4", "6"], layout: SidebarLayout },
     { path: "/data-penggajian/:id_user", component: <DetailPenggajian />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/surat-dinas", component: <SuratDinas />, roles: ["4","6"],layout: SidebarLayout  },
+
+    { path: "/form", component: <Form />, roles: [] }, 
+    { path: "/form-dinas", component: <FormDinas />, roles: [] }, 
+
+
   ];
 
   return (
@@ -102,9 +111,13 @@ const App = () => {
             key={path}
             path={path}
             element={
-              <PrivateRoute allowedRoles={roles}>
-                <Layout>{component}</Layout>
-              </PrivateRoute>
+              roles.length > 0 ? (
+                <PrivateRoute allowedRoles={roles}>
+                  <Layout>{component}</Layout>
+                </PrivateRoute>
+              ) : (
+                <Layout>{component}</Layout>  // Halaman tanpa pengecekan login
+              )
             }
           />
         ))}

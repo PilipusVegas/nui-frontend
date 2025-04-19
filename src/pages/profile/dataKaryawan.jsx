@@ -3,16 +3,7 @@ import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faArrowLeft,
-  faArrowRight,
-  faEdit,
-  faTrash,
-  faSearch,
-  faEye,
-  faEyeSlash,
-  faPlus,
-} from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faArrowRight, faEdit, faTrash, faSearch, faEye, faEyeSlash, faPlus,} from "@fortawesome/free-solid-svg-icons";
 
 const DataKaryawan = ({}) => {
   const navigate = useNavigate();
@@ -22,11 +13,11 @@ const DataKaryawan = ({}) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-  const [newPhoto, setNewPhoto] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [loadingAction, setLoadingAction] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [divisiList, setDivisiList] = useState([]);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const [showPassword, setShowPassword] = useState(false);
   const handleBackClick = () => navigate("/home");
@@ -151,6 +142,22 @@ const DataKaryawan = ({}) => {
       setLoadingAction(false);
     }
   };
+
+  useEffect(() => {
+    const fetchDivisi = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/karyawan/divisi`);
+        const result = await response.json();
+        if (Array.isArray(result)) {
+          setDivisiList(result);
+        }
+      } catch (error) {
+        console.error("Gagal mengambil data divisi", error);
+      }
+    };
+    fetchDivisi();
+  }, [apiUrl]);
+  
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -404,7 +411,7 @@ const DataKaryawan = ({}) => {
             </div>
 
             <div className="mb-2">
-              <label htmlFor="id_role" className="block text-gray-600 font-semibold mb-1">
+              {/* <label htmlFor="id_role" className="block text-gray-600 font-semibold mb-1">
                 Posisi Karyawan
               </label>
               <select
@@ -422,6 +429,25 @@ const DataKaryawan = ({}) => {
                 <option value="4">Manajer HRD</option>
                 <option value="5">PA</option>
                 <option value="6">Staff HRD</option>
+                <option value="7">Teknisi Helper</option>
+                <option value="8">Driver</option>
+                <option value="9">Office Boy</option>
+              </select> */}
+
+              <label className="block mb-2 text-sm font-medium text-gray-700">Jabatan</label>
+              <select
+                value={currentUser?.id_role || ""}
+                onChange={(e) =>
+                  setCurrentUser({ ...currentUser, id_role: parseInt(e.target.value) })
+                }
+                className="border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+                <option value="">-- Pilih Jabatan --</option>
+                {divisiList.map((divisi) => (
+                  <option key={divisi.id} value={divisi.id}>
+                    {divisi.nama}
+                  </option>
+                ))}
               </select>
             </div>
 

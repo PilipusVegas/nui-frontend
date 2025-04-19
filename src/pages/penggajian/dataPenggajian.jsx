@@ -74,12 +74,7 @@ const DataPenggajian = () => {
           {/* Header Section */}
           <div className="flex flex-col lg:flex-row justify-between space-y-4 lg:space-y-0">
             <div className="flex items-center space-x-3">
-              <FontAwesomeIcon
-                icon={faArrowLeft}
-                title="Back to Home"
-                onClick={handleBackClick}
-                className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"
-              />
+              <FontAwesomeIcon icon={faArrowLeft} title="Back to Home" onClick={handleBackClick} className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"/>
               <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">Data Penggajian</h1>
             </div>
             {/* Date Filters */}
@@ -89,13 +84,7 @@ const DataPenggajian = () => {
                 <label htmlFor="startDate" className="block text-sm text-gray-600 mb-1">
                   Start Date:
                 </label>
-                <input
-                  type="date"
-                  id="startDate"
-                  className="border border-gray-300 rounded px-3 py-2 text-sm w-full sm:w-auto"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                />
+                <input type="date" id="startDate" className="border border-gray-300 rounded px-3 py-2 text-sm w-full sm:w-auto" value={startDate} onChange={(e) => setStartDate(e.target.value)}/>
               </div>
 
               {/* Separator Icon */}
@@ -106,13 +95,7 @@ const DataPenggajian = () => {
                 <label htmlFor="endDate" className="block text-sm text-gray-600 mb-1">
                   End Date:
                 </label>
-                <input
-                  type="date"
-                  id="endDate"
-                  className="border border-gray-300 rounded px-3 py-2 text-sm w-full sm:w-auto"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                />
+                <input type="date" id="endDate" className="border border-gray-300 rounded px-3 py-2 text-sm w-full sm:w-auto" value={endDate} onChange={(e) => setEndDate(e.target.value)}/>
               </div>
             </div>
           </div>
@@ -122,13 +105,7 @@ const DataPenggajian = () => {
             <span className="absolute left-3 top-2/4 transform -translate-y-2/4 text-gray-500">
               <FontAwesomeIcon icon={faSearch} />
             </span>
-            <input
-              type="text"
-              value={searchQuery}
-              placeholder="Cari Nama Karyawan..."
-              className="border border-gray-300 rounded-md w-full pl-10 py-2 text-sm focus:ring-2 focus:ring-green-600 focus:outline-none"
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+            <input type="text" value={searchQuery} placeholder="Cari Nama Karyawan..." className="border border-gray-300 rounded-md w-full pl-10 py-2 text-sm focus:ring-2 focus:ring-green-600 focus:outline-none" onChange={(e) => setSearchQuery(e.target.value)}/>
           </div>
         </div>
 
@@ -142,10 +119,7 @@ const DataPenggajian = () => {
               {/* Tampilan mobile */}
               <div className="block lg:hidden">
                 {getFilteredData().map((item, index) => (
-                  <div
-                    key={item.id_user}
-                    className="mb-4 bg-white rounded-lg shadow p-4 border border-gray-200"
-                  >
+                  <div key={item.id_user} className="mb-4 bg-white rounded-lg shadow p-4 border border-gray-200">
                     <div className="mb-2 text-gray-800 font-semibold">
                       {index + 1}. {item.nama_user}
                     </div>
@@ -158,11 +132,7 @@ const DataPenggajian = () => {
                       <span>{item.total_jam_lembur || "0:00"}</span>
                     </div>
                     <div className="flex justify-end">
-                      <button
-                        className="text-white px-3 py-1 bg-blue-600 rounded-lg hover:bg-blue-700 transition"
-                        title="Lihat Detail"
-                        onClick={() => handleDetailClick(item.id_user)}
-                      >
+                      <button className="text-white px-3 py-1 bg-blue-600 rounded-lg hover:bg-blue-700 transition" title="Lihat Detail" onClick={() => handleDetailClick(item.id_user)}>
                         <FontAwesomeIcon icon={faEye} />
                       </button>
                     </div>
@@ -209,11 +179,7 @@ const DataPenggajian = () => {
                           {item.total_jam_lembur || "0:00"}
                         </td>
                         <td className="border-b px-4 text-center">
-                          <button
-                            className="text-white hover:underline px-3 my-1 py-1 bg-blue-600 rounded-lg"
-                            title="Lihat Detail"
-                            onClick={() => handleDetailClick(item.id_user)}
-                          >
+                          <button className="text-white hover:underline px-3 my-1 py-1 bg-blue-600 rounded-lg" title="Lihat Detail" onClick={() => handleDetailClick(item.id_user)}>
                             <FontAwesomeIcon icon={faEye} />
                           </button>
                         </td>
