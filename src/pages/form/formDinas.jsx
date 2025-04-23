@@ -111,7 +111,7 @@ const FormDinas = () => {
         onSubmit={handleSubmit}
         className="w-full max-w-2xl bg-white shadow-xl rounded-2xl p-8 space-y-3"
       >
-        <h2 className="text-lg sm:text-3xl font-bold text-center text-green-700">
+        <h2 className="text-lg sm:text-3xl font-bold text-center text-[#326058]">
           Formulir Dinas <br /> PT Nico Urban Indonesia
         </h2>
 
@@ -153,7 +153,7 @@ const FormDinas = () => {
                 value="2"
                 checked={form.bagian === 2}
                 onChange={handleChange}
-                className="form-checkbox h-5 w-5 text-green-600"
+                className="form-checkbox h-5 w-5 text-[#326058]"
               />
               <span>Divisi IT</span>
             </label>
@@ -164,7 +164,7 @@ const FormDinas = () => {
                 value="3"
                 checked={form.bagian === 3}
                 onChange={handleChange}
-                className="form-checkbox h-5 w-5 text-green-600"
+                className="form-checkbox h-5 w-5 text-[#326058]"
               />
               <span>Divisi Teknisi</span>
             </label>
@@ -175,7 +175,7 @@ const FormDinas = () => {
                 value="6"
                 checked={form.bagian === 6}
                 onChange={handleChange}
-                className="form-checkbox h-5 w-5 text-green-600"
+                className="form-checkbox h-5 w-5 text-[#326058]"
               />
               <span>Staff HRD</span>
             </label>
@@ -217,7 +217,7 @@ const FormDinas = () => {
               name="setuju"
               checked={form.setuju}
               onChange={handleChange}
-              className="h-5 w-5 text-red-600 rounded focus:ring-2 focus:ring-red-500"
+              className="h-3 w-5 mt-1 text-red-600 rounded focus:ring-2 focus:ring-red-500"
             />
             <span>
               Saya menyatakan bahwa seluruh data yang saya isikan adalah benar. Saya memahami bahwa
@@ -232,7 +232,7 @@ const FormDinas = () => {
         <button
           type="submit"
           disabled={loading}
-          className={`w-full ${loading ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'} text-white font-semibold py-3 rounded-xl transition duration-300 shadow-md`}
+          className={`w-full ${loading ? 'bg-gray-400' : 'bg-[#326058] hover:bg-[#326058]'} text-white font-semibold py-3 rounded-xl transition duration-300 shadow-md`}
         >
           {loading ? 'Mengirim...' : 'Kirim Form'}
         </button>
@@ -241,7 +241,7 @@ const FormDinas = () => {
         <button
           type="button"
           onClick={() => window.history.back()}
-          className="w-full mt-3 border-2 border-green-600 text-green-600 py-3 rounded-xl font-semibold hover:bg-green-50 transition duration-300"
+          className="w-full mt-3 border-2 border-[#326058] text-[#326058] py-3 rounded-xl font-semibold hover:bg-green-50 transition duration-300"
         >
           Kembali
         </button>
@@ -249,7 +249,7 @@ const FormDinas = () => {
         {/* Link Login */}
         <div className="pt-4 text-center text-sm">
           <a href="/login" className="text-gray-700 hover:underline">
-            Sudah punya akun? <span className="text-green-600 font-semibold">Login</span>
+            Sudah punya akun? <span className="text-[#326058] font-semibold">Login</span>
           </a>
         </div>
       </form>

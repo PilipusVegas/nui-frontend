@@ -22,6 +22,7 @@ import MenuSidebar from "./layouts/menuSidebar";
 import Header from "./layouts/header";
 import SuratDinas from "./pages/form/dataSuratDinas";
 import FormDinas from "./pages/form/formDinas";
+import DetailSuratDinas from "./pages/form/detailSuratDinas";
 // import Footer from "./layouts/footer";
 
 const App = () => {
@@ -83,7 +84,9 @@ const App = () => {
     { path: "/data-karyawan", component: <DataKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
     { path: "/data-penggajian", component: <DataPenggajian />, roles: ["1", "4", "6"], layout: SidebarLayout },
     { path: "/data-penggajian/:id_user", component: <DetailPenggajian />, roles: ["1", "4", "6"], layout: SidebarLayout },
-    { path: "/surat-dinas", component: <SuratDinas />, roles: ["4","6"],layout: SidebarLayout  },
+    { path: "/surat-dinas", component: <SuratDinas />, roles: ["1","4","6"],layout: SidebarLayout  },
+    { path: "/surat-dinas/:id", component: <DetailSuratDinas />, roles: ["1","4","6"],layout: SidebarLayout  },
+
 
     { path: "/form", component: <Form />, roles: [] }, 
     { path: "/form-dinas", component: <FormDinas />, roles: [] }, 
