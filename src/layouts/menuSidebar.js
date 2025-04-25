@@ -7,13 +7,13 @@ import {
   faDashboard,
   faCheckSquare,
   faBook,
-  faChevronRight,
   faTimes,
   faArrowAltCircleLeft,
   faArrowAltCircleRight,
   faLocationArrow,
   faPeopleGroup,
   faPenFancy,
+  faUsersCog,
 } from "@fortawesome/free-solid-svg-icons";
 
 // Komponen untuk Tombol Ikon Menu
@@ -21,9 +21,11 @@ const IconButton = ({ icon, label, onClick, isActive }) => (
   <button
     onClick={onClick}
     aria-label={label}
-    className={`flex items-center p-3 transition-colors duration-300 rounded-full w-full text-left ${
-      isActive ? "bg-green-700" : "hover:bg-green-900"
-    }`}
+    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 w-full text-left ${
+       isActive
+         ? "bg-green-700/90 text-white shadow-inner"
+         : "hover:bg-white/10 hover:scale-[1.02]"
+     }`}
   >
     <FontAwesomeIcon icon={icon} className="text-xl mr-3" />
     <span>{label}</span>
@@ -107,6 +109,12 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
       roles: ["1", "4", "6"], 
     },
     {
+      label: "Data Divisi",
+      icon: faUsersCog,
+      path: "/divisi",
+      roles: ["1", "4", "6"], 
+    },
+    {
       label: "Persetujuan Lembur",
       icon: faCheckSquare,
       path: "/data-approval",
@@ -126,7 +134,7 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
       <div
         className={`${
           isMobile
-            ? `fixed top-0 left-0 h-full bg-gradient-to-b from-green-600 to-green-700 text-white p-4 shadow-md z-40 transition-transform duration-700 ${
+            ? `fixed top-0 left-0 h-full bg-white/10 backdrop-blur-lg border-r border-white/20 text-white p-4 shadow-md z-40 transition-transform duration-700 ${
                 isOpen ? "translate-x-0 w-full" : "-translate-x-full"
               }`
             : `flex ${

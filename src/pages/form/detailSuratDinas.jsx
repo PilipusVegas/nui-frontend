@@ -94,7 +94,7 @@ const SuratDinasDetail = () => {
               value:
                 data.status === 0
                   ? "Belum disetujui"
-                  : `Disetujui pada tanggal ${formatTanggal(data.updated_at)}`,
+                  : `Disetujui pada hari ${formatTanggal(data.updated_at)}`,
             },
           ].map((item, index) => (
             <div key={index} className="flex">

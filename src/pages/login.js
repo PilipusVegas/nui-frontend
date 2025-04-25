@@ -143,7 +143,7 @@ const Login = ({ onLoginSuccess }) => {
         backgroundColor: "rgba(0, 0, 0, 0.25)",
       }}
     >
-      <div className="w-full max-w-md px-7 py-10 bg-white rounded-lg shadow-lg">
+      <div className="w-full max-w-sm px-7 py-10 bg-white rounded-lg shadow-lg">
         <img src={logo} alt="Logo" className="w-16 mx-auto mb-2" />
         <h5 className="text-xl font-bold text-[#326058] text-center mb-4 transition-all duration-300 cursor-pointer">
           PT Nico Urban Indonesia

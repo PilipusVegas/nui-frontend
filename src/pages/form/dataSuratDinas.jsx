@@ -127,7 +127,7 @@ const SuratDinas = () => {
             onChange={(e) => {
               const value = e.target.value;
               setEndDate(value);
-              sessionStorage.setItem("suratselesai", value); // simpan ke session
+              sessionStorage.setItem("suratselesai", value); 
             }}
             className="p-2 border border-gray-300 rounded"
           />

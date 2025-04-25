@@ -1,95 +1,67 @@
 import React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeadset, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { useNavigate } from 'react-router-dom';
 
-const ListItem = ({ title, link, description, available = true }) => {
-  const isDisabled = !available;
+const ListItem = ({ title, link, description }) => {
+  const navigate = useNavigate();
+
+  const handleNavigate = () => {
+    navigate(link);
+  };
 
   return (
-    <div
-      className={`relative w-full rounded-2xl border shadow-sm transition-all duration-300 ${
-        isDisabled
-          ? 'bg-gray-100 border-gray-200 opacity-70 cursor-default'
-          : 'bg-white border-gray-200 hover:shadow-md hover:border-green-500'
-      }`}
-    >
-      {/* Label "Tidak Tersedia" */}
-      {isDisabled && (
-        <span className="absolute top-3 right-3 bg-gray-300 text-white text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded-full">
-          Tidak Tersedia
-        </span>
-      )}
-
-      <div className="p-4 sm:p-5 md:p-6 space-y-2 sm:space-y-3">
-        <h3 className="text-base sm:text-lg font-semibold text-gray-800">{title}</h3>
-        <p className="text-xs sm:text-sm text-gray-500">{description}</p>
-
-        {/* Tombol */}
-        <div className="pt-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-          <a
-            href={`https://wa.me/phone_number?text=Halo, saya ingin konsultasi mengenai ${title}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`text-sm flex items-center gap-2 text-green-700 hover:text-green-600 ${
-              isDisabled ? 'pointer-events-none opacity-50' : ''
-            }`}
-          >
-            <FontAwesomeIcon icon={faHeadset} className="text-base" />
-            <span>Customer Service</span>
-          </a>
-
-          {isDisabled ? (
-            <span className="text-sm text-gray-400">Form Belum Tersedia</span>
-          ) : (
-            <a
-              href={link}
-              className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-all duration-300 w-fit"
-            >
-              Isi Formulir
-            </a>
-          )}
-        </div>
-      </div>
+    <div onClick={handleNavigate} className="group relative cursor-pointer w-full rounded-2xl border hover:border-[#2e4d46] bg-white/90 backdrop-blur-md p-5 transition-all duration-300 hover:border-green-600 hover:shadow-xl hover:scale-[1.02]">
+    <div className="space-y-2">
+      <h3 className="text-lg sm:text-xl font-semibold text-[#1f2f2b] group-hover:text-[#2e4d46] transition-colors duration-300">
+        {title}
+      </h3>
+      <p className="text-sm text-gray-600">{description}</p>
     </div>
+
+    <div className="pt-6 flex justify-end">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          navigate(link);
+        }}
+        className="px-4 py-2 bg-[#2e4d46] text-white text-sm font-medium rounded-md shadow-md hover:bg-green-700 hover:shadow-lg transition duration-300"
+      >
+        Isi Formulir
+      </button>
+    </div>
+  </div>
   );
 };
 
-
 const FormList = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-white flex items-center justify-center px-4 sm:px-6 md:px-8 py-10">
-      <div className="w-full max-w-6xl bg-white rounded-3xl shadow-lg p-5 sm:p-8 md:p-10 space-y-6">
-        <div className="space-y-1">
-          <div className="text-[10px] sm:text-xs uppercase text-gray-400 tracking-widest">
+    <div className="min-h-screen bg-[#326058] flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-lg px-7 py-10 space-y-10 bg-white shadow-xl border rounded-xl">
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <p className="text-xs uppercase tracking-wider text-gray-600">
             PT Nico Urban Indonesia
-          </div>
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">
+          </p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
             Formulir Pengajuan
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+        {/* Card Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-1 gap-6">
           <ListItem
-            title="Form Dinas Keluar"
+            title="Form Dinas Keluar Kantor"
             link="/form-dinas"
             description="Isi form ini untuk keperluan dinas luar kantor."
-            available={true}
-          />
-          <ListItem
-            title="Form Pengajuan Cuti"
-            link="#"
-            description="Formulir ini belum tersedia. Harap menunggu informasi selanjutnya."
-            available={false}
           />
         </div>
 
-        <div className="pt-4 flex justify-center">
+        {/* Login Link */}
+        <div className="text-center">
           <a
             href="/login"
-            className="inline-flex items-center text-sm sm:text-base md:text-lg rounded-lg transition"
+            className="text-sm text-gray-600  transition"
           >
-            Sudah punya akun?{' '}
-            <span className="text-green-600 font-medium pl-1">Login</span>
+            Sudah punya akun? <span className="font-medium hover:text-green-600">Login</span>
           </a>
         </div>
       </div>

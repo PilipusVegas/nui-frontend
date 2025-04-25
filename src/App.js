@@ -23,7 +23,8 @@ import Header from "./layouts/header";
 import SuratDinas from "./pages/form/dataSuratDinas";
 import FormDinas from "./pages/form/formDinas";
 import DetailSuratDinas from "./pages/form/detailSuratDinas";
-// import Footer from "./layouts/footer";
+import Divisi from "./pages/divisi/dataDivisi";
+
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem("isLoggedIn") === "true");
@@ -43,7 +44,7 @@ const App = () => {
   };
 
   const SidebarLayout = ({ children }) => {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Menambahkan state untuk sidebar
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
   
     const toggleSidebar = () => {
       setIsSidebarOpen(prevState => !prevState);
@@ -86,6 +87,7 @@ const App = () => {
     { path: "/data-penggajian/:id_user", component: <DetailPenggajian />, roles: ["1", "4", "6"], layout: SidebarLayout },
     { path: "/surat-dinas", component: <SuratDinas />, roles: ["1","4","6"],layout: SidebarLayout  },
     { path: "/surat-dinas/:id", component: <DetailSuratDinas />, roles: ["1","4","6"],layout: SidebarLayout  },
+    { path: "/divisi/", component: <Divisi />, roles: ["1","4","6"],layout: SidebarLayout  },
 
 
     { path: "/form", component: <Form />, roles: [] }, 
