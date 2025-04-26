@@ -3,7 +3,16 @@ import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faArrowRight, faEdit, faTrash, faSearch, faEye, faEyeSlash, faPlus,} from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowLeft,
+  faArrowRight,
+  faEdit,
+  faTrash,
+  faSearch,
+  faEye,
+  faEyeSlash,
+  faPlus,
+} from "@fortawesome/free-solid-svg-icons";
 
 const DataKaryawan = ({}) => {
   const navigate = useNavigate();
@@ -157,7 +166,6 @@ const DataKaryawan = ({}) => {
     };
     fetchDivisi();
   }, [apiUrl]);
-  
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -196,7 +204,8 @@ const DataKaryawan = ({}) => {
                   telp: "",
                   username: "",
                   password: "",
-                });
+                  status: 1, // default aktif
+                });                
                 setIsEditing(false);
               }}
               className="bg-green-600 flex text-white px-4 sm:px-4 py-1 font-bold rounded-md hover:bg-green-700 transition duration-150 sm:mt-0"
@@ -221,16 +230,18 @@ const DataKaryawan = ({}) => {
               <table className="min-w-full table-auto bg-white border-collapse shadow-md rounded-lg">
                 <thead>
                   <tr className="bg-green-500 text-white py-1 text-sm px-4">
-                    {["No.", "Nama Karyawan", "Jabatan", "Telepon", "Menu"].map((header, index) => (
-                      <th
-                        key={index}
-                        className={`px-4 py-1 font-semibold text-center ${
-                          index === 0 ? "first:rounded-tl-lg" : ""
-                        } ${index === 4 ? "last:rounded-tr-lg" : ""}`}
-                      >
-                        {header}
-                      </th>
-                    ))}
+                    {["No.", "Nama Karyawan", "Jabatan", "Telepon", "Status", "Menu"].map(
+                      (header, index) => (
+                        <th
+                          key={index}
+                          className={`px-4 py-1 font-semibold text-center ${
+                            index === 0 ? "first:rounded-tl-lg" : ""
+                          } ${index === 4 ? "last:rounded-tr-lg" : ""}`}
+                        >
+                          {header}
+                        </th>
+                      )
+                    )}
                   </tr>
                 </thead>
                 <tbody className="text-gray-800 text-sm">
@@ -240,7 +251,7 @@ const DataKaryawan = ({}) => {
                         <td className="py-2 px-4 text-center border-b border-gray-200">
                           {index + 1}
                         </td>
-                        <td className="py-2 px-4 text-center border-b border-gray-200">
+                        <td className="py-2 px-4 border-b border-gray-200">
                           {user.nama || "Unknown Name"}
                         </td>
                         <td className="py-2 px-4 text-center border-b border-gray-200">
@@ -249,6 +260,15 @@ const DataKaryawan = ({}) => {
                         <td className="py-2 px-4 text-center border-b border-gray-200">
                           {user.telp || "-"}
                         </td>
+                        <td className="text-center py-2 border-b border-gray-200">
+                          <span className={`px-3 py-1 text-sm font-semibold rounded-full ${
+                            user.status === 1 ? 'bg-green-500 text-white text-xs' : 'bg-gray-200 text-gray-600 text-xs'
+                          }`}>
+                            {user.status === 1 ? 'Aktif' : 'Non-aktif'}
+                          </span>
+                        </td>
+
+
                         <td className="py-2 px-4 text-center border-b border-gray-200 flex justify-center gap-6">
                           <button
                             onClick={() => handleEdit(user)}
@@ -411,29 +431,6 @@ const DataKaryawan = ({}) => {
             </div>
 
             <div className="mb-2">
-              {/* <label htmlFor="id_role" className="block text-gray-600 font-semibold mb-1">
-                Posisi Karyawan
-              </label>
-              <select
-                id="id_role"
-                value={currentUser.id_role || ""}
-                onChange={(e) => setCurrentUser({ ...currentUser, id_role: e.target.value })}
-                className="border p-2 w-full rounded-md"
-              >
-                <option value="" disabled>
-                  Pilih Posisi Karyawan
-                </option>
-                <option value="1">Admin</option>
-                <option value="2">IT Programmer</option>
-                <option value="3">Teknisi</option>
-                <option value="4">Manajer HRD</option>
-                <option value="5">PA</option>
-                <option value="6">Staff HRD</option>
-                <option value="7">Teknisi Helper</option>
-                <option value="8">Driver</option>
-                <option value="9">Office Boy</option>
-              </select> */}
-
               <label className="block mb-2 text-sm font-medium text-gray-700">Jabatan</label>
               <select
                 value={currentUser?.id_role || ""}
@@ -501,6 +498,32 @@ const DataKaryawan = ({}) => {
                 </span>
               </div>
             </div>
+
+            <div className="mb-4">
+              <label className="block text-gray-700 font-medium mb-1">Status</label>
+              <label className="flex items-center cursor-pointer space-x-3">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    className="sr-only"
+                    checked={currentUser.status === 1}
+                    onChange={(e) =>
+                      setCurrentUser({ ...currentUser, status: e.target.checked ? 1 : 0 })
+                    }
+                  />
+                  <div className={`w-11 h-6 rounded-full shadow-inner transition-colors duration-300 ${
+                    currentUser.status === 1 ? 'bg-green-500' : 'bg-gray-300'
+                  }`}></div>
+                  <div className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transform transition-transform duration-300 ${
+                    currentUser.status === 1 ? 'translate-x-5' : ''
+                  }`}></div>
+                </div>
+                <span className="text-sm font-medium text-gray-700">
+                  {currentUser.status === 1 ? 'Aktif' : 'Nonaktif'}
+                </span>
+              </label>
+            </div>
+
 
             {/* Submit button */}
             <div className="flex justify-between space-x-2 mt-4">
