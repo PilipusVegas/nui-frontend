@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faEdit, faPlus, faTimes, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 
 const DivisiTable = () => {
   const [divisi, setDivisi] = useState([]);
   const [nama, setNama] = useState("");
   const [editId, setEditId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const navigate = useNavigate();
 
@@ -33,6 +34,7 @@ const DivisiTable = () => {
       });
       setNama("");
       setEditId(null);
+      setIsModalOpen(false);
       fetchDivisi();
     } catch (err) {
       console.error("Gagal menyimpan data:", err);
@@ -42,6 +44,7 @@ const DivisiTable = () => {
   const handleEdit = (item) => {
     setNama(item.nama);
     setEditId(item.id);
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (id) => {
@@ -63,30 +66,30 @@ const DivisiTable = () => {
   const handleBackClick = () => {
     navigate(-1);
   };
+
   return (
     <div className="w-full mx-auto p-6">
       <div className="flex items-center justify-between mb-6 w-full">
-        {/* Kiri: Icon + Judul */}
-        <div className="flex items-center gap-4">
-          <button
+        <div className="flex items-center space-x-2 w-full sm:w-auto">
+          <FontAwesomeIcon
+            icon={faArrowLeft}
+            className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"
             onClick={handleBackClick}
-            title="Kembali"
-            className="text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"
-          >
-            <FontAwesomeIcon icon={faArrowLeft} />
-          </button>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Data Divisi Karyawan</h1>
+            title="Back to Home"
+          />
+          <h1 className="text-3xl font-bold text-gray-800 pb-1">Data Divisi</h1>
         </div>
 
-        {/* Kanan: Tombol Tambah */}
         <button
           onClick={() => {
             setEditId(null);
             setNama("");
+            setIsModalOpen(true);
           }}
-          className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl shadow transition duration-200"
+          className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl shadow transition duration-200 flex items-center"
         >
-          Tambah Divisi
+              <FontAwesomeIcon icon={faPlus}/>
+              <span className="sm:block hidden ml-2">Tambah</span> 
         </button>
       </div>
 
@@ -95,8 +98,8 @@ const DivisiTable = () => {
         <table className="w-full text-sm text-left">
           <thead className="bg-green-600 text-white">
             <tr>
-              <th className="px-6 py-3">Nama Divisi</th>
-              <th className="px-6 py-3 text-center">Aksi</th>
+              <th className="px-6 py-2 w-1/2 text-center">Nama Divisi</th>
+              <th className="px-6 py-2 text-center">Menu</th>
             </tr>
           </thead>
           <tbody>
@@ -109,27 +112,72 @@ const DivisiTable = () => {
             ) : (
               divisi.map((item) => (
                 <tr key={item.id} className="border-t hover:bg-gray-50 transition">
-                  <td className="px-6 py-3">{item.nama}</td>
-                  <td className="px-6 py-3 text-center flex justify-center gap-3">
-                    <button
-                      onClick={() => handleEdit(item)}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-1 rounded-lg text-sm transition"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-lg text-sm transition"
-                    >
-                      Hapus
-                    </button>
-                  </td>
+                  <td className="px-6 py-2 text-center font-semibold">{item.nama}</td>
+                  <td className="px-6 py-2 flex justify-center items-center gap-3">
+                      <button
+                        onClick={() => handleEdit(item)}
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-1 rounded-full font-semibold text-xs transition flex items-center"
+                      >
+                        <FontAwesomeIcon icon={faEdit} />
+                        <span className="sm:block hidden ml-2">Edit</span>
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-full font-semibold text-xs transition flex items-center"
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                        <span className="sm:block hidden ml-2">Hapus</span>
+                      </button>
+                    </td>
+
                 </tr>
               ))
             )}
           </tbody>
         </table>
       </div>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-lg relative">
+            <button
+              onClick={() => {
+                setIsModalOpen(false);
+                setNama("");
+                setEditId(null);
+              }}
+              className="absolute top-3 right-3 text-gray-400 hover:text-red-600"
+              title="Tutup"
+            >
+              <FontAwesomeIcon icon={faTimes} size="lg" />
+            </button>
+            <h2 className="text-2xl font-semibold mb-4 text-gray-700">
+              {editId ? "Edit Divisi" : "Tambah Divisi"}
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nama Divisi</label>
+                <input
+                  type="text"
+                  value={nama}
+                  onChange={(e) => setNama(e.target.value)}
+                  required
+                  className="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div className="text-right">
+                <button
+                  type="submit"
+                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-xl shadow transition"
+                >
+                  Simpan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
