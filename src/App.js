@@ -71,13 +71,16 @@ const App = () => {
   
 
   const routes = [
-    { path: "/notification", component: <Notification />, roles: ["2", "3", "4", "5", "6"] },
-    { path: "/riwayat-absensi", component: <RiwayatAbsensi />, roles: ["2", "3", "4", "5", "6"] },
-    { path: "/profile", component: <Profile />, roles: ["1", "2", "3", "4", "5", "6"] },
-    { path: "/menu", component: <Menu />, roles: ["1", "2", "3", "4", "5", "6"] },
-    { path: "/absensi", component: <Absen />, roles: ["1", "2", "3", "4", "5", "6"] },
-    { path: "/lembur", component: <Lembur />, roles: ["1", "2", "3", "4", "5", "6"] },
 
+    // MOBILE
+    { path: "/notification", component: <Notification />, roles: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"] },
+    { path: "/riwayat-absensi", component: <RiwayatAbsensi />, roles: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"] },
+    { path: "/profile", component: <Profile />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"] },
+    { path: "/menu", component: <Menu />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"] },
+    { path: "/absensi", component: <Absen />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"] },
+    { path: "/lembur", component: <Lembur />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"] },
+
+    // DESKTOP
     { path: "/data-approval", component: <DataApproval />, roles: ["1", "5"], layout: SidebarLayout },
     { path: "/data-lokasi", component: <DataLokasi />, roles: ["1", "5"], layout: SidebarLayout },
     { path: "/data-absensi", component: <DataAbsensi />, roles: ["1", "4", "6"], layout: SidebarLayout },
@@ -88,12 +91,8 @@ const App = () => {
     { path: "/surat-dinas", component: <SuratDinas />, roles: ["1","4","6"],layout: SidebarLayout  },
     { path: "/surat-dinas/:id", component: <DetailSuratDinas />, roles: ["1","4","6"],layout: SidebarLayout  },
     { path: "/divisi/", component: <Divisi />, roles: ["1","4","6"],layout: SidebarLayout  },
-
-
     { path: "/form", component: <Form />, roles: [] }, 
     { path: "/form-dinas", component: <FormDinas />, roles: [] }, 
-
-
   ];
 
   return (
@@ -106,7 +105,7 @@ const App = () => {
         <Route
           path="/home"
           element={
-            <PrivateRoute allowedRoles={["1", "2", "3", "4", "5", "6"]}>
+            <PrivateRoute allowedRoles={["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"]}>
               <Dashboard onLogout={handleLogout} />
             </PrivateRoute>
           }
