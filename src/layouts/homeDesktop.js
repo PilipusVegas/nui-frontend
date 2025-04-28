@@ -126,6 +126,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     const intervalId = setInterval(updateLocalTime, 1000);
 
     if (roleId === "4") {
+      fetchEmployees();
       fetchAbsences();
       fetchPayroll();
       fetchSuratDinas();
