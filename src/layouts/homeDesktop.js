@@ -203,7 +203,9 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     "6": [ //STAFF HRD
       { title: "Karyawan", count: employees?.length || "0", icon: faUsers, color: "text-violet-500", link: "/data-karyawan" },
       { title: "Surat Dinas", count: TotalSuratDinas, icon: faPenFancy, color: "text-blue-500", link: "/surat-dinas"},
-      { title: "Penggajian", count: totalPayroll, icon: faMoneyCheckAlt, color: "text-amber-500", link: "/data-penggajian" }
+      { title: "Penggajian", count: totalPayroll, icon: faMoneyCheckAlt, color: "text-amber-500", link: "/data-penggajian" },
+      { title: "Divisi", count: totalDivisi, icon: faCalendarAlt, color: "text-blue-500", link: "/divisi" },
+
     ],
     "13": [ //GA
       { title: "Karyawan", count: employees?.length || "0", icon: faUsers, color: "text-violet-500", link: "/data-karyawan" },
