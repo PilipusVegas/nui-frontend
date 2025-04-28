@@ -151,7 +151,14 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
       fetchLocation();
       fetchEmployees();
       fetchSuratDinas();
+    }
 
+    if (roleId === "1") {
+      fetchPayroll();
+      // fetchApprovedByPA();
+      // fetchLocation();
+      fetchEmployees();
+      fetchSuratDinas();
     }
 
     return () => clearInterval(intervalId);

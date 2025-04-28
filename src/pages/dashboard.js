@@ -54,8 +54,9 @@ const Home = ({ onLogout }) => {
 
     return (
       <div className="flex min-h-screen">
+        
         {/* Sidebar hanya muncul jika roleId memenuhi kriteria */}
-        {["1", "4", "5", "6"].includes(roleId) && (
+        {["1", "4", "5", "6","13"].includes(roleId) && (
           <MenuSidebar
             handleLogout={handleLogout}
             roleId={roleId}
@@ -73,8 +74,9 @@ const Home = ({ onLogout }) => {
     );
   };
 
+  //MENU DEKSTOP
   const renderViewBasedOnRole = () => {
-    if (["1", "4", "5", "6"].includes(roleId)) {
+    if (["1", "4", "5", "6","13"].includes(roleId)) {
       // Tampilkan Sidebar pada HomeDesktop jika roleId valid
       return (
         <SidebarLayout>

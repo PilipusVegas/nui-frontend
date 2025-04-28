@@ -82,7 +82,7 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
       label: "Dashboard",
       icon: faDashboard,
       path: "/home",
-      roles: ["1", "2", "3", "4", "5", "6"],
+      roles: ["1", "2", "3", "4", "5", "6","13"],
     },
     {
       label: "Data Absensi",
@@ -94,19 +94,19 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
       label: "Data Karyawan",
       icon: faPeopleGroup,
       path: "/data-karyawan",
-      roles: [ "1", "6"], 
+      roles: [ "1", "6","13"], 
     },
     {
       label: "Data Penggajian",
       icon: faBook,
       path: "/data-penggajian",
-      roles: ["1", "4", "6"], 
+      roles: ["1", "4", "6", "13"], 
     },
     {
       label: "Data Surat Dinas",
       icon: faPenFancy,
       path: "/surat-dinas",
-      roles: ["1", "4", "6"], 
+      roles: ["1", "4", "6", "13"], 
     },
     {
       label: "Data Divisi",
