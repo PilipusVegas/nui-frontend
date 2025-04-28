@@ -23,6 +23,11 @@ const FormDinas = () => {
     }
   };
   
+  // 🟢 Auto-fetch nama saat pertama kali render
+  useEffect(() => {
+    fetchNama();
+  }, []);
+  
   
 
   useEffect(() => {

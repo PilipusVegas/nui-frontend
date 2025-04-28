@@ -79,7 +79,7 @@ const App = () => {
     { path: "/menu", component: <Menu />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"] },
     { path: "/absensi", component: <Absen />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"] },
     { path: "/lembur", component: <Lembur />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"] },
-    
+
     // DESKTOP
     { path: "/data-approval", component: <DataApproval />, roles: ["1", "5"], layout: SidebarLayout },
     { path: "/data-lokasi", component: <DataLokasi />, roles: ["1", "5"], layout: SidebarLayout },
@@ -120,7 +120,7 @@ const App = () => {
                   <Layout>{component}</Layout>
                 </PrivateRoute>
               ) : (
-                <Layout>{component}</Layout>  // Halaman tanpa pengecekan login
+                <Layout>{component}</Layout>  
               )
             }
           />
