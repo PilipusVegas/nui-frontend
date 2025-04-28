@@ -52,10 +52,19 @@ const FormDinas = () => {
   }, []);
 
   const handleSelect = (nama) => {
-    setForm({ ...form, nama });
-    setQuery(nama);
-    setShowDropdown(false);
+    const selected = listNama.find((item) => item.nama === nama);
+  
+    if (selected) {
+      setForm((prev) => ({
+        ...prev,
+        nama: selected.nama,
+        kadiv: selected.id, // 🟢 Masukkan id ke kadiv
+      }));
+      setQuery(selected.nama);
+      setShowDropdown(false);
+    }
   };
+  
 
   const [form, setForm] = useState({
     nama: "",
@@ -64,6 +73,7 @@ const FormDinas = () => {
     jadwalTugas: "",
     jamBerangkat: "",
     setuju: false,
+    kadiv: "",
   });
 
 
@@ -112,7 +122,9 @@ const FormDinas = () => {
         bagian: form.bagian,
         jadwal: form.jadwalTugas,
         waktu: form.jamBerangkat,
+        kadiv: form.kadiv, // 🟢 Tambahkan ini
       };
+      
 
       const response = await fetch(`${apiUrl}/surat-dinas`, {
         method: "POST",
@@ -143,7 +155,9 @@ const FormDinas = () => {
         jadwalTugas: "",
         jamBerangkat: "",
         setuju: false,
+        kadiv: "", 
       });
+      
     } catch (error) {
       Swal.fire("Gagal", error.message || "Terjadi kesalahan saat mengirim data.", "error");
     } finally {
