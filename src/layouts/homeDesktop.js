@@ -99,7 +99,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
 
   const dataDivisi = async () => {
     try {
-      const response = await fetch(`${apiUrl}/Divisi/`);
+      const response = await fetch(`${apiUrl}/karyawan/divisi/`);
       const result = await response.json();
       setTotalDivisi(Array.isArray(result) ? result.length : 0);
     } catch (error) {
@@ -126,6 +126,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     const intervalId = setInterval(updateLocalTime, 1000);
 
     if (roleId === "4") {
+      dataDivisi();
       fetchEmployees();
       fetchAbsences();
       fetchPayroll();
