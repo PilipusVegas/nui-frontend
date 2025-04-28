@@ -12,6 +12,8 @@ const FormDinas = () => {
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({ nama: "", nomorTelepon: "", divisi: "" });
+  const [kadivList, setKadivList] = useState([]);
+
 
   const fetchNama = async () => {
     try {
@@ -58,7 +60,7 @@ const FormDinas = () => {
       setForm((prev) => ({
         ...prev,
         nama: selected.nama,
-        kadiv: selected.id, // 🟢 Masukkan id ke kadiv
+        kadiv: selected.kadiv, // 🟢 Masukkan id ke kadiv
       }));
       setQuery(selected.nama);
       setShowDropdown(false);
@@ -302,6 +304,27 @@ const FormDinas = () => {
             ))}
           </select>
         </div>
+
+        <div>
+          <label className="block text-gray-700 font-medium mb-1 text-sm">Kepala Divisi</label>
+          <select
+            name="kadiv"
+            value={form.bagian}
+            onChange={handleChange}
+            className="w-full rounded-xl border border-gray-300 px-3 py-2 sm:p-3 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
+          >
+            <option value="">Pilih Kadiv</option>
+            {listNama
+              .filter((profil) => profil.id_role === 5) // 🟢 Filter langsung di sini saat rendering
+              .map((divisi) => (
+                <option key={divisi.id} value={divisi.id}>
+                  {divisi.nama}
+                </option>
+              ))}
+          </select>
+        </div>
+
+
 
         {/* Jadwal Tugas */}
         <div>
