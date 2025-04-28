@@ -171,7 +171,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
   );
   
   const cardsByRole = {
-    "1": [
+    "1": [//ADMIN
       { title: "Absensi", count: totalAbsences, icon: faCalendarAlt, color: "text-blue-500", link: "/data-absensi" },
       { title: "Surat Dinas", count: TotalSuratDinas, icon: faPenFancy, color: "text-blue-500", link: "/surat-dinas" },
       { title: "Penggajian", count: totalPayroll, icon: faMoneyCheckAlt, color: "text-amber-500", link: "/data-penggajian" },
@@ -180,7 +180,8 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
       { title: "Karyawan", count: employees?.length || "0", icon: faUsers, color: "text-violet-500", link: "/data-karyawan" },
       { title: "Bukti Survey", icon: faClipboardCheck, color: "text-emerald-500", link: "/survey" },
     ],
-    "4": [
+    "4": [// MANAGER HRD
+      { title: "Karyawan", count: employees?.length || "0", icon: faUsers, color: "text-violet-500", link: "/data-karyawan" },
       { title: "Absensi", count: totalAbsences, icon: faCalendarAlt, color: "text-blue-500", link: "/data-absensi" },
       { title: "Divisi", count: totalDivisi, icon: faCalendarAlt, color: "text-blue-500", link: "/divisi" },
       { title: "Surat Dinas", count: TotalSuratDinas, icon: faPenFancy, color: "text-blue-500", link: "/surat-dinas" },
@@ -190,12 +191,12 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
       { title: "Approval Lembur", count: totalApprovals, icon: faThumbsUp, color: "text-emerald-500", link: "/data-approval" },
       { title: "Data Lokasi", count: totalLocations?.length || "0", icon: faMapMarkerAlt, color: "text-orange-500", link: "/data-lokasi" },
     ],
-    "6": [
+    "6": [ //STAFF HRD
       { title: "Karyawan", count: employees?.length || "0", icon: faUsers, color: "text-violet-500", link: "/data-karyawan" },
       { title: "Surat Dinas", count: TotalSuratDinas, icon: faPenFancy, color: "text-blue-500", link: "/surat-dinas"},
       { title: "Penggajian", count: totalPayroll, icon: faMoneyCheckAlt, color: "text-amber-500", link: "/data-penggajian" }
     ],
-    "13": [
+    "13": [ //GA
       { title: "Karyawan", count: employees?.length || "0", icon: faUsers, color: "text-violet-500", link: "/data-karyawan" },
       { title: "Surat Dinas", count: TotalSuratDinas, icon: faPenFancy, color: "text-blue-500", link: "/surat-dinas"},
       { title: "Penggajian", count: totalPayroll, icon: faMoneyCheckAlt, color: "text-amber-500", link: "/data-penggajian" }
