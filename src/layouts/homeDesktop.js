@@ -154,7 +154,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
       fetchSuratDinas();
     }
 
-    if (roleId === "1") {
+    if (roleId === "13") {
       fetchPayroll();
       // fetchApprovedByPA();
       // fetchLocation();
