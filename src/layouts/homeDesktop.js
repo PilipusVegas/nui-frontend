@@ -8,7 +8,7 @@ import {
   faThumbsUp,
   faMapMarkerAlt,
   faUsers,
-  faClipboardCheck, 
+  faClipboardCheck,
   faPenFancy
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -99,11 +99,11 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
 
   const dataDivisi = async () => {
     try {
-      const response = await fetch(`${apiUrl}/payroll/`);
+      const response = await fetch(`${apiUrl}/Divisi/`);
       const result = await response.json();
       setTotalDivisi(Array.isArray(result) ? result.length : 0);
     } catch (error) {
-      console.error("Error fetching payroll:", error);
+      console.error("Error fetching Divisi:", error);
     }
   };
 
@@ -186,11 +186,16 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
       { title: "Surat Dinas", count: TotalSuratDinas, icon: faPenFancy, color: "text-blue-500", link: "/surat-dinas" },
       { title: "Penggajian", count: totalPayroll, icon: faMoneyCheckAlt, color: "text-amber-500", link: "/data-penggajian" },
     ],
-    "5": [
+    "5": [ // PA
       { title: "Approval Lembur", count: totalApprovals, icon: faThumbsUp, color: "text-emerald-500", link: "/data-approval" },
       { title: "Data Lokasi", count: totalLocations?.length || "0", icon: faMapMarkerAlt, color: "text-orange-500", link: "/data-lokasi" },
     ],
     "6": [
+      { title: "Karyawan", count: employees?.length || "0", icon: faUsers, color: "text-violet-500", link: "/data-karyawan" },
+      { title: "Surat Dinas", count: TotalSuratDinas, icon: faPenFancy, color: "text-blue-500", link: "/surat-dinas"},
+      { title: "Penggajian", count: totalPayroll, icon: faMoneyCheckAlt, color: "text-amber-500", link: "/data-penggajian" }
+    ],
+    "13": [
       { title: "Karyawan", count: employees?.length || "0", icon: faUsers, color: "text-violet-500", link: "/data-karyawan" },
       { title: "Surat Dinas", count: TotalSuratDinas, icon: faPenFancy, color: "text-blue-500", link: "/surat-dinas"},
       { title: "Penggajian", count: totalPayroll, icon: faMoneyCheckAlt, color: "text-amber-500", link: "/data-penggajian" }
