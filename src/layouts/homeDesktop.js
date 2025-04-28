@@ -23,6 +23,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
   const [totalLocations, setTotalLocations] = useState(0);
   const [TotalSuratDinas, setTotalSuratDinas] = useState(0);
   const [totalDivisi, setTotalDivisi] = useState(0);
+  const [profile, setProfile] = useState({});
 
   const updateLocalTime = () => {
     const time = new Date().toLocaleString("id-ID", {
@@ -178,6 +179,31 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
       <FontAwesomeIcon icon={icon} className={`${color} text-4xl`} />
     </div>
   );
+
+  const fetchProfile = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/profil/`);
+      const result = await response.json();
+  
+      if (result.success && Array.isArray(result.data)) {
+        const storedUserId = localStorage.getItem('userId'); // Ambil dari localStorage
+        const userProfile = result.data.find(profile => String(profile.id) === storedUserId); // Cari yang id cocok
+  
+        if (userProfile) {
+          setProfile(userProfile);
+        } else {
+          console.error("User profile not found in API data.");
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    }
+  };
+  
+  
+  useEffect(() => {
+    fetchProfile();
+  }, []);
   
   const cardsByRole = {
     "1": [//ADMIN
@@ -220,10 +246,10 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
         <div className="mt-6 p-6 sm:p-8 bg-gradient-to-b from-green-700 to-green-600 text-white rounded-lg shadow-md border border-gray-300 flex flex-col md:flex-row items-center md:items-start justify-between">
           <div className="text-center md:text-left mb-4 md:mb-0">
             <h2 className="text-xl font-semibold">Selamat Datang,</h2>
-            <h3 className="text-4xl font-extrabold">{username || "User"}</h3>
+            <h3 className="text-4xl font-extrabold">{profile.nama || "User"}</h3>
             <p className="text-gray-200 text-lg mt-2">{localTime}</p>
           </div>
-          <div className="text-right hidden md:block">{GetNamaDivisi(roleId)} • Kantor Palem</div>
+          <div className="text-right hidden md:block">{profile.role} • Kantor Palem</div>
         </div>
 
         <div className="mt-6">

@@ -11,7 +11,7 @@ import Profile from "./pages/profile";
 import Dashboard from "./pages/dashboard";
 import Notification from "./pages/notification";
 import DataLokasi from "./pages/lokasi/dataLokasi";
-import DataAbsensi from "./pages/absensi/dataAbsensi";
+import DataAbsensi from "./pages/absensi/dataAbsensi";  
 import DetailAbsensi from "./pages/absensi/DetailAbsensi";
 import DataKaryawan from "./pages/profile/dataKaryawan";
 import DataApproval from "./pages/approval/dataApproval";
@@ -87,7 +87,7 @@ const App = () => {
     { path: "/data-absensi/:id_user", component: <DetailAbsensi />, roles: ["1", "4", "6"], layout: SidebarLayout },
     { path: "/data-karyawan", component: <DataKaryawan />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
     { path: "/data-penggajian", component: <DataPenggajian />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
-    { path: "/data-penggajian/:id_user", component: <DetailPenggajian />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/data-penggajian/:id_user", component: <DetailPenggajian />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
     { path: "/surat-dinas", component: <SuratDinas />, roles: ["1","4","6","13"],layout: SidebarLayout  },
     { path: "/surat-dinas/:id", component: <DetailSuratDinas />, roles: ["1","4","6","13"],layout: SidebarLayout  },
     { path: "/divisi/", component: <Divisi />, roles: ["1","4","6"],layout: SidebarLayout  },

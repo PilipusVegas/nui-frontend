@@ -16,6 +16,8 @@ const DetailPenggajian = () => {
   const [period, setPeriod] = useState("");
   const [totalKehadiran, setTotalKehadiran] = useState(0);
   const [totalLembur, setTotalLembur] = useState("-");
+  const [totalKeterlambatan, setTotalKeterlambatan] = useState("-");
+
   const [activeTab, setActiveTab] = useState("absen");
 
   const handleTabClick = (tab) => {
@@ -65,6 +67,17 @@ const DetailPenggajian = () => {
         return acc;
       }, 0);
 
+      const keterlambatanTotal = result.data.reduce((acc, item) => {
+        if (item.keterlambatan && item.keterlambatan !== "0:00" && item.keterlambatan !== "-" && item.keterlambatan !== null) {
+          const [hours, minutes] = item.keterlambatan.split(":").map(Number);
+          acc += hours * 60 + minutes;
+        }
+        return acc;
+      }, 0);
+      
+      setTotalKeterlambatan(`${Math.floor(keterlambatanTotal / 60)} Jam ${keterlambatanTotal % 60} Menit`);
+      
+
       setTotalKehadiran(kehadiranCount);
       setTotalLembur(`${Math.floor(lemburTotal / 60)} Jam`);
     } catch (error) {
@@ -103,8 +116,9 @@ const DetailPenggajian = () => {
       ["Total Kehadiran", `${totalKehadiran} Hari`],
       ["Periode", period],
       ["Total Lembur", totalLembur],
+      ["Total keterlambatan", totalKeterlambatan],
       [],
-      ["No", "Tanggal", "Masuk", "Keluar", "Lembur"],
+      ["No", "Tanggal", "Masuk", "Keluar","keterlambatan", "Lembur"],
     ];
 
     data.forEach((item, index) => {
@@ -113,6 +127,7 @@ const DetailPenggajian = () => {
         item.tanggal_absen || item.tanggal_lembur || "-",
         item.absen_mulai || "-",
         item.absen_selesai === "0:00" ? "-" : item.absen_selesai,
+        item.keterlambatan,
         item.lembur || "-",
       ]);
     });
@@ -216,7 +231,7 @@ const DetailPenggajian = () => {
               <thead>
                 <tr className="bg-green-600 text-white text-sm">
                   {["No"]
-                    .concat(activeTab === "absen" ? ["Tanggal absen", "IN", "OUT"] : [])
+                    .concat(activeTab === "absen" ? ["Tanggal absen", "IN", "OUT","Keterlambatan"] : [])
                     .concat(
                       activeTab === "lembur" ? ["Tanggal Lembur", "Start", "End", "Lembur"] : []
                     )
@@ -249,6 +264,15 @@ const DetailPenggajian = () => {
                           : item.absen_selesai
                         : item.selesai_lembur || "-"}
                     </td>
+                    {activeTab === "absen" && (
+                      <td
+                        className={`border px-4 ${
+                          item.keterlambatan === "0:00" ? "text-black" : "text-red-600"
+                        }`}
+                      >
+                        {item.keterlambatan || "-"}
+                      </td>
+                    )}
                     {activeTab === "lembur" && (
                       <td className="border px-4">{item.lembur || "-"}</td>
                     )}
@@ -297,6 +321,15 @@ const DetailPenggajian = () => {
                           : item.selesai_lembur || "-"}
                       </span>
                     </div>
+
+                    {/* <div className="flex flex-col items-center text-center bg-white p-2 rounded-lg shadow-md">
+                      <span className="text-sm font-semibold text-red-600">Keterlambatan</span>
+                      <span className="text-md text-gray-700">
+                        {activeTab === "absen"
+                          ? item.keterlambatan || "-"
+                          : item.selesai_lembur || "-"}
+                      </span>
+                    </div> */}
 
                     {/* T (Lembur) hanya jika di tab Lembur */}
                     {activeTab === "lembur" && (
