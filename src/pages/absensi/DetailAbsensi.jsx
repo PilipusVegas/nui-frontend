@@ -201,7 +201,7 @@ const DetailAbsensi = () => {
           <table className="min-w-full border-collapse rounded-lg">
             <thead>
               <tr className="bg-green-500 text-white">
-                {["No.", "Tanggal", "Lokasi", "IN", "OUT", "Status", "Aksi"].map(
+                {["No.", "Tanggal", "Lokasi", "IN", "OUT","Terlambat", "Status", "Aksi"].map(
                   (header, index) => (
                     <th
                       key={index}
@@ -244,6 +244,14 @@ const DetailAbsensi = () => {
                           })
                         : "---"}
                     </td>
+                    <td
+                      className={`text-center py-1 px-4 ${
+                        item.keterlambatan && item.keterlambatan !== "0:00" ? "text-red-500 font-semibold" : ""
+                      }`}
+                    >
+                      {item.keterlambatan || "0:00"}
+                    </td>
+
                     <td className="text-center py-1 px-4">
                       <span
                         className={`font-semibold ${

@@ -91,8 +91,8 @@ const App = () => {
     { path: "/surat-dinas", component: <SuratDinas />, roles: ["1","4","5","6","13"],layout: SidebarLayout  },
     { path: "/surat-dinas/:id", component: <DetailSuratDinas />, roles: ["1","4","5","6","13"],layout: SidebarLayout  },
     { path: "/divisi/", component: <Divisi />, roles: ["1","4","6"],layout: SidebarLayout  },
-    { path: "/form", component: <Form />, roles: [] }, 
-    { path: "/form-dinas", component: <FormDinas />, roles: [] }, 
+    { path: "/form", component: <Form />, roles: [] },
+    { path: "/form-dinas", component: <FormDinas />, roles: [] },
   ];
 
   return (
@@ -102,7 +102,7 @@ const App = () => {
           path="/login"
           element={isLoggedIn ? <Navigate to="/home" /> : <Login onLoginSuccess={handleLoginSuccess} />}
         />
-        <Route
+        <Route  
           path="/home"
           element={
             <PrivateRoute allowedRoles={["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"]}>
