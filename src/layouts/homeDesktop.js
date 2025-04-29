@@ -126,6 +126,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     updateLocalTime();
     const intervalId = setInterval(updateLocalTime, 1000);
 
+    // manager hrd
     if (roleId === "4") {
       dataDivisi();
       fetchEmployees();
@@ -134,17 +135,22 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
       fetchSuratDinas();
     }
 
+    //PA
     if (roleId === "5") {
       fetchApprovedByPA();
       fetchLocation();
+      fetchSuratDinas();
     }
 
+    // Staff HRD
     if (roleId === "6") {
       fetchEmployees();
+      dataDivisi();
       fetchPayroll();
       fetchSuratDinas();
     }
 
+    //admin utama
     if (roleId === "1") {
       fetchAbsences();
       fetchPayroll();
@@ -154,10 +160,9 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
       fetchSuratDinas();
     }
 
+    //GA
     if (roleId === "13") {
       fetchPayroll();
-      // fetchApprovedByPA();
-      // fetchLocation();
       fetchEmployees();
       fetchSuratDinas();
     }
@@ -225,6 +230,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     "5": [ // PA
       { title: "Approval Lembur", count: totalApprovals, icon: faThumbsUp, color: "text-emerald-500", link: "/data-approval" },
       { title: "Data Lokasi", count: totalLocations?.length || "0", icon: faMapMarkerAlt, color: "text-orange-500", link: "/data-lokasi" },
+      { title: "Surat Dinas", count: TotalSuratDinas, icon: faPenFancy, color: "text-blue-500", link: "/surat-dinas"},
     ],
     "6": [ //STAFF HRD
       { title: "Karyawan", count: employees?.length || "0", icon: faUsers, color: "text-violet-500", link: "/data-karyawan" },
