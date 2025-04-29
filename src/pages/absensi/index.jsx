@@ -201,7 +201,7 @@ const Absensi = () => {
           <StepTwoSelesai attendanceData={attendanceData} handleNextStepData={handleNextStepData} />
         );
       case "stepThree":
-        return <StepThree formData={attendanceData} />;
+        return <StepThree formData={attendanceData} />
       default:
         return (
           <MobileLayout title="Absensi">
@@ -214,10 +214,7 @@ const Absensi = () => {
                     <FontAwesomeIcon icon={faClock} className="mr-1" />
                     Riwayat Absensi
                   </p>
-                  <a
-                    href="/riwayat-absensi"
-                    className="text-sm text-white font-medium hover:text-gray-300 underline"
-                  >
+                  <a href="/riwayat-absensi" className="text-sm text-white font-medium hover:text-gray-300 underline">
                     View All
                     <FontAwesomeIcon icon={faArrowRight} className="ml-1" />
                   </a>
@@ -313,18 +310,12 @@ const Absensi = () => {
 
               {/* Absen Mulai / Absen Selesai */}
               {isSelesaiFlow ? (
-                <button
-                  className="w-full bg-teal-600 text-white py-3 rounded-md shadow-lg hover:bg-teal-700 flex items-center justify-center gap-2 transition"
-                  onClick={handleSelesaiClick}
-                >
+                <button className="w-full bg-teal-600 text-white py-3 rounded-md shadow-lg hover:bg-teal-700 flex items-center justify-center gap-2 transition" onClick={handleSelesaiClick}>
                   <FontAwesomeIcon icon={faCalendarCheck} className="text-2xl" />
                   <span className="text-lg font-medium">Absen Selesai</span>
                 </button>
               ) : (
-                <button
-                  className="w-full border border-green-600 text-green-600 py-3 rounded-md shadow-lg hover:bg-green-200 flex items-center justify-center gap-2 transition"
-                  onClick={handleMulaiClick}
-                >
+                <button className="w-full border border-green-600 text-green-600 py-3 rounded-md shadow-lg hover:bg-green-200 flex items-center justify-center gap-2 transition" onClick={handleMulaiClick}>
                   <FontAwesomeIcon icon={faCalendarPlus} className="text-2xl" />
                   <span className="text-lg font-medium">Absen Mulai</span>
                 </button>
@@ -334,10 +325,7 @@ const Absensi = () => {
 
               {/* FAQ */}
               <div className="mt-6">
-                <h3
-                  className="text-sm font-semibold text-gray-800 mb-2 flex items-center justify-between cursor-pointer"
-                  onClick={() => setAllFaqOpen(!allFaqOpen)}
-                >
+                <h3 className="text-sm font-semibold text-gray-800 mb-2 flex items-center justify-between cursor-pointer" onClick={() => setAllFaqOpen(!allFaqOpen)}>
                   <span className="flex items-center gap-2">
                     <FontAwesomeIcon
                       icon={faAngleDown}
@@ -461,7 +449,7 @@ const Absensi = () => {
                             to="/lembur"
                             className="text-white font-bold border-2 border-white rounded-lg px-2 pb-1 mr-2 hover:underline"
                           >
-                            Lembur
+                            Form Lembur
                           </Link>
                           untuk mengajukan permintaan lembur sesuai prosedur yang berlaku.
                         </p>
@@ -469,6 +457,32 @@ const Absensi = () => {
                     </div>
 
                     {/* FAQ 5 */}
+                    <div>
+                      <button
+                        className="text-xs w-full text-left px-4 py-2 font-semibold mt-2 hover:bg-gray-50 rounded-md"
+                        onClick={() => toggleFaq(5)}
+                      >
+                        Bagaimana jika saya ingin pergi dinas keluar kantor?
+                        <FontAwesomeIcon
+                          icon={faqOpen === 5 ? faAngleUp : faAngleDown}
+                          className="float-right"
+                        />
+                      </button>
+                      {faqOpen === 5 && (
+                        <p className="text-[12px] text-white rounded-lg bg-green-600 mx-2 p-3  leading-6">
+                          Jika Anda ingin lembur, silakan menuju halaman{" "}
+                          <Link
+                            to="/form"
+                            className="text-white font-bold border-2 border-white rounded-lg px-2 pb-1 mr-2 hover:underline"
+                          >
+                            Form Dinas
+                          </Link>
+                          untuk mengajukan permintaan lembur sesuai prosedur yang berlaku.
+                        </p>
+                      )}
+                    </div>
+
+                    {/* FAQ 6 */}
                     <div>
                       <button
                         className="text-xs w-full text-left px-4 py-2 font-semibold mt-2 hover:bg-gray-50 rounded-md"

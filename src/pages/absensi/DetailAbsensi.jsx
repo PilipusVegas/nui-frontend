@@ -246,10 +246,10 @@ const DetailAbsensi = () => {
                     </td>
                     <td
                       className={`text-center py-1 px-4 ${
-                        item.keterlambatan && item.keterlambatan !== "0:00" ? "text-red-500 font-semibold" : ""
+                        item.keterlambatan && item.keterlambatan !== "00:00" ? "text-red-500 font-semibold" : ""
                       }`}
                     >
-                      {item.keterlambatan || "0:00"}
+                      {item.keterlambatan || "00:00"}
                     </td>
 
                     <td className="text-center py-1 px-4">
