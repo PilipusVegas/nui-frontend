@@ -223,33 +223,49 @@ const SuratDinas = () => {
                         </span>
                       </td>
                       <td className="px-6 py-2 text-center">
-                        {/* Tombol Setujui hanya untuk roleId 5 dan status 0 */}
-                        {roleId === 5 && item.status === 0 && (
-                          <button
-                            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs mr-2"
-                            onClick={() => handleApprove(item)}
-                          >
-                            <FontAwesomeIcon icon={faCheck} className="mr-2" />
-                            Setujui
-                          </button>
-                        )}
+  {/* Jika belum disetujui (status 0) dan roleId 5, tampilkan tombol Setujui dan Detail */}
+  {item.status === 0 && roleId === 5 && (
+    <>
+      <button
+        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs mr-2"
+        onClick={() => handleApprove(item)}
+      >
+        <FontAwesomeIcon icon={faCheck} className="mr-2" />
+        Setujui
+      </button>
+      <button
+        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
+        onClick={() => handleDetail(item)}
+      >
+        <FontAwesomeIcon icon={faEye} className="mr-2" />
+        Detail
+      </button>
+    </>
+  )}
 
-                        {/* Teks Sudah Disetujui jika status 1 */}
-                        {item.status === 1 && (
-                          <span className="text-gray-500 text-xs mr-2">✔ Sudah disetujui</span>
-                        )}
+  {/* Jika sudah disetujui (status 1), tampilkan tombol Detail untuk semua role */}
+  {item.status === 1 && (
+    <button
+      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
+      onClick={() => handleDetail(item)}
+    >
+      <FontAwesomeIcon icon={faEye} className="mr-2" />
+      Detail
+    </button>
+  )}
 
-                        {/* Tombol Detail hanya untuk roleId selain 5 */}
-                        {roleId !== 5 && (
-                          <button
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
-                            onClick={() => handleDetail(item)}
-                          >
-                            <FontAwesomeIcon icon={faEye} className="mr-2" />
-                            Detail
-                          </button>
-                        )}
-                      </td>
+  {/* Jika belum disetujui dan roleId bukan 5, hanya tampilkan tombol Detail */}
+  {item.status === 0 && roleId !== 5 && (
+    <button
+      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
+      onClick={() => handleDetail(item)}
+    >
+      <FontAwesomeIcon icon={faEye} className="mr-2" />
+      Detail
+    </button>
+  )}
+</td>
+
 
                     </tr>
                   );

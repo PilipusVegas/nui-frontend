@@ -238,7 +238,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
       { title: "Absensi Kehadiran", icon: faUserCheck, color: "text-blue-500", link: "/absensi" },
 
       { title: "Approval Lembur", count: totalApprovals, icon: faThumbsUp, color: "text-emerald-500", link: "/data-approval" },
-      { title: "Absensi", count: totalAbsences, icon: faCalendarAlt, color: "text-blue-500", link: "/data-absensi" },
+      { title: "Rekap Absensi", count: totalAbsences, icon: faCalendarAlt, color: "text-blue-500", link: "/data-absensi" },
       { title: "Data Lokasi", count: totalLocations?.length || "0", icon: faMapMarkerAlt, color: "text-orange-500", link: "/data-lokasi" },
       { title: "Surat Dinas", count: TotalSuratDinas, icon: faPenFancy, color: "text-blue-500", link: "/surat-dinas"},
     ],
