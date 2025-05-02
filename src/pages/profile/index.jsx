@@ -32,7 +32,7 @@ const Profile = () => {
       setIsLoading(false);
       return;
     }
-    fetch(`${apiUrl}/profil/user/${id_user}`)
+    fetch(`${apiUrl}/profil/${id_user}`)
       .then((response) => {
         if (!response.ok) throw new Error("Network response was not ok");
         return response.json();
