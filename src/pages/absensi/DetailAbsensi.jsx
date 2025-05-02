@@ -13,7 +13,7 @@ import Swal from "sweetalert2";
 import { useNavigate, useParams } from "react-router-dom";
 
 const DetailAbsensi = () => {
-  const { id_user } = useParams(); // Ambil id_user dari URL
+  const { id_user } = useParams(); 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [cardNama, setCardNama] = useState(null);
@@ -479,17 +479,11 @@ const DetailAbsensi = () => {
               {/* Absen Selesai */}
               <div className="bg-red-100 rounded-lg shadow-lg p-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-                  <a
-                    href={selectedItem.foto_selesai || "#"}
-                    target={selectedItem.foto_selesai ? "_blank" : "_self"}
+                  <a href={selectedItem.foto_selesai || "#"} target={selectedItem.foto_selesai ? "_blank" : "_self"}
                     rel="noopener noreferrer"
                   >
                     {selectedItem.foto_selesai ? (
-                      <img
-                        src={selectedItem.foto_selesai}
-                        alt="Foto Selesai"
-                        className="w-full h-48 object-contain rounded-xl"
-                      />
+                      <img src={selectedItem.foto_selesai} alt="Foto Selesai" className="w-full h-48 object-contain rounded-xl"/>
                     ) : (
                       <div className="w-full h-48 flex items-center justify-center bg-gray-200 rounded-xl text-gray-500">
                         Foto tidak tersedia
@@ -517,14 +511,7 @@ const DetailAbsensi = () => {
                     <p className="text-gray-700 flex items-center">
                       <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" />
                       {selectedItem.lokasi_selesai ? (
-                        <a
-                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                            selectedItem.lokasi_selesai
-                          )}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-500 underline"
-                        >
+                        <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedItem.lokasi_selesai)}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
                           Open in maps
                         </a>
                       ) : (
@@ -542,22 +529,25 @@ const DetailAbsensi = () => {
 
             {/* Tombol Persetujuan */}
             <div className="my-4 flex justify-end mx-4">
-              {!statusApproval[selectedItem?.id_absen] ? (
-                <button
-                  onClick={() => handleStatusUpdate(selectedItem.id_absen)}
-                  disabled={isLoading}
-                  className={`px-6 py-2 rounded-md text-white ${
-                    isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"
-                  }`}
-                >
-                  {isLoading ? "Mengupdate..." : "Setujui"}
-                </button>
-              ) : (
-                <button className="px-6 py-2 rounded-md bg-gray-300 text-white cursor-not-allowed">
-                  Sudah Disetujui
-                </button>
+              {(localStorage.getItem("idRole") === "4" || localStorage.getItem("idRole") === "6") && (
+                !statusApproval[selectedItem?.id_absen] ? (
+                  <button
+                    onClick={() => handleStatusUpdate(selectedItem.id_absen)}
+                    disabled={isLoading}
+                    className={`px-6 py-2 rounded-md text-white ${
+                      isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"
+                    }`}
+                  >
+                    {isLoading ? "Mengupdate..." : "Setujui"}
+                  </button>
+                ) : (
+                  <button className="px-6 py-2 rounded-md bg-gray-300 text-white cursor-not-allowed">
+                    Sudah Disetujui
+                  </button>
+                )
               )}
             </div>
+
           </div>
         </div>
       )}

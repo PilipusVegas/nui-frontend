@@ -83,8 +83,8 @@ const App = () => {
     // DESKTOP
     { path: "/data-approval", component: <DataApproval />, roles: ["1", "5"], layout: SidebarLayout },
     { path: "/data-lokasi", component: <DataLokasi />, roles: ["1", "5"], layout: SidebarLayout },
-    { path: "/data-absensi", component: <DataAbsensi />, roles: ["1", "4", "6"], layout: SidebarLayout },
-    { path: "/data-absensi/:id_user", component: <DetailAbsensi />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/data-absensi", component: <DataAbsensi />, roles: ["1", "4", "5", "6"], layout: SidebarLayout },
+    { path: "/data-absensi/:id_user", component: <DetailAbsensi />, roles: ["1", "4", "5", "6"], layout: SidebarLayout },
     { path: "/data-karyawan", component: <DataKaryawan />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
     { path: "/data-penggajian", component: <DataPenggajian />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
     { path: "/data-penggajian/:id_user", component: <DetailPenggajian />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faEye, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faEye,faCheck, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 
 const SuratDinas = () => {
@@ -11,7 +11,39 @@ const SuratDinas = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  const roleId = parseInt(localStorage.getItem("roleId"));
   const navigate = useNavigate();
+
+  const handleApprove = async (item) => {
+    try {
+      const response = await fetch(`${apiUrl}/surat-dinas/${item.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: 1 }),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
+      setData((prevData) =>
+        prevData.map((dataItem) =>
+          dataItem.id === item.id ? { ...dataItem, status: 1 } : dataItem
+        )
+      );
+      setFilteredData((prevData) =>
+        prevData.map((dataItem) =>
+          dataItem.id === item.id ? { ...dataItem, status: 1 } : dataItem
+        )
+      );
+    } catch (error) {
+      console.error("Gagal menyetujui surat dinas:", error);
+      alert("Terjadi kesalahan saat menyetujui surat dinas.");
+    }
+  };
+  
 
   useEffect(() => {
     const filtered = data.filter((item) =>
@@ -180,9 +212,9 @@ const SuratDinas = () => {
                   return (
                     <tr key={item.id || index} className="border-b hover:bg-green-50">
                       <td className="px-6 py-2 text-center">{formatTanggal(item.tgl)}</td>
-                      <td className="px-6 py-2 text-center capitalize">{item.nama}</td>
-                      <td className="px-6 py-2 text-center">{item.divisi}</td>
-                      <td className="px-6 py-2 text-center">{item.waktu}</td>
+                      <td className="px-6 py-2 text-center capitalize">{item.nama || "-"}</td>
+                      <td className="px-6 py-2 text-center">{item.divisi || "-"}</td>
+                      <td className="px-6 py-2 text-center">{item.waktu || "-"}</td>
                       <td className="px-6 py-2 text-center">
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}
@@ -191,14 +223,34 @@ const SuratDinas = () => {
                         </span>
                       </td>
                       <td className="px-6 py-2 text-center">
-                        <button
-                          className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs"
-                          onClick={() => handleDetail(item)}
-                        >
-                          <FontAwesomeIcon icon={faEye} className="mr-2" />
-                          Detail
-                        </button>
+                        {/* Tombol Setujui hanya untuk roleId 5 dan status 0 */}
+                        {roleId === 5 && item.status === 0 && (
+                          <button
+                            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs mr-2"
+                            onClick={() => handleApprove(item)}
+                          >
+                            <FontAwesomeIcon icon={faCheck} className="mr-2" />
+                            Setujui
+                          </button>
+                        )}
+
+                        {/* Teks Sudah Disetujui jika status 1 */}
+                        {item.status === 1 && (
+                          <span className="text-gray-500 text-xs mr-2">✔ Sudah disetujui</span>
+                        )}
+
+                        {/* Tombol Detail hanya untuk roleId selain 5 */}
+                        {roleId !== 5 && (
+                          <button
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
+                            onClick={() => handleDetail(item)}
+                          >
+                            <FontAwesomeIcon icon={faEye} className="mr-2" />
+                            Detail
+                          </button>
+                        )}
                       </td>
+
                     </tr>
                   );
                 })}

@@ -9,7 +9,9 @@ import {
   faMapMarkerAlt,
   faUsers,
   faClipboardCheck,
-  faPenFancy
+  faPenFancy,
+  faUserCheck,
+  faUsersCog,
 } from "@fortawesome/free-solid-svg-icons";
 
 const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
@@ -138,6 +140,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     //PA
     if (roleId === "5") {
       fetchApprovedByPA();
+      fetchAbsences();
       fetchLocation();
       fetchSuratDinas();
     }
@@ -212,7 +215,9 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
   
   const cardsByRole = {
     "1": [//ADMIN
-      { title: "Absensi", count: totalAbsences, icon: faCalendarAlt, color: "text-blue-500", link: "/data-absensi" },
+      { title: "Absensi Kehadiran", icon: faUserCheck, color: "text-blue-500", link: "/absensi" },
+
+      { title: "Rekap Absensi", count: totalAbsences, icon: faCalendarAlt, color: "text-blue-500", link: "/data-absensi" },
       { title: "Surat Dinas", count: TotalSuratDinas, icon: faPenFancy, color: "text-blue-500", link: "/surat-dinas" },
       { title: "Penggajian", count: totalPayroll, icon: faMoneyCheckAlt, color: "text-amber-500", link: "/data-penggajian" },
       { title: "Approval Lembur", count: totalApprovals, icon: faThumbsUp, color: "text-emerald-500", link: "/data-approval" },
@@ -221,25 +226,34 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
       { title: "Bukti Survey", icon: faClipboardCheck, color: "text-emerald-500", link: "/survey" },
     ],
     "4": [// MANAGER HRD
+      { title: "Absensi Kehadiran", icon: faUserCheck, color: "text-blue-500", link: "/absensi" },
+
       { title: "Karyawan", count: employees?.length || "0", icon: faUsers, color: "text-violet-500", link: "/data-karyawan" },
-      { title: "Absensi", count: totalAbsences, icon: faCalendarAlt, color: "text-blue-500", link: "/data-absensi" },
-      { title: "Divisi", count: totalDivisi, icon: faCalendarAlt, color: "text-blue-500", link: "/divisi" },
+      { title: "Rekap Absensi", count: totalAbsences, icon: faCalendarAlt, color: "text-blue-500", link: "/data-absensi" },
+      { title: "Divisi", count: totalDivisi, icon: faUsersCog, color: "text-blue-500", link: "/divisi" },
       { title: "Surat Dinas", count: TotalSuratDinas, icon: faPenFancy, color: "text-blue-500", link: "/surat-dinas" },
       { title: "Penggajian", count: totalPayroll, icon: faMoneyCheckAlt, color: "text-amber-500", link: "/data-penggajian" },
     ],
     "5": [ // PA
+      { title: "Absensi Kehadiran", icon: faUserCheck, color: "text-blue-500", link: "/absensi" },
+
       { title: "Approval Lembur", count: totalApprovals, icon: faThumbsUp, color: "text-emerald-500", link: "/data-approval" },
+      { title: "Absensi", count: totalAbsences, icon: faCalendarAlt, color: "text-blue-500", link: "/data-absensi" },
       { title: "Data Lokasi", count: totalLocations?.length || "0", icon: faMapMarkerAlt, color: "text-orange-500", link: "/data-lokasi" },
       { title: "Surat Dinas", count: TotalSuratDinas, icon: faPenFancy, color: "text-blue-500", link: "/surat-dinas"},
     ],
     "6": [ //STAFF HRD
+      { title: "Absensi Kehadiran", icon: faUserCheck, color: "text-blue-500", link: "/absensi" },
+
       { title: "Karyawan", count: employees?.length || "0", icon: faUsers, color: "text-violet-500", link: "/data-karyawan" },
       { title: "Surat Dinas", count: TotalSuratDinas, icon: faPenFancy, color: "text-blue-500", link: "/surat-dinas"},
       { title: "Penggajian", count: totalPayroll, icon: faMoneyCheckAlt, color: "text-amber-500", link: "/data-penggajian" },
-      { title: "Divisi", count: totalDivisi, icon: faCalendarAlt, color: "text-blue-500", link: "/divisi" },
+      { title: "Divisi", count: totalDivisi, icon: faUsersCog, color: "text-blue-500", link: "/divisi" },
 
     ],
     "13": [ //GA
+      { title: "Absensi Kehadiran", icon: faUserCheck, color: "text-blue-500", link: "/absensi" },
+
       { title: "Karyawan", count: employees?.length || "0", icon: faUsers, color: "text-violet-500", link: "/data-karyawan" },
       { title: "Surat Dinas", count: TotalSuratDinas, icon: faPenFancy, color: "text-blue-500", link: "/surat-dinas"},
       { title: "Penggajian", count: totalPayroll, icon: faMoneyCheckAlt, color: "text-amber-500", link: "/data-penggajian" }
@@ -255,7 +269,7 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
             <h3 className="text-4xl font-extrabold">{profile.nama || "User"}</h3>
             <p className="text-gray-200 text-lg mt-2">{localTime}</p>
           </div>
-          <div className="text-right hidden md:block">{profile.role} • Kantor Palem</div>
+          <div className="text-right hidden md:block">{profile.role || "-"} • Kantor Palem</div>
         </div>
 
         <div className="mt-6">

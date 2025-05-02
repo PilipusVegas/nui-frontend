@@ -169,9 +169,9 @@
 
         {/* MENU UTAMA */}
         <div className="flex flex-row items-center p-1 mt-2">
-          <span className="text-md font-semibold pl-3">Menu Utama</span>
+          <span className="text-sm font-semibold pl-3">Menu Utama</span>
         </div>
-        <div className="grid grid-cols-5 gap-3 px-4">
+        <div className="grid grid-cols-4 gap-2 px-4">
           <IconButton
             icon={faCalendarCheck}
             label="Absen"
@@ -186,7 +186,7 @@
           />
           <IconButton
             icon={faPenFancy}
-            label="Form"
+            label="e-Form"
             onClick={() => navigate("/form")}
             color="p-4 rounded-lg bg-green-100 text-xl text-blue-500"
           />
@@ -196,11 +196,17 @@
             onClick={handleNotificationClick}
             hasNotification={hasNewNotifications}
             color="p-4 rounded-lg bg-green-100 text-xl text-amber-600"
+          /> 
+          <IconButton
+            icon={faHistory}
+            label="Lainnya"
+            onClick={() => navigate("/menu")}
+            color="p-4 rounded-lg bg-green-100 text-xl text-teal-600"
           />
           <IconButton
             icon={faThList}
-            label="Lainnya"
-            onClick={() => navigate("/menu")}
+            label="Riwayat"
+            onClick={() => navigate("/riwayat-absensi")}
             color="p-4 rounded-lg bg-green-100 text-xl text-indigo-600"
           />
         </div>
@@ -209,7 +215,7 @@
 
         {/* MENU BANTUAN */}
         <div className="flex items-center pl-4 mb-2 pt-3">
-          <span className="text-md font-semibold text-gray-800 mr-2">Bantuan</span>
+          <span className="text-sm font-semibold text-gray-800 mr-2">Bantuan</span>
           <FontAwesomeIcon icon={faQuestionCircle} className="text-md text-green-600" />
         </div>
 
@@ -239,7 +245,7 @@
             {/* Icon History */}
             <div className="flex items-center space-x-2">
               <FontAwesomeIcon icon={faHistory} className="text-sm text-green-600" />
-              <h2 className="text-md font-bold text-gray-800">Riwayat Absensi</h2>
+              <h2 className="text-sm font-bold text-gray-800">Riwayat Absensi</h2>
             </div>
 
             {/* Link "See all" */}
