@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faEye,faCheck, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faEye, faCheck, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 
 const SuratDinas = () => {
@@ -23,11 +23,11 @@ const SuratDinas = () => {
         },
         body: JSON.stringify({ status: 1 }),
       });
-  
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-  
+
       setData((prevData) =>
         prevData.map((dataItem) =>
           dataItem.id === item.id ? { ...dataItem, status: 1 } : dataItem
@@ -43,7 +43,6 @@ const SuratDinas = () => {
       alert("Terjadi kesalahan saat menyetujui surat dinas.");
     }
   };
-  
 
   useEffect(() => {
     const filtered = data.filter((item) =>
@@ -104,17 +103,17 @@ const SuratDinas = () => {
 
   const formatTanggal = (isoDate) => {
     const d = new Date(isoDate);
-    return d.toLocaleDateString("id-ID", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0'); // Bulan dimulai dari 0
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
   };
+  
 
   const formatStatus = (status) => {
     return status === 1
-      ? { label: "Sudah di-ACC", color: "bg-green-100 text-green-800" }
-      : { label: "Belum di-ACC", color: "bg-yellow-100 text-yellow-800" };
+      ? { label: "Approved", color: "bg-green-600 text-white" }
+      : { label: "Unapproved", color: "bg-gray-400 text-white" };
   };
 
   const handleDetail = (item) => {
@@ -159,7 +158,7 @@ const SuratDinas = () => {
             onChange={(e) => {
               const value = e.target.value;
               setEndDate(value);
-              sessionStorage.setItem("suratselesai", value); 
+              sessionStorage.setItem("suratselesai", value);
             }}
             className="p-2 border border-gray-300 rounded"
           />
@@ -194,16 +193,16 @@ const SuratDinas = () => {
       ) : (
         <>
           {/* Tabel Desktop */}
-          <div className="hidden md:block overflow-x-auto rounded-xl shadow-md border border-green-600">
+          <div className="hidden md:block overflow-x-auto rounded-lg shadow-md">
             <table className="min-w-full bg-white text-sm text-left">
               <thead className="bg-green-600 text-white">
                 <tr>
-                  <th className="px-6 py-2 text-center">Tanggal</th>
-                  <th className="px-6 py-2 text-center">Nama</th>
-                  <th className="px-6 py-2 text-center">Divisi</th>
-                  <th className="px-6 py-2 text-center">Jam Berangkat</th>
-                  <th className="px-6 py-2 text-center">Status</th>
-                  <th className="px-6 py-2 text-center">Menu</th>
+                  <th className="px-6 py-1 text-center">Tanggal</th>
+                  <th className="px-6 py-1 text-center">Nama Karyawan</th>
+                  <th className="px-6 py-1 text-center">Divisi</th>
+                  <th className="px-6 py-1 text-center">Jam Berangkat</th>
+                  <th className="px-6 py-1 text-center">Status</th>
+                  <th className="px-6 py-1 text-center">Menu</th>
                 </tr>
               </thead>
               <tbody>
@@ -211,62 +210,60 @@ const SuratDinas = () => {
                   const statusInfo = formatStatus(item.status);
                   return (
                     <tr key={item.id || index} className="border-b hover:bg-green-50">
-                      <td className="px-6 py-2 text-center">{formatTanggal(item.tgl)}</td>
-                      <td className="px-6 py-2 text-center capitalize">{item.nama || "-"}</td>
-                      <td className="px-6 py-2 text-center">{item.divisi || "-"}</td>
-                      <td className="px-6 py-2 text-center">{item.waktu || "-"}</td>
-                      <td className="px-6 py-2 text-center">
+                      <td className="px-6 py-1 text-sm text-center">{formatTanggal(item.tgl)}</td>
+                      <td className="px-6 py-1 text-sm text-left capitalize">{item.nama || "-"}</td>
+                      <td className="px-6 py-1 text-sm text-center">{item.divisi || "-"}</td>
+                      <td className="px-6 py-1 text-sm text-center">{item.waktu || "-"}</td>
+                      <td className="px-6 py-1 text-sm text-center">
                         <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}
+                          className={`px-3 pb-0.5 rounded-full text-xs ${statusInfo.color}`}
                         >
                           {statusInfo.label}
                         </span>
                       </td>
-                      <td className="px-6 py-2 text-center">
-  {/* Jika belum disetujui (status 0) dan roleId 5, tampilkan tombol Setujui dan Detail */}
-  {item.status === 0 && roleId === 5 && (
-    <>
-      <button
-        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs mr-2"
-        onClick={() => handleApprove(item)}
-      >
-        <FontAwesomeIcon icon={faCheck} className="mr-2" />
-        Setujui
-      </button>
-      <button
-        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
-        onClick={() => handleDetail(item)}
-      >
-        <FontAwesomeIcon icon={faEye} className="mr-2" />
-        Detail
-      </button>
-    </>
-  )}
+                      <td className="px-6 py-1 text-sm text-center">
+                        {/* Jika belum disetujui (status 0) dan roleId 5, tampilkan tombol Setujui dan Detail */}
+                        {item.status === 0 && roleId === 5 && (
+                          <>
+                            <button
+                              className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs mr-2"
+                              onClick={() => handleApprove(item)}
+                            >
+                              <FontAwesomeIcon icon={faCheck} className="mr-2" />
+                              Setujui
+                            </button>
+                            <button
+                              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
+                              onClick={() => handleDetail(item)}
+                            >
+                              <FontAwesomeIcon icon={faEye} className="mr-2" />
+                              Detail
+                            </button>
+                          </>
+                        )}
 
-  {/* Jika sudah disetujui (status 1), tampilkan tombol Detail untuk semua role */}
-  {item.status === 1 && (
-    <button
-      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
-      onClick={() => handleDetail(item)}
-    >
-      <FontAwesomeIcon icon={faEye} className="mr-2" />
-      Detail
-    </button>
-  )}
+                        {/* Jika sudah disetujui (status 1), tampilkan tombol Detail untuk semua role */}
+                        {item.status === 1 && (
+                          <button
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
+                            onClick={() => handleDetail(item)}
+                          >
+                            <FontAwesomeIcon icon={faEye} className="mr-2" />
+                            Detail
+                          </button>
+                        )}
 
-  {/* Jika belum disetujui dan roleId bukan 5, hanya tampilkan tombol Detail */}
-  {item.status === 0 && roleId !== 5 && (
-    <button
-      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
-      onClick={() => handleDetail(item)}
-    >
-      <FontAwesomeIcon icon={faEye} className="mr-2" />
-      Detail
-    </button>
-  )}
-</td>
-
-
+                        {/* Jika belum disetujui dan roleId bukan 5, hanya tampilkan tombol Detail */}
+                        {item.status === 0 && roleId !== 5 && (
+                          <button
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
+                            onClick={() => handleDetail(item)}
+                          >
+                            <FontAwesomeIcon icon={faEye} className="mr-2" />
+                            Detail
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   );
                 })}
@@ -282,9 +279,7 @@ const SuratDinas = () => {
                 <div key={item.id || index} className="border rounded-xl shadow p-4 bg-white">
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="font-semibold text-green-700">-{item.nama}</h3>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}
-                    >
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
                       {statusInfo.label}
                     </span>
                   </div>

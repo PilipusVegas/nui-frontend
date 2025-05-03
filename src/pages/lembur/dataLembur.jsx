@@ -78,7 +78,7 @@ const DataLembur = () => {
             <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
               <thead className="bg-green-800 text-white uppercase text-sm leading-normal sticky top-0">
                 <tr className="bg-green-500 text-white">
-                  {["No.", "Nama", "Divisi", "Total Unapproved", "Aksi"].map((header, index) => (
+                  {["No.", "Nama", "Divisi", "Total Unapproved", "Menu"].map((header, index) => (
                     <th key={index} className="py-2 px-4 font-semibold text-center">
                       {header}
                     </th>

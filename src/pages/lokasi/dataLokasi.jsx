@@ -121,7 +121,7 @@ const DataLokasi = () => {
         <th className="px-4 py-1 border-b text-sm font-semibold">No</th>
         <th className="px-4 py-1 border-b text-sm font-semibold">Lokasi</th>
         <th className="px-4 py-1 border-b text-sm font-semibold">Koordinat</th>
-        <th className="px-4 py-1 border-b text-sm font-semibold">Aksi</th>
+        <th className="px-4 py-1 border-b text-sm font-semibold">Menu</th>
       </tr>
     </thead>
   );
@@ -136,18 +136,22 @@ const DataLokasi = () => {
         <td className="px-4 py-1 border-b text-sm">{lokasi.nama}</td>
         <td className="px-4 py-1 border-b text-sm">{lokasi.koordinat}</td>
         <td className="px-4 py-1 border-b text-sm text-center">
-          <button
-            onClick={() => handleEdit(lokasi)}
-            className="bg-yellow-500 text-white px-2 py-1 rounded mr-2 hover:bg-yellow-600 transition-colors duration-150"
-          >
-            <FontAwesomeIcon icon={faEdit} />
-          </button>
-          <button
-            onClick={() => handleDelete(lokasi.id)}
-            className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition-colors duration-150"
-          >
-            <FontAwesomeIcon icon={faTrash} />
-          </button>
+          <div className="flex justify-center space-x-2">
+            <button
+              onClick={() => handleEdit(lokasi)}
+              className="flex items-center space-x-1 text-xs bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition-colors duration-150"
+            >
+              <FontAwesomeIcon icon={faEdit} />
+              <span>Edit</span>
+            </button>
+            <button
+              onClick={() => handleDelete(lokasi.id)}
+              className="flex items-center space-x-1 text-xs bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors duration-150"
+            >
+              <FontAwesomeIcon icon={faTrash} />
+              <span>Hapus</span>
+            </button>
+          </div>
         </td>
       </tr>
     ));
@@ -195,7 +199,7 @@ const DataLokasi = () => {
           </p>
         </div> */}
 
-        {/* Tombol Aksi */}
+        {/* Tombol Menu */}
         <div className="flex justify-end space-x-3 items-center pt-3 border-t border-gray-200">
           {/* Tombol Edit */}
           <button

@@ -233,7 +233,7 @@ const DetailPenggajian = () => {
                   {["No"]
                     .concat(activeTab === "absen" ? ["Tanggal absen", "IN", "OUT","Keterlambatan"] : [])
                     .concat(
-                      activeTab === "lembur" ? ["Tanggal Lembur", "Start", "End", "Lembur"] : []
+                      activeTab === "lembur" ? ["Tanggal Lembur", "Mulai Lembur", "Selesai Lembur", "Total Lembur"] : []
                     )
                     .map((header, i, arr) => (
                       <th

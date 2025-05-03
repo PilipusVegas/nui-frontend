@@ -203,7 +203,7 @@ const DataApproval = () => {
                     "No.",
                     "Tanggal",
                     "Nama Karyawan",
-                    "Lokasi",
+                    "Lokasi Tugas",
                     "Deskripsi",
                     "Jam Mulai",
                     "Jam Selesai",
@@ -228,12 +228,18 @@ const DataApproval = () => {
                       </td>
                       <td className="py-2 px-4">{approval.nama_user}</td>
                       <td className="py-2 px-4">{approval.lokasi}</td>
-                      <td className="py-2 px-4">
-                        <button onClick={() => openModalWithDescription(approval.deskripsi)} className="text-blue-500">
-                          <FontAwesomeIcon icon={faSearch} className="mr-2 text-blue-500" />
-                          View
+                      <td className="py-2 px-4 text-center">
+                      <div className="flex justify-center">
+                        <button
+                          onClick={() => openModalWithDescription(approval.deskripsi)}
+                          className="flex items-center space-x-2 bg-sky-500 hover:bg-sky-600 text-white text-xs px-4 py-1 rounded font-semibold transition"
+                        >
+                          <FontAwesomeIcon icon={faSearch} />
+                          <span>View</span>
                         </button>
-                      </td>
+                      </div>
+                    </td>
+
 
                       <td className="py-2 px-4">{approval.jam_mulai}</td>
                       <td className="py-2 px-4">{approval.jam_selesai}</td>
@@ -243,21 +249,22 @@ const DataApproval = () => {
                         ) : approval.status_lembur === 2 ? (
                           <span className="text-red-600 font-semibold">Ditolak</span>
                         ) : (
-                          <div className="flex space-x-4">
-                            {/* Ikon Setujui */}
-                            <FontAwesomeIcon
-                              icon={faCheck}
-                              className="text-green-500 text-2xl cursor-pointer hover:text-green-600 transition-transform transform hover:scale-110"
-                              onClick={() => handleApprove(approval.id_lembur)}
-                            />
-
-                            {/* Ikon Tolak */}
-                            <FontAwesomeIcon
-                              icon={faTimes}
-                              className="text-red-500 text-2xl cursor-pointer hover:text-red-600 transition-transform transform hover:scale-110"
-                              onClick={() => handleReject(approval.id_lembur)}
-                            />
-                          </div>
+                          <div className="flex space-x-2 justify-center">
+                              <button
+                                onClick={() => handleApprove(approval.id_lembur)}
+                                className="flex items-center justify-center space-x-2 bg-green-500 hover:bg-green-600 text-white text-xs px-4 py-1 rounded font-semibold transition"
+                              >
+                                <FontAwesomeIcon icon={faCheck} />
+                                <span>Setujui</span>
+                              </button>
+                              <button
+                                onClick={() => handleReject(approval.id_lembur)}
+                                className="flex items-center justify-center space-x-2 bg-red-500 hover:bg-red-600 text-white text-xs px-4 py-1 rounded font-semibold transition"
+                              >
+                                <FontAwesomeIcon icon={faTimes} />
+                                <span>Tolak</span>
+                              </button>
+                            </div>
                         )}
                       </td>
                     </tr>
@@ -394,7 +401,7 @@ const DataApproval = () => {
             >
               <FontAwesomeIcon icon={faTimes} />
             </button>
-            <h2 className="text-xl font-bold mb-4">Rincian Deskripsi</h2>
+            <h2 className="text-xl font-bold mb-4">Rincian Tugas</h2>
             <p>{modalDescription || "Deskripsi tidak tersedia."}</p>
           </div>
         </div>

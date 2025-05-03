@@ -105,9 +105,9 @@ const DataAbsensi = () => {
 
       {/* Tabel untuk Desktop */}
       <div className="hidden md:block rounded-lg shadow-md overflow-hidden">
-        <table className="table-auto w-full border-collapse rounded-lg">
+        <table className="table-auto w-full border-collapse rounded-lg bg-white">
           <thead>
-            <tr className="bg-green-500 text-white">
+            <tr className="bg-green-600 text-white">
               {["No.", "Nama Karyawan", "Divisi", "Total Absen", "Status", "Menu"].map(
                 (header) => (
                   <th key={header} className="py-1 px-4 font-semibold text-center text-sm">
@@ -125,21 +125,22 @@ const DataAbsensi = () => {
                   className="border-t hover:bg-gray-50 transition-colors duration-150"
                 >
                   <td className="text-center px-4 py-1 text-sm">{indexOfFirstItem + index + 1}</td>
-                  <td className="text-center px-4 py-1 text-sm">{absen.nama_user}</td>
+                  <td className="px-4 py-1 text-sm">{absen.nama_user}</td>
                   <td className="text-center px-4 py-1 text-sm">{absen.role}</td>
                   <td className="text-center px-4 py-1 text-sm">{absen.total_absen} Hari</td>
-                  <td className="text-center text-red-600 font-bold px-4 py-1 text-sm">
-                    {absen.unapproved} Unapproved
+                  <td className="text-center text-gray-600 font-bold px-2 py-1 text-xs">
+                    <span className="text-white bg-gray-500 text-[10px] rounded-full py-1 px-2 mr-2">
+                      {absen.unapproved}
+                    </span>
+                    Unapproved
                   </td>
-                  <td className="text-center px-4 py-1 text-sm">
-                    <button
-                      onClick={() => handleDetailClick(absen.id_user)}
-                      className="bg-blue-500 text-white px-4 py-1 text-sm rounded hover:bg-blue-600 transition-colors duration-150"
-                    >
-                <FontAwesomeIcon icon={faEye} className=" text-sm" />
 
+                  <td className="text-center px-4 py-1">
+                    <button onClick={() => handleDetailClick(absen.id_user)} className="bg-blue-500 text-white px-3 py-1 text-xs rounded hover:bg-blue-600 transition-colors duration-150">
+                    <FontAwesomeIcon icon={faEye} className="mr-1" />
+                      Detail
                     </button>
-                  </td>
+                  </td> 
                 </tr>
               ))
             ) : (
@@ -172,7 +173,7 @@ const DataAbsensi = () => {
                 className="flex items-center justify-center bg-blue-500 text-white text-sm py-2 px-4 rounded-md hover:bg-blue-600 transition-all duration-150"
               >
                 <FontAwesomeIcon icon={faEye} className=" text-sm" />
-                
+                Detail
               </button>
               </div>
             </div>

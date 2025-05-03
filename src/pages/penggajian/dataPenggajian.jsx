@@ -143,7 +143,7 @@ const DataPenggajian = () => {
               <table className="hidden lg:table min-w-full bg-white rounded-lg shadow-md">
                 <thead>
                   <tr className="bg-green-500 text-white">
-                    {["No.", "Nama Karyawan", "Jumlah Kehadiran", "Total Lembur", "Menu"].map(
+                    {["No.", "Nama Karyawan", "Total Kehadiran", "Total Lembur", "Menu"].map(
                       (header, index) => (
                         <th
                           key={index}
@@ -172,15 +172,16 @@ const DataPenggajian = () => {
                           index % 2 === 0 ? "bg-gray-50" : "bg-white"
                         }`}
                       >
-                        <td className="border-b px-4 text-center">{index + 1}</td>
-                        <td className="border-b px-4 text-left">{item.nama_user}</td>
-                        <td className="border-b px-4 text-center">{item.total_absen} Hari</td>
-                        <td className="border-b px-4 text-center">
+                        <td className="border-b px-4 text-xs text-center">{index + 1}</td>
+                        <td className="border-b px-4 text-xs text-left">{item.nama_user}</td>
+                        <td className="border-b px-4 text-xs text-center">{item.total_absen} Hari</td>
+                        <td className="border-b px-4 text-xs text-center">
                           {item.total_jam_lembur || "0:00"}
                         </td>
-                        <td className="border-b px-4 text-center">
-                          <button className="text-white hover:underline px-3 my-1 py-1 bg-blue-600 rounded-lg" title="Lihat Detail" onClick={() => handleDetailClick(item.id_user)}>
-                            <FontAwesomeIcon icon={faEye} />
+                        <td className="border-b px-4 text-xs text-center">
+                          <button className="text-white hover:bg-blue-600 px-3 my-1 py-1 bg-blue-500 rounded" title="Lihat Detail" onClick={() => handleDetailClick(item.id_user)}>
+                            <FontAwesomeIcon icon={faEye} className="mr-1" />
+                            Detail
                           </button>
                         </td>
                       </tr>

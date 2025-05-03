@@ -144,7 +144,7 @@ const DetailDataLembur = () => {
             <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-lg">
               <thead>
                 <tr className="bg-green-600 text-white">
-                  {["No.", "Tanggal", "Tugas", "Jam Mulai", "Jam Selesai", "Aksi"].map((header, index) => (
+                  {["No.", "Tanggal", "Tugas", "Jam Mulai", "Jam Selesai", "Menu"].map((header, index) => (
                     <th key={index} className="py-3 px-6 font-semibold text-center uppercase tracking-wider">
                       {header}
                     </th>

@@ -200,12 +200,12 @@ const DetailAbsensi = () => {
         <div className="hidden md:block">
           <table className="min-w-full border-collapse rounded-lg">
             <thead>
-              <tr className="bg-green-500 text-white">
-                {["No.", "Tanggal", "Lokasi", "IN", "OUT","Terlambat", "Status", "Aksi"].map(
+              <tr className="bg-green-600 text-white">
+                {[ "Tanggal", "Lokasi", "IN", "OUT","Terlambat", "Status", "Menu"].map(
                   (header, index) => (
                     <th
                       key={index}
-                      className={`py-1 px-4 font-semibold text-center ${
+                      className={`py-1 mb-1 px-4 font-semibold text-center ${
                         index === 0 ? "first:rounded-tl-lg" : ""
                       } ${index === 6 ? "last:rounded-tr-lg" : ""}`}
                     >
@@ -219,7 +219,6 @@ const DetailAbsensi = () => {
               {currentItems.filter((item) => !statusApproval[item.id_absen]).length > 0 ? (
                 currentItems.map((item, index) => (
                   <tr key={item.id_absen} className="border-b hover:bg-gray-100">
-                    <td className="text-center py-1 px-4">{indexOfFirstItem + index + 1}</td>
                     <td className="text-center py-1 px-4">
                       {new Date(item.jam_mulai).toLocaleDateString("id-ID", {
                         timeZone: "Asia/Jakarta",
@@ -255,18 +254,16 @@ const DetailAbsensi = () => {
                     <td className="text-center py-1 px-4">
                       <span
                         className={`font-semibold ${
-                          statusApproval[item.id_absen] ? "text-green-500" : "text-red-500"
+                          statusApproval[item.id_absen] ? "bg-green-600 text-white" : "	bg-gray-400 text-white px-2 py-1 rounded-full text-xs"
                         }`}
                       >
-                        {statusApproval[item.id_absen] ? "Disetujui" : "Belum Disetujui"}
+                        {statusApproval[item.id_absen] ? "Approved" : "Unapproved"}
                       </span>
                     </td>
-                    <td className="text-center py-1 px-4">
-                      <button
-                        onClick={() => handleViewClick(item)}
-                        className="bg-blue-500 text-white py-1 px-2 rounded hover:bg-blue-600 transition-colors duration-150"
-                      >
-                        <FontAwesomeIcon icon={faEye} />
+                    <td className="text-center text-xs py-1 px-4">
+                      <button onClick={() => handleViewClick(item)} className="bg-blue-500 text-white py-1 px-2 rounded hover:bg-blue-600 transition-colors duration-150">
+                        <FontAwesomeIcon icon={faEye} className="text-xs mr-1" />
+                        Detail
                       </button>
                     </td>
                   </tr>
@@ -344,6 +341,7 @@ const DetailAbsensi = () => {
                       className="bg-blue-600 text-white hover:bg-blue-700 px-3 py-1 rounded-lg transition-colors duration-200"
                     >
                       <FontAwesomeIcon icon={faEye} className="text-sm" />
+                      Detail
                     </button>
                   </div>
                 </div>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faEdit, faPlus, faTimes, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const DivisiTable = () => {
   const [divisi, setDivisi] = useState([]);
@@ -48,16 +49,59 @@ const DivisiTable = () => {
   };
 
   const handleDelete = async (id) => {
-    const konfirmasi = window?.confirm("Yakin ingin menghapus divisi ini?");
-    if (!konfirmasi) return;
-
+    const result1 = await Swal.fire({
+      title: 'Apakah Anda yakin?',
+      text: "Data divisi akan dihapus.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Ya, hapus',
+      cancelButtonText: 'Batal',
+    });
+  
+    if (!result1.isConfirmed) return;
+  
+    const result2 = await Swal.fire({
+      title: 'Konfirmasi terakhir',
+      text: "Data tidak bisa dikembalikan setelah dihapus. Lanjutkan?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Hapus Sekarang',
+      cancelButtonText: 'Batal',
+    });
+  
+    if (!result2.isConfirmed) return;
+  
     try {
-      await fetch(`${apiUrl}/karyawan/divisi/${id}`, { method: "DELETE" });
+      const response = await fetch(`${apiUrl}/karyawan/divisi/${id}`, {
+        method: "DELETE",
+      });
+  
+      if (!response.ok) throw new Error("Gagal menghapus data");
+  
       fetchDivisi();
+  
+      Swal.fire({
+        icon: 'success',
+        title: 'Berhasil',
+        text: 'Divisi berhasil dihapus.',
+        timer: 1500,
+        showConfirmButton: false
+      });
+  
     } catch (err) {
       console.error("Gagal menghapus:", err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'Terjadi kesalahan saat menghapus.',
+      });
     }
   };
+  
 
   useEffect(() => {
     fetchDivisi();
@@ -86,20 +130,21 @@ const DivisiTable = () => {
             setNama("");
             setIsModalOpen(true);
           }}
-          className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl shadow transition duration-200 flex items-center"
+          className="bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2 rounded shadow transition duration-200 flex items-center"
         >
               <FontAwesomeIcon icon={faPlus}/>
-              <span className="sm:block hidden ml-2">Tambah</span> 
+              <span className="sm:block hidden ml-2 ">Tambah Divisi</span> 
         </button>
       </div>
 
       {/* Tabel Divisi */}
-      <div className="overflow-x-auto bg-white shadow-md rounded-xl border border-gray-200">
+      <div className="overflow-x-auto bg-white shadow-md rounded-lg border border-gray-200">
         <table className="w-full text-sm text-left">
           <thead className="bg-green-600 text-white">
             <tr>
-              <th className="px-6 py-2 w-1/2 text-center">Nama Divisi</th>
-              <th className="px-6 py-2 text-center">Menu</th>
+            {/* <th className="px-6 py-1 text-center">No.</th> */}
+              <th className="px-6 py-1 text-center">Nama Divisi</th>
+              {/* <th className="px-6 py-1 text-center">Menu</th> */}
             </tr>
           </thead>
           <tbody>
@@ -112,23 +157,24 @@ const DivisiTable = () => {
             ) : (
               divisi.map((item) => (
                 <tr key={item.id} className="border-t hover:bg-gray-50 transition">
-                  <td className="px-6 py-2 text-center font-semibold">{item.nama}</td>
-                  <td className="px-6 py-2 flex justify-center items-center gap-3">
+                  {/* <td className="px-6 py-1 text-center font-semibold">{divisi.indexOf(item) + 1}</td> */}
+                  <td className="px-6 py-1 text-center font-semibold">{item.nama}</td>
+                  {/* <td className="px-6 py-1 flex justify-center items-center gap-3">
                       <button
                         onClick={() => handleEdit(item)}
-                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-1 rounded-full font-semibold text-xs transition flex items-center"
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-1 rounded font-semibold text-xs transition flex items-center"
                       >
                         <FontAwesomeIcon icon={faEdit} />
                         <span className="sm:block hidden ml-2">Edit</span>
                       </button>
                       <button
                         onClick={() => handleDelete(item.id)}
-                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-full font-semibold text-xs transition flex items-center"
+                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded font-semibold text-xs transition flex items-center"
                       >
                         <FontAwesomeIcon icon={faTrash} />
                         <span className="sm:block hidden ml-2">Hapus</span>
                       </button>
-                    </td>
+                    </td> */}
 
                 </tr>
               ))
