@@ -527,7 +527,7 @@ const DetailAbsensi = () => {
 
             {/* Tombol Persetujuan */}
             <div className="my-4 flex justify-end mx-4">
-              {(localStorage.getItem("idRole") === "4" || localStorage.getItem("idRole") === "6") && (
+              {(localStorage.getItem("roleId") === "4" || localStorage.getItem("roleId") === "6") && (
                 !statusApproval[selectedItem?.id_absen] ? (
                   <button
                     onClick={() => handleStatusUpdate(selectedItem.id_absen)}
