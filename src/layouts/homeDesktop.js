@@ -40,6 +40,20 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     setLocalTime(time);
   };
 
+  const getPeriodRange = () => {
+    const today = new Date();
+    const startDate = new Date(today.getFullYear(), today.getMonth() - 1, 22);
+    const endDate = new Date(today.getFullYear(), today.getMonth(), 21);
+  
+    const formatDate = (date) => date.toISOString().split("T")[0];
+  
+    return {
+      startDate: formatDate(startDate),
+      endDate: formatDate(endDate),
+    };
+  };
+  
+
   const fetchEmployees = async () => {
     try {
       const response = await fetch(`${apiUrl}/profil/`);
@@ -92,13 +106,17 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
 
   const fetchPayroll = async () => {
     try {
-      const response = await fetch(`${apiUrl}/payroll/`);
+      const { startDate, endDate } = getPeriodRange();
+      const response = await fetch(`${apiUrl}/payroll?startDate=${startDate}&endDate=${endDate}`);
       const result = await response.json();
+      
+      // Mengambil jumlah data
       setTotalPayroll(Array.isArray(result) ? result.length : 0);
     } catch (error) {
       console.error("Error fetching payroll:", error);
     }
   };
+  
 
   const dataDivisi = async () => {
     try {
@@ -244,7 +262,6 @@ const HomeDesktop = ({ username, handleLogout, roleId, GetNamaDivisi }) => {
     ],
     "6": [ //STAFF HRD
       { title: "Absensi Kehadiran", icon: faUserCheck, color: "text-blue-500", link: "/absensi" },
-
       { title: "Karyawan", count: employees?.length || "0", icon: faUsers, color: "text-violet-500", link: "/data-karyawan" },
       { title: "Surat Dinas", count: TotalSuratDinas, icon: faPenFancy, color: "text-blue-500", link: "/surat-dinas"},
       { title: "Penggajian", count: totalPayroll, icon: faMoneyCheckAlt, color: "text-amber-500", link: "/data-penggajian" },

@@ -230,7 +230,7 @@ const DataKaryawan = ({}) => {
             <div className="relative mb-0 hidden md:block">
               <table className="min-w-full table-auto bg-white border-collapse shadow-md rounded-lg">
                 <thead>
-                  <tr className="bg-green-500 text-white py-1 text-sm px-4">
+                  <tr className="bg-green-600 text-white py-1 text-sm px-4">
                     {["No.", "Nama Karyawan", "Jabatan", "Telepon", "Status", "Menu"].map(
                       (header, index) => (
                         <th

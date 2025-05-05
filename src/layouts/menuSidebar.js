@@ -138,7 +138,7 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
                 isOpen ? "translate-x-0 w-full" : "-translate-x-full"
               }`
             : `flex ${
-                hidden ? "w-16" : "w-60"
+                hidden ? "w-16" : "w-64 "
               } h-screen sticky top-0 left-0 bg-gradient-to-b from-green-600 to-green-700 text-white flex-col p-4 shadow-md transition-all duration-700`
         }`}
       >
