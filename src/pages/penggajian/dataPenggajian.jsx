@@ -125,7 +125,27 @@ const DataPenggajian = () => {
       (item) => !searchQuery || item.nama_user.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-  const handleDetailClick = (id_user) => navigate(`/data-penggajian/${id_user}`);
+    const handleDetailClick = (id_user, startDate, endDate) => {
+      const finalStartDate = startDate || currentPeriod.startDate;
+      const finalEndDate = endDate || currentPeriod.endDate;
+    
+      if (finalStartDate && finalEndDate) {
+        // Simpan ke sessionStorage
+        sessionStorage.setItem("startDate", finalStartDate);
+        sessionStorage.setItem("endDate", finalEndDate);
+    
+        const url = `/data-penggajian/${id_user}`;
+        navigate(url);
+      } else {
+        Swal.fire(
+          "Error",
+          "Pilih rentang tanggal terlebih dahulu untuk melihat detail atau merekap data",
+          "error"
+        );
+      }
+    };
+    
+    
 
   const handlePrint = () => window.print();
 
