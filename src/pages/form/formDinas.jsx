@@ -82,7 +82,7 @@ const FormDinas = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-
+  
     if (name === "bagian") {
       setForm((prev) => ({
         ...prev,
@@ -90,10 +90,16 @@ const FormDinas = () => {
       }));
     } else if (name === "setuju") {
       setForm((prev) => ({ ...prev, setuju: checked }));
+    } else if (name === "kadiv") {
+      setForm((prev) => ({
+        ...prev,
+        kadiv: value ? parseInt(value, 10) : null,
+      }));
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
     }
   };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -309,13 +315,13 @@ const FormDinas = () => {
           <label className="block text-gray-700 font-medium mb-1 text-sm">Kepala Divisi</label>
           <select
             name="kadiv"
-            value={form.bagian}
+            value={form.kadiv}
             onChange={handleChange}
             className="w-full rounded-xl border border-gray-300 px-3 py-2 sm:p-3 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
           >
             <option value="">Pilih Kadiv</option>
             {listNama
-              .filter((profil) => profil.id_role === 5) // 🟢 Filter langsung di sini saat rendering
+              .filter((profil) => profil.id_role === 5) 
               .map((divisi) => (
                 <option key={divisi.id} value={divisi.id}>
                   {divisi.nama}
