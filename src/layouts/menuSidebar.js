@@ -94,7 +94,7 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
       label: "Data Karyawan",
       icon: faPeopleGroup,
       path: "/data-karyawan",
-      roles: [ "1", "6","13"], 
+      roles: [ "1","4", "6","13"], 
     },
     {
       label: "Data Penggajian",
