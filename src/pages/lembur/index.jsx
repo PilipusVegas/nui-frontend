@@ -23,6 +23,10 @@ const Lembur = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const navigate = useNavigate();
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  const hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, "0"));
+  const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, "0"));
+
+
 
   useEffect(() => {
     const storedUserId = localStorage.getItem("userId");
@@ -87,127 +91,271 @@ const Lembur = () => {
     }
   };
 
+  const getTimeLabel = (time) => {
+    if (!time) return "";
+    const [hour, minute] = time.split(":").map(Number);
+    const totalMinutes = hour * 60 + minute;
+
+    if (totalMinutes >= 300 && totalMinutes < 660) return "Pagi"; // 05:00 - 10:59
+    if (totalMinutes >= 660 && totalMinutes < 840) return "Siang"; // 11:00 - 13:59
+    if (totalMinutes >= 840 && totalMinutes < 1080) return "Sore"; // 14:00 - 17:59
+    return "Malam"; // 18:00 - 04:59
+  };
+
+  function getSummaryLabel(jamMulai, jamSelesai) {
+    const labelMulai = getTimeLabel(jamMulai);
+    const labelSelesai = getTimeLabel(jamSelesai);
+
+    return (
+      `Kamu akan lembur mulai pukul ${jamMulai} (${labelMulai}) sampai pukul ${jamSelesai} (${labelSelesai}). ` +
+      `Apakah informasi ini sudah benar? Jika iya, silakan klik tombol "Next" untuk melanjutkan.`
+    );
+  }
+
+  function formatTime(jam, menit) {
+    return `${jam}:${menit}`;
+  }
+
   useEffect(() => {
     if (isSuccess) navigate("/");
   }, [isSuccess, navigate]);
 
   const renderStepOne = () => (
-    <MobileLayout
-      title="Formulir Lembur"
-      className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm"
-    >
-      <form
-        className="w-full max-w-lg p-5 bg-gray-50 border-2 rounded-lg"
-        onSubmit={(e) => {
-          e.preventDefault();
-          const { tugas, lokasi, tanggal, jamMulai, jamSelesai } = lemburData;
-          if (lokasi && tugas && tanggal && jamMulai && jamSelesai) {
-            handleSubmitStepOne({ tugas, lokasi, tanggal, jamMulai, jamSelesai });
-          }
+<MobileLayout
+  title="Formulir Lembur"
+  className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm"
+>
+  <form
+  className="w-full max-w-lg p-5 bg-gray-50 border-2 rounded-lg"
+  onSubmit={(e) => {
+    e.preventDefault();
+    const { tugas, lokasi, tanggal, jamMulai, jamSelesai } = lemburData;
+
+    // Validasi input yang wajib diisi
+    if (!tanggal || !lokasi || !tugas || !jamMulai || !jamSelesai) {
+      Swal.fire({
+        icon: "error",
+        title: "Form belum lengkap",
+        text: "Mohon isi semua inputan sebelum melanjutkan.",
+      });
+      return; // hentikan submit jika ada field kosong
+    }
+
+    // Jika valid, lanjut submit
+    handleSubmitStepOne({ tugas, lokasi, tanggal, jamMulai, jamSelesai });
+  }}
+>
+    {/* Tanggal */}
+    <div className="mb-4">
+      <label htmlFor="tanggal" className="block text-sm font-bold mb-1">
+        Tanggal:
+      </label>
+      <input
+        type="date"
+        id="tanggal"
+        name="tanggal"
+        value={lemburData.tanggal}
+        className="w-full p-2 text-lg border-2 rounded-lg"
+        onChange={(e) =>
+          setLemburData((prev) => ({ ...prev, tanggal: e.target.value }))
+        }
+      />
+    </div>
+
+    {/* Lokasi */}
+    <div className="mb-4">
+      <label htmlFor="lokasi" className="block text-sm font-bold mb-1">
+        Lokasi:
+      </label>
+      <select
+        id="lokasi"
+        name="lokasi"
+        value={lemburData.lokasi}
+        className="w-full p-2 text-lg border-2 rounded-lg"
+        onChange={(e) => {
+          const selectedLokasi = e.target.value;
+          const selectedId =
+            locations.find((loc) => loc.nama === selectedLokasi)?.id || "";
+          setLemburData((prev) => ({
+            ...prev,
+            lokasi: selectedLokasi,
+            nama_lokasi: selectedId,
+          }));
         }}
       >
-        {/* Form fields */}
+        <option value="">Pilih Lokasi</option>
+        {locations.map((loc) => (
+          <option key={loc.id} value={loc.nama}>
+            {loc.nama}
+          </option>
+        ))}
+      </select>
+    </div>
 
-        <div className="mb-4">
-          <label htmlFor="tanggal" className="block text-sm font-bold mb-1">
-            Tanggal:
-          </label>
-          <input
-            type="date"
-            id="tanggal"
-            name="tanggal"
-            value={lemburData.tanggal}
-            className="w-full p-2 text-lg border-2 rounded-lg"
-            onChange={(e) => setLemburData((prev) => ({ ...prev, tanggal: e.target.value }))}
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="lokasi" className="block text-sm font-bold mb-1">
-            Lokasi:
-          </label>
-          <select
-            id="lokasi"
-            name="lokasi"
-            value={lemburData.lokasi}
-            className="w-full p-2 text-lg border-2 rounded-lg"
-            onChange={(e) => {
-              const selectedLokasi = e.target.value;
-              const selectedId = locations.find((loc) => loc.nama === selectedLokasi)?.id || "";
-              setLemburData((prev) => ({
-                ...prev,
-                lokasi: selectedLokasi,
-                nama_lokasi: selectedId,
-              }));
-            }}
-          >
-            <option value="">Pilih Lokasi</option>
-            {locations.map((loc) => (
-              <option key={loc.id} value={loc.nama}>
-                {loc.nama}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="mb-4">
-          <label htmlFor="tugas" className="block text-sm font-bold mb-1">
-            Tugas yang diberikan:
-          </label>
-          <textarea
-            rows="2"
-            id="tugas"
-            name="tugas"
-            value={lemburData.tugas}
-            className="w-full p-2 text-lg border-2 rounded-lg resize-vertical"
-            onChange={(e) => {
-              const value = e.target.value;
-              if (value.length <= CHAR_LIMIT) {
-                setLemburData((prev) => ({ ...prev, tugas: value }));
-              }
-            }}
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="jamMulai" className="block text-sm font-bold mb-1">
-            Jam Mulai:
-          </label>
-          <input
-            type="time"
-            id="jamMulai"
-            name="jamMulai"
-            value={lemburData.jamMulai}
-            className="w-full p-2 text-lg border-2 rounded-lg"
-            onChange={(e) => setLemburData((prev) => ({ ...prev, jamMulai: e.target.value }))}
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="jamSelesai" className="block text-sm font-bold mb-1">
-            Jam Selesai:
-          </label>
-          <input
-            type="time"
-            id="jamSelesai"
-            name="jamSelesai"
-            value={lemburData.jamSelesai}
-            className="w-full p-2 text-lg border-2 rounded-lg"
-            onChange={(e) => setLemburData((prev) => ({ ...prev, jamSelesai: e.target.value }))}
-          />
-        </div>
-        <button
-          type="submit"
-          className={`w-full p-2 text-white text-lg font-bold rounded-xl border-2 hover:bg-green-600 ${
-            lemburData.lokasi &&
-            lemburData.tugas &&
-            lemburData.tanggal &&
-            lemburData.jamMulai &&
-            lemburData.jamSelesai
-              ? "bg-green-500 border-green-700"
-              : "bg-gray-400 border-gray-600 cursor-not-allowed"
-          }`}
-        >
-          Next ➜
-        </button>
-      </form>
-    </MobileLayout>
+    {/* Tugas */}
+    <div className="mb-4">
+      <label htmlFor="tugas" className="block text-sm font-bold mb-1">
+        Tugas yang diberikan:
+      </label>
+      <textarea
+        rows="2"
+        id="tugas"
+        name="tugas"
+        value={lemburData.tugas}
+        className="w-full p-2 text-lg border-2 rounded-lg resize-vertical"
+        onChange={(e) => {
+          const value = e.target.value;
+          if (value.length <= CHAR_LIMIT) {
+            setLemburData((prev) => ({ ...prev, tugas: value }));
+          }
+        }}
+      />
+    </div>
+
+    {/* Summary Label */}
+    {lemburData.jamMulai && lemburData.jamSelesai && (
+      <div className="mb-6 p-3 text-xs bg-green-100 rounded-lg border border-blue-300 text-green-800 font-semibold text-center">
+        {getSummaryLabel(lemburData.jamMulai, lemburData.jamSelesai)}
+      </div>
+    )}
+
+{/* Jam Mulai */}
+<div className="mb-4 w-full">
+  <label className="block text-sm font-semibold mb-2">Jam Mulai:</label>
+  <div className="flex space-x-3 w-full">
+    <div className="flex-1">
+      <label className="block text-xs font-medium text-gray-500 mb-1">Jam</label>
+      <select
+        className="w-full p-2 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+        value={lemburData.jamMulai?.split(":")[0] || ""}
+        onChange={(e) => {
+          const menit = lemburData.jamMulai?.split(":")[1] || "00";
+          setLemburData((prev) => ({
+            ...prev,
+            jamMulai: formatTime(e.target.value, menit),
+          }));
+        }}
+      >
+        <option value="">--</option>
+        {hours.map((h) => (
+          <option key={h} value={h}>
+            {h}
+          </option>
+        ))}
+      </select>
+    </div>
+    <div className="flex-1">
+      <label className="block text-xs font-medium text-gray-500 mb-1">Menit</label>
+      <select
+        className="w-full p-2 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+        value={lemburData.jamMulai?.split(":")[1] || ""}
+        onChange={(e) => {
+          const jam = lemburData.jamMulai?.split(":")[0] || "00";
+          setLemburData((prev) => ({
+            ...prev,
+            jamMulai: formatTime(jam, e.target.value),
+          }));
+        }}
+      >
+        <option value="">--</option>
+        {minutes.map((m) => (
+          <option key={m} value={m}>
+            {m}
+          </option>
+        ))}
+      </select>
+    </div>
+  </div>
+  {lemburData.jamMulai && (
+    <p className="mt-1 text-sm font-semibold text-green-600">
+      Waktu mulai: {lemburData.jamMulai} ({getTimeLabel(lemburData.jamMulai)})
+    </p>
+  )}
+</div>
+
+{/* Jam Selesai */}
+<div className="mb-4 w-full">
+  <label className="block text-sm font-semibold mb-2">Jam Selesai:</label>
+  <div className="flex space-x-3 w-full">
+    <div className="flex-1">
+      <label className="block text-xs font-medium text-gray-500 mb-1">Jam</label>
+      <select
+        className="w-full p-2 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+        value={lemburData.jamSelesai?.split(":")[0] || ""}
+        onChange={(e) => {
+          const menit = lemburData.jamSelesai?.split(":")[1] || "00";
+          setLemburData((prev) => ({
+            ...prev,
+            jamSelesai: formatTime(e.target.value, menit),
+          }));
+        }}
+      >
+        <option value="">--</option>
+        {hours.map((h) => (
+          <option key={h} value={h}>
+            {h}
+          </option>
+        ))}
+      </select>
+    </div>
+    <div className="flex-1">
+      <label className="block text-xs font-medium text-gray-500 mb-1">Menit</label>
+      <select
+        className="w-full p-2 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+        value={lemburData.jamSelesai?.split(":")[1] || ""}
+        onChange={(e) => {
+          const jam = lemburData.jamSelesai?.split(":")[0] || "00";
+          setLemburData((prev) => ({
+            ...prev,
+            jamSelesai: formatTime(jam, e.target.value),
+          }));
+        }}
+      >
+        <option value="">--</option>
+        {minutes.map((m) => (
+          <option key={m} value={m}>
+            {m}
+          </option>
+        ))}
+      </select>
+    </div>
+  </div>
+  {lemburData.jamSelesai && (
+    <p className="mt-1 text-sm font-semibold text-green-600">
+      Waktu selesai: {lemburData.jamSelesai} ({getTimeLabel(lemburData.jamSelesai)})
+    </p>
+  )}
+</div>
+
+
+
+    {/* Submit Button */}
+    <button
+      type="submit"
+      className={`w-full p-2 text-white text-lg font-bold rounded-xl border-2 ${
+        lemburData.lokasi &&
+        lemburData.tugas &&
+        lemburData.tanggal &&
+        lemburData.jamMulai &&
+        lemburData.jamSelesai
+          ? "bg-green-500 border-green-700"
+          : "bg-gray-400 border-gray-600 cursor-not-allowed"
+      }`}
+      disabled={
+        !(
+          lemburData.lokasi &&
+          lemburData.tugas &&
+          lemburData.tanggal &&
+          lemburData.jamMulai &&
+          lemburData.jamSelesai
+        )
+      }
+    >
+      Next ➜
+    </button>
+  </form>
+</MobileLayout>
+
   );
 
   const renderStepTwo = () => (

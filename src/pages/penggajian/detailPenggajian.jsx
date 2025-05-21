@@ -26,9 +26,9 @@ const DetailPenggajian = () => {
 
   const filteredData = payrollData.filter((item) => {
     if (activeTab === "absen") {
-      return item.tanggal_absen; // Hanya tampilkan data absen
+      return item.tanggal_absen;
     } else {
-      return item.tanggal_lembur; // Hanya tampilkan data lembur
+      return item.tanggal_lembur; 
     }
   });
 
@@ -109,31 +109,69 @@ const DetailPenggajian = () => {
     }
   }, []);
 
-  const generateExcelData = (data) => {
-    const excelData = [
-      [],
-      ["Nama", dataUser?.nama || "-"],
-      ["Total Kehadiran", `${totalKehadiran} Hari`],
-      ["Periode", period],
-      ["Total Lembur", totalLembur],
-      ["Total keterlambatan", totalKeterlambatan],
-      [],
-      ["No", "Tanggal", "Masuk", "Keluar","keterlambatan", "Lembur"],
-    ];
+const parseDate = (dateStr) => {
+  // Asumsi input format: DD-MM-YYYY
+  const [day, month, year] = dateStr.split("-");
+  return new Date(`${year}-${month}-${day}`); // format ISO YYYY-MM-DD
+};
 
-    data.forEach((item, index) => {
-      excelData.push([
-        index + 1,
-        item.tanggal_absen || item.tanggal_lembur || "-",
-        item.absen_mulai || "-",
-        item.absen_selesai === "0:00" ? "-" : item.absen_selesai,
-        item.keterlambatan,
-        item.lembur || "-",
-      ]);
-    });
+const generateExcelData = (data) => {
+  const excelData = [
+    [],
+    ["Nama", dataUser?.nama || "-"],
+    ["Total Kehadiran", `${totalKehadiran} Hari`],
+    ["Periode", period],
+    ["Total Lembur", totalLembur],
+    ["Total keterlambatan", totalKeterlambatan],
+    [],
+    ["No", "Tanggal", "Masuk", "Keluar", "Keterlambatan", "Mulai Lembur", "Selesai Lembur", "Lembur"],
+  ];
 
-    return excelData;
-  };
+  const mergedDataMap = {};
+
+  data.forEach((item) => {
+    const tanggal = item.tanggal_absen || item.tanggal_lembur;
+    if (!mergedDataMap[tanggal]) {
+      mergedDataMap[tanggal] = {
+        tanggal,
+        absen_mulai: item.absen_mulai || "-",
+        absen_selesai: item.absen_selesai === "0:00" ? "-" : item.absen_selesai,
+        keterlambatan: item.keterlambatan || "-",
+        mulai_lembur: item.mulai_lembur || "-",
+        selesai_lembur: item.selesai_lembur || "-",
+        lembur: item.lembur || "-",
+      };
+    } else {
+      if (item.absen_mulai) mergedDataMap[tanggal].absen_mulai = item.absen_mulai;
+      if (item.absen_selesai) mergedDataMap[tanggal].absen_selesai = item.absen_selesai === "0:00" ? "-" : item.absen_selesai;
+      if (item.keterlambatan) mergedDataMap[tanggal].keterlambatan = item.keterlambatan;
+      if (item.mulai_lembur) mergedDataMap[tanggal].mulai_lembur = item.mulai_lembur;
+      if (item.selesai_lembur) mergedDataMap[tanggal].selesai_lembur = item.selesai_lembur;
+      if (item.lembur) mergedDataMap[tanggal].lembur = item.lembur;
+    }
+  });
+
+  const mergedArray = Object.values(mergedDataMap);
+  
+  // Sorting tanggal dari terbaru ke lama
+  mergedArray.sort((a, b) => parseDate(b.tanggal) - parseDate(a.tanggal));
+
+  mergedArray.forEach((item, index) => {
+    excelData.push([
+      index + 1,
+      item.tanggal,
+      item.absen_mulai,
+      item.absen_selesai,
+      item.keterlambatan,
+      item.mulai_lembur,
+      item.selesai_lembur,
+      item.lembur,
+    ]);
+  });
+
+  return excelData;
+};
+
 
   const handleDownload = () => {
     if (!payrollData.length) {

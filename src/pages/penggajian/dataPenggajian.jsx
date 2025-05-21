@@ -61,7 +61,7 @@ const DataPenggajian = () => {
   const fetchHistoryPeriods = () => {
     const periods = [];
     const now = new Date();
-    for (let i = 0; i < 12; i++) {
+    for (let i = 1; i < 12; i++) {
       const start = new Date(now.getFullYear(), now.getMonth() - i, 22);
       const end = new Date(start);
       end.setMonth(end.getMonth() + 1);
@@ -125,27 +125,25 @@ const DataPenggajian = () => {
       (item) => !searchQuery || item.nama_user.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const handleDetailClick = (id_user, startDate, endDate) => {
-      const finalStartDate = startDate || currentPeriod.startDate;
-      const finalEndDate = endDate || currentPeriod.endDate;
-    
-      if (finalStartDate && finalEndDate) {
-        // Simpan ke sessionStorage
-        sessionStorage.setItem("startDate", finalStartDate);
-        sessionStorage.setItem("endDate", finalEndDate);
-    
-        const url = `/data-penggajian/${id_user}`;
-        navigate(url);
-      } else {
-        Swal.fire(
-          "Error",
-          "Pilih rentang tanggal terlebih dahulu untuk melihat detail atau merekap data",
-          "error"
-        );
-      }
-    };
-    
-    
+  const handleDetailClick = (id_user, startDate, endDate) => {
+    const finalStartDate = startDate || currentPeriod.startDate;
+    const finalEndDate = endDate || currentPeriod.endDate;
+
+    if (finalStartDate && finalEndDate) {
+      // Simpan ke sessionStorage
+      sessionStorage.setItem("startDate", finalStartDate);
+      sessionStorage.setItem("endDate", finalEndDate);
+
+      const url = `/data-penggajian/${id_user}`;
+      navigate(url);
+    } else {
+      Swal.fire(
+        "Error",
+        "Pilih rentang tanggal terlebih dahulu untuk melihat detail atau merekap data",
+        "error"
+      );
+    }
+  };
 
   const handlePrint = () => window.print();
 
@@ -164,7 +162,7 @@ const DataPenggajian = () => {
           </div>
         </div>
 
-       {/* Tabs dan Search Container */}
+        {/* Tabs dan Search Container */}
         <div className="flex justify-between items-start mt-2 mb-2 flex-wrap gap-3">
           {/* Kumpulan Tombol Tab */}
           <div className="flex gap-3">
@@ -217,7 +215,6 @@ const DataPenggajian = () => {
             </div>
           )}
         </div>
-
       </div>
 
       {activeTab === "now" && (
@@ -361,55 +358,69 @@ const DataPenggajian = () => {
                             </div>
 
                             {activeUserDetailId === item.id_user && (
-  <div className="mt-3 p-3 rounded-md bg-white border text-sm text-gray-700 overflow-x-auto">
-    {userDetails[item.id_user] ? (
-      <>
-        <table className="min-w-full text-sm">
-          <thead className="bg-green-600 text-white">
-            <tr>
-              <th className="px-2 py-1 rounded-tl-lg">Tanggal</th>
-              <th className="border px-2 py-1">Absen Mulai</th>
-              <th className="border px-2 py-1">Absen Selesai</th>
-              <th className="border px-2 py-1">Keterlambatan</th>
-              <th className="border px-2 py-1">Mulai Lembur</th>
-              <th className="border px-2 py-1">Selesai Lembur</th>
-              <th className="px-2 py-1 rounded-tr-lg">Total Lembur</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(() => {
-              // Gabungkan data absen dan lembur berdasarkan tanggal
-              const merged = {};
-              userDetails[item.id_user].data.forEach((detail) => {
-                const tanggal = detail.tanggal_absen || detail.tanggal_lembur;
-                if (!merged[tanggal]) {
-                  merged[tanggal] = { ...detail };
-                } else {
-                  merged[tanggal] = { ...merged[tanggal], ...detail };
-                }
-              });
+                              <div className="mt-3 p-3 rounded-md bg-white border text-sm text-gray-700 overflow-x-auto">
+                                {userDetails[item.id_user] ? (
+                                  <>
+                                    <table className="min-w-full text-sm">
+                                      <thead className="bg-green-600 text-white">
+                                        <tr>
+                                          <th className="px-2 py-1 rounded-tl-lg">Tanggal</th>
+                                          <th className="border px-2 py-1">Absen Mulai</th>
+                                          <th className="border px-2 py-1">Absen Selesai</th>
+                                          <th className="border px-2 py-1">Keterlambatan</th>
+                                          <th className="border px-2 py-1">Mulai Lembur</th>
+                                          <th className="border px-2 py-1">Selesai Lembur</th>
+                                          <th className="px-2 py-1 rounded-tr-lg">Total Lembur</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {(() => {
+                                          // Gabungkan data absen dan lembur berdasarkan tanggal
+                                          const merged = {};
+                                          userDetails[item.id_user].data.forEach((detail) => {
+                                            const tanggal =
+                                              detail.tanggal_absen || detail.tanggal_lembur;
+                                            if (!merged[tanggal]) {
+                                              merged[tanggal] = { ...detail };
+                                            } else {
+                                              merged[tanggal] = { ...merged[tanggal], ...detail };
+                                            }
+                                          });
 
-              return Object.entries(merged).map(([tanggal, data], idx) => (
-                <tr key={idx} className="hover:bg-gray-50">
-                  <td className="border px-2 py-1">{tanggal}</td>
-                  <td className="border px-2 py-1">{data.absen_mulai || "-"}</td>
-                  <td className="border px-2 py-1">{data.absen_selesai || "-"}</td>
-                  <td className="border px-2 py-1">{data.keterlambatan || "-"}</td>
-                  <td className="border px-2 py-1">{data.mulai_lembur || "-"}</td>
-                  <td className="border px-2 py-1">{data.selesai_lembur || "-"}</td>
-                  <td className="border px-2 py-1">{data.lembur || "-"}</td>
-                </tr>
-              ));
-            })()}
-          </tbody>
-        </table>
-      </>
-    ) : (
-      <p className="italic text-gray-500">Memuat detail...</p>
-    )}
-  </div>
-)}
-
+                                          return Object.entries(merged).map(
+                                            ([tanggal, data], idx) => (
+                                              <tr key={idx} className="hover:bg-gray-50">
+                                                <td className="border px-2 py-1">{tanggal}</td>
+                                                <td className="border px-2 py-1">
+                                                  {data.absen_mulai || "-"}
+                                                </td>
+                                                <td className="border px-2 py-1">
+                                                  {data.absen_selesai || "-"}
+                                                </td>
+                                                <td className="border px-2 py-1">
+                                                  {data.keterlambatan || "-"}
+                                                </td>
+                                                <td className="border px-2 py-1">
+                                                  {data.mulai_lembur || "-"}
+                                                </td>
+                                                <td className="border px-2 py-1">
+                                                  {data.selesai_lembur || "-"}
+                                                </td>
+                                                <td className="border px-2 py-1">
+                                                  {data.lembur || "-"}
+                                                </td>
+                                              </tr>
+                                            )
+                                          );
+                                        })()}
+                                      </tbody>
+                                    </table>
+                                  </>
+                                ) : (
+                                  <p className="italic text-gray-500">Memuat detail...</p>
+                                )}
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
