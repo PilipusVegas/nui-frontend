@@ -24,7 +24,7 @@ const Lembur = () => {
   const navigate = useNavigate();
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, "0"));
-  const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, "0"));
+  // const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, "0"));
 
 
 
@@ -97,17 +97,25 @@ const Lembur = () => {
     const totalMinutes = hour * 60 + minute;
 
     if (totalMinutes >= 300 && totalMinutes < 660) return "Pagi"; // 05:00 - 10:59
-    if (totalMinutes >= 660 && totalMinutes < 840) return "Siang"; // 11:00 - 13:59
-    if (totalMinutes >= 840 && totalMinutes < 1080) return "Sore"; // 14:00 - 17:59
+    if (totalMinutes >= 660 && totalMinutes < 900) return "Siang"; // 11:00 - 14:59
+    if (totalMinutes >= 900 && totalMinutes < 1080) return "Sore"; // 15:00 - 17:59
     return "Malam"; // 18:00 - 04:59
   };
+
+const getWaktuIndonesia = (hour) => {
+  const h = parseInt(hour, 10);
+  if (h >= 5 && h < 11) return "Pagi";
+  if (h >= 11 && h < 15) return "Siang";
+  if (h >= 15 && h < 18) return "Sore";
+  return "Malam";
+};
 
   function getSummaryLabel(jamMulai, jamSelesai) {
     const labelMulai = getTimeLabel(jamMulai);
     const labelSelesai = getTimeLabel(jamSelesai);
 
     return (
-      `Kamu akan lembur mulai pukul ${jamMulai} (${labelMulai}) sampai pukul ${jamSelesai} (${labelSelesai}). ` +
+      `Kamu Memilih jam lembur ${jamMulai} (${labelMulai}) sampai pukul ${jamSelesai} (${labelSelesai}). ` +
       `Apakah informasi ini sudah benar? Jika iya, silakan klik tombol "Next" untuk melanjutkan.`
     );
   }
@@ -138,7 +146,7 @@ const Lembur = () => {
         title: "Form belum lengkap",
         text: "Mohon isi semua inputan sebelum melanjutkan.",
       });
-      return; // hentikan submit jika ada field kosong
+      return; 
     }
 
     // Jika valid, lanjut submit
@@ -222,49 +230,24 @@ const Lembur = () => {
 {/* Jam Mulai */}
 <div className="mb-4 w-full">
   <label className="block text-sm font-semibold mb-2">Jam Mulai:</label>
-  <div className="flex space-x-3 w-full">
-    <div className="flex-1">
-      <label className="block text-xs font-medium text-gray-500 mb-1">Jam</label>
-      <select
-        className="w-full p-2 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-green-400"
-        value={lemburData.jamMulai?.split(":")[0] || ""}
-        onChange={(e) => {
-          const menit = lemburData.jamMulai?.split(":")[1] || "00";
-          setLemburData((prev) => ({
-            ...prev,
-            jamMulai: formatTime(e.target.value, menit),
-          }));
-        }}
-      >
-        <option value="">--</option>
-        {hours.map((h) => (
-          <option key={h} value={h}>
-            {h}
-          </option>
-        ))}
-      </select>
-    </div>
-    <div className="flex-1">
-      <label className="block text-xs font-medium text-gray-500 mb-1">Menit</label>
-      <select
-        className="w-full p-2 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-green-400"
-        value={lemburData.jamMulai?.split(":")[1] || ""}
-        onChange={(e) => {
-          const jam = lemburData.jamMulai?.split(":")[0] || "00";
-          setLemburData((prev) => ({
-            ...prev,
-            jamMulai: formatTime(jam, e.target.value),
-          }));
-        }}
-      >
-        <option value="">--</option>
-        {minutes.map((m) => (
-          <option key={m} value={m}>
-            {m}
-          </option>
-        ))}
-      </select>
-    </div>
+  <div className="w-full">
+    <select
+      className="w-full p-2 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+      value={lemburData.jamMulai || ""}
+      onChange={(e) => {
+        setLemburData((prev) => ({
+          ...prev,
+          jamMulai: e.target.value,
+        }));
+      }}
+    >
+      <option value="">-- Pilih Jam --</option>
+      {hours.map((h) => (
+        <option key={h} value={`${h}:00`}>
+          {`${h}:00`} ({getWaktuIndonesia(h)})
+        </option>
+      ))}
+    </select>
   </div>
   {lemburData.jamMulai && (
     <p className="mt-1 text-sm font-semibold text-green-600">
@@ -276,49 +259,24 @@ const Lembur = () => {
 {/* Jam Selesai */}
 <div className="mb-4 w-full">
   <label className="block text-sm font-semibold mb-2">Jam Selesai:</label>
-  <div className="flex space-x-3 w-full">
-    <div className="flex-1">
-      <label className="block text-xs font-medium text-gray-500 mb-1">Jam</label>
-      <select
-        className="w-full p-2 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-green-400"
-        value={lemburData.jamSelesai?.split(":")[0] || ""}
-        onChange={(e) => {
-          const menit = lemburData.jamSelesai?.split(":")[1] || "00";
-          setLemburData((prev) => ({
-            ...prev,
-            jamSelesai: formatTime(e.target.value, menit),
-          }));
-        }}
-      >
-        <option value="">--</option>
-        {hours.map((h) => (
-          <option key={h} value={h}>
-            {h}
-          </option>
-        ))}
-      </select>
-    </div>
-    <div className="flex-1">
-      <label className="block text-xs font-medium text-gray-500 mb-1">Menit</label>
-      <select
-        className="w-full p-2 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-green-400"
-        value={lemburData.jamSelesai?.split(":")[1] || ""}
-        onChange={(e) => {
-          const jam = lemburData.jamSelesai?.split(":")[0] || "00";
-          setLemburData((prev) => ({
-            ...prev,
-            jamSelesai: formatTime(jam, e.target.value),
-          }));
-        }}
-      >
-        <option value="">--</option>
-        {minutes.map((m) => (
-          <option key={m} value={m}>
-            {m}
-          </option>
-        ))}
-      </select>
-    </div>
+  <div className="w-full">
+    <select
+      className="w-full p-2 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+      value={lemburData.jamSelesai || ""}
+      onChange={(e) => {
+        setLemburData((prev) => ({
+          ...prev,
+          jamSelesai: e.target.value,
+        }));
+      }}
+    >
+      <option value="">-- Pilih Jam --</option>
+      {hours.map((h) => (
+        <option key={h} value={`${h}:00`}>
+          {`${h}:00`} ({getWaktuIndonesia(h)})
+        </option>
+      ))}
+    </select>
   </div>
   {lemburData.jamSelesai && (
     <p className="mt-1 text-sm font-semibold text-green-600">
