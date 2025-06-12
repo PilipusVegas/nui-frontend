@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faEye, faCheck, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faEye, faCheck, faSearch,faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 
 const SuratDinas = () => {
@@ -122,48 +122,64 @@ const SuratDinas = () => {
 
   return (
     <div className="w-full mx-auto p-7">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between mb-4 space-y-2 md:space-y-0">
-        {/* Tombol Back */}
-        <FontAwesomeIcon
-          icon={faArrowLeft}
-          title="Back to Home"
-          onClick={handleBackClick}
-          className="mr-2 cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"
-        />
+   {/* Header */}
+<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
+  {/* Tombol Back & Judul */}
+  <div className="flex items-center gap-3">
+    <FontAwesomeIcon
+      icon={faArrowLeft}
+      title="Kembali"
+      onClick={handleBackClick}
+      className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-md"
+    />
+    <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-800">
+      Data Surat Dinas Keluar Kantor
+    </h1>
+  </div>
 
-        {/* Judul */}
-        <h1 className="text-xl sm:text-3xl font-bold text-gray-800  flex-1">
-          Data Surat Dinas Keluar Kantor
-        </h1>
+  {/* Filter Rentang Tanggal */}
+  <div className="flex flex-wrap items-end gap-3 text-sm text-gray-700">
+    <div className="flex flex-col">
+      <label htmlFor="start-date" className="mb-1 font-medium">
+        Dari Tanggal
+      </label>
+      <input
+        id="start-date"
+        type="date"
+        value={startDate}
+        onChange={(e) => {
+          const value = e.target.value;
+          setStartDate(value);
+          sessionStorage.setItem("suratmulai", value);
+        }}
+        className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+      />
+    </div>
 
-        {/* Filter */}
-        <div className="flex items-center space-x-2">
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => {
-              const value = e.target.value;
-              setStartDate(value);
-              sessionStorage.setItem("suratmulai", value); // simpan ke session
-            }}
-            className="p-2 border border-gray-300 rounded"
-          />
+    <div className="flex items-end pt-5 sm:pt-0">
+      <FontAwesomeIcon icon={faArrowRight} className="text-gray-400 h-5 w-5" />
+    </div>
 
-          <span className="text-2xl">↔</span>
+    <div className="flex flex-col">
+      <label htmlFor="end-date" className="mb-1 font-medium">
+        Sampai Tanggal
+      </label>
+      <input
+        id="end-date"
+        type="date"
+        value={endDate}
+        onChange={(e) => {
+          const value = e.target.value;
+          setEndDate(value);
+          sessionStorage.setItem("suratselesai", value);
+        }}
+        className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+      />
+    </div>
+  </div>
+</div>
 
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => {
-              const value = e.target.value;
-              setEndDate(value);
-              sessionStorage.setItem("suratselesai", value);
-            }}
-            className="p-2 border border-gray-300 rounded"
-          />
-        </div>
-      </div>
+
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-6">
         {/* Catatan kiri */}
         <div className="text-gray-700 text-sm sm:text-base font-medium bg-green-50 border-l-4 border-green-400 px-3 py-2 rounded shadow-sm">
@@ -272,33 +288,63 @@ const SuratDinas = () => {
           </div>
 
           {/* Card Mobile */}
-          <div className="block md:hidden space-y-4">
-            {filteredData.map((item, index) => {
-              const statusInfo = formatStatus(item.status);
-              return (
-                <div key={item.id || index} className="border rounded-xl shadow p-4 bg-white">
-                  <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-semibold text-green-700">-{item.nama}</h3>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
-                      {statusInfo.label}
-                    </span>
-                  </div>
-                  <p>
-                    <strong>Divisi:</strong> {item.divisi}
-                  </p>
-                  <p>
-                    <strong>Tanggal:</strong> {formatTanggal(item.tgl)}
-                  </p>
-                  <p>
-                    <strong>Jadwal:</strong> {item.jadwal}
-                  </p>
-                  <p>
-                    <strong>Berangkat:</strong> {item.waktu}
-                  </p>
-                </div>
-              );
-            })}
+<div className="block md:hidden space-y-3">
+  {filteredData.map((item, index) => {
+    const statusInfo = formatStatus(item.status);
+    return (
+      <div
+        key={item.id || index}
+        className="rounded-2xl border border-gray-200 shadow-sm p-4 bg-white space-y-2"
+      >
+        <div className="flex justify-between items-center">
+          <h3 className="text-sm font-semibold text-gray-800 truncate">
+            {item.nama}
+          </h3>
+          <span
+            className={`text-xs font-medium rounded-full px-2 py-0.5 ${statusInfo.color}`}
+          >
+            {statusInfo.label}
+          </span>
+        </div>
+        <div className="text-sm text-gray-600 space-y-1">
+          <p>
+            <span className="font-medium text-gray-800">Divisi:</span> {item.divisi}
+          </p>
+          <p>
+            <span className="font-medium text-gray-800">Tanggal:</span> {formatTanggal(item.tgl)}
+          </p>
+          <p>
+            <span className="font-medium text-gray-800">Jadwal:</span> {item.jadwal}
+          </p>
+          <p>
+            <span className="font-medium text-gray-800">Berangkat:</span> {item.waktu}
+          </p>
+        </div>
+
+        {item.status === 0 && roleId === 5 && (
+          <div className="pt-2 flex justify-end gap-2">
+            <button
+              className="inline-flex items-center bg-green-600 hover:bg-green-700 text-white text-xs font-medium px-3 py-1.5 rounded-md transition"
+              onClick={() => handleApprove(item)}
+            >
+              <FontAwesomeIcon icon={faCheck} className="mr-1" />
+              Setujui
+            </button>
+            <button
+              className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1.5 rounded-md transition"
+              onClick={() => handleDetail(item)}
+            >
+              <FontAwesomeIcon icon={faEye} className="mr-1" />
+              Detail
+            </button>
           </div>
+        )}
+      </div>
+    );
+  })}
+</div>
+
+
         </>
       )}
     </div>
