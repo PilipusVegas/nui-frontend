@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faEye, faCheck, faSearch,faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowLeft,
+  faEye,
+  faCheck,
+  faSearch,
+  faArrowRight,
+} from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 
 const SuratDinas = () => {
@@ -103,12 +109,11 @@ const SuratDinas = () => {
 
   const formatTanggal = (isoDate) => {
     const d = new Date(isoDate);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0'); // Bulan dimulai dari 0
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0"); // Bulan dimulai dari 0
     const year = d.getFullYear();
     return `${day}/${month}/${year}`;
   };
-  
 
   const formatStatus = (status) => {
     return status === 1
@@ -122,69 +127,59 @@ const SuratDinas = () => {
 
   return (
     <div className="w-full mx-auto p-7">
-   {/* Header */}
-<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-  {/* Tombol Back & Judul */}
-  <div className="flex items-center gap-3">
-    <FontAwesomeIcon
-      icon={faArrowLeft}
-      title="Kembali"
-      onClick={handleBackClick}
-      className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-md"
-    />
-    <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-800">
-      Data Surat Dinas Keluar Kantor
-    </h1>
-  </div>
+      {/* Header */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
+        {/* Tombol Back & Judul */}
+        <div className="flex items-center gap-3">
+          <FontAwesomeIcon icon={faArrowLeft} title="Kembali" onClick={handleBackClick} className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-md"/>
+          <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-800">
+            Data Surat Dinas Keluar Kantor
+          </h1>
+        </div>
 
-  {/* Filter Rentang Tanggal */}
-  <div className="flex flex-wrap items-end gap-3 text-sm text-gray-700">
-    <div className="flex flex-col">
-      <label htmlFor="start-date" className="mb-1 font-medium">
-        Dari Tanggal
-      </label>
-      <input
-        id="start-date"
-        type="date"
-        value={startDate}
-        onChange={(e) => {
-          const value = e.target.value;
-          setStartDate(value);
-          sessionStorage.setItem("suratmulai", value);
-        }}
-        className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-      />
-    </div>
+        {/* Filter Rentang Tanggal */}
+        <div className="flex flex-wrap items-end gap-3 text-sm text-gray-700">
+          <div className="flex flex-col">
+            <label htmlFor="start-date" className="mb-1 font-medium">
+              Dari Tanggal
+            </label>
+            <input
+              id="start-date"
+              type="date"
+              value={startDate}
+              onChange={(e) => {
+                const value = e.target.value;
+                setStartDate(value);
+                sessionStorage.setItem("suratmulai", value);
+              }}
+              className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            />
+          </div>
 
-    <div className="flex items-end pt-5 sm:pt-0">
-      <FontAwesomeIcon icon={faArrowRight} className="text-gray-400 h-5 w-5" />
-    </div>
+          <div className="flex items-end pb-5 sm:pb-2">
+            <FontAwesomeIcon icon={faArrowRight} className="text-gray-400 h-5 w-5" />
+          </div>
 
-    <div className="flex flex-col">
-      <label htmlFor="end-date" className="mb-1 font-medium">
-        Sampai Tanggal
-      </label>
-      <input
-        id="end-date"
-        type="date"
-        value={endDate}
-        onChange={(e) => {
-          const value = e.target.value;
-          setEndDate(value);
-          sessionStorage.setItem("suratselesai", value);
-        }}
-        className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-      />
-    </div>
-  </div>
-</div>
-
+          <div className="flex flex-col">
+            <label htmlFor="end-date" className="mb-1 font-medium">
+              Sampai Tanggal
+            </label>
+            <input id="end-date" type="date" value={endDate}
+              onChange={(e) => {
+                const value = e.target.value;
+                setEndDate(value);
+                sessionStorage.setItem("suratselesai", value);
+              }}
+              className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            />
+          </div>
+        </div>
+      </div>
 
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-6">
         {/* Catatan kiri */}
-        <div className="text-gray-700 text-sm sm:text-base font-medium bg-green-50 border-l-4 border-green-400 px-3 py-2 rounded shadow-sm">
-          Catatan: Surat dinas ini akan otomatis diteruskan ke KADIV masing-masing divisi untuk di
-          ACC.
+        <div className="text-gray-700 text-[10px] sm:text-base font-medium bg-green-50 border-l-4 border-green-400 px-3 py-2 rounded shadow-sm">
+          Catatan: Sistem akan mengirimkan surat dinas ini langsung kepada Kepala Divisi untuk ditinjau dan disetujui sesuai prosedur.
         </div>
 
         {/* Input Search kanan */}
@@ -192,13 +187,7 @@ const SuratDinas = () => {
           <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-green-500">
             <FontAwesomeIcon icon={faSearch} />
           </span>
-          <input
-            type="text"
-            placeholder="Cari nama..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-sm"
-          />
+          <input type="text" placeholder="Cari nama..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-sm"/>
         </div>
       </div>
 
@@ -231,9 +220,7 @@ const SuratDinas = () => {
                       <td className="px-6 py-1 text-sm text-center">{item.divisi || "-"}</td>
                       <td className="px-6 py-1 text-sm text-center">{item.waktu || "-"}</td>
                       <td className="px-6 py-1 text-sm text-center">
-                        <span
-                          className={`px-3 pb-0.5 rounded-full text-xs ${statusInfo.color}`}
-                        >
+                        <span className={`px-3 pb-0.5 rounded-full text-xs ${statusInfo.color}`}>
                           {statusInfo.label}
                         </span>
                       </td>
@@ -241,17 +228,11 @@ const SuratDinas = () => {
                         {/* Jika belum disetujui (status 0) dan roleId 5, tampilkan tombol Setujui dan Detail */}
                         {item.status === 0 && roleId === 5 && (
                           <>
-                            <button
-                              className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs mr-2"
-                              onClick={() => handleApprove(item)}
-                            >
+                            <button className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs mr-2" onClick={() => handleApprove(item)}>
                               <FontAwesomeIcon icon={faCheck} className="mr-2" />
                               Setujui
                             </button>
-                            <button
-                              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
-                              onClick={() => handleDetail(item)}
-                            >
+                            <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs" onClick={() => handleDetail(item)}>
                               <FontAwesomeIcon icon={faEye} className="mr-2" />
                               Detail
                             </button>
@@ -260,10 +241,7 @@ const SuratDinas = () => {
 
                         {/* Jika sudah disetujui (status 1), tampilkan tombol Detail untuk semua role */}
                         {item.status === 1 && (
-                          <button
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
-                            onClick={() => handleDetail(item)}
-                          >
+                          <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs" onClick={() => handleDetail(item)}>
                             <FontAwesomeIcon icon={faEye} className="mr-2" />
                             Detail
                           </button>
@@ -271,9 +249,7 @@ const SuratDinas = () => {
 
                         {/* Jika belum disetujui dan roleId bukan 5, hanya tampilkan tombol Detail */}
                         {item.status === 0 && roleId !== 5 && (
-                          <button
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
-                            onClick={() => handleDetail(item)}
+                          <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs" onClick={() => handleDetail(item)}
                           >
                             <FontAwesomeIcon icon={faEye} className="mr-2" />
                             Detail
@@ -288,51 +264,52 @@ const SuratDinas = () => {
           </div>
 
           {/* Card Mobile */}
-<div className="block md:hidden space-y-3">
+         <div className="block md:hidden space-y-3">
   {filteredData.map((item, index) => {
     const statusInfo = formatStatus(item.status);
     return (
       <div
         key={item.id || index}
-        className="rounded-2xl border border-gray-200 shadow-sm p-4 bg-white space-y-2"
+        className="rounded-2xl border border-gray-100 shadow p-4 bg-white"
       >
-        <div className="flex justify-between items-center">
-          <h3 className="text-sm font-semibold text-gray-800 truncate">
-            {item.nama}
-          </h3>
-          <span
-            className={`text-xs font-medium rounded-full px-2 py-0.5 ${statusInfo.color}`}
-          >
+        <div className="flex justify-between items-center mb-2">
+          <p className="text-sm font-medium text-gray-800 truncate">{item.nama}</p>
+          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusInfo.color}`}>
             {statusInfo.label}
           </span>
         </div>
-        <div className="text-sm text-gray-600 space-y-1">
-          <p>
-            <span className="font-medium text-gray-800">Divisi:</span> {item.divisi}
-          </p>
-          <p>
-            <span className="font-medium text-gray-800">Tanggal:</span> {formatTanggal(item.tgl)}
-          </p>
-          <p>
-            <span className="font-medium text-gray-800">Jadwal:</span> {item.jadwal}
-          </p>
-          <p>
-            <span className="font-medium text-gray-800">Berangkat:</span> {item.waktu}
-          </p>
+
+        <div className="space-y-1 text-sm text-gray-600">
+          <div className="flex justify-between">
+            <span>Tanggal</span>
+            <span>{formatTanggal(item.tgl)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Jam</span>
+            <span>{item.waktu}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Keterangan</span>
+            <span>{item.jadwal}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Divisi</span>
+            <span>{item.divisi}</span>
+          </div>
         </div>
 
         {item.status === 0 && roleId === 5 && (
-          <div className="pt-2 flex justify-end gap-2">
+          <div className="mt-4 flex justify-end gap-2">
             <button
-              className="inline-flex items-center bg-green-600 hover:bg-green-700 text-white text-xs font-medium px-3 py-1.5 rounded-md transition"
               onClick={() => handleApprove(item)}
+              className="inline-flex items-center px-3 py-1.5 rounded-md bg-green-600 hover:bg-green-700 text-white text-xs transition"
             >
               <FontAwesomeIcon icon={faCheck} className="mr-1" />
               Setujui
             </button>
             <button
-              className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1.5 rounded-md transition"
               onClick={() => handleDetail(item)}
+              className="inline-flex items-center px-3 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs transition"
             >
               <FontAwesomeIcon icon={faEye} className="mr-1" />
               Detail
@@ -343,7 +320,6 @@ const SuratDinas = () => {
     );
   })}
 </div>
-
 
         </>
       )}

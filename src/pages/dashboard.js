@@ -57,12 +57,7 @@ const Home = ({ onLogout }) => {
         
         {/* Sidebar hanya muncul jika roleId memenuhi kriteria */}
         {["1", "4", "5", "6","13"].includes(roleId) && (
-          <MenuSidebar
-            handleLogout={handleLogout}
-            roleId={roleId}
-            isOpen={isSidebarOpen}
-            toggleSidebar={toggleSidebar}
-          />
+          <MenuSidebar handleLogout={handleLogout} roleId={roleId} isOpen={isSidebarOpen} toggleSidebar={toggleSidebar}/>
         )}
         <div className="flex-grow flex flex-col sticky z-10">
           {/* Header dengan tombol untuk toggle sidebar */}
@@ -80,23 +75,13 @@ const Home = ({ onLogout }) => {
       // Tampilkan Sidebar pada HomeDesktop jika roleId valid
       return (
         <SidebarLayout>
-          <HomeDesktop
-            username={username}
-            roleId={roleId}
-            GetNamaDivisi={GetNamaDivisi}
-            handleLogout={handleLogout}
-          />
+          <HomeDesktop username={username} roleId={roleId} GetNamaDivisi={GetNamaDivisi} handleLogout={handleLogout}/>
         </SidebarLayout>
       );
     } else {
       // Tidak ada Sidebar untuk HomeMobile
       return (
-        <HomeMobile
-          username={username}
-          roleId={roleId}
-          handleLogout={handleLogout}
-          GetNamaDivisi={GetNamaDivisi}
-        />
+        <HomeMobile username={username} roleId={roleId} handleLogout={handleLogout} GetNamaDivisi={GetNamaDivisi}/>
       );
     }
   };

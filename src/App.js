@@ -24,11 +24,11 @@ import SuratDinas from "./pages/form/dataSuratDinas";
 import FormDinas from "./pages/form/formDinas";
 import DetailSuratDinas from "./pages/form/detailSuratDinas";
 import Divisi from "./pages/divisi/dataDivisi";
+import AbsenKantor from "./pages/absensiKantor";
 
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem("isLoggedIn") === "true");
-
   const handleLoginSuccess = () => setIsLoggedIn(true);
   const handleLogout = () => {
     localStorage.clear();
@@ -53,12 +53,7 @@ const App = () => {
     return (
       <div className="flex min-h-screen">
         {/* Sidebar */}
-        <MenuSidebar 
-          handleLogout={handleLogout} 
-          roleId={localStorage.getItem("roleId")} 
-          isOpen={isSidebarOpen} 
-          toggleSidebar={toggleSidebar} 
-        />
+        <MenuSidebar handleLogout={handleLogout} roleId={localStorage.getItem("roleId")} isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         <div className="flex-grow flex flex-col sticky z-10">
           {/* Header */}
           <Header toggleSidebar={toggleSidebar} />
@@ -69,9 +64,7 @@ const App = () => {
     );
   };
   
-
   const routes = [
-
     // MOBILE
     { path: "/notification", component: <Notification />, roles: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "14", "15", "16", "17", "18", "19", "20", "21", "22"] },
     { path: "/riwayat-absensi", component: <RiwayatAbsensi />, roles: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "14", "15", "16", "17", "18", "19", "20", "21", "22"] },
@@ -84,6 +77,7 @@ const App = () => {
     { path: "/data-approval", component: <DataApproval />, roles: ["1", "5"], layout: SidebarLayout },
     { path: "/data-lokasi", component: <DataLokasi />, roles: ["1", "5"], layout: SidebarLayout },
     { path: "/data-absensi", component: <DataAbsensi />, roles: ["1", "4", "5", "6"], layout: SidebarLayout },
+    { path: "/absensi-kantor", component: <AbsenKantor />, roles: ["1", "4", "5", "6"], layout: SidebarLayout },
     { path: "/data-absensi/:id_user", component: <DetailAbsensi />, roles: ["1", "4", "5", "6"], layout: SidebarLayout },
     { path: "/data-karyawan", component: <DataKaryawan />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
     { path: "/data-penggajian", component: <DataPenggajian />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
@@ -98,24 +92,15 @@ const App = () => {
   return (
     <Router>
       <Routes>
-        <Route
-          path="/login"
-          element={isLoggedIn ? <Navigate to="/home" /> : <Login onLoginSuccess={handleLoginSuccess} />}
-        />
-        <Route  
-          path="/home"
-          element={
+        <Route path="/login" element={isLoggedIn ? <Navigate to="/home" /> : <Login onLoginSuccess={handleLoginSuccess} />}/>
+        <Route path="/home" element={
             <PrivateRoute allowedRoles={["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"]}>
               <Dashboard onLogout={handleLogout} />
             </PrivateRoute>
           }
         />
         {routes.map(({ path, component, roles, layout: Layout = React.Fragment }) => (
-          <Route
-            key={path}
-            path={path}
-            element={
-              roles.length > 0 ? (
+          <Route key={path} path={path} element={roles.length > 0 ? (
                 <PrivateRoute allowedRoles={roles}>
                   <Layout>{component}</Layout>
                 </PrivateRoute>

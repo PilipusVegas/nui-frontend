@@ -1,0 +1,386 @@
+import React, { useEffect, useState } from "react";
+import { faArrowLeft, faSearch,faFolderOpen } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useNavigate } from "react-router-dom";
+import * as XLSX from "xlsx";
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
+
+const AbsensiKantor = () => {
+  const navigate = useNavigate();
+  const [absenData, setAbsenData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [searchName, setSearchName] = useState("");
+  const [tanggalArray, setTanggalArray] = useState([]);
+  const [dataAbsen, setDataAbsen] = useState([]);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [isDateSelected, setIsDateSelected] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
+
+  const handleBackClick = () => {
+    navigate("/home");
+  };
+
+  const fetchAbsenData = async () => {
+    if (!startDate || !endDate) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${apiUrl}/face/attendance/rekap?start=${startDate}&end=${endDate}`
+      );
+      if (!response.ok) throw new Error("Gagal mengambil data absensi.");
+      const result = await response.json();
+
+      setTanggalArray(Array.isArray(result.date_range) ? result.date_range : []);
+      setDataAbsen(Array.isArray(result.data) ? result.data : []);
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+      setDataAbsen([]);
+      setTanggalArray([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTampilkanClick = () => {
+    if (!startDate || !endDate) {
+      alert("Silakan pilih rentang tanggal terlebih dahulu.");
+      return;
+    }
+    setIsDateSelected(true);
+    fetchAbsenData();
+  };
+
+  // Filter berdasarkan search name
+  const filteredAbsenData = dataAbsen.filter((item) =>
+    item.nama.toLowerCase().includes(searchName.toLowerCase())
+  );
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredAbsenData.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredAbsenData.length / itemsPerPage);
+
+const handleRekapData = async () => {
+  if (!filteredAbsenData.length) return;
+
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Laporan Absensi");
+
+  const title = `Rekap Absensi Periode "${formatTanggal(startDate)}" - "${formatTanggal(endDate)}"`;
+  const totalCols = 3 + tanggalArray.length * 3; // 3 kolom awal (Nama, Kehadiran, Keterlambatan) + tiap tanggal 3 kolom (IN, OUT, LATE)
+
+  // Baris 1: Judul
+  worksheet.mergeCells(1, 1, 1, totalCols);
+  const titleCell = worksheet.getCell(1, 1);
+  titleCell.value = title;
+  titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+  titleCell.font = { bold: true, size: 14 };
+
+  // Baris 2: Header tanggal
+  const headerRow2 = ["Pegawai", "Jumlah", ""];
+  tanggalArray.forEach((tgl) => {
+    const formattedDate = formatTanggal(tgl);
+    headerRow2.push(formattedDate, "", "");
+  });
+  worksheet.addRow(headerRow2);
+
+  // Merge kolom "Jumlah" jadi 2: Kehadiran dan Keterlambatan
+  worksheet.mergeCells(2, 2, 2, 3);
+
+  // Merge setiap 3 kolom untuk satu tanggal
+  tanggalArray.forEach((_, i) => {
+    worksheet.mergeCells(2, 4 + i * 3, 2, 6 + i * 3);
+  });
+
+  // Baris 3: Subheader
+  const headerRow3 = ["Nama", "Kehadiran", "Keterlambatan"];
+  tanggalArray.forEach(() => {
+    headerRow3.push("IN", "OUT", "LATE");
+  });
+  worksheet.addRow(headerRow3);
+
+  // Data Rows
+  filteredAbsenData.forEach((item) => {
+    const row = [item.nama, item.total_days, formatMenitToJamMenit(item.total_late)];
+    tanggalArray.forEach((tgl) => {
+      const attendance = item.attendance?.[tgl] || {};
+      const inTime = attendance.in ?? "-";
+      const outTime = attendance.out ?? "-";
+      const lateTime = formatMenitToJamMenit(attendance.late);
+      row.push(inTime, outTime, lateTime);
+    });
+    worksheet.addRow(row);
+  });
+
+  // Atur lebar kolom
+  worksheet.columns = [
+    { width: 20 }, // Nama
+    { width: 14 }, // Kehadiran
+    { width: 14 }, // Keterlambatan
+    ...tanggalArray.flatMap(() => [
+      { width: 12 }, // IN
+      { width: 12 }, // OUT
+      { width: 12 }, // LATE
+    ]),
+  ];
+
+  // Tambahkan border ke seluruh sel
+  worksheet.eachRow((row) => {
+    row.eachCell((cell) => {
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' },
+      };
+    });
+  });
+
+  // Simpan file
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+  saveAs(blob, `Rekap_Absensi_${formatTanggal(startDate)}_sampai_${formatTanggal(endDate)}.xlsx`);
+};
+
+
+
+const formatTanggal = (tanggalString) => {
+  const tanggal = new Date(tanggalString);
+  
+  const tgl = String(tanggal.getDate()).padStart(2, '0');
+  const bln = String(tanggal.getMonth() + 1).padStart(2, '0');
+  const thn = tanggal.getFullYear();
+
+  return `${tgl}-${bln}-${thn}`;
+};
+
+const formatMenitToJamMenit = (totalMenit) => {
+  if (!totalMenit || isNaN(totalMenit)) return "-";
+  const jam = Math.floor(totalMenit / 60);
+  const menit = totalMenit % 60;
+  return `${jam.toString().padStart(2, '0')}:${menit.toString().padStart(2, '0')}`;
+};
+
+
+  return (
+    <div className="min-h-screen flex flex-col justify-start px-6 pt-6 pb-10">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 space-y-4 md:space-y-0">
+        <div className="flex items-center">
+          <FontAwesomeIcon
+            icon={faArrowLeft}
+            title="Back to Home"
+            onClick={handleBackClick}
+            className="mr-2 cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"
+          />
+          <h2 className="text-3xl font-bold text-gray-800 pb-1">Absensi Kantor</h2>
+        </div>
+
+        <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3">
+          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border border-gray-300 rounded-md px-2 py-1"
+          />
+          <span className="text-sm">s/d</span>
+          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="border border-gray-300 rounded-md px-2 py-1"/>
+          <button onClick={handleTampilkanClick} className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+            Tampilkan Data
+          </button>
+        </div>
+      </div>
+
+      {/* Search Bar */}
+      {isDateSelected && (
+        <div className="flex justify-between items-center w-full flex-wrap gap-4 mb-4">
+          <div className="relative w-full md:w-96">
+            <input
+              type="text"
+              placeholder="Cari nama"
+              value={searchName}
+              onChange={(e) => setSearchName(e.target.value)}
+              className="border border-gray-300 rounded-lg p-1 pl-10 pr-4 w-full focus:outline-none focus:ring-2 focus:ring-green-600"
+            />
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+              <FontAwesomeIcon icon={faSearch} />
+            </span>
+          </div>
+
+          <button
+            onClick={handleRekapData}
+            className="bg-green-600 hover:bg-green-700 text-white font-semibold py-1.5 px-4 rounded-lg shadow"
+          >
+            Unduh Excel
+          </button>
+        </div>
+      )}
+
+      {/* Data Table */}
+      {isDateSelected && !error && dataAbsen.length > 0 &&  (
+        <div
+          className="mx-auto bord er rounded-lg shadow-md flex overflow-hidden"
+          style={{ width: "79vw", borderColor: "#ccc" }}
+        >
+          {/* LEFT TABLE: Pegawai + Jumlah Kehadiran */}
+          <div
+            className="flex flex-col border-r bg-white shrink-0"
+            style={{ borderRight: "1px solid #ccc" }}
+          >
+            <table className="border-collapse w-full">
+              <thead>
+                <tr>
+                  <th
+                    colSpan={2}
+                    className="sticky top-0 z-10 bg-green-600 text-white border border-green-700 px-3 py-1 text-sm text-center min-w-[150px]"
+                  >
+                    Pegawai
+                  </th>
+                  <th colSpan={2} className="sticky top-0 z-10 bg-green-600 text-white border border-green-700 px-3 py-1 text-sm text-center min-w-[80px]">
+                    Jumlah
+                  </th>
+                </tr>
+                <tr>
+                  <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-3 py-2 text-sm text-center min-w-[150px]">
+                    NIP
+                  </th>
+                  <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-3 py-2 text-sm text-center min-w-[150px]">
+                    Nama
+                  </th>
+                  <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-3 py-2 text-sm text-center min-w-[80px]">
+                    Kehadiran
+                  </th>
+                  <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-3 py-2 text-sm text-center min-w-[80px]">
+                    Keterlambatan
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {currentItems.map((item, idx) => (
+                  <tr key={idx} className="hover:bg-gray-100">
+                    <td className="border border-gray-300 px-3 py-2 text-sm break-words">
+                      {item.nip}
+                    </td>
+                    <td className="border border-gray-300 px-3 py-2 text-sm break-words">
+                      {item.nama}
+                    </td>
+                    <td className="border border-gray-300 px-3 py-2 text-center text-sm">
+                      {item.total_days}
+                    </td>
+                     <td className="border border-gray-300 px-3 py-2 text-center text-sm">
+                      {formatMenitToJamMenit(item.total_late)} 
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* RIGHT TABLE: Tanggal + In/Out (Scrollable) */}
+          <div className="overflow-x-auto overflow-y-auto" style={{ flexGrow: 1 }}>
+            <table className="border-collapse w-full min-w-max bg-white">
+              <thead>
+                <tr>
+                  {tanggalArray.map((tanggal) => (
+                    <th key={tanggal} colSpan={3} className="sticky top-0 z-10 bg-green-600 text-white border border-green-700 px-2 py-1 text-center text-sm min-w-[120px]">
+                      {formatTanggal(tanggal)}
+                    </th>
+                  ))}
+                </tr>
+                <tr>
+                  {tanggalArray.map((tanggal) => (
+                    <React.Fragment key={`inout-${tanggal}`}>
+                      <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-2 py-2 text-sm text-center min-w-[60px]">
+                        In
+                      </th>
+                      <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-2 py-2 text-sm text-center min-w-[60px]">
+                        Out
+                      </th>
+                      <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-2 py-2 text-sm text-center min-w-[60px]">
+                        Late
+                      </th>
+                    </React.Fragment>
+                  ))}
+                </tr>
+              </thead>
+
+              <tbody>
+               {currentItems.map((item, idx) => (
+  <tr key={idx} className="hover:bg-gray-100">
+    {tanggalArray.map((tanggal) => {
+      const inTime = item.attendance[tanggal]?.in ?? "-";
+      const outTime = item.attendance[tanggal]?.out ?? "-";
+      const lateMinutes = item.attendance[tanggal]?.late; // pastikan ini adalah angka
+      const LateTime = formatMenitToJamMenit(lateMinutes) ?? "-";
+
+      const isLate = lateMinutes > 1;
+
+      return (
+        <React.Fragment key={`time-${tanggal}-${idx}`}>
+          <td className="border border-gray-300 px-2 py-2 text-center text-sm min-w-[60px]">
+            {inTime}
+          </td>
+          <td className="border border-gray-300 px-2 py-2 text-center text-sm min-w-[60px]">
+            {outTime}
+          </td>
+          <td
+            className={`border border-gray-300 px-2 py-2 text-center text-sm min-w-[60px] ${
+              isLate ? "bg-red-700 text-white font-semibold" : "text-black"
+            }`}
+          >
+            {LateTime}
+          </td>
+        </React.Fragment>
+      );
+    })}
+  </tr>
+))}
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {isDateSelected && (error || dataAbsen.length === 0) && (
+          <div className="w-full flex flex-col items-center justify-center text-center py-20 text-gray-500">
+            <FontAwesomeIcon icon={faFolderOpen} className="text-6xl mb-4 text-gray-400" />
+            <p className="text-lg font-medium">
+              {error ? "Gagal mengambil data absensi." : "Tidak ada data untuk ditampilkan."}
+            </p>
+            {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
+          </div>
+        )}
+
+      {!isDateSelected && (
+      <div className="flex-grow flex items-center justify-center">
+        <div className="text-center text-gray-600">
+          <FontAwesomeIcon icon={faSearch} className="text-5xl mb-4 text-green-600 animate-pulse" />
+          <p className="text-lg font-medium">
+            Pilih rentang tanggal terlebih dahulu untuk menampilkan data
+          </p>
+        </div>
+      </div>
+    )}
+
+      {/* Loading & Error */}
+      {loading && <p className="text-center text-gray-500 mt-6">Loading data...</p>}
+      {!loading && !error && isDateSelected && dataAbsen.length === 0 && (
+  <div className="flex flex-col items-center justify-center mt-12 text-gray-600">
+    <FontAwesomeIcon icon={faFolderOpen} className="text-6xl mb-4 text-green-600" />
+    <p className="text-lg font-semibold">Tidak ada data absensi ditemukan</p>
+    <p className="text-sm text-gray-500">Silakan pilih tanggal lain atau pastikan data tersedia</p>
+  </div>
+)}
+
+    </div>
+  );
+};
+
+export default AbsensiKantor;

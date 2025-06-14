@@ -131,7 +131,7 @@ const SuratDinasDetail = () => {
             </div> */}
         <div className="mt-6 text-sm text-gray-500 italic px-5">
           <span>
-            * Form ini harus sudah diterima oleh SDM mMenumal 2 hari sesudah tugas dilaksanakan
+            * Form ini harus sudah diterima oleh SDM minimal 2 hari sesudah tugas dilaksanakan
           </span>
         </div>
       </div>
