@@ -25,6 +25,7 @@ import FormDinas from "./pages/form/formDinas";
 import DetailSuratDinas from "./pages/form/detailSuratDinas";
 import Divisi from "./pages/divisi/dataDivisi";
 import AbsenKantor from "./pages/absensiKantor";
+import Shift from "./pages/shift/index";
 
 
 const App = () => {
@@ -85,6 +86,7 @@ const App = () => {
     { path: "/surat-dinas", component: <SuratDinas />, roles: ["1","4","5","6","13"],layout: SidebarLayout  },
     { path: "/surat-dinas/:id", component: <DetailSuratDinas />, roles: ["1","4","5","6","13"],layout: SidebarLayout  },
     { path: "/divisi/", component: <Divisi />, roles: ["1","4","6"],layout: SidebarLayout  },
+    { path: "/shift/", component: <Shift />, roles: ["1","4","6"],layout: SidebarLayout  },
     { path: "/form", component: <Form />, roles: [] },
     { path: "/form-dinas", component: <FormDinas />, roles: [] },
   ];

@@ -6,6 +6,7 @@ import {
   faCheck,
   faSearch,
   faArrowRight,
+  faCalendarAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 
@@ -131,7 +132,12 @@ const SuratDinas = () => {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         {/* Tombol Back & Judul */}
         <div className="flex items-center gap-3">
-          <FontAwesomeIcon icon={faArrowLeft} title="Kembali" onClick={handleBackClick} className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-md"/>
+          <FontAwesomeIcon
+            icon={faArrowLeft}
+            title="Kembali"
+            onClick={handleBackClick}
+            className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-md"
+          />
           <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-800">
             Data Surat Dinas Keluar Kantor
           </h1>
@@ -179,7 +185,8 @@ const SuratDinas = () => {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-6">
         {/* Catatan kiri */}
         <div className="text-gray-700 text-[10px] sm:text-base font-medium bg-green-50 border-l-4 border-green-400 px-3 py-2 rounded shadow-sm">
-          Catatan: Sistem akan mengirimkan surat dinas ini langsung kepada Kepala Divisi untuk ditinjau dan disetujui sesuai prosedur.
+          Catatan: Sistem akan mengirimkan surat dinas ini langsung kepada Kepala Divisi untuk
+          ditinjau dan disetujui sesuai prosedur.
         </div>
 
         {/* Input Search kanan */}
@@ -192,9 +199,16 @@ const SuratDinas = () => {
       </div>
 
       {!startDate || !endDate ? (
-        <div className="text-center text-yellow-700 bg-yellow-100 p-4 rounded-lg mt-4 border border-yellow-300">
-          Silakan pilih rentang tanggal terlebih dahulu untuk menampilkan data.
-        </div>
+  <div className="flex items-center justify-center">
+    <div className="text-center w-full text-yellow-700 bg-yellow-100 p-4 rounded-lg border border-yellow-300">
+      <div className="text-3xl mb-2">
+        <FontAwesomeIcon icon={faCalendarAlt} />
+      </div>
+      <div>
+        Silakan pilih rentang tanggal terlebih dahulu untuk menampilkan data.
+      </div>
+    </div>
+  </div>
       ) : (
         <>
           {/* Tabel Desktop */}
@@ -249,8 +263,7 @@ const SuratDinas = () => {
 
                         {/* Jika belum disetujui dan roleId bukan 5, hanya tampilkan tombol Detail */}
                         {item.status === 0 && roleId !== 5 && (
-                          <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs" onClick={() => handleDetail(item)}
-                          >
+                          <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs" onClick={() => handleDetail(item)}>
                             <FontAwesomeIcon icon={faEye} className="mr-2" />
                             Detail
                           </button>
@@ -264,63 +277,53 @@ const SuratDinas = () => {
           </div>
 
           {/* Card Mobile */}
-         <div className="block md:hidden space-y-3">
-  {filteredData.map((item, index) => {
-    const statusInfo = formatStatus(item.status);
-    return (
-      <div
-        key={item.id || index}
-        className="rounded-2xl border border-gray-100 shadow p-4 bg-white"
-      >
-        <div className="flex justify-between items-center mb-2">
-          <p className="text-sm font-medium text-gray-800 truncate">{item.nama}</p>
-          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusInfo.color}`}>
-            {statusInfo.label}
-          </span>
-        </div>
+          <div className="block md:hidden space-y-3">
+            {filteredData.map((item, index) => {
+              const statusInfo = formatStatus(item.status);
+              return (
+                <div key={item.id || index} className="rounded-2xl border border-gray-100 shadow p-4 bg-white">
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="text-sm font-medium text-gray-800 truncate">{item.nama}</p>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusInfo.color}`}>
+                      {statusInfo.label}
+                    </span>
+                  </div>
 
-        <div className="space-y-1 text-sm text-gray-600">
-          <div className="flex justify-between">
-            <span>Tanggal</span>
-            <span>{formatTanggal(item.tgl)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Jam</span>
-            <span>{item.waktu}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Keterangan</span>
-            <span>{item.jadwal}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Divisi</span>
-            <span>{item.divisi}</span>
-          </div>
-        </div>
+                  <div className="space-y-1 text-sm text-gray-600">
+                    <div className="flex justify-between">
+                      <span>Tanggal</span>
+                      <span>{formatTanggal(item.tgl)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Jam</span>
+                      <span>{item.waktu}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Keterangan</span>
+                      <span>{item.jadwal}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Divisi</span>
+                      <span>{item.divisi}</span>
+                    </div>
+                  </div>
 
-        {item.status === 0 && roleId === 5 && (
-          <div className="mt-4 flex justify-end gap-2">
-            <button
-              onClick={() => handleApprove(item)}
-              className="inline-flex items-center px-3 py-1.5 rounded-md bg-green-600 hover:bg-green-700 text-white text-xs transition"
-            >
-              <FontAwesomeIcon icon={faCheck} className="mr-1" />
-              Setujui
-            </button>
-            <button
-              onClick={() => handleDetail(item)}
-              className="inline-flex items-center px-3 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs transition"
-            >
-              <FontAwesomeIcon icon={faEye} className="mr-1" />
-              Detail
-            </button>
+                  {item.status === 0 && roleId === 5 && (
+                    <div className="mt-4 flex justify-end gap-2">
+                      <button onClick={() => handleApprove(item)} className="inline-flex items-center px-3 py-1.5 rounded-md bg-green-600 hover:bg-green-700 text-white text-xs transition">
+                        <FontAwesomeIcon icon={faCheck} className="mr-1" />
+                        Setujui
+                      </button>
+                      <button onClick={() => handleDetail(item)} className="inline-flex items-center px-3 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs transition">
+                        <FontAwesomeIcon icon={faEye} className="mr-1" />
+                        Detail
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
-        )}
-      </div>
-    );
-  })}
-</div>
-
         </>
       )}
     </div>

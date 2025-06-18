@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faFileDownload } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faFileDownload, faTriangleExclamation  } from "@fortawesome/free-solid-svg-icons";
 import html2pdf from "html2pdf.js";
 
 const SuratDinasDetail = () => {
@@ -47,10 +47,15 @@ const SuratDinasDetail = () => {
   }
 
   if (!data) {
-    return (
-      <div className="text-center text-red-500">Data tidak ditemukan atau terjadi kesalahan.</div>
-    );
-  }
+  return (
+    <div className="flex flex-col justify-center items-center h-64 text-red-600 text-center">
+      <FontAwesomeIcon icon={faTriangleExclamation} className="text-5xl mb-4" />
+      <p className="text-lg font-semibold">
+        Data tidak ditemukan atau terjadi kesalahan saat mengambil detail.
+      </p>
+    </div>
+  );
+} 
 
   const handleCetakPDF = () => {
     const element = document.getElementById("cetak-area");
@@ -73,10 +78,7 @@ const SuratDinasDetail = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
-      <div
-        id="cetak-area"
-        className="border-y-4 border-double border-gray-700 border-x-8 p-6 rounded-lg bg-white shadow-md"
-      >
+      <div id="cetak-area" className="border-y-4 border-double border-gray-700 border-x-8 p-6 rounded-lg bg-white shadow-md">
         <h2 className="text-center text-4xl font-bold mb-4 text-gray-800">
           FORM DINAS KELUAR KANTOR
         </h2>

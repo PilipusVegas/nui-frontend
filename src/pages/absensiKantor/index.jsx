@@ -73,41 +73,59 @@ const handleRekapData = async () => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Laporan Absensi");
 
-  const title = `Rekap Absensi Periode "${formatTanggal(startDate)}" - "${formatTanggal(endDate)}"`;
-  const totalCols = 3 + tanggalArray.length * 3; // 3 kolom awal (Nama, Kehadiran, Keterlambatan) + tiap tanggal 3 kolom (IN, OUT, LATE)
+  const totalCols = 3 + tanggalArray.length * 3;
+  const offsetCol = 2; // Spasi 1 kolom kiri
+  const offsetRow = 4; // Mulai tabel di baris ke-4 (ringkasan di baris 2 dan 3)
 
-  // Baris 1: Judul
-  worksheet.mergeCells(1, 1, 1, totalCols);
-  const titleCell = worksheet.getCell(1, 1);
-  titleCell.value = title;
-  titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
-  titleCell.font = { bold: true, size: 14 };
+  const jumlahKaryawan = filteredAbsenData.length;
+  const summary1 = `Rekap data Periode : ${formatTanggal(startDate)} - ${formatTanggal(endDate)}`;
+  const summary2 = `Jumlah karyawan pada periode ini : ${jumlahKaryawan} Karyawan`;
 
-  // Baris 2: Header tanggal
+  // 🟡 Baris Ringkasan 1 (baris 2)
+  worksheet.mergeCells(2, offsetCol, 2, offsetCol + totalCols - 1);
+  const summaryCell1 = worksheet.getCell(2, offsetCol);
+  summaryCell1.value = summary1;
+  summaryCell1.font = { italic: true, size: 12 };
+  summaryCell1.alignment = { vertical: 'middle', horizontal: 'left' };
+
+  // 🟡 Baris Ringkasan 2 (baris 3)
+  worksheet.mergeCells(3, offsetCol, 3, offsetCol + totalCols - 1);
+  const summaryCell2 = worksheet.getCell(3, offsetCol);
+  summaryCell2.value = summary2;
+  summaryCell2.font = { italic: true, size: 12 };
+  summaryCell2.alignment = { vertical: 'middle', horizontal: 'left' };
+
+
+  // 🔵 Baris Header Utama (baris 5)
   const headerRow2 = ["Pegawai", "Jumlah", ""];
   tanggalArray.forEach((tgl) => {
     const formattedDate = formatTanggal(tgl);
     headerRow2.push(formattedDate, "", "");
   });
-  worksheet.addRow(headerRow2);
+  worksheet.getRow(offsetRow + 1).values = Array(offsetCol - 1).fill(null).concat(headerRow2);
 
-  // Merge kolom "Jumlah" jadi 2: Kehadiran dan Keterlambatan
-  worksheet.mergeCells(2, 2, 2, 3);
+  // Merge kolom "Jumlah"
+  worksheet.mergeCells(offsetRow + 1, offsetCol + 1, offsetRow + 1, offsetCol + 2);
 
-  // Merge setiap 3 kolom untuk satu tanggal
+  // Merge setiap tanggal (3 kolom per tanggal)
   tanggalArray.forEach((_, i) => {
-    worksheet.mergeCells(2, 4 + i * 3, 2, 6 + i * 3);
+    worksheet.mergeCells(
+      offsetRow + 1,
+      offsetCol + 3 + i * 3,
+      offsetRow + 1,
+      offsetCol + 5 + i * 3
+    );
   });
 
-  // Baris 3: Subheader
+  // 🔵 Baris Subheader (baris 6)
   const headerRow3 = ["Nama", "Kehadiran", "Keterlambatan"];
   tanggalArray.forEach(() => {
     headerRow3.push("IN", "OUT", "LATE");
   });
-  worksheet.addRow(headerRow3);
+  worksheet.getRow(offsetRow + 2).values = Array(offsetCol - 1).fill(null).concat(headerRow3);
 
-  // Data Rows
-  filteredAbsenData.forEach((item) => {
+  // 🟣 Baris Data Pegawai (mulai baris 7)
+  filteredAbsenData.forEach((item, index) => {
     const row = [item.nama, item.total_days, formatMenitToJamMenit(item.total_late)];
     tanggalArray.forEach((tgl) => {
       const attendance = item.attendance?.[tgl] || {};
@@ -116,11 +134,13 @@ const handleRekapData = async () => {
       const lateTime = formatMenitToJamMenit(attendance.late);
       row.push(inTime, outTime, lateTime);
     });
-    worksheet.addRow(row);
+    worksheet.getRow(offsetRow + 3 + index).values = Array(offsetCol - 1).fill(null).concat(row);
   });
 
-  // Atur lebar kolom
+  // 🔧 Lebar Kolom
   worksheet.columns = [
+    {}, // kolom 1 (kosong)
+    {}, // kolom 2 (kosong = offsetCol - 1)
     { width: 20 }, // Nama
     { width: 14 }, // Kehadiran
     { width: 14 }, // Keterlambatan
@@ -131,25 +151,27 @@ const handleRekapData = async () => {
     ]),
   ];
 
-  // Tambahkan border ke seluruh sel
-  worksheet.eachRow((row) => {
-    row.eachCell((cell) => {
+  // 🧱 Tambahkan border ke SELAIN ringkasan (baris 4 ke bawah)
+  worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+    if (rowNumber < offsetRow) return; // Lewati ringkasan
+    row.eachCell({ includeEmpty: false }, (cell) => {
       cell.border = {
-        top: { style: 'thin' },
-        left: { style: 'thin' },
-        bottom: { style: 'thin' },
-        right: { style: 'thin' },
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
       };
     });
   });
 
-  // Simpan file
+  // 💾 Simpan file
   const buffer = await workbook.xlsx.writeBuffer();
   const blob = new Blob([buffer], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
   saveAs(blob, `Rekap_Absensi_${formatTanggal(startDate)}_sampai_${formatTanggal(endDate)}.xlsx`);
 };
+
 
 
 
@@ -186,8 +208,7 @@ const formatMenitToJamMenit = (totalMenit) => {
         </div>
 
         <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3">
-          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border border-gray-300 rounded-md px-2 py-1"
-          />
+          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border border-gray-300 rounded-md px-2 py-1"/>
           <span className="text-sm">s/d</span>
           <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="border border-gray-300 rounded-md px-2 py-1"/>
           <button onClick={handleTampilkanClick} className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
@@ -224,8 +245,8 @@ const formatMenitToJamMenit = (totalMenit) => {
       {/* Data Table */}
       {isDateSelected && !error && dataAbsen.length > 0 &&  (
         <div
-          className="mx-auto bord er rounded-lg shadow-md flex overflow-hidden"
-          style={{ width: "79vw", borderColor: "#ccc" }}
+          className="mx-auto rounded-lg shadow-md flex overflow-hidden"
+          style={{ width: "81vw", borderColor: "#ccc" }}
         >
           {/* LEFT TABLE: Pegawai + Jumlah Kehadiran */}
           <div
@@ -235,10 +256,7 @@ const formatMenitToJamMenit = (totalMenit) => {
             <table className="border-collapse w-full">
               <thead>
                 <tr>
-                  <th
-                    colSpan={2}
-                    className="sticky top-0 z-10 bg-green-600 text-white border border-green-700 px-3 py-1 text-sm text-center min-w-[150px]"
-                  >
+                  <th colSpan={2} className="sticky top-0 z-10 bg-green-600 text-white border border-green-700 px-3 py-1 text-sm text-center min-w-[150px]">
                     Pegawai
                   </th>
                   <th colSpan={2} className="sticky top-0 z-10 bg-green-600 text-white border border-green-700 px-3 py-1 text-sm text-center min-w-[80px]">
