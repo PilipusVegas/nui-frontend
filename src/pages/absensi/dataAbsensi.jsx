@@ -10,11 +10,8 @@
     const [error, setError] = useState(null);
     const [searchName, setSearchName] = useState("");
     const [searchDivisi, setSearchDivisi] = useState("");
-
-    // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
-
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
     const handleBackClick = () => {
@@ -66,12 +63,12 @@
           {/* Kembali ke Home dan Judul */}
           <div className="flex items-center">
             <FontAwesomeIcon icon={faArrowLeft} title="Back to Home" onClick={handleBackClick} className="mr-2 cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"/>
-            <h2 className="text-3xl font-bold text-gray-800 pb-1">Data Absensi Lapangan</h2>
+            <h2 className="text-3xl font-bold text-gray-800 pb-1">Kelola Absensi Lapangan</h2>
           </div>
 
           {/* Search Bar */}
           <div className="relative w-full md:w-96">
-            <input type="text" placeholder="Search by Name or Divisi" value={searchName} onChange={(e) => setSearchName(e.target.value)} className="border border-gray-300 rounded-lg p-1 pl-10 pr-4 w-full focus:outline-none focus:ring-2 focus:ring-green-600"/>
+            <input type="text" placeholder="Cari nama dan divisi...." value={searchName} onChange={(e) => setSearchName(e.target.value)} className="border border-gray-300 rounded-lg p-1 py-2 pl-10 pr-4 w-full focus:outline-none focus:ring-2 focus:ring-green-600"/>
             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
               <FontAwesomeIcon icon={faSearch} />
             </span>
@@ -83,7 +80,7 @@
           <table className="table-auto w-full border-collapse rounded-lg bg-white">
             <thead>
               <tr className="bg-green-600 text-white">
-                {["No.", "Nama Karyawan", "Divisi", "Total Absen", "Status", "Menu"].map(
+                {["No.", "Nama Karyawan", "Total Absen", "Status", "Menu"].map(
                   (header) => (
                     <th key={header} className="py-1 px-4 font-semibold text-center text-sm">
                       {header}
@@ -97,8 +94,10 @@
                 currentItems.map((absen, index) => (
                   <tr key={absen.id_user} className="border-t hover:bg-gray-50 transition-colors duration-150">
                     <td className="text-center px-4 py-1 text-sm">{indexOfFirstItem + index + 1}</td>
-                    <td className="px-4 py-1 text-sm">{absen.nama_user}</td>
-                    <td className="text-center px-4 py-1 text-sm">{absen.role}</td>
+                    <td className="px-4 py-1 tracking-wide text-left">
+                      <div className="font-semibold text-xs">{absen.nama_user || "Unknown User"}</div>
+                      <div className="text-xs text-gray-500">{absen.role || "Unknown Role"}</div>
+                    </td>
                     <td className="text-center px-4 py-1 text-sm">{absen.total_absen} Hari</td>
                     <td className="text-center text-gray-600 font-bold px-2 py-1 text-xs">
                       <span className="text-white bg-gray-500 text-[10px] rounded-full py-1 px-2 mr-2">

@@ -3,7 +3,6 @@ import MobileLayout from "../../layouts/mobileLayout";
 
 const StepTwoSelesai = ({ handleNextStepData }) => {
   const videoRef = useRef(null);
-
   const [jamSelesai, setJamSelesai] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(null);
@@ -11,11 +10,7 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
   const [fotoDiambil, setFotoDiambil] = useState(false);
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [isSelesaiSelected, setIsSelesaiSelected] = useState(false);
-  const [koordinatSelesai, setKoordinatSelesai] = useState({
-    latitude: null,
-    longitude: null,
-  });
-
+  const [koordinatSelesai, setKoordinatSelesai] = useState({latitude: null, longitude: null,});
   const isFormValid = () => jamSelesai && koordinatSelesai.latitude && fotoSelesai;
 
   useEffect(() => {
@@ -185,31 +180,18 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
         <form className="w-full max-w-lg p-4 bg-white rounded-lg shadow">
           {!fotoDiambil ? (
             <>
-              <video ref={videoRef} className="w-full h-[72vh] object-cover rounded-md" />
-              <button
-                onClick={handleSelesai}
-                disabled={!isCameraReady}
-                className={`mt-4 w-full py-2 text-white font-bold rounded-lg ${
-                  isCameraReady ? "bg-green-500 hover:bg-green-600" : "bg-gray-400 cursor-not-allowed"
-                }`}
-              >
+              <video ref={videoRef} className="w-full h-[72vh] object-cover rounded-md -scale-x-100" />
+              <button onClick={handleSelesai} disabled={!isCameraReady} className={`mt-4 w-full py-2 text-white font-bold rounded-lg ${ isCameraReady ? "bg-green-500 hover:bg-green-600" : "bg-gray-400 cursor-not-allowed" }`}>
                 Ambil Foto
               </button>
             </>
           ) : (
             <>
-              <img src={fotoSelesai} alt="Foto Selesai" className="w-full h-[60vh] rounded-md mb-4" />
+              <img src={fotoSelesai} alt="Foto Selesai" className="w-full h-[60vh] rounded-md mb-4 -scale-x-100" />
               <div className="p-4 rounded-md border space-y-2">
                 <div className="flex justify-between">
                   <p className="font-bold">Jam:</p>
-                  <p>
-                    {currentTime?.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      second: "2-digit",
-                      hour12: false,
-                    })}
-                  </p>
+                  <p> {currentTime?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false})}</p>
                 </div>
                 <hr className="border-gray-200" />
                 <div className="flex justify-between">
@@ -228,21 +210,11 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
               </div>
 
               <div className="flex flex-row items-center gap-x-4 w-full mt-4">
-                <button
-                  onClick={handleUlangi}
-                  className="flex-1 py-2 px-4 text-red-600 border border-red-600 font-bold rounded-lg hover:bg-red-100"
-                >
+                <button onClick={handleUlangi} className="flex-1 py-2 px-4 text-red-600 border border-red-600 font-bold rounded-lg hover:bg-red-100">
                   ↻ Ulangi
                 </button>
 
-                <button
-                  type="submit"
-                  onClick={handleSubmit}
-                  disabled={!isFormValid()}
-                  className={`flex-1 py-2 px-4 text-white font-bold rounded-lg ${
-                    isFormValid() ? "bg-green-500 hover:bg-green-600" : "bg-gray-400 cursor-not-allowed"
-                  }`}
-                >
+                <button type="submit" onClick={handleSubmit} disabled={!isFormValid()} className={`flex-1 py-2 px-4 text-white font-bold rounded-lg ${ isFormValid() ? "bg-green-500 hover:bg-green-600" : "bg-gray-400 cursor-not-allowed" }`}>
                   Next ➜
                 </button>
               </div>

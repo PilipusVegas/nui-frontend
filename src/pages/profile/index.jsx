@@ -389,11 +389,7 @@ const Profile = () => {
             </div>
 
             <div className="flex justify-between">
-              
-              <button
-                onClick={closePasswordModal}
-                className="bg-red-600 text-white py-2 px-4 rounded-lg"
-              >
+              <button onClick={closePasswordModal} className="bg-red-600 text-white py-2 px-4 rounded-lg">
                 Batal
               </button>
               <button

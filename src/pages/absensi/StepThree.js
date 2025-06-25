@@ -3,6 +3,8 @@ import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MobileLayout from "../../layouts/mobileLayout";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 
 const StepThree = ({ formData = {} }) => {
   const navigate = useNavigate();
@@ -25,10 +27,14 @@ const StepThree = ({ formData = {} }) => {
     tanggalSelesai = "",
     jamSelesai = "",
     koordinatSelesai = "",
+    id_shift = "",
+    nama = "",
+    shift = null,
   } = formData;
 
   const summaryItems = [
     { label: "Nama", value: username },
+    { label: "Shift", value: shift || nama || "-" },
     { label: "Lokasi", value: lokasi },
     { label: "Tugas", value: tugas },
     { label: "Deskripsi", value: deskripsi },
@@ -41,10 +47,8 @@ const StepThree = ({ formData = {} }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const formDataToSend = new FormData();
-
     if (fotoMulai && fotoMulai.startsWith("blob:")) {
       const response = await fetch(fotoMulai);
       const blob = await response.blob();
@@ -60,7 +64,6 @@ const StepThree = ({ formData = {} }) => {
 
     const titikKoordinatMulai = parseCoordinates(koordinatMulai);
     const titikKoordinatSelesai = parseCoordinates(koordinatSelesai);
-
     let endpoint;
     let notificationTitle;
 
@@ -68,53 +71,42 @@ const StepThree = ({ formData = {} }) => {
       endpoint = "/absen/selesai";
       notificationTitle = "Absen Selesai Berhasil!";
       formDataToSend.append("id_absen", id_absen);
-
       if (fotoSelesai && fotoSelesai.startsWith("blob:")) {
         const response = await fetch(fotoSelesai);
         const blob = await response.blob();
         const file = new File([blob], "fotoSelesai.jpg", { type: blob.type });
         formDataToSend.append("foto", file);
       }
-
       if (userId) formDataToSend.append("id_user", userId.toString());
       if (titikKoordinatSelesai) {
         formDataToSend.append("lat", titikKoordinatSelesai.latitude.toString());
-        formDataToSend.append(
-          "lon",
-          titikKoordinatSelesai.longitude.toString()
-        );
+        formDataToSend.append("lon",titikKoordinatSelesai.longitude.toString());
       }
     } else {
       endpoint = "/absen/mulai";
       notificationTitle = "Absen Mulai Berhasil!";
-
       if (userId) formDataToSend.append("id_user", userId.toString());
+      if (id_shift) formDataToSend.append("id_shift", id_shift.toString());
       if (tugas) formDataToSend.append("deskripsi", tugas);
       if (id_lokasi) formDataToSend.append("id_lokasi", id_lokasi);
-
       if (titikKoordinatMulai) {
         formDataToSend.append("lat", titikKoordinatMulai.latitude.toString());
         formDataToSend.append("lon", titikKoordinatMulai.longitude.toString());
       }
-
       if (!formDataToSend.has("foto") && fotoMulai instanceof File) {
         formDataToSend.append("foto", fotoMulai);
       }
     }
-
     try {
       const response = await fetch(`${apiUrl}${endpoint}`, {
         method: "POST",
         body: formDataToSend,
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Gagal mengirim data");
       }
-
       setIsSuccess(true);
-
       const currentTime = new Intl.DateTimeFormat("id-ID", {
         weekday: "long",
         day: "numeric",
@@ -150,87 +142,59 @@ const StepThree = ({ formData = {} }) => {
   }, [isSuccess, navigate]);
 
   return (
-    <MobileLayout
-      title="Konfirmasi Absensi"
-      className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm"
-    >
+    <MobileLayout title="Konfirmasi Absensi" className="p-4">
       <div className="flex flex-col items-center">
-        <form
-          onSubmit={handleSubmit}
-          className="w-full max-w-xl p-4 border-2 rounded-lg bg-gray-50"
-        >
+        <form onSubmit={handleSubmit} className="w-full max-w-md bg-white p-3 rounded-xl shadow border space-y-4">
+
+          {/* Foto Mulai */}
           {fotoMulai && (
-            <div className="w-full mb-4 flex justify-center">
-              <img
-                src={fotoMulai}
-                alt="Foto Mulai"
-                className="w-full h-[50vh] object-cover rounded-lg"
-              />
+            <div>
+              <img src={fotoMulai} alt="Foto Mulai" className="w-full aspect-5/5 object-cover rounded-lg border -scale-x-100"/>
             </div>
           )}
+  
+          {/* Foto Selesai */}
           {fotoSelesai && (
-            <div className="w-full mb-4 flex justify-center">
-              <img
-                src={fotoSelesai}
-                alt="Foto Selesai"
-                className="w-full h-[50vh] object-cover rounded-lg"
-              />
+            <div>
+              <img src={fotoSelesai} alt="Foto Selesai" className="w-full aspect-5/5 object-cover rounded-lg border -scale-x-100"/>
             </div>
           )}
-          <div className="px-4 py-2 bg-white border rounded-lg">
-            {summaryItems.map((item, index) => (
-              <div key={index}>
-                <div className="flex justify-between py-2">
-                  <strong className="text-base font-bold">{item.label}:</strong>
-                  <span className="text-sm text-gray-800">{item.value}</span>
+  
+          {/* Ringkasan */}
+          <div className="border rounded-lg px-3 py-2">
+            <h3 className="text-sm font-semibold text-gray-700 mb-2">Detail Absensi</h3>
+            <div className="divide-y text-xs text-gray-800">
+              {summaryItems.map((item, idx) => (
+                <div key={idx} className="flex justify-between py-1 my-1">
+                  <span className="text-gray-600">{item.label}</span>
+                  <span className="font-medium text-right max-w-[55%] break-words">{item.value}</span>
                 </div>
-                {index < summaryItems.length - 1 && (
-                  <hr className="border-gray-300" />
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-          <button
-            type="submit"
-            className={`w-full mt-6 py-2 text-lg font-bold text-white rounded-lg ${
+  
+          {/* Tombol Submit */}
+          <button type="submit" className={`w-full py-2.5 text-sm font-semibold rounded-md transition-all ${
               isLoading
-                ? "bg-green-400 cursor-not-allowed"
-                : "bg-green-500 hover:bg-green-600"
+                ? "bg-green-300 text-white cursor-not-allowed"
+                : "bg-green-500 text-white hover:bg-green-600"
             }`}
             disabled={isLoading}
           >
             {isLoading ? (
               <span className="flex justify-center items-center">
-                <svg
-                  className="animate-spin h-5 w-5 mr-3 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                  ></path>
-                </svg>
+                <FontAwesomeIcon icon={faSpinner} className="animate-spin mr-2" />
                 Mengirim...
               </span>
             ) : (
-              "Kirim"
+              "Kirim Absensi"
             )}
           </button>
         </form>
       </div>
     </MobileLayout>
   );
+  
 };
 
 StepThree.propTypes = {

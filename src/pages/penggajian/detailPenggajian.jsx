@@ -17,7 +17,6 @@ const DetailPenggajian = () => {
   const [totalKehadiran, setTotalKehadiran] = useState(0);
   const [totalLembur, setTotalLembur] = useState("-");
   const [totalKeterlambatan, setTotalKeterlambatan] = useState("-");
-
   const [activeTab, setActiveTab] = useState("absen");
 
   const handleTabClick = (tab) => {
@@ -31,19 +30,16 @@ const DetailPenggajian = () => {
       return item.tanggal_lembur; 
     }
   });
-
   const handleBackClick = () => navigate(-1);
 
   const fetchPayrollDetail = async () => {
     const startDate = sessionStorage.getItem("startDate");
     const endDate = sessionStorage.getItem("endDate");
-
     if (!startDate || !endDate) {
       setError("Please select a start date and end date.");
       setLoading(false);
       return;
     }
-
     setLoading(true);
     setError(null);
 
@@ -74,10 +70,7 @@ const DetailPenggajian = () => {
         }
         return acc;
       }, 0);
-      
       setTotalKeterlambatan(`${Math.floor(keterlambatanTotal / 60)} Jam ${keterlambatanTotal % 60} Menit`);
-      
-
       setTotalKehadiran(kehadiranCount);
       setTotalLembur(`${Math.floor(lemburTotal / 60)} Jam`);
     } catch (error) {
@@ -110,9 +103,8 @@ const DetailPenggajian = () => {
   }, []);
 
 const parseDate = (dateStr) => {
-  // Asumsi input format: DD-MM-YYYY
   const [day, month, year] = dateStr.split("-");
-  return new Date(`${year}-${month}-${day}`); // format ISO YYYY-MM-DD
+  return new Date(`${year}-${month}-${day}`);
 };
 
 const generateExcelData = (data) => {
@@ -126,7 +118,6 @@ const generateExcelData = (data) => {
     [],
     ["No", "Tanggal", "Masuk", "Keluar", "Keterlambatan", "Mulai Lembur", "Selesai Lembur", "Lembur"],
   ];
-
   const mergedDataMap = {};
 
   data.forEach((item) => {
@@ -150,12 +141,8 @@ const generateExcelData = (data) => {
       if (item.lembur) mergedDataMap[tanggal].lembur = item.lembur;
     }
   });
-
   const mergedArray = Object.values(mergedDataMap);
-  
-  // Sorting tanggal dari terbaru ke lama
   mergedArray.sort((a, b) => parseDate(b.tanggal) - parseDate(a.tanggal));
-
   mergedArray.forEach((item, index) => {
     excelData.push([
       index + 1,
@@ -168,10 +155,8 @@ const generateExcelData = (data) => {
       item.lembur,
     ]);
   });
-
   return excelData;
 };
-
 
   const handleDownload = () => {
     if (!payrollData.length) {
@@ -182,14 +167,12 @@ const generateExcelData = (data) => {
     const excelData = generateExcelData(payrollData);
     const worksheet = XLSX.utils.aoa_to_sheet(excelData);
     worksheet["!cols"] = [{ wch: 20 }, { wch: 20 }, { wch: 10 }, { wch: 10 }];
-
     const today = new Date();
     const formattedDate = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(
       2,
       "0"
     )}${String(today.getDate()).padStart(2, "0")}`;
     const fileName = `${formattedDate}_${dataUser?.nama}_${dataUser?.role}.xlsx`;
-
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Payroll Data");
     XLSX.writeFile(workbook, fileName);
@@ -234,29 +217,13 @@ const generateExcelData = (data) => {
             {/* Kehadiran, Jam Kerja, dan Lembur */}
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-2">
               {/* Tab Absen */}
-              <div
-                className={`px-3 py-2 rounded-lg bg-blue-100 text-center cursor-pointer transition-all duration-300 
-                    ${
-                      activeTab === "absen"
-                        ? "border-2 border-blue-500 shadow-sm shadow-blue-300"
-                        : "border border-transparent"
-                    }`}
-                onClick={() => handleTabClick("absen")}
-              >
+              <div className={`px-3 py-2 rounded-lg bg-blue-100 text-center cursor-pointer transition-all duration-300  ${ activeTab === "absen" ? "border-2 border-blue-500 shadow-sm shadow-blue-300" : "border border-transparent" }`} onClick={() => handleTabClick("absen")}>
                 <p className="text-xl font-bold text-blue-600">{totalKehadiran || 0}</p>
                 <p className="text-sm text-blue-800">Total Kehadiran</p>
               </div>
 
               {/* Tab Lembur */}
-              <div
-                className={`px-3 py-2 rounded-lg bg-yellow-100 text-center cursor-pointer transition-all duration-300 
-                    ${
-                      activeTab === "lembur"
-                        ? "border-2 border-yellow-500 shadow-sm shadow-yellow-300"
-                        : "border border-transparent"
-                    }`}
-                onClick={() => handleTabClick("lembur")}
-              >
+              <div className={`px-3 py-2 rounded-lg bg-yellow-100 text-center cursor-pointer transition-all duration-300  ${ activeTab === "lembur" ? "border-2 border-yellow-500 shadow-sm shadow-yellow-300" : "border border-transparent" }`} onClick={() => handleTabClick("lembur")}>
                 <p className="text-lg sm:text-xl font-bold text-yellow-600">{totalLembur || 0}</p>
                 <p className="text-sm text-yellow-800">Total Lembur</p>
               </div>
@@ -269,7 +236,7 @@ const generateExcelData = (data) => {
               <thead>
                 <tr className="bg-green-600 text-white text-sm">
                   {["No"]
-                    .concat(activeTab === "absen" ? ["Tanggal absen", "IN", "OUT","Keterlambatan"] : [])
+                    .concat(activeTab === "absen" ? ["Tanggal absen", "IN", "OUT","LATE"] : [])
                     .concat(
                       activeTab === "lembur" ? ["Tanggal Lembur", "Mulai Lembur", "Selesai Lembur", "Total Lembur"] : []
                     )

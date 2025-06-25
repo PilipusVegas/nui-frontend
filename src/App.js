@@ -13,7 +13,10 @@ import Notification from "./pages/notification";
 import DataLokasi from "./pages/lokasi/dataLokasi";
 import DataAbsensi from "./pages/absensi/dataAbsensi";  
 import DetailAbsensi from "./pages/absensi/DetailAbsensi";
-import DataKaryawan from "./pages/profile/dataKaryawan";
+import DataKaryawan from "./pages/karyawan/dataKaryawan";
+import TambahKaryawan from "./pages/karyawan/tambah";
+import EditKaryawan from "./pages/karyawan/edit";
+import Shift from "./pages/shift/shift";
 import DataApproval from "./pages/approval/dataApproval";
 import DataPenggajian from "./pages/penggajian/dataPenggajian";
 import DetailPenggajian from "./pages/penggajian/detailPenggajian";
@@ -25,7 +28,9 @@ import FormDinas from "./pages/form/formDinas";
 import DetailSuratDinas from "./pages/form/detailSuratDinas";
 import Divisi from "./pages/divisi/dataDivisi";
 import AbsenKantor from "./pages/absensiKantor";
-import Shift from "./pages/shift/index";
+import KelolaPerusahaan from "./pages/perusahaan";
+import TambahPerusahaan from "./pages/perusahaan/tambah";
+import EditPerusahaan from "./pages/perusahaan/edit";
 
 
 const App = () => {
@@ -80,13 +85,18 @@ const App = () => {
     { path: "/data-absensi", component: <DataAbsensi />, roles: ["1", "4", "5", "6"], layout: SidebarLayout },
     { path: "/absensi-kantor", component: <AbsenKantor />, roles: ["1", "4", "5", "6"], layout: SidebarLayout },
     { path: "/data-absensi/:id_user", component: <DetailAbsensi />, roles: ["1", "4", "5", "6"], layout: SidebarLayout },
-    { path: "/data-karyawan", component: <DataKaryawan />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
+    { path: "/karyawan", component: <DataKaryawan />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
+    { path: "/karyawan/tambah", component: <TambahKaryawan />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
+    { path: "/karyawan/edit/:id", component: <EditKaryawan />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
     { path: "/data-penggajian", component: <DataPenggajian />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
     { path: "/data-penggajian/:id_user", component: <DetailPenggajian />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
     { path: "/surat-dinas", component: <SuratDinas />, roles: ["1","4","5","6","13"],layout: SidebarLayout  },
     { path: "/surat-dinas/:id", component: <DetailSuratDinas />, roles: ["1","4","5","6","13"],layout: SidebarLayout  },
     { path: "/divisi/", component: <Divisi />, roles: ["1","4","6"],layout: SidebarLayout  },
     { path: "/shift/", component: <Shift />, roles: ["1","4","6"],layout: SidebarLayout  },
+    { path: "/perusahaan/", component: <KelolaPerusahaan />, roles: ["1","4","6"],layout: SidebarLayout  },
+    { path: "/perusahaan/tambah", component: <TambahPerusahaan />, roles: ["1","4","6"],layout: SidebarLayout  },
+    { path: "/perusahaan/edit/:id", component: <EditPerusahaan />, roles: ["1","4","6"],layout: SidebarLayout  },
     { path: "/form", component: <Form />, roles: [] },
     { path: "/form-dinas", component: <FormDinas />, roles: [] },
   ];

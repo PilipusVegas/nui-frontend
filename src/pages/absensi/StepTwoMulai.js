@@ -3,7 +3,6 @@ import MobileLayout from "../../layouts/mobileLayout";
 
 const StepTwoMulai = ({ handleNextStepData }) => {
   const videoRef = useRef(null);
-
   const [jamMulai, setJamMulai] = useState(null);
   const [fotoMulai, setFotoMulai] = useState(null);
   const [currentTime, setCurrentTime] = useState(null);
@@ -95,8 +94,8 @@ const StepTwoMulai = ({ handleNextStepData }) => {
           setLoadingLocation(false);
         },
         {
-          enableHighAccuracy: false, // Mengurangi akurasi untuk kecepatan lebih cepat
-          maximumAge: 0, // Menghindari cache lokasi yang lama
+          enableHighAccuracy: false, 
+          maximumAge: 0,
         }
       );
     } else {
@@ -153,23 +152,14 @@ const StepTwoMulai = ({ handleNextStepData }) => {
   }, []);
 
   return (
-    <MobileLayout
-      title="Absen Masuk"
-      className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm"
-    >
+    <MobileLayout title="Absen Masuk" className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
       <div className="flex justify-center">
         <form className="w-full max-w-lg p-4 border-2 rounded-lg bg-white">
           {!fotoDiambil ? (
             <>
-              <video ref={videoRef} className="w-full h-[70vh] object-cover rounded-lg" />
+              <video ref={videoRef} className="w-full h-[70vh] object-cover rounded-lg -scale-x-100" />
               <div className="flex justify-center mt-4">
-                <button
-                  onClick={handleMulai}
-                  disabled={!isCameraReady}
-                  className={`w-full py-2 font-semibold text-white uppercase border-2 rounded-lg ${
-                    isCameraReady ? "bg-green-500" : "bg-gray-400 cursor-not-allowed"
-                  }`}
-                >
+                <button onClick={handleMulai} disabled={!isCameraReady} className={`w-full py-2 font-semibold text-white uppercase border-2 rounded-lg ${ isCameraReady ? "bg-green-500" : "bg-gray-400 cursor-not-allowed"}`}>
                   Ambil Foto
                 </button>
               </div>
@@ -180,24 +170,13 @@ const StepTwoMulai = ({ handleNextStepData }) => {
                 {loadingPhoto ? (
                   <div className="animate-spin w-10 h-10 border-4 border-gray-400 border-t-transparent rounded-full"></div>
                 ) : (
-                  <img
-                    src={fotoMulai}
-                    alt="Foto Mulai"
-                    className="w-full h-full object-cover rounded-lg"
-                  />
+                  <img src={fotoMulai} alt="Foto Mulai" className="w-full h-full object-cover rounded-lg -scale-x-100"/>
                 )}
               </div>
               <div className="px-3 py-2 border rounded-lg mt-4">
                 <div className="flex justify-between py-2">
                   <p className="font-bold">Jam:</p>
-                  <p>
-                    {currentTime?.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      second: "2-digit",
-                      hour12: false,
-                    })}
-                  </p>
+                  <p> {currentTime?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,})}</p>
                 </div>
                 <hr className="border-gray-300 my-2" />
                 <div className="flex justify-between py-2">
@@ -216,17 +195,10 @@ const StepTwoMulai = ({ handleNextStepData }) => {
               </div>
 
               <div className="flex justify-between mt-4">
-                <button
-                  onClick={handleUlangi}
-                  className="flex-1 py-2 px-4 text-red-600 border border-red-600 font-bold rounded-lg hover:bg-red-100"
-                >
+                <button onClick={handleUlangi} className="flex-1 py-2 px-4 text-red-600 border border-red-600 font-bold rounded-lg hover:bg-red-100">
                   ↻ Ulangi
                 </button>
-                <button
-                  type="submit"
-                  onClick={handleSubmit}
-                  disabled={!isFormValid() || loadingLocation || loadingPhoto}
-                  className={`w-1/2 py-2 ml-2 font-semibold text-white border-2 rounded-lg ${
+                <button type="submit" onClick={handleSubmit} disabled={!isFormValid() || loadingLocation || loadingPhoto} className={`w-1/2 py-2 ml-2 font-semibold text-white border-2 rounded-lg ${
                     isFormValid() && !loadingLocation && !loadingPhoto
                       ? "bg-green-500"
                       : "bg-gray-400 cursor-not-allowed"

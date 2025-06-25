@@ -201,11 +201,9 @@ const DetailAbsensi = () => {
           <table className="min-w-full border-collapse rounded-lg">
             <thead>
               <tr className="bg-green-600 text-white">
-                {[ "Tanggal", "Lokasi", "IN", "OUT","Terlambat", "Status", "Menu"].map(
+                {[ "Tanggal", "Lokasi","Shift", "IN", "OUT","LATE", "Status", "Menu"].map(
                   (header, index) => (
-                    <th
-                      key={index}
-                      className={`py-1 mb-1 px-4 font-semibold text-center ${
+                    <th key={index} className={`py-1 mb-1 px-4 font-semibold text-center ${
                         index === 0 ? "first:rounded-tl-lg" : ""
                       } ${index === 6 ? "last:rounded-tr-lg" : ""}`}
                     >
@@ -219,13 +217,14 @@ const DetailAbsensi = () => {
               {currentItems.filter((item) => !statusApproval[item.id_absen]).length > 0 ? (
                 currentItems.map((item, index) => (
                   <tr key={item.id_absen} className="border-b hover:bg-gray-100">
-                    <td className="text-center py-1 px-4">
+                    <td className="text-center py-1 px-4 text-sm">
                       {new Date(item.jam_mulai).toLocaleDateString("id-ID", {
                         timeZone: "Asia/Jakarta",
                       })}
                     </td>
-                    <td className="py-1 px-4">{item.lokasi}</td>
-                    <td className="text-center py-1 px-4">
+                    <td className="py-1 px-4 text-sm">{item.lokasi}</td>
+                    <td className="text-center py-1 px-4 text-sm">{item.shift|| "---"}</td>
+                    <td className="text-center py-1 px-4 text-sm">
                       {new Date(item.jam_mulai).toLocaleTimeString("id-ID", {
                         timeZone: "Asia/Jakarta",
                         hour: "2-digit",
@@ -233,7 +232,7 @@ const DetailAbsensi = () => {
                         hour12: false,
                       })}
                     </td>
-                    <td className="text-center py-1 px-4">
+                    <td className="text-center text-sm py-1 px-4">
                       {item.jam_selesai
                         ? new Date(item.jam_selesai).toLocaleTimeString("id-ID", {
                             timeZone: "Asia/Jakarta",
@@ -243,20 +242,12 @@ const DetailAbsensi = () => {
                           })
                         : "---"}
                     </td>
-                    <td
-                      className={`text-center py-1 px-4 ${
-                        item.keterlambatan && item.keterlambatan !== "00:00" ? "text-red-500 font-semibold" : ""
-                      }`}
-                    >
+                    <td className={`text-center py-1 px-4 text-sm ${ item.keterlambatan && item.keterlambatan !== "00:00" ? "text-red-500 font-semibold" : "" }`}>
                       {item.keterlambatan || "00:00"}
                     </td>
 
                     <td className="text-center py-1 px-4">
-                      <span
-                        className={`font-semibold ${
-                          statusApproval[item.id_absen] ? "bg-green-600 text-white" : "	bg-gray-400 text-white px-2 py-1 rounded-full text-xs"
-                        }`}
-                      >
+                      <span className={`font-semibold ${ statusApproval[item.id_absen] ? "bg-green-600 text-white" : "	bg-gray-400 text-white px-2 py-1 rounded-full text-xs" }`}>
                         {statusApproval[item.id_absen] ? "Approved" : "Unapproved"}
                       </span>
                     </td>

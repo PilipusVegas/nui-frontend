@@ -2,17 +2,10 @@ import Swal from "sweetalert2";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSignOutAlt, faCheckSquare, faBook, faTimes, faArrowAltCircleLeft, faArrowRight, faArrowAltCircleRight, faLocationArrow, faPeopleGroup, faPenFancy, faUsersCog, faHome, faAngleDown,} from "@fortawesome/free-solid-svg-icons";
+import { faSignOutAlt, faCheckSquare, faBook, faTimes, faArrowAltCircleLeft, faArrowRight, faArrowAltCircleRight, faLocationArrow, faPeopleGroup, faPenFancy, faUsersCog, faHome, faAngleDown, faBuilding,} from "@fortawesome/free-solid-svg-icons";
 
-// Komponen untuk Tombol Ikon Menu
 const IconButton = ({ icon, label, onClick, isActive, hiddenSidebar }) => (
-  <button onClick={onClick} aria-label={label}
-  className={`flex items-center transition-all duration-300 w-full rounded-xl ${
-    hiddenSidebar
-      ? "justify-center h-11"
-      : "justify-start gap-3 px-4 py-3 text-sm tracking-wider"
-  } ${isActive ? "bg-green-700/90 text-white shadow-inner" : "hover:bg-white/10 hover:scale-[1.02]"}`}
->
+  <button onClick={onClick} aria-label={label} className={`flex items-center transition-all duration-300 w-full rounded-xl ${ hiddenSidebar ? "justify-center h-11" : "justify-start gap-3 px-4 py-3 text-sm tracking-wider"} ${isActive ? "bg-green-700/90 text-white shadow-inner" : "hover:bg-white/10 hover:scale-[1.02]"}`}>
   <FontAwesomeIcon icon={icon} className="text-xl" />
   {!hiddenSidebar && <span className="truncate">{label}</span>}
 </button>
@@ -86,7 +79,7 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
         {
           label: "Karyawan",
           icon: faPeopleGroup,
-          path: "/data-karyawan",
+          path: "/karyawan",
           roles: ["1", "4", "6", "13"],
         },
         {
@@ -145,6 +138,12 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
           path: "/data-lokasi",
           roles: ["1", "5"],
         },
+        {
+          label: "Kelola Perusahaan",
+          icon: faBuilding,
+          path: "/perusahaan",
+          roles: ["1", "4", "6"],
+        },
       ],
     },
     {
@@ -164,16 +163,7 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
   return (
     <>
       {/* Sidebar */}
-      <div className={`${
-          isMobile
-            ? `fixed top-0 left-0 h-full w-full bg-white/10 backdrop-blur-lg border-r border-white/20 text-white p-4 shadow-md z-40 transition-transform duration-700 ${
-                isOpen ? "translate-x-0" : "-translate-x-full"
-              }`
-            : `flex flex-col h-screen sticky top-0 left-0 ${
-                hidden ? "w-24" : "w-64"
-              } bg-gradient-to-b from-green-600 to-green-700 text-white p-4 shadow-md transition-all duration-700`
-        }`}
-      >
+      <div className={`${ isMobile ? `fixed top-0 left-0 h-full w-full bg-white/10 backdrop-blur-lg border-r border-white/20 text-white p-4 shadow-md z-40 transition-transform duration-700 ${ isOpen ? "translate-x-0" : "-translate-x-full" }` : `flex flex-col h-screen sticky top-0 left-0 ${ hidden ? "w-24" : "w-64" } bg-gradient-to-b from-green-600 to-green-700 text-white p-4 shadow-md transition-all duration-700` }`}>
         {/* Tombol Close (Mobile) */}
         {isMobile && isOpen && (
           <button onClick={toggleSidebar} className="absolute top-5 right-5 px-3 py-2 bg-green-600 text-white rounded-full shadow-lg">
@@ -185,8 +175,10 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
         {!isMobile && <ButtonHide onClick={() => setHidden(!hidden)} hidden={hidden} />}
 
         {/* Konten Sidebar */}
-        {menuGroups.map((group, groupIndex) => (
-          <div key={groupIndex} className="mb-4">
+        <div className="overflow-y-auto max-h-screen pr-2 scrollbar-none">
+          {menuGroups.map((group, groupIndex) => (
+            <div key={groupIndex} className="mb-4">
+
             {!hidden && (
               <p className="text-xs text-white/70 uppercase tracking-wider mb-1">
                 {group.sectionTitle}
@@ -204,8 +196,7 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
                   <div key={index}>
                     {/* Item tanpa submenu */}
                     {!menu.submenu ? (
-                      <IconButton label={menu.label} icon={menu.icon}
-                        onClick={() => {
+                      <IconButton label={menu.label} icon={menu.icon} onClick={() => {
                           if (menu.isAction) {
                             menu.onClick();
                           } else {
@@ -267,6 +258,7 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
               })}
           </div>
         ))}
+        </div>
       </div>
 
       {/* Background Overlay untuk Mobile */}

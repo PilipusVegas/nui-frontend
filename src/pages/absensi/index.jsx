@@ -79,12 +79,13 @@ const Absensi = () => {
         const response = await fetch(`${apiUrl}/absen/cek/${attendanceData.userId}`);
         const data = await response.json();
         if (response.ok && Array.isArray(data) && data.length > 0) {
-          const { id_absen, id_user, username, id_lokasi, deskripsi, jam_mulai } = data[0];
+          const { id_absen, id_user, username, id_lokasi, nama, deskripsi, jam_mulai } = data[0];
           setAttendanceData({
             userId: String(id_user),
             username: username || "",
             id_absen: String(id_absen),
             id_lokasi: id_lokasi || "",
+            nama: nama || "",
             deskripsi: deskripsi || "",
             jam_mulai: String(jam_mulai),
           });
@@ -272,10 +273,7 @@ const Absensi = () => {
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <div className="pb-1 px-2 bg-orange-500 text-white rounded-full">
-                                  <FontAwesomeIcon
-                                    icon={faSignOutAlt}
-                                    className="text-xs transform rotate-180"
-                                  />
+                                  <FontAwesomeIcon icon={faSignOutAlt} className="text-xs transform rotate-180"/>
                                 </div>
                                 <div>
                                   <p className="text-[10px] text-gray-500 font-bold">

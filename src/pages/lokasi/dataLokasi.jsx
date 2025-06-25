@@ -14,7 +14,7 @@ import {
 
 const DataLokasi = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
-  const itemsPerPageDesktop = 10;
+  const itemsPerPageDesktop = 15;
   const itemsPerPageMobile = 5;
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
@@ -294,27 +294,16 @@ const DataLokasi = () => {
       {/* Header */}
       <div className=" flex items-center justify-between mb-6 flex-wrap">
         <div className="flex items-center space-x-2 w-full sm:w-auto mb-4 sm:mb-0">
-          <FontAwesomeIcon
-            icon={faArrowLeft}
-            className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-2 sm:p-3 shadow-lg"
-            onClick={handleBackClick}
-            title="Back to Home"
-          />
+          <FontAwesomeIcon icon={faArrowLeft} className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-2 sm:p-3 shadow-lg" onClick={handleBackClick} title="Back to Home"/>
           <h1 className="text-xl sm:text-3xl font-bold text-gray-800 pb-1">
-            Lokasi Gerai
+            Kelola Lokasi Presensi
           </h1>
         </div>
 
         <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto">
           {/* Search Bar */}
           <div className="relative w-full sm:w-64">
-            <input
-              type="text"
-              placeholder="Cari Lokasi..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-green-100 text-sm"
-            />
+            <input type="text" placeholder="Cari Lokasi..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-green-100 text-sm"/>
             <FontAwesomeIcon
               icon={faSearch}
               className="absolute top-2 text-xl right-3 text-gray-500"
@@ -322,10 +311,7 @@ const DataLokasi = () => {
           </div>
 
           {/* Add Location Button */}
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg shadow hover:from-green-600 hover:to-green-700 transition-all duration-200"
-          >
+          <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg shadow hover:from-green-600 hover:to-green-700 transition-all duration-200">
             <FontAwesomeIcon icon={faPlus} />
             <span className="hidden sm:inline">Tambah Lokasi</span>
           </button>
