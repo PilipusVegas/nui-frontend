@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarAlt, faMoneyCheckAlt, faThumbsUp, faMapMarkerAlt, faUsers, faMapMarkedAlt, faPenFancy, faBuilding, faUserCheck, faUsersCog, } from "@fortawesome/free-solid-svg-icons";
+import { faMoneyCheckAlt, faThumbsUp, faMapMarkerAlt, faUsers, faMapMarkedAlt, faPenFancy, faBuilding, faUsersCog, faClock } from "@fortawesome/free-solid-svg-icons";
 
 const HomeDesktop = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -12,11 +12,14 @@ const HomeDesktop = () => {
   const [totalAbsences, setTotalAbsences] = useState(0);
   const [totalAbsencesKantor, setTotalAbsencesKantor] = useState(0);
   const [totalApprovals, setTotalApprovals] = useState(0);
+  const [totalPerusahaan, setTotalPerusahaan] = useState(0);
+  const [totalShift, setTotalShift] = useState(0);
   const [totalLocations, setTotalLocations] = useState(0);
   const [TotalSuratDinas, setTotalSuratDinas] = useState(0);
   const [totalDivisi, setTotalDivisi] = useState(0);
   const [profile, setProfile] = useState({});
   const [roleId, setRoleId] = useState(null);
+
 
   useEffect(() => {
     const storedRoleId = localStorage.getItem("roleId");
@@ -147,12 +150,30 @@ const fetchProfile = async () => {
   }
 };
 
+const fetchPerusahaan = () =>
+  fetchAndHandle({
+    endpoint: "/perusahaan/",
+    setter: setTotalPerusahaan,
+    onSuccess: (data) => Array.isArray(data.data) ? data.data.length : 0,
+  });
+
+const fetchShift = () =>
+  fetchAndHandle({
+    endpoint: "/shift/",
+    setter: setTotalShift,
+    onSuccess: (data) => Array.isArray(data.data) ? data.data.length : 0,
+  });
+
+
+
   const handleCardClick = (path) => {
     navigate(path);
   };
 
   const fetchTasks = [
     { fn: fetchDivisi, roles: [1, 4, 6] },
+    { fn: fetchShift, roles: [1, 4, 6] },
+    { fn: fetchPerusahaan, roles: [1, 4, 6] },
     { fn: fetchAbsences, roles: [1, 4, 5, 6] },
     { fn: fetchPayroll, roles: [1, 4, 6, 13] },
     { fn: fetchApprovedByPA, roles: [1, 5] },
@@ -182,6 +203,8 @@ const fetchProfile = async () => {
     { title: "Data Lokasi Presensi", icon: faMapMarkerAlt, color: "text-orange-500", link: "/data-lokasi", count: totalLocations?.length || 0, roles: [1, 5],},
     { title: "Karyawan", icon: faUsers, color: "text-violet-500", link: "/karyawan", count: employees?.length || 0, roles: [1, 4, 6, 13],},
     { title: "Divisi", icon: faUsersCog, color: "text-blue-500", link: "/divisi", count: totalDivisi, roles: [1, 4, 6],},
+    { title: "Shift", icon: faClock, color: "text-indigo-500", link: "/shift", count: totalShift, roles: [1, 4, 6],},
+    { title: "Perusahaan", icon: faBuilding, color: "text-indigo-500", link: "/perusahaan", count: totalPerusahaan, roles: [1, 4, 6],},
   ];
   const filteredCards = roleId !== null ? allCards.filter((card) => card.roles.includes(roleId)) : [];
 
