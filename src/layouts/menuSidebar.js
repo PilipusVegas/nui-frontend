@@ -62,97 +62,48 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
     {
       sectionTitle: "Menu Utama",
       items: [
-        {
-          label: "Dashboard",
-          icon: faHome,
-          path: "/home",
-          roles: ["1", "2", "3", "4", "5", "6", "13"],
-        },
+        { label: "Dashboard", icon: faHome, path: "/home", roles: ["1", "2", "3", "4", "5", "6", "13"],},
       ],
     },
     {
       sectionTitle: "Manajemen Karyawan",
       items: [
-        {
-          label: "Karyawan",
-          icon: faPeopleGroup,
-          path: "/karyawan",
-          roles: ["1", "4", "6", "13"],
-        },
-        {
-          label: "Kelola Struktur Divisi",
-          icon: faUsersCog,
-          path: "/divisi",
-          roles: ["1", "4", "6"],
-        },
+        { label: "Karyawan", icon: faPeopleGroup, path: "/karyawan", roles: ["1", "4", "6", "13"],},
+        { label: "Kelola Struktur Divisi", icon: faUsersCog, path: "/divisi", roles: ["1", "4", "6"], },
       ],
     },
     {
       sectionTitle: "Manajemen Presensi",
       items: [
-        {
-          label: "Presensi",
-          icon: faCheckSquare,
-          roles: ["1", "4", "6"],
+        { label: "Presensi", icon: faCheckSquare, roles: ["1", "4", "6"],
           submenu: [
             { label: "Presensi Lapangan", path: "/data-absensi", roles: ["1", "4", "6"] },
             { label: "Presensi Kantor", path: "/absensi-kantor", roles: ["1", "4", "6"] },
             { label: "Kelola Jam Kerja", path: "/shift", roles: ["1", "4", "6"] },
           ],
         },
-        {
-          label: "Penggajian",
-          icon: faBook,
-          path: "/data-penggajian",
-          roles: ["1", "4", "6", "13"],
-        },
+        { label: "Penggajian", icon: faBook, path: "/data-penggajian", roles: ["1", "4", "6", "13"],},
       ],
     },
 
     {
       sectionTitle: "E-Form",
       items: [
-        {
-          label: "Dinas Keluar Kantor",
-          icon: faPenFancy,
-          path: "/surat-dinas",
-          roles: ["1", "4", "5", "6", "13"],
-        },
+        { label: "Dinas Keluar Kantor", icon: faPenFancy, path: "/surat-dinas", roles: ["1", "4", "5", "6", "13"],},
       ],
     },
     {
       sectionTitle: "Lainnya",
       items: [
-        {
-          label: "Persetujuan Lembur",
-          icon: faCheckSquare,
-          path: "/data-approval",
-          roles: ["1", "4", "5"],
-        },
-        {
-          label: "Titik Lokasi Absensi",
-          icon: faLocationArrow,
-          path: "/data-lokasi",
-          roles: ["1", "5"],
-        },
-        {
-          label: "Kelola Perusahaan",
-          icon: faBuilding,
-          path: "/perusahaan",
-          roles: ["1", "4", "6"],
-        },
+        { label: "Persetujuan Lembur", icon: faCheckSquare, path: "/data-approval", roles: ["1", "5"],},
+        { label: "Titik Lokasi Absensi", icon: faLocationArrow, path: "/data-lokasi", roles: ["1", "5"],},
+        { label: "Kelola Perusahaan", icon: faBuilding, path: "/perusahaan", roles: ["1", "4", "6"],},
       ],
     },
     {
       sectionTitle: "Logout",
       items: [
-        {
-          label: "Logout",
-          icon: faSignOutAlt,
-          onClick: confirmLogout,
-          isAction: true,
-          roles: ["1", "2", "3", "4", "5", "6", "13"],
-        },
+        { label: "Logout", icon: faSignOutAlt, onClick: confirmLogout, isAction: true, roles: ["1", "2", "3", "4", "5", "6", "13"],},
       ],
     },
   ];

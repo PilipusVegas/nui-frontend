@@ -17,6 +17,8 @@ import DataKaryawan from "./pages/karyawan/dataKaryawan";
 import TambahKaryawan from "./pages/karyawan/tambah";
 import EditKaryawan from "./pages/karyawan/edit";
 import Shift from "./pages/shift/shift";
+import TambahShift from "./pages/shift/tambah";
+import EditShift from "./pages/shift/edit";
 import DataApproval from "./pages/approval/dataApproval";
 import DataPenggajian from "./pages/penggajian/dataPenggajian";
 import DetailPenggajian from "./pages/penggajian/detailPenggajian";
@@ -94,6 +96,8 @@ const App = () => {
     { path: "/surat-dinas/:id", component: <DetailSuratDinas />, roles: ["1","4","5","6","13"],layout: SidebarLayout  },
     { path: "/divisi/", component: <Divisi />, roles: ["1","4","6"],layout: SidebarLayout  },
     { path: "/shift/", component: <Shift />, roles: ["1","4","6"],layout: SidebarLayout  },
+    { path: "/shift/tambah", component: <TambahShift />, roles: ["1","4","6"],layout: SidebarLayout  },
+    { path: "/shift/edit/:id", component: <EditShift />, roles: ["1","4","6"],layout: SidebarLayout  },
     { path: "/perusahaan/", component: <KelolaPerusahaan />, roles: ["1","4","6"],layout: SidebarLayout  },
     { path: "/perusahaan/tambah", component: <TambahPerusahaan />, roles: ["1","4","6"],layout: SidebarLayout  },
     { path: "/perusahaan/edit/:id", component: <EditPerusahaan />, roles: ["1","4","6"],layout: SidebarLayout  },

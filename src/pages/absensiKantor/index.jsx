@@ -68,91 +68,100 @@ const AbsensiKantor = () => {
 
   const handleRekapData = async () => {
     if (!filteredAbsenData.length) return;
-
+  
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Laporan Absensi");
-
-    const totalCols = 3 + tanggalArray.length * 3;
-    const offsetCol = 2; // Spasi 1 kolom kiri
-    const offsetRow = 4; // Mulai tabel di baris ke-4 (ringkasan di baris 2 dan 3)
-
+  
+    const totalCols = 5 + tanggalArray.length * 4; // NIP, Nama, Kehadiran, Terlambatan, Lemburan + 4 per tanggal
+    const offsetCol = 2;
+    const offsetRow = 4;
+  
     const jumlahKaryawan = filteredAbsenData.length;
     const summary1 = `Rekap data Periode : ${formatTanggal(startDate)} - ${formatTanggal(endDate)}`;
     const summary2 = `Jumlah karyawan pada periode ini : ${jumlahKaryawan} Karyawan`;
-
-    // 🟡 Baris Ringkasan 1 (baris 2)
+  
+    // 🟡 Ringkasan
     worksheet.mergeCells(2, offsetCol, 2, offsetCol + totalCols - 1);
     const summaryCell1 = worksheet.getCell(2, offsetCol);
     summaryCell1.value = summary1;
     summaryCell1.font = { italic: true, size: 12 };
     summaryCell1.alignment = { vertical: 'middle', horizontal: 'left' };
-
-    // 🟡 Baris Ringkasan 2 (baris 3)
+  
     worksheet.mergeCells(3, offsetCol, 3, offsetCol + totalCols - 1);
     const summaryCell2 = worksheet.getCell(3, offsetCol);
     summaryCell2.value = summary2;
     summaryCell2.font = { italic: true, size: 12 };
     summaryCell2.alignment = { vertical: 'middle', horizontal: 'left' };
-
-
-    // 🔵 Baris Header Utama (baris 5)
-    const headerRow2 = ["Pegawai", "Jumlah", ""];
+  
+    // 🔵 Header Utama (baris 5)
+    const headerRow2 = ["Pegawai", "", "Jumlah", "", ""]; // NIP, Nama, Kehadiran, Terlambat, Lembur
     tanggalArray.forEach((tgl) => {
       const formattedDate = formatTanggal(tgl);
-      headerRow2.push(formattedDate, "", "");
+      headerRow2.push(formattedDate, "", "", "");
     });
     worksheet.getRow(offsetRow + 1).values = Array(offsetCol - 1).fill(null).concat(headerRow2);
-
-    // Merge kolom "Jumlah"
-    worksheet.mergeCells(offsetRow + 1, offsetCol + 1, offsetRow + 1, offsetCol + 2);
-
-    // Merge setiap tanggal (3 kolom per tanggal)
+  
+    // Merge "Pegawai" (NIP + Nama)
+    worksheet.mergeCells(offsetRow + 1, offsetCol, offsetRow + 1, offsetCol + 1);
+  
+    // Merge "Jumlah" (Kehadiran, Keterlambatan, Lemburan)
+    worksheet.mergeCells(offsetRow + 1, offsetCol + 2, offsetRow + 1, offsetCol + 4);
+  
+    // Merge setiap tanggal (4 kolom: IN, OUT, LATE, OVERTIME)
     tanggalArray.forEach((_, i) => {
-      worksheet.mergeCells(
-        offsetRow + 1,
-        offsetCol + 3 + i * 3,
-        offsetRow + 1,
-        offsetCol + 5 + i * 3
-      );
+      const start = offsetCol + 5 + i * 4;
+      const end = start + 3;
+      worksheet.mergeCells(offsetRow + 1, start, offsetRow + 1, end);
     });
-
+  
     // 🔵 Baris Subheader (baris 6)
-    const headerRow3 = ["Nama", "Kehadiran", "Keterlambatan"];
+    const headerRow3 = ["NIP", "Nama", "Kehadiran", "Keterlambatan", "Lemburan"];
     tanggalArray.forEach(() => {
-      headerRow3.push("IN", "OUT", "LATE");
+      headerRow3.push("IN", "OUT", "LATE", "OVERTIME");
     });
     worksheet.getRow(offsetRow + 2).values = Array(offsetCol - 1).fill(null).concat(headerRow3);
-
-    // 🟣 Baris Data Pegawai (mulai baris 7)
+  
+    // 🟣 Baris Data Pegawai
     filteredAbsenData.forEach((item, index) => {
-      const row = [item.nama, item.total_days, formatMenitToJamMenit(item.total_late)];
+      const row = [
+        item.nip ?? "-",
+        item.nama,
+        item.total_days,
+        formatMenitToJamMenit(item.total_late),
+        formatMenitToJamMenit(item.total_overtime),
+      ];
       tanggalArray.forEach((tgl) => {
-        const attendance = item.attendance?.[tgl] || {};
-        const inTime = attendance.in ?? "-";
-        const outTime = attendance.out ?? "-";
-        const lateTime = formatMenitToJamMenit(attendance.late);
-        row.push(inTime, outTime, lateTime);
+        const att = item.attendance?.[tgl] || {};
+        row.push(
+          att.in ?? "-",
+          att.out ?? "-",
+          formatMenitToJamMenit(att.late),
+          formatMenitToJamMenit(att.overtime)
+        );
       });
       worksheet.getRow(offsetRow + 3 + index).values = Array(offsetCol - 1).fill(null).concat(row);
     });
-
-    // 🔧 Lebar Kolom
+  
+    // 🔧 Lebar kolom
     worksheet.columns = [
       {}, // kolom 1 (kosong)
       {}, // kolom 2 (kosong = offsetCol - 1)
+      { width: 14 }, // NIP
       { width: 20 }, // Nama
       { width: 14 }, // Kehadiran
-      { width: 14 }, // Keterlambatan
+      { width: 14 }, // Terlambat
+      { width: 14 }, // Lembur
       ...tanggalArray.flatMap(() => [
         { width: 12 }, // IN
         { width: 12 }, // OUT
         { width: 12 }, // LATE
+        { width: 12 }, // OVERTIME
       ]),
     ];
-
-    // 🧱 Tambahkan border ke SELAIN ringkasan (baris 4 ke bawah)
+  
+    // 🧱 Tambahkan border dari baris ke-4 ke bawah
     worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
-      if (rowNumber < offsetRow) return; // Lewati ringkasan
+      if (rowNumber < offsetRow) return;
       row.eachCell({ includeEmpty: false }, (cell) => {
         cell.border = {
           top: { style: "thin" },
@@ -162,13 +171,15 @@ const AbsensiKantor = () => {
         };
       });
     });
-
+  
+    // 💾 Simpan file
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
     saveAs(blob, `Rekap_Absensi_${formatTanggal(startDate)}_sampai_${formatTanggal(endDate)}.xlsx`);
   };
+  
 
 
   const formatTanggal = (tanggalString) => {
@@ -229,9 +240,6 @@ const AbsensiKantor = () => {
           <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border border-gray-300 rounded-md px-4 py-1" />
           <span className="text-sm">s/d</span>
           <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="border border-gray-300 rounded-md px-4 py-1" />
-          {/* <button onClick={handleTampilkanClick} className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
-            Tampilkan Data
-          </button> */}
         </div>
       </div>
 
@@ -263,7 +271,7 @@ const AbsensiKantor = () => {
                   <th colSpan={2} className="sticky top-0 z-10 bg-green-600 text-white border border-green-700 px-3 py-1 text-sm text-center min-w-[150px]">
                     Pegawai
                   </th>
-                  <th colSpan={2} className="sticky top-0 z-10 bg-green-600 text-white border border-green-700 px-3 py-1 text-sm text-center min-w-[80px]">
+                  <th colSpan={3} className="sticky top-0 z-10 bg-green-600 text-white border border-green-700 px-3 py-1 text-sm text-center min-w-[80px]">
                     Jumlah
                   </th>
                 </tr>
@@ -274,11 +282,14 @@ const AbsensiKantor = () => {
                   <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-3 py-2 text-sm text-center min-w-[150px]">
                     Nama
                   </th>
-                  <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-3 py-2 text-sm text-center min-w-[80px]">
+                  <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-2 text-sm text-center min-w-[80px]">
                     Kehadiran
                   </th>
-                  <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-3 py-2 text-sm text-center min-w-[80px]">
+                  <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-2 text-sm text-center min-w-[80px]">
                     Keterlambatan
+                  </th>
+                  <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-2 text-sm text-center min-w-[80px]">
+                    Lemburan
                   </th>
                 </tr>
               </thead>
@@ -286,17 +297,20 @@ const AbsensiKantor = () => {
               <tbody>
                 {currentItems.map((item, idx) => (
                   <tr key={idx} className="hover:bg-gray-100">
-                    <td className="border border-gray-300 px-3 py-2 text-sm break-words">
+                    <td className="border border-gray-300 px-3 py-2 text-xs break-words">
                       {item.nip}
                     </td>
-                    <td className="border border-gray-300 px-3 py-2 text-sm break-words">
+                    <td className="border border-gray-300 px-3 py-2 text-xs break-words font-semibold tracking-wider">
                       {item.nama}
                     </td>
-                    <td className="border border-gray-300 px-3 py-2 text-center text-sm">
+                    <td className="border border-gray-300 px-3 py-2 text-center text-xs">
                       {item.total_days}
                     </td>
-                    <td className="border border-gray-300 px-3 py-2 text-center text-sm">
+                    <td className="border border-gray-300 px-3 py-2 text-center text-xs">
                       {formatMenitToJamMenit(item.total_late)}
+                    </td>
+                    <td className="border border-gray-300 px-3 py-2 text-center text-xs">
+                      {formatMenitToJamMenit(item.total_overtime)}
                     </td>
                   </tr>
                 ))}
@@ -310,7 +324,7 @@ const AbsensiKantor = () => {
               <thead>
                 <tr>
                   {tanggalArray.map((tanggal) => (
-                    <th key={tanggal} colSpan={3} className="sticky top-0 z-10 bg-green-600 text-white border border-green-700 px-2 py-1 text-center text-sm min-w-[120px]">
+                    <th key={tanggal} colSpan={4} className="sticky top-0 z-10 bg-green-600 text-white border border-green-700 px-2 py-1 text-center text-sm min-w-[120px]">
                       {formatTanggal(tanggal)}
                     </th>
                   ))}
@@ -327,6 +341,9 @@ const AbsensiKantor = () => {
                       <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-2 py-2 text-sm text-center min-w-[60px]">
                         Late
                       </th>
+                      <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-2 py-2 text-sm text-center min-w-[60px]">
+                        Overtime
+                      </th>
                     </React.Fragment>
                   ))}
                 </tr>
@@ -339,19 +356,25 @@ const AbsensiKantor = () => {
                       const inTime = item.attendance[tanggal]?.in ?? "-";
                       const outTime = item.attendance[tanggal]?.out ?? "-";
                       const lateMinutes = item.attendance[tanggal]?.late; 
+                      const overtimeHours = item.attendance[tanggal]?.overtime;
                       const LateTime = formatMenitToJamMenit(lateMinutes) ?? "-";
                       const isLate = lateMinutes > 1;
+                      const Overtime = formatMenitToJamMenit(overtimeHours) ?? "-";
+
 
                       return (
                         <React.Fragment key={`time-${tanggal}-${idx}`}>
-                          <td className="border border-gray-300 px-2 py-2 text-center text-sm min-w-[60px]">
+                          <td className="border border-gray-300 px-2 py-2 text-center text-xs min-w-[60px]">
                             {inTime}
                           </td>
-                          <td className="border border-gray-300 px-2 py-2 text-center text-sm min-w-[60px]">
+                          <td className="border border-gray-300 px-2 py-2 text-center text-xs min-w-[60px]">
                             {outTime}
                           </td>
-                          <td className={`border border-gray-300 px-2 py-2 text-center text-sm min-w-[60px] ${isLate ? "bg-red-700 text-white font-semibold" : "text-black" }`}>
+                          <td className={`border border-gray-300 px-2 py-2 text-center text-xs min-w-[60px] ${isLate ? "bg-red-700 text-white font-semibold" : "text-black" }`}>
                             {LateTime}
+                          </td>
+                          <td className="border border-gray-300 px-2 py-2 text-center text-xs min-w-[60px]">
+                            {Overtime}
                           </td>
                         </React.Fragment>
                       );
