@@ -142,9 +142,7 @@
           <table className="w-full text-sm text-left">
             <thead className="bg-green-600 text-white">
               <tr>
-              {/* <th className="px-6 py-1 text-center">No.</th> */}
                 <th className="px-6 py-1 text-center">Nama Divisi</th>
-                {/* <th className="px-6 py-1 text-center">Menu</th> */}
               </tr>
             </thead>
             <tbody>
@@ -157,25 +155,7 @@
               ) : (
                 divisi.map((item) => (
                   <tr key={item.id} className="border-t hover:bg-gray-50 transition">
-                    {/* <td className="px-6 py-1 text-center font-semibold">{divisi.indexOf(item) + 1}</td> */}
                     <td className="px-6 py-1 text-center font-semibold">{item.nama}</td>
-                    {/* <td className="px-6 py-1 flex justify-center items-center gap-3">
-                        <button
-                          onClick={() => handleEdit(item)}
-                          className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-1 rounded font-semibold text-xs transition flex items-center"
-                        >
-                          <FontAwesomeIcon icon={faEdit} />
-                          <span className="sm:block hidden ml-2">Edit</span>
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item.id)}
-                          className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded font-semibold text-xs transition flex items-center"
-                        >
-                          <FontAwesomeIcon icon={faTrash} />
-                          <span className="sm:block hidden ml-2">Hapus</span>
-                        </button>
-                      </td> */}
-
                   </tr>
                 ))
               )}

@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarAlt, faMoneyCheckAlt, faThumbsUp, faMapMarkerAlt, faUsers, faClipboardCheck, faMapMarkedAlt, faPenFancy, faBuilding, faUserCheck, faUsersCog, } from "@fortawesome/free-solid-svg-icons";
+import { faCalendarAlt, faMoneyCheckAlt, faThumbsUp, faMapMarkerAlt, faUsers, faMapMarkedAlt, faPenFancy, faBuilding, faUserCheck, faUsersCog, } from "@fortawesome/free-solid-svg-icons";
 
-const HomeDesktop = ({ roleId }) => {
+const HomeDesktop = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const navigate = useNavigate();
   const [employees, setEmployees] = useState([]);
@@ -16,6 +16,14 @@ const HomeDesktop = ({ roleId }) => {
   const [TotalSuratDinas, setTotalSuratDinas] = useState(0);
   const [totalDivisi, setTotalDivisi] = useState(0);
   const [profile, setProfile] = useState({});
+  const [roleId, setRoleId] = useState(null);
+
+  useEffect(() => {
+    const storedRoleId = localStorage.getItem("roleId");
+    if (storedRoleId) {
+      setRoleId(Number(storedRoleId));
+    }
+  }, []);
 
   const updateLocalTime = () => {
     const time = new Date().toLocaleString("id-ID", {
@@ -32,8 +40,8 @@ const HomeDesktop = ({ roleId }) => {
 
   const getPeriodRange = () => {
     const today = new Date();
-    const startDate = new Date(today.getFullYear(), today.getMonth() - 1, 22);
-    const endDate = new Date(today.getFullYear(), today.getMonth(), 21);
+    const startDate = new Date(today.getFullYear(), today.getMonth(), 22);
+    const endDate = new Date(today.getFullYear(), today.getMonth() + 1, 21);
     const formatDate = (date) => date.toISOString().split("T")[0];
     return {
       startDate: formatDate(startDate),
@@ -41,192 +49,142 @@ const HomeDesktop = ({ roleId }) => {
     };
   };
 
-  const fetchEmployees = async () => {
+  const fetchAndHandle = async ({ endpoint, setter, onSuccess }) => {
     try {
-      const response = await fetch(`${apiUrl}/profil/`);
+      const response = await fetch(`${apiUrl}${endpoint}`);
       const result = await response.json();
-      setEmployees(result.data || []);
+      const value = onSuccess(result);
+      setter(value);
     } catch (error) {
-      console.error("Error fetching employees:", error);
-    }
-  };
-
-  const fetchLocation = async () => {
-    try {
-      const response = await fetch(`${apiUrl}/lokasi/`);
-      const result = await response.json();
-      setTotalLocations(result.data || []);
-    } catch (error) {
-      console.error("Error fetching locations:", error);
-    }
-  };
-
-  const fetchAbsences = async () => {
-    try {
-      const response = await fetch(`${apiUrl}/absen/`);
-      const result = await response.json();
-      if (Array.isArray(result)) {
-        const totalStatus = result.reduce((acc, item) => acc + Number(item.unapproved), 0);
-        setTotalAbsences(totalStatus);
-      } else {
-        setTotalAbsences(0);
-      }
-    } catch (error) {
-      console.error("Error fetching absences:", error);
-    }
-  };
-
-  const fetchAbsencesKantor = async () => {
-    try {
-      const { startDate, endDate } = getPeriodRange();
-      const response = await fetch(`${apiUrl}/face/attendance/rekap?start=${startDate}&end=${endDate}`);
-      const result = await response.json();
-      if (result.success && Array.isArray(result.data)) {
-        const totalDays = result.data.reduce((acc, item) => acc + (item.total_days || 0), 0);
-        setTotalAbsencesKantor(totalDays);
-      } else {
-        setTotalAbsencesKantor(0);
-      }
-    } catch (error) {
-      console.error("Error fetching absences:", error);
-      setTotalAbsencesKantor(0);
+      console.error(`Error fetching ${endpoint}:`, error);
     }
   };
   
+  const fetchEmployees = () =>
+  fetchAndHandle({
+    endpoint: "/profil/",
+    setter: setEmployees,
+    onSuccess: (res) => res.data || [],
+  });
 
-  const fetchApprovedByPA = async () => {
-    try {
-      const response = await fetch(`${apiUrl}/lembur/approve`);
-      const result = await response.json();
-      if (result.success && Array.isArray(result.data)) {
-        const unapprovedOvertime = result.data.filter((item) => item.status_lembur === 0).length;
-        setTotalApprovals(unapprovedOvertime);
+const fetchLocation = () =>
+  fetchAndHandle({
+    endpoint: "/lokasi/",
+    setter: setTotalLocations,
+    onSuccess: (res) => res.data || [],
+  });
+
+const fetchDivisi = () =>
+  fetchAndHandle({
+    endpoint: "/karyawan/divisi/",
+    setter: setTotalDivisi,
+    onSuccess: (res) => Array.isArray(res) ? res.length : 0,
+  });
+
+const fetchSuratDinas = () =>
+  fetchAndHandle({
+    endpoint: "/surat-dinas/",
+    setter: setTotalSuratDinas,
+    onSuccess: (res) => Array.isArray(res) ? res.length : 0,
+  });
+
+const fetchApprovedByPA = () =>
+  fetchAndHandle({
+    endpoint: "/lembur/approve",
+    setter: setTotalApprovals,
+    onSuccess: (res) =>
+      res.success && Array.isArray(res.data)
+        ? res.data.filter((item) => item.status_lembur === 0).length
+        : 0,
+  });
+
+const fetchPayroll = () => {
+  const { startDate, endDate } = getPeriodRange();
+  return fetchAndHandle({
+    endpoint: `/payroll?startDate=${startDate}&endDate=${endDate}`,
+    setter: setTotalPayroll,
+    onSuccess: (res) => Array.isArray(res) ? res.length : 0,
+  });
+};
+
+const fetchAbsences = () =>
+  fetchAndHandle({
+    endpoint: "/absen/",
+    setter: setTotalAbsences,
+    onSuccess: (res) =>
+      Array.isArray(res)
+        ? res.reduce((acc, item) => acc + Number(item.unapproved), 0)
+        : 0,
+  });
+
+const fetchAbsencesKantor = () => {
+  const { startDate, endDate } = getPeriodRange();
+  return fetchAndHandle({
+    endpoint: `/face/attendance/rekap?start=${startDate}&end=${endDate}`,
+    setter: setTotalAbsencesKantor,
+    onSuccess: (res) =>
+      res.success && Array.isArray(res.data)
+        ? res.data.reduce((acc, item) => acc + (item.total_days || 0), 0)
+        : 0,
+  });
+};
+
+const fetchProfile = async () => {
+  try {
+    const response = await fetch(`${apiUrl}/profil/`);
+    const result = await response.json();
+    if (result.success && Array.isArray(result.data)) {
+      const storedUserId = localStorage.getItem("userId");
+      const userProfile = result.data.find((profile) => String(profile.id) === storedUserId);
+      if (userProfile) {
+        setProfile(userProfile);
       } else {
-        console.error("Data format is incorrect or fetching failed");
+        console.error("User profile not found in API data.");
       }
-    } catch (error) {
-      console.error("Error fetching lembur data:", error);
     }
-  };
-
-  const fetchPayroll = async () => {
-    try {
-      const { startDate, endDate } = getPeriodRange();
-      const response = await fetch(`${apiUrl}/payroll?startDate=${startDate}&endDate=${endDate}`);
-      const result = await response.json();
-      setTotalPayroll(Array.isArray(result) ? result.length : 0);
-    } catch (error) {
-      console.error("Error fetching payroll:", error);
-    }
-  };
-
-  const dataDivisi = async () => {
-    try {
-      const response = await fetch(`${apiUrl}/karyawan/divisi/`);
-      const result = await response.json();
-      setTotalDivisi(Array.isArray(result) ? result.length : 0);
-    } catch (error) {
-      console.error("Error fetching Divisi:", error);
-    }
-  };
-
-  const fetchSuratDinas = async () => {
-    try {
-      const response = await fetch(`${apiUrl}/surat-dinas/`);
-      const result = await response.json();
-      setTotalSuratDinas(Array.isArray(result) ? result.length : 0);
-    } catch (error) {
-      console.error("Error fetching surat dinas:", error);
-    }
-  };
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+  }
+};
 
   const handleCardClick = (path) => {
     navigate(path);
   };
 
-  const fetchProfile = async () => {
-    try {
-      const response = await fetch(`${apiUrl}/profil/`);
-      const result = await response.json();
-      if (result.success && Array.isArray(result.data)) {
-        const storedUserId = localStorage.getItem("userId"); // Ambil dari localStorage
-        const userProfile = result.data.find((profile) => String(profile.id) === storedUserId); // Cari yang id cocok
-        if (userProfile) {
-          setProfile(userProfile);
-        } else {
-          console.error("User profile not found in API data.");
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-    }
-  };
-
+  const fetchTasks = [
+    { fn: fetchDivisi, roles: [1, 4, 6] },
+    { fn: fetchAbsences, roles: [1, 4, 5, 6] },
+    { fn: fetchPayroll, roles: [1, 4, 6, 13] },
+    { fn: fetchApprovedByPA, roles: [1, 5] },
+    { fn: fetchLocation, roles: [1, 5] },
+    { fn: fetchEmployees, roles: [1, 4, 6, 13] },
+    { fn: fetchSuratDinas, roles: [1, 4, 5, 6, 13] },
+    { fn: fetchAbsencesKantor, roles: [1, 4, 6] },
+  ];
+  
   useEffect(() => {
     updateLocalTime();
     const intervalId = setInterval(updateLocalTime, 1000);
-    const roleActions = {
-      1: [fetchAbsences, fetchPayroll, fetchApprovedByPA, fetchLocation, fetchEmployees, fetchSuratDinas, fetchAbsencesKantor],
-      4: [dataDivisi, fetchEmployees, fetchAbsences, fetchPayroll, fetchSuratDinas],
-      5: [fetchApprovedByPA, fetchAbsences, fetchLocation, fetchSuratDinas],
-      6: [fetchEmployees, dataDivisi, fetchPayroll, fetchSuratDinas],
-      13: [fetchPayroll, fetchEmployees, fetchSuratDinas],
-    };
-    roleActions[roleId]?.forEach(fn => fn());
+    fetchProfile();
+    fetchTasks.forEach(({ fn, roles }) => {
+      if (roles.includes(roleId)) fn();
+    });
     return () => clearInterval(intervalId);
   }, [roleId]);
-  useEffect(() => {
-    fetchProfile();
-  }, []);
+  
+  const allCards = [
+    // { title: "Presensi Kehadiran", icon: faUserCheck, color: "text-blue-500", link: "/absensi", roles: [1, 4, 5, 6, 13],},
+    { title: "Presensi Lapangan", icon: faMapMarkedAlt, color: "text-green-500", link: "/data-absensi", count: totalAbsences, roles: [1, 4, 6],},
+    { title: "Presensi Kantor", icon: faBuilding, color: "text-indigo-500", link: "/absensi-kantor", count: totalAbsencesKantor, roles: [1, 4, 6],},
+    { title: "Surat Dinas", icon: faPenFancy, color: "text-blue-500", link: "/surat-dinas", count: TotalSuratDinas, roles: [1, 4, 5, 6, 13],},
+    { title: "Penggajian", icon: faMoneyCheckAlt, color: "text-amber-500", link: "/data-penggajian", count: totalPayroll, roles: [1, 4, 6, 13],},
+    { title: "Persetujuan Lembur", icon: faThumbsUp, color: "text-emerald-500", link: "/data-approval", count: totalApprovals, roles: [1, 5],},
+    { title: "Data Lokasi Presensi", icon: faMapMarkerAlt, color: "text-orange-500", link: "/data-lokasi", count: totalLocations?.length || 0, roles: [1, 5],},
+    { title: "Karyawan", icon: faUsers, color: "text-violet-500", link: "/karyawan", count: employees?.length || 0, roles: [1, 4, 6, 13],},
+    { title: "Divisi", icon: faUsersCog, color: "text-blue-500", link: "/divisi", count: totalDivisi, roles: [1, 4, 6],},
+  ];
+  const filteredCards = roleId !== null ? allCards.filter((card) => card.roles.includes(roleId)) : [];
 
-  const cardsByRole = {
-    1: [
-      //ADMIN
-      { title: "Presensi Kehadiran", icon: faUserCheck, color: "text-blue-500", link: "/absensi" },
-      { title: "Presensi Lapangan", count: totalAbsences, icon: faMapMarkedAlt, color: "text-green-500", link: "/data-absensi" },
-      { title: "Presensi Kantor", count: totalAbsencesKantor, icon: faBuilding, color: "text-indigo-500", link: "/absensi-kantor" },
-      { title: "Surat Dinas", count: TotalSuratDinas, icon: faPenFancy, color: "text-blue-500", link: "/surat-dinas", },
-      { title: "Penggajian", count: totalPayroll, icon: faMoneyCheckAlt, color: "text-amber-500", link: "/data-penggajian", },
-      { title: "Persetujuan Lembur", count: totalApprovals, icon: faThumbsUp, color: "text-emerald-500", link: "/data-approval", },
-      { title: "Data Lokasi Presensi", count: totalLocations?.length || "0", icon: faMapMarkerAlt, color: "text-orange-500", link: "/data-lokasi", },
-      { title: "Karyawan", count: employees?.length || "0", icon: faUsers, color: "text-violet-500", link: "/karyawan", },
-      // { title: "Bukti Survey", icon: faClipboardCheck, color: "text-emerald-500", link: "/survey" },
-    ],
-    4: [
-      // MANAGER HRD
-      { title: "Presensi Kehadiran", icon: faUserCheck, color: "text-blue-500", link: "/absensi" },
-      { title: "Presensi Lapangan", count: totalAbsences, icon: faMapMarkedAlt, color: "text-green-500", link: "/data-absensi", },
-      { title: "Presensi Kantor", count: totalAbsences, icon: faBuilding, color: "text-indigo-500", link: "/absensi-kantor", },
-      { title: "Karyawan", count: employees?.length || "0", icon: faUsers, color: "text-violet-500", link: "/karyawan", },
-      { title: "Rekap Absensi", count: totalAbsences, icon: faCalendarAlt, color: "text-blue-500", link: "/data-absensi", },
-      { title: "Divisi", count: totalDivisi, icon: faUsersCog, color: "text-blue-500", link: "/divisi" },
-      { title: "Surat Dinas", count: TotalSuratDinas, icon: faPenFancy, color: "text-blue-500", link: "/surat-dinas", },
-      { title: "Penggajian", count: totalPayroll, icon: faMoneyCheckAlt, color: "text-amber-500", link: "/data-penggajian", },
-    ],
-    5: [
-      // PA
-      { title: "Presensi Kehadiran", icon: faUserCheck, color: "text-blue-500", link: "/absensi" },
-      { title: "Persetujuan Lembur", count: totalApprovals, icon: faThumbsUp, color: "text-emerald-500", link: "/data-approval", },
-      { title: "Rekap Absensi", count: totalAbsences, icon: faCalendarAlt, color: "text-blue-500", link: "/data-absensi", },
-      { title: "Data Lokasi Presensi", count: totalLocations?.length || "0", icon: faMapMarkerAlt, color: "text-orange-500", link: "/data-lokasi", },
-      { title: "Surat Dinas", count: TotalSuratDinas, icon: faPenFancy, color: "text-blue-500", link: "/surat-dinas", },
-    ],
-    6: [
-      //STAFF HRD
-      { title: "Presensi Kehadiran", icon: faUserCheck, color: "text-blue-500", link: "/absensi" },
-      { title: "Karyawan", count: employees?.length || "0", icon: faUsers, color: "text-violet-500", link: "/karyawan" },
-      { title: "Surat Dinas", count: TotalSuratDinas, icon: faPenFancy, color: "text-blue-500", link: "/surat-dinas", },
-      { title: "Penggajian", count: totalPayroll, icon: faMoneyCheckAlt, color: "text-amber-500", link: "/data-penggajian", },
-      { title: "Divisi", count: totalDivisi, icon: faUsersCog, color: "text-blue-500", link: "/divisi", },
-    ],
-    13: [
-      //GA
-      { title: "Presensi Kehadiran", icon: faUserCheck, color: "text-blue-500", link: "/absensi" },
-      { title: "Karyawan", count: employees?.length || "0", icon: faUsers, color: "text-violet-500", link: "/karyawan", },
-      { title: "Surat Dinas", count: TotalSuratDinas, icon: faPenFancy, color: "text-blue-500", link: "/surat-dinas", },
-      { title: "Penggajian", count: totalPayroll, icon: faMoneyCheckAlt, color: "text-amber-500", link: "/data-penggajian", },
-    ],
-  };
 
   const DashboardCard = ({ title, count, icon, color = "text-green-600", onClick }) => (
     <div onClick={onClick} className="flex items-center justify-between p-6 bg-white rounded-2xl shadow-sm border border-gray-100 transition-all duration-300 cursor-pointer group hover:shadow-lg hover:ring-2 hover:ring-green-300/30">
@@ -262,11 +220,12 @@ const HomeDesktop = ({ roleId }) => {
           </div>
         </div>
         <div className="mt-6">
-          {/* Cards for Role 1 (Admin, bisa lihat semua) */}
-          {cardsByRole[roleId] && (
-            <div className={`grid grid-cols-1 ${cardsByRole[roleId].length > 2 ? "md:grid-cols-4" : "md:grid-cols-2"} gap-4`}>
-              {cardsByRole[roleId].map((card, index) => (
-                <DashboardCard key={index} title={card.title} count={card.count} icon={card.icon} color={card.color} onClick={() => handleCardClick(card.link)} />
+          {filteredCards.length === 0 ? (
+            <p className="text-center text-gray-400">Tidak ada data yang ditampilkan untuk role ini.</p>
+          ) : (
+            <div className={`grid grid-cols-1 ${filteredCards.length > 2 ? "md:grid-cols-4" : "md:grid-cols-2"} gap-4`}>
+              {filteredCards.map((card, index) => (
+                <DashboardCard key={index} title={card.title} count={card.count} icon={card.icon} color={card.color} onClick={() => handleCardClick(card.link)}/>
               ))}
             </div>
           )}

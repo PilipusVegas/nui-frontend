@@ -12,7 +12,6 @@
     const [attendanceData, setAttendanceData] = useState([]);
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const idUser = localStorage.getItem("userId");
-
     const [loading, setLoading] = useState(true);
     const [hasNewNotifications, setHasNewNotifications] = useState(false);
 
@@ -25,7 +24,6 @@
             const response = await fetch(`${apiUrl}/notif/user/${idUser}`, {
               headers: { "Cache-Control": "no-cache" },
             });
-
             if (!response.ok) {
               throw new Error("Gagal mengambil data notifikasi");
             }

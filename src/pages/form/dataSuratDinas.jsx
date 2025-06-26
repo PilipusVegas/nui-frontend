@@ -59,15 +59,12 @@ const SuratDinas = () => {
   }, [searchTerm, data]);
 
   useEffect(() => {
-    const savedMulai = sessionStorage.getItem("suratmulai");
-    const savedSelesai = sessionStorage.getItem("suratselesai");
-
-    if (savedMulai && savedSelesai) {
-      setStartDate(savedMulai);
-      setEndDate(savedSelesai);
-      fetchData(savedMulai, savedSelesai);
-    }
+    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange();
+    setStartDate(defaultStart);
+    setEndDate(defaultEnd);
+    fetchData(defaultStart, defaultEnd);
   }, []);
+  
 
   const fetchData = async (start = "", end = "") => {
     setLoading(true);
@@ -87,31 +84,20 @@ const SuratDinas = () => {
 
   useEffect(() => {
     if (startDate && endDate) {
-      sessionStorage.setItem("suratmulai", startDate);
-      sessionStorage.setItem("suratselesai", endDate);
       fetchData(startDate, endDate);
     }
   }, [startDate, endDate]);
+  
 
   const handleBackClick = () => {
     navigate(-1);
   };
-
-  useEffect(() => {
-    const savedStart = localStorage.getItem("suratDinasStartDate");
-    const savedEnd = localStorage.getItem("suratDinasEndDate");
-
-    if (savedStart && savedEnd) {
-      setStartDate(savedStart);
-      setEndDate(savedEnd);
-      fetchData(savedStart, savedEnd);
-    }
-  }, []);
+  
 
   const formatTanggal = (isoDate) => {
     const d = new Date(isoDate);
     const day = String(d.getDate()).padStart(2, "0");
-    const month = String(d.getMonth() + 1).padStart(2, "0"); // Bulan dimulai dari 0
+    const month = String(d.getMonth() + 1).padStart(2, "0"); 
     const year = d.getFullYear();
     return `${day}/${month}/${year}`;
   };
@@ -125,6 +111,18 @@ const SuratDinas = () => {
   const handleDetail = (item) => {
     navigate(`/surat-dinas/${item.id}`);
   };
+
+  const getDefaultDateRange = () => {
+    const today = new Date();
+    const start = new Date(today.getFullYear(), today.getMonth(), 22); 
+    const end = new Date(today.getFullYear(), today.getMonth() + 1, 21); 
+    const format = (date) => date.toISOString().split("T")[0]; 
+    return {
+      startDate: format(start),
+      endDate: format(end),
+    };
+  };
+  
 
   return (
     <div className="w-full mx-auto p-7">
@@ -150,16 +148,12 @@ const SuratDinas = () => {
               Dari Tanggal
             </label>
             <input
-              id="start-date"
-              type="date"
-              value={startDate}
-              onChange={(e) => {
-                const value = e.target.value;
-                setStartDate(value);
-                sessionStorage.setItem("suratmulai", value);
-              }}
-              className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            />
+  id="start-date"
+  type="date"
+  value={startDate}
+  onChange={(e) => setStartDate(e.target.value)}
+  className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+/>
           </div>
 
           <div className="flex items-end pb-5 sm:pb-2">
@@ -170,14 +164,13 @@ const SuratDinas = () => {
             <label htmlFor="end-date" className="mb-1 font-medium">
               Sampai Tanggal
             </label>
-            <input id="end-date" type="date" value={endDate}
-              onChange={(e) => {
-                const value = e.target.value;
-                setEndDate(value);
-                sessionStorage.setItem("suratselesai", value);
-              }}
-              className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            />
+            <input
+  id="end-date"
+  type="date"
+  value={endDate}
+  onChange={(e) => setEndDate(e.target.value)}
+  className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+/>
           </div>
         </div>
       </div>
@@ -218,60 +211,68 @@ const SuratDinas = () => {
                 <tr>
                   <th className="px-6 py-1 text-center">Tanggal</th>
                   <th className="px-6 py-1 text-center">Nama Karyawan</th>
-                  <th className="px-6 py-1 text-center">Divisi</th>
+                  {/* <th className="px-6 py-1 text-center">Divisi</th> */}
                   <th className="px-6 py-1 text-center">Jam Berangkat</th>
                   <th className="px-6 py-1 text-center">Status</th>
                   <th className="px-6 py-1 text-center">Menu</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredData.map((item, index) => {
-                  const statusInfo = formatStatus(item.status);
-                  return (
-                    <tr key={item.id || index} className="border-b hover:bg-green-50">
-                      <td className="px-6 py-1 text-sm text-center">{formatTanggal(item.tgl)}</td>
-                      <td className="px-6 py-1 text-sm text-left capitalize">{item.nama || "-"}</td>
-                      <td className="px-6 py-1 text-sm text-center">{item.divisi || "-"}</td>
-                      <td className="px-6 py-1 text-sm text-center">{item.waktu || "-"}</td>
-                      <td className="px-6 py-1 text-sm text-center">
-                        <span className={`px-3 pb-0.5 rounded-full text-xs ${statusInfo.color}`}>
-                          {statusInfo.label}
-                        </span>
-                      </td>
-                      <td className="px-6 py-1 text-sm text-center">
-                        {/* Jika belum disetujui (status 0) dan roleId 5, tampilkan tombol Setujui dan Detail */}
-                        {item.status === 0 && roleId === 5 && (
-                          <>
-                            <button className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs mr-2" onClick={() => handleApprove(item)}>
-                              <FontAwesomeIcon icon={faCheck} className="mr-2" />
-                              Setujui
-                            </button>
+                {filteredData.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-10 text-gray-500">
+                      <FontAwesomeIcon icon={faCalendarAlt} className="text-3xl mb-2 text-gray-400" />
+                      <div className="mt-2">Tidak ada data surat dinas pada rentang tanggal ini.</div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredData.map((item, index) => {
+                    const statusInfo = formatStatus(item.status);
+                    return (
+                      <tr key={item.id || index} className="border-b hover:bg-green-50">
+                        <td className="px-6 py-1 text-sm text-center">{formatTanggal(item.tgl)}</td>
+                        <td className="px-6 py-1 text-left align-top">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium capitalize">{item.nama || "-"}</span>
+                            <span className="text-[10px] text-gray-500 capitalize">{item.divisi || "-"}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-1 text-sm text-center">{item.waktu || "-"}</td>
+                        <td className="px-6 py-1 text-sm text-center">
+                          <span className={`px-3 pb-0.5 rounded-full text-xs ${statusInfo.color}`}>
+                            {statusInfo.label}
+                          </span>
+                        </td>
+                        <td className="px-6 py-1 text-sm text-center">
+                          {item.status === 0 && roleId === 5 && (
+                            <>
+                              <button className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs mr-2" onClick={() => handleApprove(item)}>
+                                <FontAwesomeIcon icon={faCheck} className="mr-2" />
+                                Setujui
+                              </button>
+                              <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs" onClick={() => handleDetail(item)}>
+                                <FontAwesomeIcon icon={faEye} className="mr-2" />
+                                Detail
+                              </button>
+                            </>
+                          )}
+                          {item.status === 1 && (
                             <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs" onClick={() => handleDetail(item)}>
                               <FontAwesomeIcon icon={faEye} className="mr-2" />
                               Detail
                             </button>
-                          </>
-                        )}
-
-                        {/* Jika sudah disetujui (status 1), tampilkan tombol Detail untuk semua role */}
-                        {item.status === 1 && (
-                          <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs" onClick={() => handleDetail(item)}>
-                            <FontAwesomeIcon icon={faEye} className="mr-2" />
-                            Detail
-                          </button>
-                        )}
-
-                        {/* Jika belum disetujui dan roleId bukan 5, hanya tampilkan tombol Detail */}
-                        {item.status === 0 && roleId !== 5 && (
-                          <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs" onClick={() => handleDetail(item)}>
-                            <FontAwesomeIcon icon={faEye} className="mr-2" />
-                            Detail
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
+                          )}
+                          {item.status === 0 && roleId !== 5 && (
+                            <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs" onClick={() => handleDetail(item)}>
+                              <FontAwesomeIcon icon={faEye} className="mr-2" />
+                              Detail
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
@@ -288,7 +289,6 @@ const SuratDinas = () => {
                       {statusInfo.label}
                     </span>
                   </div>
-
                   <div className="space-y-1 text-sm text-gray-600">
                     <div className="flex justify-between">
                       <span>Tanggal</span>

@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faArrowLeft,
-  faSearch,
-  faEye,
-  faChevronDown,
-  faChevronUp,
-  faPrint,
-} from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faSearch, faEye, faChevronDown, faChevronUp} from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 
 const DataPenggajian = () => {
@@ -27,9 +20,7 @@ const DataPenggajian = () => {
     const now = new Date();
     const start = new Date(
       now.getDate() >= 21 ? now.getFullYear() : now.getFullYear(),
-      now.getMonth() + (now.getDate() >= 21 ? 0 : -1),
-      22
-    );
+      now.getMonth() + (now.getDate() >= 21 ? 0 : -1), 22);
     const end = new Date(start);
     end.setMonth(end.getMonth() + 1);
     end.setDate(21);
@@ -78,7 +69,7 @@ const DataPenggajian = () => {
 
   const handleToggleDetail = async (userId, startDate, endDate) => {
     if (activeUserDetailId === userId) {
-      setActiveUserDetailId(null); // toggle tutup
+      setActiveUserDetailId(null);
       return;
     }
 
@@ -245,7 +236,12 @@ const DataPenggajian = () => {
                       className={`hover:bg-gray-100 ${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
                     >
                       <td className="border-b px-4 py-1 text-xs text-center">{index + 1}</td>
-                      <td className="border-b px-4 py-1 text-xs text-left">{item.nama_user}</td>
+                      <td className="border-b px-4 py-1 text-left align-top">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium">{item.nama_user}</span>
+                          <span className="text-[10px] text-gray-500">{item.role}</span>
+                        </div>
+                      </td>
                       <td className="border-b px-4 py-1 text-xs text-center">
                         {item.total_absen} Hari
                       </td>

@@ -9,7 +9,6 @@ const IconButton = ({ icon, label, onClick, isActive, hiddenSidebar }) => (
   <FontAwesomeIcon icon={icon} className="text-xl" />
   {!hiddenSidebar && <span className="truncate">{label}</span>}
 </button>
-
 );
 
 const ButtonHide = ({ onClick, hidden }) => (
@@ -35,7 +34,6 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
     }
   }, [location.pathname]);
 
-  // Deteksi layar mobile
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     handleResize();
@@ -43,7 +41,6 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Konfirmasi Logout
   const confirmLogout = () => {
     Swal.fire({
       title: "Konfirmasi Logout",
@@ -96,11 +93,11 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
         {
           label: "Presensi",
           icon: faCheckSquare,
-          roles: ["1", "4", "5"],
+          roles: ["1", "4", "6"],
           submenu: [
-            { label: "Presensi Lapangan", path: "/data-absensi", roles: ["1", "4", "5"] },
-            { label: "Presensi Kantor", path: "/absensi-kantor", roles: ["1", "4", "5"] },
-            { label: "Kelola Jam Kerja", path: "/shift", roles: ["1", "4"] },
+            { label: "Presensi Lapangan", path: "/data-absensi", roles: ["1", "4", "6"] },
+            { label: "Presensi Kantor", path: "/absensi-kantor", roles: ["1", "4", "6"] },
+            { label: "Kelola Jam Kerja", path: "/shift", roles: ["1", "4", "6"] },
           ],
         },
         {
@@ -130,7 +127,7 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
           label: "Persetujuan Lembur",
           icon: faCheckSquare,
           path: "/data-approval",
-          roles: ["1", "5"],
+          roles: ["1", "4", "5"],
         },
         {
           label: "Titik Lokasi Absensi",
@@ -224,7 +221,6 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
                             <FontAwesomeIcon icon={menu.icon} className="text-xl" />
                             {!hidden && <span className="text-sm">{menu.label}</span>}
                           </div>
-
                           {!hidden && (
                             <FontAwesomeIcon icon={faAngleDown} className={`transition-transform duration-300 ${ isSubmenuOpen ? "rotate-180" : "" }`}/>
                           )}

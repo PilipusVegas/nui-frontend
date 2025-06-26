@@ -163,7 +163,6 @@ const AbsensiKantor = () => {
       });
     });
 
-    // 💾 Simpan file
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -174,7 +173,6 @@ const AbsensiKantor = () => {
 
   const formatTanggal = (tanggalString) => {
     const tanggal = new Date(tanggalString);
-
     const tgl = String(tanggal.getDate()).padStart(2, '0');
     const bln = String(tanggal.getMonth() + 1).padStart(2, '0');
     const thn = tanggal.getFullYear();
@@ -254,7 +252,9 @@ const AbsensiKantor = () => {
 
       {/* Data Table */}
       {isDateSelected && !error && dataAbsen.length > 0 && (
-        <div className="mx-auto rounded-lg shadow-md flex overflow-hidden w-full max-w-[1200px] min-w-[300px]" style={{ borderColor: "#ccc" }}>
+        <div className="w-full overflow-x-auto rounded-lg shadow-md border border-gray-300 bg-white">
+        <div className="min-w-full max-w-[30vw]">
+          <div className="flex w-full">
           {/* LEFT TABLE: Pegawai + Jumlah Kehadiran */}
           <div className="flex flex-col border-r bg-white shrink-0" style={{ borderRight: "1px solid #ccc" }}>
             <table className="border-collapse w-full">
@@ -361,6 +361,8 @@ const AbsensiKantor = () => {
               </tbody>
             </table>
           </div>
+        </div>
+        </div>
         </div>
       )}
 
