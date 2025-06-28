@@ -180,6 +180,12 @@ const AbsensiKantor = () => {
     return `${jam.toString().padStart(2, '0')}:${menit.toString().padStart(2, '0')}`;
   };
 
+  const formatOvertimeJamBulat = (totalMenit) => {
+    if (!totalMenit || isNaN(totalMenit)) return "00:00";
+    const jam = Math.floor(totalMenit / 60);
+    return `${jam.toString().padStart(2, '0')}:00`;
+  };
+
   const getDefaultPeriod = () => {
     const today = new Date();
     const year = today.getFullYear();
@@ -299,7 +305,7 @@ const AbsensiKantor = () => {
                       {formatMenitToJamMenit(item.total_late)}
                     </td>
                     <td className="border border-gray-300 px-3 py-1 text-center text-xs">
-                      {formatMenitToJamMenit(item.total_overtime)}
+                      {formatOvertimeJamBulat(item.total_overtime)}
                     </td>
                   </tr>
                 ))}
@@ -348,7 +354,7 @@ const AbsensiKantor = () => {
                       const overtimeHours = item.attendance[tanggal]?.overtime;
                       const LateTime = formatMenitToJamMenit(lateMinutes) ?? "-";
                       const isLate = lateMinutes > 1;
-                      const Overtime = formatMenitToJamMenit(overtimeHours) ?? "-";
+                      const Overtime = formatOvertimeJamBulat(overtimeHours) ?? "-";
 
                       return (
                         <React.Fragment key={`time-${tanggal}-${idx}`}>
