@@ -279,19 +279,19 @@ const AbsensiKantor = () => {
               <tbody>
                 {filteredAbsenData.map((item, idx) => (
                   <tr key={idx} className="hover:bg-gray-100">
-                    <td className="border border-gray-300 px-3 py-2 text-xs break-words">
+                    <td className="border border-gray-300 px-3 py-1 text-xs break-words">
                       {item.nip}
                     </td>
-                    <td className="border border-gray-300 px-3 py-2 text-xs break-words font-semibold tracking-wider">
+                    <td className="border border-gray-300 px-3 py-1 text-xs break-words font-semibold tracking-wider">
                       {item.nama}
                     </td>
-                    <td className="border border-gray-300 px-3 py-2 text-center text-xs">
+                    <td className="border border-gray-300 px-3 py-1 text-center text-xs">
                       {item.total_days}
                     </td>
-                    <td className="border border-gray-300 px-3 py-2 text-center text-xs">
+                    <td className="border border-gray-300 px-3 py-1 text-center text-xs">
                       {formatMenitToJamMenit(item.total_late)}
                     </td>
-                    <td className="border border-gray-300 px-3 py-2 text-center text-xs">
+                    <td className="border border-gray-300 px-3 py-1 text-center text-xs">
                       {formatMenitToJamMenit(item.total_overtime)}
                     </td>
                   </tr>
@@ -343,19 +343,18 @@ const AbsensiKantor = () => {
                       const isLate = lateMinutes > 1;
                       const Overtime = formatMenitToJamMenit(overtimeHours) ?? "-";
 
-
                       return (
                         <React.Fragment key={`time-${tanggal}-${idx}`}>
-                          <td className="border border-gray-300 px-2 py-2 text-center text-xs min-w-[60px]">
+                          <td className="border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px]">
                             {inTime}
                           </td>
-                          <td className="border border-gray-300 px-2 py-2 text-center text-xs min-w-[60px]">
+                          <td className="border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px]">
                             {outTime}
                           </td>
-                          <td className={`border border-gray-300 px-2 py-2 text-center text-xs min-w-[60px] ${isLate ? "bg-red-700 text-white font-semibold" : "text-black" }`}>
+                          <td className={`border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px] ${isLate ? "bg-red-700 text-white font-semibold" : "text-black" }`}>
                             {LateTime}
                           </td>
-                          <td className="border border-gray-300 px-2 py-2 text-center text-xs min-w-[60px]">
+                          <td className="border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px]">
                             {Overtime}
                           </td>
                         </React.Fragment>
