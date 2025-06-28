@@ -350,7 +350,7 @@ const AbsensiKantor = () => {
                     {tanggalArray.map((tanggal) => {
                       const inTime = item.attendance[tanggal]?.in ?? "-";
                       const outTime = item.attendance[tanggal]?.out ?? "-";
-                      const lateMinutes = item.attendance[tanggal]?.late; 
+                      const lateMinutes = item.attendance[tanggal]?.late;
                       const overtimeHours = item.attendance[tanggal]?.overtime;
                       const LateTime = formatMenitToJamMenit(lateMinutes) ?? "-";
                       const isLate = lateMinutes > 1;
@@ -359,16 +359,28 @@ const AbsensiKantor = () => {
                       return (
                         <React.Fragment key={`time-${tanggal}-${idx}`}>
                           <td className="border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px]">
-                            {inTime}
+                            <span className={inTime === "-" ? "text-gray-300" : ""}>
+                              {inTime}
+                            </span>
                           </td>
                           <td className="border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px]">
-                            {outTime}
+                            <span className={outTime === "-" ? "text-gray-300" : ""}>
+                              {outTime}
+                            </span>
                           </td>
-                          <td className={`border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px] ${isLate ? "bg-red-700 text-white font-semibold" : "text-black" }`}>
-                            {LateTime}
+                          <td
+                            className={`border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px] ${
+                              isLate ? "bg-red-700 text-white font-semibold" : "text-black"
+                            }`}
+                          >
+                            <span className={LateTime === "-" ? "text-gray-300" : ""}>
+                              {LateTime}
+                            </span>
                           </td>
                           <td className="border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px]">
-                            {Overtime}
+                            <span className={Overtime === "-" ? "text-gray-300" : ""}>
+                              {Overtime}
+                            </span>
                           </td>
                         </React.Fragment>
                       );
@@ -376,6 +388,7 @@ const AbsensiKantor = () => {
                   </tr>
                 ))}
               </tbody>
+
             </table>
           </div>
         </div>
