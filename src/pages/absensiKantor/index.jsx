@@ -16,8 +16,6 @@ const AbsensiKantor = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [isDateSelected, setIsDateSelected] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
   const handleBackClick = () => {
@@ -47,24 +45,9 @@ const AbsensiKantor = () => {
     }
   };
 
-  // const handleTampilkanClick = () => {
-  //   if (!startDate || !endDate) {
-  //     alert("Silakan pilih rentang tanggal terlebih dahulu.");
-  //     return;
-  //   }
-  //   setIsDateSelected(true);
-  //   fetchAbsenData();
-  // };
-
-  // Filter berdasarkan search name
   const filteredAbsenData = dataAbsen.filter((item) =>
     item.nama.toLowerCase().includes(searchName.toLowerCase())
   );
-
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredAbsenData.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredAbsenData.length / itemsPerPage);
 
   const handleRekapData = async () => {
     if (!filteredAbsenData.length) return;
@@ -179,7 +162,6 @@ const AbsensiKantor = () => {
     });
     saveAs(blob, `Rekap_Absensi_${formatTanggal(startDate)}_sampai_${formatTanggal(endDate)}.xlsx`);
   };
-  
 
 
   const formatTanggal = (tanggalString) => {
@@ -295,7 +277,7 @@ const AbsensiKantor = () => {
               </thead>
 
               <tbody>
-                {currentItems.map((item, idx) => (
+                {filteredAbsenData.map((item, idx) => (
                   <tr key={idx} className="hover:bg-gray-100">
                     <td className="border border-gray-300 px-3 py-2 text-xs break-words">
                       {item.nip}
@@ -319,7 +301,7 @@ const AbsensiKantor = () => {
           </div>
 
           {/* RIGHT TABLE: Tanggal + In/Out (Scrollable) */}
-          <div className="overflow-x-auto overflow-y-auto" style={{ flexGrow: 1 }}>
+          <div className="overflow-x-auto" style={{ flexGrow: 1 }}>
             <table className="border-collapse w-full min-w-max bg-white">
               <thead>
                 <tr>
@@ -350,7 +332,7 @@ const AbsensiKantor = () => {
               </thead>
 
               <tbody>
-                {currentItems.map((item, idx) => (
+                {filteredAbsenData.map((item, idx) => (
                   <tr key={idx} className="hover:bg-gray-100">
                     {tanggalArray.map((tanggal) => {
                       const inTime = item.attendance[tanggal]?.in ?? "-";
