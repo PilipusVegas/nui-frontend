@@ -181,10 +181,11 @@ const AbsensiKantor = () => {
   };
 
   const formatOvertimeJamBulat = (totalMenit) => {
-    if (!totalMenit || isNaN(totalMenit)) return "00:00";
+    if (!totalMenit || isNaN(totalMenit)) return null;
     const jam = Math.floor(totalMenit / 60);
     return `${jam.toString().padStart(2, '0')}:00`;
   };
+  
 
   const getDefaultPeriod = () => {
     const today = new Date();
@@ -305,7 +306,7 @@ const AbsensiKantor = () => {
                       {formatMenitToJamMenit(item.total_late)}
                     </td>
                     <td className="border border-gray-300 px-3 py-1 text-center text-xs">
-                      {formatOvertimeJamBulat(item.total_overtime)}
+                      {formatOvertimeJamBulat(item.total_overtime) || "-"}
                     </td>
                   </tr>
                 ))}
