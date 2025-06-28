@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { faArrowLeft, faSearch, faFolderOpen } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faSearch, faFolderOpen, faDownload   } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
 import ExcelJS from 'exceljs';
@@ -212,30 +212,37 @@ const AbsensiKantor = () => {
   return (
     <div className="min-h-screen flex flex-col justify-start px-6 pt-6 pb-10">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 space-y-4 md:space-y-0">
-        <div className="flex items-center">
-          <FontAwesomeIcon icon={faArrowLeft}  title="Back to Home"  onClick={handleBackClick}  className="mr-2 cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"/>
-          <h2 className="text-3xl font-bold text-gray-800 pb-1">Kelola Absensi Kantor</h2>
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-y-4 md:gap-y-0">
+        {/* Kiri: Tombol Kembali dan Judul (Selalu Sejajar, Termasuk di Mobile) */}
+        <div className="flex flex-row items-center gap-3">
+          <FontAwesomeIcon icon={faArrowLeft} title="Back to Home" onClick={handleBackClick} className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"/>
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">
+            Kelola Absensi Kantor
+          </h2>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3">
-          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border border-gray-300 rounded-md px-4 py-1" />
-          <span className="text-sm">s/d</span>
-          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="border border-gray-300 rounded-md px-4 py-1" />
+        {/* Kanan: Rentang Tanggal (Selalu Sejajar di Mobile dan Desktop) */}
+        <div className="flex flex-row items-center gap-2 sm:gap-3">
+          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border border-gray-300 rounded-md px-4 py-1 text-sm"/>
+          <span className="text-sm text-gray-700">s/d</span>
+          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="border border-gray-300 rounded-md px-4 py-1 text-sm"/>
         </div>
       </div>
 
-      {/* Search Bar */}
       {isDateSelected && (
-        <div className="flex justify-end items-center w-full flex-wrap gap-4 mb-4">
-          <div className="relative w-full md:w-80">
+        <div className="flex flex-row flex-wrap items-center justify-between w-full gap-4 mb-4">
+          {/* Search input */}
+          <div className="relative flex-1 min-w-[180px] md:max-w-[320px]">
             <input type="text" placeholder="Cari nama" value={searchName} onChange={(e) => setSearchName(e.target.value)} className="border border-gray-300 rounded-lg p-2 pl-10 pr-4 w-full focus:outline-none focus:ring-2 focus:ring-green-600"/>
             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
               <FontAwesomeIcon icon={faSearch} />
             </span>
           </div>
-          <button onClick={handleRekapData} disabled={filteredAbsenData.length === 0} className={`font-semibold py-2 px-6 rounded-md shadow transition  ${filteredAbsenData.length === 0   ? "bg-gray-400 cursor-not-allowed text-white" : "bg-green-600 hover:bg-green-700 text-white"}`}>
-            Unduh Excel
+
+          {/* Tombol Unduh */}
+          <button onClick={handleRekapData} disabled={filteredAbsenData.length === 0} className={`flex items-center justify-center gap-2 font-semibold py-2 px-4 rounded-md shadow transition h-[40px] ${filteredAbsenData.length === 0 ? "bg-gray-400 cursor-not-allowed text-white" : "bg-green-600 hover:bg-green-700 text-white" }`}>
+            <FontAwesomeIcon icon={faDownload} className="text-white" />
+            <span className="hidden md:inline">Unduh Excel</span>
           </button>
         </div>
       )}
