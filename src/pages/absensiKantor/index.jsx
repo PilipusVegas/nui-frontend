@@ -111,7 +111,7 @@ const AbsensiKantor = () => {
         item.nama,
         item.total_days,
         formatMenitToJamMenit(item.total_late),
-        formatMenitToJamMenit(item.total_overtime),
+        formatOvertimeJamBulat(item.total_overtime),
       ];
       tanggalArray.forEach((tgl) => {
         const att = item.attendance?.[tgl] || {};
@@ -119,7 +119,7 @@ const AbsensiKantor = () => {
           att.in ?? "-",
           att.out ?? "-",
           formatMenitToJamMenit(att.late),
-          formatMenitToJamMenit(att.overtime)
+          formatOvertimeJamBulat(att.overtime)
         );
       });
       worksheet.getRow(offsetRow + 3 + index).values = Array(offsetCol - 1).fill(null).concat(row);
@@ -169,7 +169,6 @@ const AbsensiKantor = () => {
     const tgl = String(tanggal.getDate()).padStart(2, '0');
     const bln = String(tanggal.getMonth() + 1).padStart(2, '0');
     const thn = tanggal.getFullYear();
-
     return `${tgl}-${bln}-${thn}`;
   };
 
@@ -181,7 +180,7 @@ const AbsensiKantor = () => {
   };
 
   const formatOvertimeJamBulat = (totalMenit) => {
-    if (!totalMenit || isNaN(totalMenit)) return null;
+    if (!totalMenit || isNaN(totalMenit)) return "-";
     const jam = Math.floor(totalMenit / 60);
     return `${jam.toString().padStart(2, '0')}:00`;
   };
