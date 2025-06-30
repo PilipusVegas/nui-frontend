@@ -108,6 +108,29 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
     },
   ];
 
+  const filteredMenuGroups = menuGroups
+  .map((group) => {
+    const filteredItems = group.items
+      .map((item) => {
+        // jika ada submenu, filter submenu-nya
+        if (item.submenu) {
+          const filteredSubmenu = item.submenu.filter((sub) => sub.roles.includes(roleId));
+          if (filteredSubmenu.length > 0) {
+            return { ...item, submenu: filteredSubmenu };
+          }
+          return null;
+        }
+        return item.roles.includes(roleId) ? item : null;
+      })
+      .filter(Boolean);
+
+    return filteredItems.length > 0
+      ? { ...group, items: filteredItems }
+      : null;
+  })
+  .filter(Boolean);
+
+
   return (
     <>
       {/* Sidebar */}
@@ -124,9 +147,8 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
 
         {/* Konten Sidebar */}
         <div className="overflow-y-auto max-h-screen pr-2 scrollbar-none">
-          {menuGroups.map((group, groupIndex) => (
-            <div key={groupIndex} className="mb-4">
-
+        {filteredMenuGroups.map((group, groupIndex) => (
+          <div key={groupIndex} className="mb-4">
             {!hidden && (
               <p className="text-xs text-white/70 uppercase tracking-wider mb-1">
                 {group.sectionTitle}

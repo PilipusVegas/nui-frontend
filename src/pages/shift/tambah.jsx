@@ -60,46 +60,43 @@ const TambahShift = () => {
         </div>
 
         {detail[0].jam_masuk && detail[0].jam_pulang && (
-  <label
-    htmlFor="autoField"
-    className="mt-6 block cursor-pointer rounded-2xl border border-green-200 bg-green-50 p-5 shadow-sm transition-all duration-200 hover:bg-green-100"
-  >
-    <div className="flex items-start space-x-4">
-      <input
-        type="checkbox"
-        id="autoField"
-        checked={autoField}
-        onChange={(e) => {
-          setAutoField(e.target.checked);
-          if (e.target.checked) {
-            const senin = detail[0];
-            const newDetail = detail.map(item => {
-              if (["Selasa", "Rabu", "Kamis", "Jumat"].includes(item.hari)) {
-                return {
-                  ...item,
-                  jam_masuk: senin.jam_masuk,
-                  jam_pulang: senin.jam_pulang
-                };
-              }
-              return item;
-            });
-            setDetail(newDetail);
-          }
-        }}
-        className="mt-1 w-5 h-5 accent-green-500"
-      />
-      <div className="text-sm">
-        <span className="block font-semibold text-green-800">
-          Samakan Jadwal <span className="text-green-600">Selasa - Jumat</span> dengan <span className="text-green-600">Senin</span>
-        </span>
-        <p className="mt-1 text-gray-600 text-xs leading-relaxed italic">
-          Fitur <strong className="text-green-700">autoField</strong> ini membantu kamu menghemat waktu.
-          Cukup isi Senin satu kali, lalu centang untuk menyalin ke hari lainnya.
-        </p>
-      </div>
-    </div>
-  </label>
-)}
+          <label htmlFor="autoField" className="mt-6 block cursor-pointer rounded-2xl border border-green-200 bg-green-50 p-5 shadow-sm transition-all duration-200 hover:bg-green-100">
+            <div className="flex items-start space-x-4">
+              <input
+                type="checkbox"
+                id="autoField"
+                checked={autoField}
+                onChange={(e) => {
+                  setAutoField(e.target.checked);
+                  if (e.target.checked) {
+                    const senin = detail[0];
+                    const newDetail = detail.map(item => {
+                      if (["Selasa", "Rabu", "Kamis", "Jumat"].includes(item.hari)) {
+                        return {
+                          ...item,
+                          jam_masuk: senin.jam_masuk,
+                          jam_pulang: senin.jam_pulang
+                        };
+                      }
+                      return item;
+                    });
+                    setDetail(newDetail);
+                  }
+                }}
+                className="mt-1 w-5 h-5 accent-green-500"
+              />
+              <div className="text-sm">
+                <span className="block font-semibold text-green-800">
+                  Samakan Jadwal <span className="text-green-600">Selasa - Jumat</span> dengan <span className="text-green-600">Senin</span>
+                </span>
+                <p className="mt-1 text-gray-600 text-xs leading-relaxed italic">
+                  Fitur <strong className="text-green-700">autoField</strong> ini membantu kamu menghemat waktu.
+                  Cukup isi Senin satu kali, lalu centang untuk menyalin ke hari lainnya.
+                </p>
+              </div>
+            </div>
+          </label>
+        )}
 
 
         {detail.map((item, index) => (
