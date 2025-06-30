@@ -51,7 +51,7 @@ const ShiftTable = () => {
   }, []);
 
   const handleBackClick = () => {
-    navigate(-1);
+    navigate("/");
   };
 
   return (

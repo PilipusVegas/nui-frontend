@@ -128,20 +128,59 @@ const EditKaryawan = () => {
                         </select>
                     </div>
 
-                    {/* Shift */}
-                    <div>
-                        <label className="block mb-1 font-medium text-gray-700">Shift</label>
-                        <p className="text-xs text-gray-500 mb-2 -mt-2">Jadwal kerja yang berlaku untuk karyawan ini.</p>
-                        <select name="id_shift" value={currentUser.id_shift || ""} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
-                            <option value="">Pilih Shift</option>
-                            {Array.isArray(shiftList) &&
-                                shiftList.map((item) => (
-                                    <option key={item.id} value={item.id}>
-                                        {item.nama} ({item.jam_masuk} - {item.jam_pulang})
-                                    </option>
-                                ))}
-                        </select>
-                    </div>
+                    <div className="border border-gray-300 rounded-xl p-4 bg-gray-50">
+  <label className="block mb-1 font-medium text-gray-700">Shift</label>
+  <p className="text-xs text-gray-500 mb-2 -mt-2">Jadwal kerja yang berlaku untuk karyawan ini.</p>
+  <select
+    name="id_shift"
+    value={currentUser.id_shift || ""}
+    onChange={handleChange}
+    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+  >
+    <option value="">Pilih Shift</option>
+    {Array.isArray(shiftList) &&
+      shiftList.map((item) => (
+        <option key={item.id} value={item.id}>
+          {item.nama}
+        </option>
+      ))}
+  </select>
+
+  {/* Detail Shift */}
+  {currentUser.id_shift && (
+    <div className="mt-4">
+      <h3 className="text-sm font-semibold text-gray-700 mb-1">Detail Shift:</h3>
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-sm border border-gray-300 rounded">
+          <thead>
+            <tr className="bg-gray-100 text-gray-600">
+              <th className="border px-2 py-1">Hari</th>
+              <th className="border px-2 py-1">Jam Masuk</th>
+              <th className="border px-2 py-1">Jam Pulang</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(() => {
+              const selected = shiftList.find(s => String(s.id) === String(currentUser.id_shift));
+              const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+              const detailMap = Object.fromEntries((selected?.detail || []).map(d => [d.hari, d]));
+
+              return days.map((day) => (
+                <tr key={day} className="text-center">
+                  <td className="border px-2 py-1">{day}</td>
+                  <td className="border px-2 py-1">{detailMap[day]?.jam_masuk?.slice(0, 5) || '-'}</td>
+                  <td className="border px-2 py-1">{detailMap[day]?.jam_pulang?.slice(0, 5) || '-'}</td>
+                </tr>
+              ));
+            })()}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )}
+</div>
+
+
 
                     <div className="flex items-center space-x-3 mt-10">
                         <label className="font-medium text-gray-700">Status Karyawan</label>

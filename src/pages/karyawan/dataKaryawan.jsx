@@ -18,7 +18,6 @@ const DataKaryawan = () => {
   const [shiftList, setShiftList] = useState([]);
   const [selectedPerusahaan, setSelectedPerusahaan] = useState("");
   const [selectedShift, setSelectedShift] = useState("");
-
   const itemsPerPage = 10;
   const handleBackClick = () => navigate("/home");
   const indexOfFirstUser = (currentPage - 1) * itemsPerPage;

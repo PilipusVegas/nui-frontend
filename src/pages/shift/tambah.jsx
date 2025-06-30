@@ -62,9 +62,9 @@ const TambahShift = () => {
         {detail[0].jam_masuk && detail[0].jam_pulang && (
   <label
     htmlFor="autoField"
-    className="mt-6 block rounded-xl border border-yellow-300 bg-yellow-50 p-4 shadow-sm cursor-pointer transition hover:bg-yellow-100"
+    className="mt-6 block cursor-pointer rounded-2xl border border-green-200 bg-green-50 p-5 shadow-sm transition-all duration-200 hover:bg-green-100"
   >
-    <div className="flex items-start space-x-3">
+    <div className="flex items-start space-x-4">
       <input
         type="checkbox"
         id="autoField"
@@ -86,21 +86,20 @@ const TambahShift = () => {
             setDetail(newDetail);
           }
         }}
-        className="mt-1 accent-yellow-500 w-5 h-5"
+        className="mt-1 w-5 h-5 accent-green-500"
       />
-      <div>
-        <span className="text-sm font-medium text-gray-800">
-          Samakan Jadwal <span className="text-green-600 font-semibold">Selasa - Jumat</span> dengan <span className="text-green-600 font-semibold">Senin</span>
+      <div className="text-sm">
+        <span className="block font-semibold text-green-800">
+          Samakan Jadwal <span className="text-green-600">Selasa - Jumat</span> dengan <span className="text-green-600">Senin</span>
         </span>
-        <p className="text-xs text-gray-600 mt-1 italic leading-snug">
-          Fitur <strong className="text-yellow-700">autoField</strong> ini membantu kamu menghemat waktu.
-          Cukup isi Senin sekali, centang, dan jadwal lainnya langsung mengikuti!
+        <p className="mt-1 text-gray-600 text-xs leading-relaxed italic">
+          Fitur <strong className="text-green-700">autoField</strong> ini membantu kamu menghemat waktu.
+          Cukup isi Senin satu kali, lalu centang untuk menyalin ke hari lainnya.
         </p>
       </div>
     </div>
   </label>
 )}
-
 
 
         {detail.map((item, index) => (
