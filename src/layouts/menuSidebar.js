@@ -155,13 +155,10 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
               </p>
             )}
 
-            {group.items
-              .filter((menu) => menu.roles?.includes(roleId))
-              .map((menu, index) => {
+            {group.items.filter((menu) => menu.roles?.includes(roleId)).map((menu, index) => {
                 const isActive = location.pathname === menu.path;
                 const submenuKey = `${groupIndex}-${index}`;
                 const isSubmenuOpen = openSubmenu === submenuKey;
-
                 return (
                   <div key={index}>
                     {/* Item tanpa submenu */}

@@ -62,11 +62,7 @@ const TambahShift = () => {
         {detail[0].jam_masuk && detail[0].jam_pulang && (
           <label htmlFor="autoField" className="mt-6 block cursor-pointer rounded-2xl border border-green-200 bg-green-50 p-5 shadow-sm transition-all duration-200 hover:bg-green-100">
             <div className="flex items-start space-x-4">
-              <input
-                type="checkbox"
-                id="autoField"
-                checked={autoField}
-                onChange={(e) => {
+              <input type="checkbox" id="autoField" checked={autoField} onChange={(e) => {
                   setAutoField(e.target.checked);
                   if (e.target.checked) {
                     const senin = detail[0];
@@ -97,7 +93,6 @@ const TambahShift = () => {
             </div>
           </label>
         )}
-
 
         {detail.map((item, index) => (
           <div key={item.hari}>
