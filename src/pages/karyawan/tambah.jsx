@@ -180,7 +180,6 @@ const TambahKaryawan = () => {
               )}
             </div>
 
-
            {/* Status Toggle */}
            <div className="flex items-center space-x-3 mt-10">
             <label className="font-medium text-gray-700">Status Karyawan</label>

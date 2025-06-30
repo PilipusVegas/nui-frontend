@@ -151,10 +151,30 @@ const StepOne = ({ handleNextStepData }) => {
               <option value="" className="tracking-wide">-- Pilih Shift --</option>
               {shiftList.map((shift) => (
                 <option key={shift.id} value={shift.id}>
-                  [{shift.nama}] {shift.jam_masuk} - {shift.jam_pulang}
+                  {shift.nama}
                 </option>
               ))}
             </select>
+            {selectedShift && selectedShift.detail && (
+  <div className="mt-2 bg-gray-50 border border-gray-200 rounded-md shadow-sm p-2">
+    <h3 className="text-xs font-semibold text-green-700 mb-2">
+      Jadwal Shift: {selectedShift.nama}
+    </h3>
+    <div className="space-y-1">
+      {selectedShift.detail.map((item, index) => (
+        <div
+          key={index}
+          className="flex justify-between items-center bg-white px-2 py-1 rounded border border-gray-200 text-xs text-gray-700"
+        >
+          <span>{item.hari}</span>
+          <span className="text-gray-500">{item.jam_masuk} - {item.jam_pulang}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
+
           </div>
 
           {/* Deskripsi Tugas */}
