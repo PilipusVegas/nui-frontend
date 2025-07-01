@@ -124,7 +124,7 @@ const DataKaryawan = () => {
               <table className="min-w-full table-auto bg-white border-collapse shadow-md rounded-lg">
                 <thead>
                   <tr className="bg-green-600 text-white py-1 text-sm px-4">
-                    {["No.", "Perusahaan", "Nama Karyawan", "Jadwal Shift", "Status", "Menu"].map(
+                    {["No.", "Perusahaan", "NIP", "Nama Karyawan", "Jadwal Shift", "Status", "Menu"].map(
                       (header, index) => (
                         <th key={index} className={`px-4 py-1 font-semibold text-center ${ index === 0 ? "first:rounded-tl-lg" : "" } ${index === 5 ? "last:rounded-tr-lg" : ""}`}>
                           {header}
@@ -143,6 +143,11 @@ const DataKaryawan = () => {
                         <td className=" px-4 border-b border-gray-200 tracking-wide text-center">
                           <span className={user.perusahaan ? "" : "text-gray-400 italic text-xs"}>
                             {user.perusahaan || "N/A"}
+                          </span>
+                        </td>
+                        <td className=" px-4 border-b border-gray-200 tracking-wide text-center">
+                          <span className={user.perusahaan ? "" : "text-gray-400 italic text-xs"}>
+                            {user.nip || "N/A"}
                           </span>
                         </td>
                         <td className=" px-4 border-b border-gray-200 tracking-wide">

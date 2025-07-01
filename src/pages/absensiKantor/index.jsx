@@ -190,8 +190,8 @@ const AbsensiKantor = () => {
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth(); 
-    const start = new Date(year, month, 22);
-    const end = new Date(year, month + 1, 21); 
+    const start = new Date(year, month - 1, 22);
+    const end = new Date(year, month, 21); 
     const toInputDate = (date) => date.toISOString().split("T")[0];
     return {
       start: toInputDate(start),
