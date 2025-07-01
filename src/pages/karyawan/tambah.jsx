@@ -89,21 +89,28 @@ const TambahKaryawan = () => {
         </div>
       </div>
 
-      {/* Form */}
-      <form onSubmit={(e) => { e.preventDefault(); handleAdd();}} className="flex-grow p-10 w-full mx-auto space-y-4">
+      <form onSubmit={(e) => { e.preventDefault(); handleAdd(); }} className="flex-grow p-10 w-full mx-auto space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          {/* NIP */}
+          <div>
+            <label className="block mb-1 font-medium text-gray-700">NIP</label>
+            <p className="text-xs text-gray-500 mb-2 -mt-1.5">Masukkan nomor induk pegawai.</p>
+            <input type="text" name="nip" value={currentUser.nip} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+          </div>
+
           {/* Nama */}
           <div>
             <label className="block mb-1 font-medium text-gray-700">Nama Lengkap</label>
             <p className="text-xs text-gray-500 mb-2 -mt-1.5">Masukkan <span className="font-semibold text-gray-800">nama lengkap</span> karyawan.</p>
-            <input type="text" name="nama" value={currentUser.nama} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"/>
+            <input type="text" name="nama" value={currentUser.nama} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
           </div>
 
           {/* Telepon */}
           <div>
             <label className="block mb-1 font-medium text-gray-700">No. Telepon</label>
             <p className="text-xs text-gray-500 mb-2 -mt-1.5">Masukkan nomor telepon aktif.</p>
-            <input type="text" name="telp" value={currentUser.telp} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"/>
+            <input type="text" name="telp" value={currentUser.telp} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
           </div>
 
           {/* Perusahaan */}
@@ -113,9 +120,7 @@ const TambahKaryawan = () => {
             <select name="id_perusahaan" value={currentUser.id_perusahaan} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
               <option value="">Pilih Perusahaan</option>
               {perusahaanList.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.nama}
-                </option>
+                <option key={item.id} value={item.id}>{item.nama}</option>
               ))}
             </select>
           </div>
@@ -127,75 +132,25 @@ const TambahKaryawan = () => {
             <select name="id_role" value={currentUser.id_role} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
               <option value="">Pilih Divisi</option>
               {divisiList.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.nama}
-                </option>
+                <option key={item.id} value={item.id}>{item.nama}</option>
               ))}
             </select>
           </div>
 
-          <div className="border border-gray-300 rounded-xl p-4 bg-gray-50">
-              <label className="block mb-1 font-medium text-gray-700">Shift</label>
-              <p className="text-xs text-gray-500 mb-2 -mt-2">Jadwal kerja yang berlaku untuk karyawan ini.</p>
-              <select name="id_shift" value={currentUser.id_shift || ""} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
-                <option value="">Pilih Shift</option>
-                {Array.isArray(shiftList) &&
-                  shiftList.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.nama}
-                    </option>
-                  ))}
-              </select>
-
-              {/* Detail Shift */}
-              {currentUser.id_shift && (
-                <div className="mt-4">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-1">Detail Shift:</h3>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full text-sm border border-gray-300 rounded">
-                      <thead>
-                        <tr className="bg-gray-100 text-gray-600">
-                          <th className="border px-2 py-1">Hari</th>
-                          <th className="border px-2 py-1">Jam Masuk</th>
-                          <th className="border px-2 py-1">Jam Pulang</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(() => {
-                          const selected = shiftList.find(s => String(s.id) === String(currentUser.id_shift));
-                          const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-                          const detailMap = Object.fromEntries((selected?.detail || []).map(d => [d.hari, d]));
-                          return days.map((day) => (
-                            <tr key={day} className="text-center">
-                              <td className="border px-2 py-1">{day}</td>
-                              <td className="border px-2 py-1">{detailMap[day]?.jam_masuk?.slice(0, 5) || '-'}</td>
-                              <td className="border px-2 py-1">{detailMap[day]?.jam_pulang?.slice(0, 5) || '-'}</td>
-                            </tr>
-                          ));
-                        })()}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-            </div>
-
-           {/* Status Toggle */}
-           <div className="flex items-center space-x-3 mt-10">
+          {/* Status Karyawan */}
+          <div className="flex items-center space-x-3 mt-10">
             <label className="font-medium text-gray-700">Status Karyawan</label>
-            <button type="button" onClick={handleToggleStatus} className={`w-14 h-8 flex items-center rounded-full p-1 transition-colors duration-300 ${ currentUser.status === 1 ? "bg-green-500" : "bg-gray-300" }`}>
-              <div className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300 ${ currentUser.status === 1 ? "translate-x-6" : "translate-x-0" }`}></div>
+            <button type="button" onClick={handleToggleStatus} className={`w-14 h-8 flex items-center rounded-full p-1 transition-colors duration-300 ${currentUser.status === 1 ? "bg-green-500" : "bg-gray-300"}`}>
+              <div className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300 ${currentUser.status === 1 ? "translate-x-6" : "translate-x-0"}`} />
             </button>
-            <span className="text-sm text-gray-600">
-              {currentUser.status === 1 ? "Aktif" : "Nonaktif"}
-            </span>
+            <span className="text-sm text-gray-600">{currentUser.status === 1 ? "Aktif" : "Nonaktif"}</span>
           </div>
 
           {/* Username */}
           <div>
             <label className="block mb-1 font-medium text-gray-700">Username</label>
             <p className="text-xs text-gray-500 mb-2 -mt-1.5">Username digunakan untuk login.</p>
-            <input type="text" name="username" value={currentUser.username} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"/>
+            <input type="text" name="username" value={currentUser.username} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
           </div>
 
           {/* Password */}
@@ -203,11 +158,56 @@ const TambahKaryawan = () => {
             <label className="block mb-1 font-medium text-gray-700">Password</label>
             <p className="text-xs text-gray-500 mb-2 -mt-1.5">Isi untuk mengatur password login.</p>
             <div className="relative">
-              <input type={showPassword ? "text" : "password"} name="password" value={currentUser.password} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 pr-10 outline-none"/>
+              <input type={showPassword ? "text" : "password"} name="password" value={currentUser.password} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 pr-10 outline-none" />
               <span onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-2.5 cursor-pointer text-gray-500">
                 <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
               </span>
             </div>
+          </div>
+
+          {/* Shift (col-span-2) */}
+          <div className="md:col-span-2 border border-gray-300 rounded-xl p-4 bg-gray-50">
+            <label className="block mb-1 font-medium text-gray-700">Shift</label>
+            <p className="text-xs text-gray-500 mb-2 -mt-2">Jadwal kerja yang berlaku untuk karyawan ini.</p>
+            <select name="id_shift" value={currentUser.id_shift || ""} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+              <option value="">Pilih Shift</option>
+              {Array.isArray(shiftList) &&
+                shiftList.map((item) => (
+                  <option key={item.id} value={item.id}>{item.nama}</option>
+                ))}
+            </select>
+
+            {/* Detail Shift */}
+            {currentUser.id_shift && (
+              <div className="mt-4">
+                <h3 className="text-sm font-semibold text-gray-700 mb-1">Detail Shift:</h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm border border-gray-300 rounded">
+                    <thead>
+                      <tr className="bg-green-600 text-white">
+                        <th className="border px-2 py-1">Hari</th>
+                        <th className="border px-2 py-1">Jam Masuk</th>
+                        <th className="border px-2 py-1">Jam Pulang</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(() => {
+                        const selected = shiftList.find(s => String(s.id) === String(currentUser.id_shift));
+                        const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                        const detailMap = Object.fromEntries((selected?.detail || []).map(d => [d.hari, d]));
+                        return days.map((day) => (
+                          <tr key={day} className="text-center">
+                            <td className="border px-2 py-1">{day}</td>
+                            <td className="border px-2 py-1">{detailMap[day]?.jam_masuk?.slice(0, 5) || '-'}</td>
+                            <td className="border px-2 py-1">{detailMap[day]?.jam_pulang?.slice(0, 5) || '-'}</td>
+                          </tr>
+                        ));
+                      })()}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -230,6 +230,7 @@ const TambahKaryawan = () => {
           </button>
         </div>
       </form>
+
     </div>
   );
 };
