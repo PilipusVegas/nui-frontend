@@ -2,7 +2,7 @@ import Swal from "sweetalert2";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSignOutAlt, faCheckSquare, faBook, faTimes, faArrowAltCircleLeft, faArrowRight, faArrowAltCircleRight, faLocationArrow, faPeopleGroup, faPenFancy, faUsersCog, faHome, faAngleDown, faBuilding,} from "@fortawesome/free-solid-svg-icons";
+import { faSignOutAlt, faCheckSquare, faBook, faTimes, faArrowAltCircleLeft, faArrowRight, faArrowAltCircleRight, faLocationArrow, faPeopleGroup, faPenFancy, faUsersCog, faHome, faAngleDown, faBuilding, faPeoplePulling, faArrowsDownToPeople, faPeopleCarry, faUserCheck, faHistory,} from "@fortawesome/free-solid-svg-icons";
 
 const IconButton = ({ icon, label, onClick, isActive, hiddenSidebar }) => (
   <button onClick={onClick} aria-label={label} className={`flex items-center transition-all duration-300 w-full rounded-xl ${ hiddenSidebar ? "justify-center h-11" : "justify-start gap-3 px-4 py-3 text-sm tracking-wider"} ${isActive ? "bg-green-700/90 text-white shadow-inner" : "hover:bg-white/10 hover:scale-[1.02]"}`}>
@@ -68,21 +68,23 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
     {
       sectionTitle: "Manajemen Karyawan",
       items: [
-        { label: "Karyawan", icon: faPeopleGroup, path: "/karyawan", roles: ["1", "4", "6", "13"],},
+        { label: "Kelola Karyawan", icon: faPeopleGroup, path: "/karyawan", roles: ["1", "4", "6", "13"],},
         { label: "Kelola Struktur Divisi", icon: faUsersCog, path: "/divisi", roles: ["1", "4", "6"], },
       ],
     },
     {
       sectionTitle: "Manajemen Presensi",
       items: [
-        { label: "Presensi", icon: faCheckSquare, roles: ["1", "4", "6"],
+        { label: "Persetujuan Presensi", icon: faCheckSquare, path: "/persetujuan-presensi", roles: ["1", "4", "6"]},
+
+        { label: "Presensi Karyawan", icon: faUserCheck, roles: ["1", "4", "6"],
           submenu: [
-            { label: "Presensi Lapangan", path: "/data-absensi", roles: ["1", "4", "6"] },
-            { label: "Presensi Kantor", path: "/absensi-kantor", roles: ["1", "4", "6"] },
+            { label: "Kelola Presensi", path: "/kelola-presensi", roles: ["1", "4", "6"] },
             { label: "Kelola Jam Kerja", path: "/shift", roles: ["1", "4", "6"] },
           ],
         },
-        { label: "Penggajian", icon: faBook, path: "/data-penggajian", roles: ["1", "4", "6", "13"],},
+        { label: "Kelola Penggajian", icon: faBook, path: "/data-penggajian", roles: ["1", "4", "6", "13"],},
+        { label: "Riwayat Penggajian", icon: faHistory, path: "/riwayat-penggajian", roles: ["1", "4", "6", "13"],},
       ],
     },
 
@@ -95,8 +97,8 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
     {
       sectionTitle: "Lainnya",
       items: [
-        { label: "Persetujuan Lembur", icon: faCheckSquare, path: "/data-approval", roles: ["1", "5"],},
-        { label: "Titik Lokasi Absensi", icon: faLocationArrow, path: "/data-lokasi", roles: ["1", "5"],},
+        { label: "Persetujuan Lembur", icon: faCheckSquare, path: "/persetujuan-lembur", roles: ["1", "4", "5", "6"],},
+        { label: "Titik Lokasi Absensi", icon: faLocationArrow, path: "/lokasi-presensi", roles: ["1", "5"],},
         { label: "Kelola Perusahaan", icon: faBuilding, path: "/perusahaan", roles: ["1", "4", "6"],},
       ],
     },

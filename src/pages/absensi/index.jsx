@@ -7,20 +7,10 @@ import StepTwoSelesai from "./StepTwoSelesai";
 import StepThree from "./StepThree";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCalendarCheck,
-  faCalendarPlus,
-  faAngleDown,
-  faSignInAlt,
-  faSignOutAlt,
-  faClock,
-  faArrowRight,
-  faAngleUp,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCalendarCheck, faCalendarPlus, faAngleDown, faSignInAlt, faSignOutAlt, faClock, faArrowRight, faAngleUp} from "@fortawesome/free-solid-svg-icons";
 
 const Absensi = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
-
   const [currentStep, setCurrentStep] = useState(null);
   const [isSelesaiFlow, setIsSelesaiFlow] = useState(false);
   const [attendanceData, setAttendanceData] = useState({ userId: "", username: "", id_absen: "" });

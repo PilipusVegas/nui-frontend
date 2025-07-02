@@ -171,7 +171,7 @@ const DetailAbsensi = () => {
     }
   };
 
-  const onBackClick = () => navigate("/data-absensi");
+  const onBackClick = () => navigate("/persetujuan-presensi");
 
   return (
     <div className="min-h-screen flex flex-col justify-start p-6">
@@ -536,7 +536,6 @@ const DetailAbsensi = () => {
                 )
               )}
             </div>
-
           </div>
         </div>
       )}

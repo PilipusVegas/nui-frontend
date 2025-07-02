@@ -173,7 +173,7 @@ const fetchShift = () =>
     { fn: fetchPerusahaan, roles: [1, 4, 6] },
     { fn: fetchAbsences, roles: [1, 4, 5, 6] },
     { fn: fetchPayroll, roles: [1, 4, 6, 13] },
-    { fn: fetchApprovedByPA, roles: [1, 5] },
+    { fn: fetchApprovedByPA, roles: [1, 4, 5, 6] },
     { fn: fetchLocation, roles: [1, 5] },
     { fn: fetchEmployees, roles: [1, 4, 6, 13] },
     { fn: fetchSuratDinas, roles: [1, 4, 5, 6, 13] },
@@ -191,12 +191,12 @@ const fetchShift = () =>
   }, [roleId]);
   
   const allCards = [
-    { title: "Presensi Lapangan", icon: faLocationArrow, color: "text-emerald-500", link: "/data-absensi", count: totalAbsences, roles: [1, 4, 6],},
-    { title: "Presensi Kantor", icon: faBriefcase, color: "text-blue-500", link: "/absensi-kantor", count: totalAbsencesKantor, roles: [1, 4, 6],},
+    { title: "Presensi Lapangan", icon: faLocationArrow, color: "text-emerald-500", link: "/persetujuan-presensi", count: totalAbsences, roles: [1, 4, 6],},
+    { title: "Presensi Kantor", icon: faBriefcase, color: "text-blue-500", link: "/kelola-presensi", count: totalAbsencesKantor, roles: [1, 4, 6],},
     { title: "Surat Dinas", icon: faFileSignature,  color: "text-sky-500", link: "/surat-dinas", count: TotalSuratDinas, roles: [1, 4, 5, 6, 13],},
     { title: "Penggajian", icon: faSackDollar, color: "text-yellow-500", link: "/data-penggajian", count: totalPayroll, roles: [1, 4, 6, 13],},
-    { title: "Persetujuan Lembur", icon: faCheckCircle, color: "text-teal-500", link: "/data-approval", count: totalApprovals, roles: [1, 5],},
-    { title: "Data Lokasi Presensi", icon: faMapPin, color: "text-orange-500", link: "/data-lokasi", count: totalLocations?.length || 0, roles: [1, 5],},
+    { title: "Persetujuan Lembur", icon: faCheckCircle, color: "text-teal-500", link: "/persetujuan-lembur", count: totalApprovals, roles: [1, 4, 5, 6],},
+    { title: "Data Lokasi Presensi", icon: faMapPin, color: "text-orange-500", link: "/lokasi-presensi", count: totalLocations?.length || 0, roles: [1, 5],},
     { title: "Karyawan", icon: faUserGroup, color: "text-violet-500", link: "/karyawan", count: employees?.length || 0, roles: [1, 4, 6, 13],},
     { title: "Divisi", icon: faNetworkWired, color: "text-indigo-500", link: "/divisi", count: totalDivisi, roles: [1, 4, 6],},
     { title: "Shift", icon: faClockRotateLeft, color: "text-rose-500", link: "/shift", count: totalShift, roles: [1, 4, 6],},

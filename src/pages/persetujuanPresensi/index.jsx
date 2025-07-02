@@ -41,7 +41,7 @@
     }, []);
 
     const handleDetailClick = (id) => {
-      navigate(`/data-absensi/${id}`);
+      navigate(`/persetujuan-presensi/${id}`);
     };
 
     const filteredAbsenData = absenData.filter((absen) => {
@@ -63,7 +63,7 @@
           {/* Kembali ke Home dan Judul */}
           <div className="flex items-center">
             <FontAwesomeIcon icon={faArrowLeft} title="Back to Home" onClick={handleBackClick} className="mr-2 cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"/>
-            <h2 className="text-3xl font-bold text-gray-800 pb-1">Kelola Absensi Lapangan</h2>
+            <h2 className="text-3xl font-bold text-gray-800 pb-1">Persetujuan Presensi Lapangan</h2>
           </div>
 
           {/* Search Bar */}
@@ -105,7 +105,6 @@
                       </span>
                       Unapproved
                     </td>
-
                     <td className="text-center px-4 py-1">
                       <button onClick={() => handleDetailClick(absen.id_user)} className="bg-blue-500 text-white px-3 py-1 text-xs rounded hover:bg-blue-600 transition-colors duration-150">
                       <FontAwesomeIcon icon={faEye} className="mr-1" />

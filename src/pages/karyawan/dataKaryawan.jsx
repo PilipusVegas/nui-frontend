@@ -54,8 +54,18 @@ const DataKaryawan = () => {
     fetchAll();
   }, [apiUrl]);
   
-  const filteredUsers = users.filter(
-    (user) => user?.nama?.toLowerCase().includes(searchQuery.toLowerCase()) && user?.role);
+  const filteredUsers = users.filter((user) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      (user?.nama?.toLowerCase().includes(query) ||
+        user?.nip?.toLowerCase().includes(query) ||
+        user?.perusahaan?.toLowerCase().includes(query) ||
+        user?.role?.toLowerCase().includes(query) ||
+        user?.shift?.toLowerCase().includes(query) ||
+        (user?.status === 1 ? "aktif" : "nonaktif").includes(query))
+    );
+  });
+  
     const currentUsers = filteredUsers.slice(
       (currentPage - 1) * itemsPerPage,
       currentPage * itemsPerPage
@@ -103,7 +113,7 @@ const DataKaryawan = () => {
               <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
                 <FontAwesomeIcon icon={faSearch} />
               </span>
-              <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Cari Karyawan..." aria-label="Search Karyawan" className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 px-2 py-2 pl-10 pr-4 w-full max-w-lg sm:max-w-lg rounded-md transition duration-200 ease-in-out"/>
+              <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Cari data karyawan..." aria-label="Search Karyawan" className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 px-2 py-2 pl-10 pr-4 w-full max-w-lg sm:max-w-lg rounded-md transition duration-200 ease-in-out"/>
             </div>
             <button onClick={() => navigate("/karyawan/tambah")} className="bg-green-600 flex text-center items-center text-white px-4 sm:px-4 py-2 font-bold rounded-md hover:bg-green-700 transition duration-150 sm:mt-0">
               <FontAwesomeIcon icon={faPlus} className="sm:mr-2 sm:block" />
@@ -146,7 +156,7 @@ const DataKaryawan = () => {
                           </span>
                         </td>
                         <td className=" px-4 border-b border-gray-200 tracking-wide text-center">
-                          <span className={user.perusahaan ? "" : "text-gray-400 italic text-xs"}>
+                          <span className={user.nip ? "" : "text-gray-400 italic text-xs"}>
                             {user.nip || "N/A"}
                           </span>
                         </td>
@@ -221,8 +231,7 @@ const DataKaryawan = () => {
                         </h3>
                         <p className="text-xs text-gray-500">{user.role || "Unknown Role"}</p>
                       </div>
-                      <span
-                        className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
                           user.status === 1
                             ? "bg-green-100 text-green-700"
                             : "bg-gray-200 text-gray-500"

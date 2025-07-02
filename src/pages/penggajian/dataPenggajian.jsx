@@ -249,11 +249,7 @@ const DataPenggajian = () => {
                         {item.total_jam_lembur || "0:00"}
                       </td>
                       <td className="border-b px-4 py-1 text-xs text-center">
-                        <button
-                          className="text-white hover:bg-blue-600 px-3 py-1 bg-blue-500 rounded text-xs transition"
-                          title="Lihat Detail"
-                          onClick={() => handleDetailClick(item.id_user)}
-                        >
+                        <button className="text-white hover:bg-blue-600 px-3 py-1 bg-blue-500 rounded text-xs transition" title="Lihat Detail" onClick={() => handleDetailClick(item.id_user)}>
                           <FontAwesomeIcon icon={faEye} className="mr-1" />
                           Detail
                         </button>
@@ -265,10 +261,7 @@ const DataPenggajian = () => {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center text-center text-gray-500 py-10">
-              <FontAwesomeIcon
-                icon={faSearch}
-                className="text-4xl mb-3 animate-pulse text-gray-400"
-              />
+              <FontAwesomeIcon icon={faSearch} className="text-4xl mb-3 animate-pulse text-gray-400"/>
               <p className="text-sm font-medium">Data pada periode ini belum tersedia</p>
             </div>
           )}
@@ -292,17 +285,11 @@ const DataPenggajian = () => {
             return (
               <div key={period.id} className="border rounded-xl shadow-sm overflow-hidden">
                 {/* Header Periode */}
-                <div
-                  onClick={() => handleExpand(index)}
-                  className="bg-white hover:bg-gray-200 p-5 flex justify-between items-center cursor-pointer transition-colors"
-                >
+                <div onClick={() => handleExpand(index)} className="bg-white hover:bg-gray-200 p-5 flex justify-between items-center cursor-pointer transition-colors">
                   <span className="font-semibold text-gray-700">
                     Periode {formatTanggal(start)} - {formatTanggal(end)}
                   </span>
-                  <FontAwesomeIcon
-                    icon={expandedIndex === index ? faChevronUp : faChevronDown}
-                    className="text-gray-500"
-                  />
+                  <FontAwesomeIcon icon={expandedIndex === index ? faChevronUp : faChevronDown} className="text-gray-500"/>
                 </div>
 
                 {/* Konten Expand */}
@@ -331,12 +318,7 @@ const DataPenggajian = () => {
                         {data.map((item, idx) => (
                           <div key={idx} className="p-3 rounded-lg bg-gray-50 border">
                             {/* Baris Utama */}
-                            <div
-                              className="flex justify-between items-center cursor-pointer"
-                              onClick={() =>
-                                handleToggleDetail(item.id_user, period.startDate, period.endDate)
-                              }
-                            >
+                            <div className="flex justify-between items-center cursor-pointer" onClick={() => handleToggleDetail(item.id_user, period.startDate, period.endDate)}>
                               <p className="font-semibold text-gray-800">{item.nama_user}</p>
                               <div className="flex items-center gap-2 text-sm text-gray-600">
                                 <span>

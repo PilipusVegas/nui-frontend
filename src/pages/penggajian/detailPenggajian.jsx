@@ -97,7 +97,6 @@ const DetailPenggajian = () => {
           year: "numeric",
         }).format(date);
       };
-
       setPeriod(`${formatDate(startDate)} - ${formatDate(endDate)}`);
     }
   }, []);
@@ -237,16 +236,9 @@ const generateExcelData = (data) => {
                 <tr className="bg-green-600 text-white text-sm">
                   {["No"]
                     .concat(activeTab === "absen" ? ["Tanggal absen", "IN", "OUT","LATE"] : [])
-                    .concat(
-                      activeTab === "lembur" ? ["Tanggal Lembur", "Mulai Lembur", "Selesai Lembur", "Total Lembur"] : []
-                    )
+                    .concat(activeTab === "lembur" ? ["Tanggal Lembur", "Mulai Lembur", "Selesai Lembur", "Total Lembur"] : [])
                     .map((header, i, arr) => (
-                      <th
-                        key={i}
-                        className={`px-4 py-1 ${
-                          i === 0 ? "rounded-tl-lg " : i === arr.length - 1 ? "rounded-tr-lg " : ""
-                        }`}
-                      >
+                      <th key={i} className={`px-4 py-1 ${ i === 0 ? "rounded-tl-lg " : i === arr.length - 1 ? "rounded-tr-lg " : "" }`}>
                         {header}
                       </th>
                     ))}
@@ -270,11 +262,7 @@ const generateExcelData = (data) => {
                         : item.selesai_lembur || "-"}
                     </td>
                     {activeTab === "absen" && (
-                      <td
-                        className={`border px-4 ${
-                          item.keterlambatan === "0:00" ? "text-black" : "text-red-600"
-                        }`}
-                      >
+                      <td className={`border px-4 ${ item.keterlambatan === "0:00" ? "text-black" : "text-red-600" }`}>
                         {item.keterlambatan || "-"}
                       </td>
                     )}
@@ -289,10 +277,7 @@ const generateExcelData = (data) => {
             {/* Card untuk layar kecil */}
             <div className="md:hidden">
               {filteredData.map((item, i) => (
-                <div
-                  key={i}
-                  className="bg-white shadow-lg rounded-xl p-5 mb-2 border border-gray-200 hover:shadow-2xl transition-all duration-300"
-                >
+                <div key={i} className="bg-white shadow-lg rounded-xl p-5 mb-2 border border-gray-200 hover:shadow-2xl transition-all duration-300">
                   {/* Tanggal */}
                   <div className="flex items-center justify-center mb-4">
                     <FontAwesomeIcon icon={faCalendarAlt} className="text-green-500 mr-2 text-lg" />
@@ -304,11 +289,7 @@ const generateExcelData = (data) => {
                   </div>
 
                   {/* Informasi Kehadiran atau Lembur */}
-                  <div
-                    className={`grid ${
-                      activeTab === "absen" ? "grid-cols-2" : "grid-cols-3"
-                    } gap-4 bg-gray-200 rounded-xl p-3`}
-                  >
+                  <div className={`grid ${ activeTab === "absen" ? "grid-cols-2" : "grid-cols-3" } gap-4 bg-gray-200 rounded-xl p-3`}>
                     {/* IN */}
                     <div className="flex flex-col items-center text-center bg-white p-2 rounded-lg shadow-md">
                       <span className="text-sm font-semibold text-green-600">Masuk</span>
@@ -336,7 +317,6 @@ const generateExcelData = (data) => {
                       </span>
                     </div> */}
 
-                    {/* T (Lembur) hanya jika di tab Lembur */}
                     {activeTab === "lembur" && (
                       <div className="flex flex-col items-center text-center bg-white p-2 rounded-lg shadow-md">
                         <span className="text-sm font-semibold text-blue-600">Lembur</span>
