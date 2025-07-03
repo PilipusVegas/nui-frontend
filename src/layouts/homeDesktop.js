@@ -42,8 +42,8 @@ const HomeDesktop = () => {
 
   const getPeriodRange = () => {
     const today = new Date();
-    const startDate = new Date(today.getFullYear(), today.getMonth(), 22);
-    const endDate = new Date(today.getFullYear(), today.getMonth() + 1, 21);
+    const startDate = new Date(today.getFullYear(), today.getMonth() - 1, 22);
+    const endDate = new Date(today.getFullYear(), today.getMonth() + 0, 21);
     const formatDate = (date) => date.toISOString().split("T")[0];
     return {
       startDate: formatDate(startDate),
@@ -191,8 +191,8 @@ const fetchShift = () =>
   }, [roleId]);
   
   const allCards = [
-    { title: "Presensi Lapangan", icon: faLocationArrow, color: "text-emerald-500", link: "/persetujuan-presensi", count: totalAbsences, roles: [1, 4, 6],},
-    { title: "Presensi Kantor", icon: faBriefcase, color: "text-blue-500", link: "/kelola-presensi", count: totalAbsencesKantor, roles: [1, 4, 6],},
+    { title: "Persetujuan Presensi Harian", icon: faLocationArrow, color: "text-emerald-500", link: "/persetujuan-presensi", count: totalAbsences, roles: [1, 4, 6],},
+    { title: "Kelola Presensi Karyawan", icon: faBriefcase, color: "text-blue-500", link: "/kelola-presensi", count: totalAbsencesKantor, roles: [1, 4, 6],},
     { title: "Surat Dinas", icon: faFileSignature,  color: "text-sky-500", link: "/surat-dinas", count: TotalSuratDinas, roles: [1, 4, 5, 6, 13],},
     { title: "Penggajian", icon: faSackDollar, color: "text-yellow-500", link: "/data-penggajian", count: totalPayroll, roles: [1, 4, 6, 13],},
     { title: "Persetujuan Lembur", icon: faCheckCircle, color: "text-teal-500", link: "/persetujuan-lembur", count: totalApprovals, roles: [1, 4, 5, 6],},

@@ -77,14 +77,14 @@ const MenuSidebar = ({ handleLogout, isOpen, toggleSidebar }) => {
       items: [
         { label: "Persetujuan Presensi", icon: faCheckSquare, path: "/persetujuan-presensi", roles: ["1", "4", "6"]},
 
-        { label: "Presensi Karyawan", icon: faUserCheck, roles: ["1", "4", "6"],
+        { label: "Presensi Karyawan", icon: faUserCheck, roles: ["1", "4", "5", "6"],
           submenu: [
-            { label: "Kelola Presensi", path: "/kelola-presensi", roles: ["1", "4", "6"] },
+            { label: "Kelola Presensi", path: "/kelola-presensi", roles: ["1", "4", "5", "6"] },
             { label: "Kelola Jam Kerja", path: "/shift", roles: ["1", "4", "6"] },
           ],
         },
         { label: "Kelola Penggajian", icon: faBook, path: "/data-penggajian", roles: ["1", "4", "6", "13"],},
-        { label: "Riwayat Penggajian", icon: faHistory, path: "/riwayat-penggajian", roles: ["1", "4", "6", "13"],},
+        // { label: "Riwayat Penggajian", icon: faHistory, path: "/riwayat-penggajian", roles: ["1", "4", "6", "13"],},
       ],
     },
 
