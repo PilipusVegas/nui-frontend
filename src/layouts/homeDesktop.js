@@ -177,7 +177,7 @@ const fetchShift = () =>
     { fn: fetchLocation, roles: [1, 5] },
     { fn: fetchEmployees, roles: [1, 4, 6, 13] },
     { fn: fetchSuratDinas, roles: [1, 4, 5, 6, 13] },
-    { fn: fetchAbsencesKantor, roles: [1, 4, 6] },
+    { fn: fetchAbsencesKantor, roles: [1, 4, 5, 6] },
   ];
   
   useEffect(() => {
@@ -192,7 +192,7 @@ const fetchShift = () =>
   
   const allCards = [
     { title: "Persetujuan Presensi Harian", icon: faLocationArrow, color: "text-emerald-500", link: "/persetujuan-presensi", count: totalAbsences, roles: [1, 4, 6],},
-    { title: "Kelola Presensi Karyawan", icon: faBriefcase, color: "text-blue-500", link: "/kelola-presensi", count: totalAbsencesKantor, roles: [1, 4, 6],},
+    { title: "Kelola Presensi Karyawan", icon: faBriefcase, color: "text-blue-500", link: "/kelola-presensi", count: totalAbsencesKantor, roles: [1, 4, 5, 6],},
     { title: "Surat Dinas", icon: faFileSignature,  color: "text-sky-500", link: "/surat-dinas", count: TotalSuratDinas, roles: [1, 4, 5, 6, 13],},
     { title: "Penggajian", icon: faSackDollar, color: "text-yellow-500", link: "/data-penggajian", count: totalPayroll, roles: [1, 4, 6, 13],},
     { title: "Persetujuan Lembur", icon: faCheckCircle, color: "text-teal-500", link: "/persetujuan-lembur", count: totalApprovals, roles: [1, 4, 5, 6],},
