@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import "sweetalert2/dist/sweetalert2.min.css";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import { faCheck, faArrowLeft, faClock, faUser, faInfoCircle, faMapMarkerAlt, faTimes, faSearch,} from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faArrowLeft, faClock, faUser, faInfoCircle, faMapMarkerAlt, faTimes, faSearch, faTriangleExclamation,} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const DataApproval = () => {
@@ -166,11 +166,6 @@ const DataApproval = () => {
 
       {/* Tabel untuk Desktop */}
       <div className="hidden md:block">
-        {isLoading ? (
-          <div className="flex justify-center items-center h-64">Loading...</div>
-        ) : errorMessage ? (
-          <p className="text-red-500 text-center">{errorMessage}</p>
-        ) : (
           <div className="bg-white rounded-lg shadow-lg overflow-auto">
             <table className="min-w-full table-auto text-sm">
               <thead>
@@ -235,15 +230,19 @@ const DataApproval = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="8" className="text-center py-4 text-gray-500 italic">
-                      Data tidak ditemukan.
+                    <td colSpan="8" className="text-center py-20 text-gray-500">
+                      <div className="flex flex-col items-center justify-center space-y-3">
+                        <FontAwesomeIcon icon={faTriangleExclamation} className="text-6xl text-gray-400" />
+                        <p className="text-base font-medium text-gray-600">
+                          Persetujuan Lembur Tidak Ditemukan.
+                        </p>
+                      </div>
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
-        )}
       </div>
 
       {/* Tabel untuk Mobile */}

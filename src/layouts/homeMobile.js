@@ -139,7 +139,7 @@
         reverseButtons: true,
       }).then((result) => {
         if (result.isConfirmed) {
-          handleLogout(); // Panggil handleLogout jika user mengonfirmasi
+          handleLogout(); 
         }
       });
     };
@@ -149,11 +149,7 @@
       <div className="flex flex-col font-sans bg-gray-50 min-h-screen">
         {/* Header Hero */}
         <div className="bg-green-700 rounded-b-2xl px-8 py-4 relative shadow-lg">
-          <button
-            onClick={confirmLogout} // Ubah ke confirmLogout
-            title="Logout"
-            className="absolute top-3 right-3 text-lg text-white hover:text-green-700 transition-colors hover:bg-white px-2 py-1 rounded-full"
-          >
+          <button onClick={confirmLogout} title="Logout" className="absolute top-3 right-3 text-lg text-white hover:text-green-700 transition-colors hover:bg-white px-2 py-1 rounded-full">
             <FontAwesomeIcon icon={faSignOutAlt} />
           </button>
           <div className="flex flex-col py-5">
@@ -170,21 +166,9 @@
           <span className="text-sm font-semibold pl-3">Menu Utama</span>
         </div>
         <div className="grid grid-cols-4 gap-2 px-4">
-          <IconButton
-            icon={faCalendarCheck}
-            label="Absen"
-            onClick={() => navigate("/absensi")}
-            color="p-4 rounded-lg bg-green-100 text-xl text-emerald-500"
-          />
-          <IconButton
-            icon={faClock}
-            label="Lembur"
-            onClick={() => navigate("/lembur")}
-            color="p-4 rounded-lg bg-green-100 text-xl text-teal-500"
-          />
-          <IconButton
-            icon={faPenFancy}
-            label="e-Form"
+          <IconButton icon={faCalendarCheck} label="Absen" onClick={() => navigate("/absensi")} color="p-4 rounded-lg bg-green-100 text-xl text-emerald-500"/>
+          <IconButton icon={faClock} label="Lembur" onClick={() => navigate("/lembur")} color="p-4 rounded-lg bg-green-100 text-xl text-teal-500"/>
+          <IconButton icon={faPenFancy} label="e-Form"
             onClick={() => navigate("/form")}
             color="p-4 rounded-lg bg-green-100 text-xl text-blue-500"
           />
@@ -197,15 +181,15 @@
           /> 
           <IconButton
             icon={faHistory}
-            label="Lainnya"
-            onClick={() => navigate("/menu")}
-            color="p-4 rounded-lg bg-green-100 text-xl text-teal-600"
-          />
-          <IconButton
-            icon={faThList}
             label="Riwayat"
             onClick={() => navigate("/riwayat-absensi")}
             color="p-4 rounded-lg bg-green-100 text-xl text-indigo-600"
+          />
+          <IconButton
+            icon={faThList}
+            label="Lainnya"
+            onClick={() => navigate("/menu")}
+            color="p-4 rounded-lg bg-green-100 text-xl text-teal-600"
           />
         </div>
 

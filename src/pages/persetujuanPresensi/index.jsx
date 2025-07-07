@@ -115,10 +115,10 @@
                 ))
               ) : (
                 <tr>
-              <td colSpan={6} className="text-center px-6 py-8 text-lg text-gray-400 animate-pulse">
-                <div className="flex flex-col items-center justify-center space-y-2">
-                  <FontAwesomeIcon icon={faExclamationTriangle} className="text-2xl mb-1" />
-                  <span>Data tidak ditemukan</span>
+              <td colSpan={6} className="text-center px-6 py-8 text-lg text-gray-400">
+                <div className="flex flex-col items-center justify-center space-y-2 font-semibold">
+                  <FontAwesomeIcon icon={faExclamationTriangle} className="text-6xl mb-1" />
+                  <span>Tidak ada data persetujuan presensi.</span>
                 </div>
               </td>
             </tr>
@@ -127,6 +127,7 @@
           </table>
         </div>
 
+        {/* Mobile  */}
         <div className="md:hidden space-y-2">
         {currentItems.length > 0 ? (
           currentItems.map((absen, index) => (
@@ -170,7 +171,7 @@
         ) : (
           <p className="text-center text-gray-500 text-sm">No Data Found</p>
         )}
-      </div>
+        </div>
 
         {/* Pagination Controls */}
         <div className="flex justify-center pb-6 pt-3 space-x-2">

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faPlus, faTimes,faEdit } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faPlus, faTimes,faEdit, faClock } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 
 const ShiftTable = () => {
@@ -78,10 +78,15 @@ const ShiftTable = () => {
           <tbody>
             {shiftList.length === 0 ? (
               <tr>
-                <td colSpan="3" className="text-center py-4 text-gray-500">
-                  Belum ada data shift.
-                </td>
-              </tr>
+              <td colSpan="3">
+                <div className="flex flex-col items-center justify-center py-10 text-gray-500">
+                  <FontAwesomeIcon icon={faClock} className="text-6xl text-gray-400 mb-4" />
+                  <span className="text-lg font-medium text-center">
+                    Belum ada data shift yang tersedia. Coba tambahkan terlebih dahulu, ya!
+                  </span>
+                </div>
+              </td>
+            </tr>
             ) : (
               shiftList.map((item) => (
                 <tr key={item.id} className="border-t hover:bg-gray-50 transition">

@@ -1,13 +1,17 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft, faArrowRight, faClock, faMapMarkerAlt, faPaperPlane, faS, faSearch, faSpinner, faUpload } from "@fortawesome/free-solid-svg-icons";
 import { useState, useEffect } from "react";
-import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import MobileLayout from "../../layouts/mobileLayout";
-
 const CHAR_LIMIT = 250;
+const hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, "0"));
 
 const Lembur = () => {
-  const [currentStep, setCurrentStep] = useState("stepOne");
+  const [step, setStep] = useState("stepOne");
+  const [loading, setLoading] = useState(false);
+  const [locations, setLocations] = useState([]);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [lemburData, setLemburData] = useState({
     userId: "",
     username: "",
@@ -18,53 +22,64 @@ const Lembur = () => {
     jamMulai: "",
     jamSelesai: "",
   });
-  const [locations, setLocations] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+
   const navigate = useNavigate();
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
-  const hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, "0"));
-  // const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, "0"));
-
-
 
   useEffect(() => {
-    const storedUserId = localStorage.getItem("userId");
-    const storedUsername = localStorage.getItem("userName");
-    if (storedUserId) {
-      setLemburData((prev) => ({
-        ...prev,
-        userId: storedUserId,
-        username: storedUsername || "",
-      }));
-    }
+    const userId = localStorage.getItem("userId");
+    const username = localStorage.getItem("userName");
+    if (userId) setLemburData(data => ({ ...data, userId, username }));
     fetchLocations();
   }, []);
 
+  useEffect(() => {
+    if (isSuccess) navigate("/riwayat-absensi");
+  }, [isSuccess]);
+
   const fetchLocations = async () => {
     try {
-      const response = await fetch(`${apiUrl}/lokasi`);
-      if (!response.ok) throw new Error("Network response was not ok");
-      const data = await response.json();
-      setLocations(data.data);
-    } catch (error) {
-      console.error("Error fetching locations", error);
+      const res = await fetch(`${apiUrl}/lokasi`);
+      const data = await res.json();
+      if (res.ok) setLocations(data.data);
+    } catch (err) {
+      console.error("Lokasi Error", err);
     }
   };
 
-  const handleNextStepData = (data) => {
-    setLemburData((prev) => ({ ...prev, ...data }));
-    setCurrentStep("stepTwo");
+  const getLabel = (time) => {
+    const [hour] = time.split(":").map(Number);
+    if (hour >= 5 && hour < 11) return "Pagi";
+    if (hour >= 11 && hour < 15) return "Siang";
+    if (hour >= 15 && hour < 18) return "Sore";
+    return "Malam";
   };
 
-  const handleSubmitStepOne = (formData) => {
-    handleNextStepData(formData);
+  const validateStepOne = () => {
+    const { tugas, lokasi, tanggal, jamMulai, jamSelesai } = lemburData;
+    if (!tugas || !lokasi || !tanggal || !jamMulai || !jamSelesai) {
+      Swal.fire("Form belum lengkap", "Mohon lengkapi semua isian", "error");
+      return false;
+    }
+    const mulai = parseInt(jamMulai.split(":")[0], 10);
+    const selesai = parseInt(jamSelesai.split(":")[0], 10);
+    if (selesai <= mulai) {
+      Swal.fire("Jam tidak valid", "Jam selesai harus lebih besar dari jam mulai", "error");
+      return false;
+    }
+    return true;
   };
 
-  const handleSubmitStepTwo = async () => {
+  const handleSubmitStepOne = (e) => {
+    e.preventDefault();
+    if (!validateStepOne()) return;
+    setStep("stepTwo");
+  };
+
+  const handleSubmitStepTwo = async (e) => {
+    e.preventDefault();
     setLoading(true);
     try {
-      Swal.fire("Data akan dikirim!", "", "info");
       const response = await fetch(`${apiUrl}/lembur/simpan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -77,300 +92,152 @@ const Lembur = () => {
           jam_selesai: lemburData.jamSelesai,
         }),
       });
-      if (response.ok) {
-        await response.json();
-        Swal.fire("berhasil Terkirim!", "", "success");
+
+      const result = await response.json();
+      if (result.success) {
+        Swal.fire("Pengajuan Berhasil!", result.message || "Data berhasil dikirim tunggu persetujuan Tim HRD dan Kadiv", "success");
         setIsSuccess(true);
       } else {
-        Swal.fire("Gagal Menyimpan Data", "Terjadi kesalahan, Silahkan coba lagi", "error");
+        Swal.fire("Permohonan Ditolak!", result.message || "Terjadi kesalahan", "warning");
       }
-    } catch (error) {
-      Swal.fire("Gagal Menyimpan Data", "Cek koneksi internet anda, Silahkan coba lagi", "error");
+    } catch {
+      Swal.fire("Gagal Mengirim", "Periksa koneksi internet Anda", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  const getTimeLabel = (time) => {
-    if (!time) return "";
-    const [hour, minute] = time.split(":").map(Number);
-    const totalMinutes = hour * 60 + minute;
-
-    if (totalMinutes >= 300 && totalMinutes < 660) return "Pagi"; // 05:00 - 10:59
-    if (totalMinutes >= 660 && totalMinutes < 900) return "Siang"; // 11:00 - 14:59
-    if (totalMinutes >= 900 && totalMinutes < 1080) return "Sore"; // 15:00 - 17:59
-    return "Malam"; // 18:00 - 04:59
-  };
-
-const getWaktuIndonesia = (hour) => {
-  const h = parseInt(hour, 10);
-  if (h >= 5 && h < 11) return "Pagi";
-  if (h >= 11 && h < 15) return "Siang";
-  if (h >= 15 && h < 18) return "Sore";
-  return "Malam";
-};
-
-  function getSummaryLabel(jamMulai, jamSelesai) {
-    const labelMulai = getTimeLabel(jamMulai);
-    const labelSelesai = getTimeLabel(jamSelesai);
-
-    return (
-      `Kamu Memilih jam lembur ${jamMulai} (${labelMulai}) sampai pukul ${jamSelesai} (${labelSelesai}). ` +
-      `Apakah informasi ini sudah benar? Jika iya, silakan klik tombol "Next" untuk melanjutkan.`
-    );
-  }
-
-  function formatTime(jam, menit) {
-    return `${jam}:${menit}`;
-  }
-
-  useEffect(() => {
-    if (isSuccess) navigate("/");
-  }, [isSuccess, navigate]);
-
-  const renderStepOne = () => (
-<MobileLayout
-  title="Formulir Lembur"
-  className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm"
->
-  <form
-  className="w-full max-w-lg p-5 bg-gray-50 border-2 rounded-lg"
-  onSubmit={(e) => {
-    e.preventDefault();
-    const { tugas, lokasi, tanggal, jamMulai, jamSelesai } = lemburData;
-
-    // Validasi input yang wajib diisi
-    if (!tanggal || !lokasi || !tugas || !jamMulai || !jamSelesai) {
-      Swal.fire({
-        icon: "error",
-        title: "Form belum lengkap",
-        text: "Mohon isi semua inputan sebelum melanjutkan.",
-      });
-      return; 
-    }
-
-    // Jika valid, lanjut submit
-    handleSubmitStepOne({ tugas, lokasi, tanggal, jamMulai, jamSelesai });
-  }}
->
-    {/* Tanggal */}
+  const FormInput = ({ label, ...props }) => (
     <div className="mb-4">
-      <label htmlFor="tanggal" className="block text-sm font-bold mb-1">
-        Tanggal:
-      </label>
-      <input
-        type="date"
-        id="tanggal"
-        name="tanggal"
-        value={lemburData.tanggal}
-        className="w-full p-2 text-lg border-2 rounded-lg"
-        onChange={(e) =>
-          setLemburData((prev) => ({ ...prev, tanggal: e.target.value }))
-        }
-      />
+      <label className="block text-sm font-semibold mb-1">{label}</label>
+      <input {...props} className="w-full p-2 text-lg border-2 rounded-lg" />
     </div>
-
-    {/* Lokasi */}
-    <div className="mb-4">
-      <label htmlFor="lokasi" className="block text-sm font-bold mb-1">
-        Lokasi:
-      </label>
-      <select
-        id="lokasi"
-        name="lokasi"
-        value={lemburData.lokasi}
-        className="w-full p-2 text-lg border-2 rounded-lg"
-        onChange={(e) => {
-          const selectedLokasi = e.target.value;
-          const selectedId =
-            locations.find((loc) => loc.nama === selectedLokasi)?.id || "";
-          setLemburData((prev) => ({
-            ...prev,
-            lokasi: selectedLokasi,
-            nama_lokasi: selectedId,
-          }));
-        }}
-      >
-        <option value="">Pilih Lokasi</option>
-        {locations.map((loc) => (
-          <option key={loc.id} value={loc.nama}>
-            {loc.nama}
-          </option>
-        ))}
-      </select>
-    </div>
-
-    {/* Tugas */}
-    <div className="mb-4">
-      <label htmlFor="tugas" className="block text-sm font-bold mb-1">
-        Tugas yang diberikan:
-      </label>
-      <textarea
-        rows="2"
-        id="tugas"
-        name="tugas"
-        value={lemburData.tugas}
-        className="w-full p-2 text-lg border-2 rounded-lg resize-vertical"
-        onChange={(e) => {
-          const value = e.target.value;
-          if (value.length <= CHAR_LIMIT) {
-            setLemburData((prev) => ({ ...prev, tugas: value }));
-          }
-        }}
-      />
-    </div>
-
-    {/* Summary Label */}
-    {lemburData.jamMulai && lemburData.jamSelesai && (
-      <div className="mb-6 p-3 text-xs bg-green-100 rounded-lg border border-blue-300 text-green-800 font-semibold text-center">
-        {getSummaryLabel(lemburData.jamMulai, lemburData.jamSelesai)}
-      </div>
-    )}
-
-{/* Jam Mulai */}
-<div className="mb-4 w-full">
-  <label className="block text-sm font-semibold mb-2">Jam Mulai:</label>
-  <div className="w-full">
-    <select
-      className="w-full p-2 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-green-400"
-      value={lemburData.jamMulai || ""}
-      onChange={(e) => {
-        setLemburData((prev) => ({
-          ...prev,
-          jamMulai: e.target.value,
-        }));
-      }}
-    >
-      <option value="">-- Pilih Jam --</option>
-      {hours.map((h) => (
-        <option key={h} value={`${h}:00`}>
-          {`${h}:00`} ({getWaktuIndonesia(h)})
-        </option>
-      ))}
-    </select>
-  </div>
-  {lemburData.jamMulai && (
-    <p className="mt-1 text-sm font-semibold text-green-600">
-      Waktu mulai: {lemburData.jamMulai} ({getTimeLabel(lemburData.jamMulai)})
-    </p>
-  )}
-</div>
-
-{/* Jam Selesai */}
-<div className="mb-4 w-full">
-  <label className="block text-sm font-semibold mb-2">Jam Selesai:</label>
-  <div className="w-full">
-    <select
-      className="w-full p-2 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-green-400"
-      value={lemburData.jamSelesai || ""}
-      onChange={(e) => {
-        setLemburData((prev) => ({
-          ...prev,
-          jamSelesai: e.target.value,
-        }));
-      }}
-    >
-      <option value="">-- Pilih Jam --</option>
-      {hours.map((h) => (
-        <option key={h} value={`${h}:00`}>
-          {`${h}:00`} ({getWaktuIndonesia(h)})
-        </option>
-      ))}
-    </select>
-  </div>
-  {lemburData.jamSelesai && (
-    <p className="mt-1 text-sm font-semibold text-green-600">
-      Waktu selesai: {lemburData.jamSelesai} ({getTimeLabel(lemburData.jamSelesai)})
-    </p>
-  )}
-</div>
-
-
-
-    {/* Submit Button */}
-    <button
-      type="submit"
-      className={`w-full p-2 text-white text-lg font-bold rounded-xl border-2 ${
-        lemburData.lokasi &&
-        lemburData.tugas &&
-        lemburData.tanggal &&
-        lemburData.jamMulai &&
-        lemburData.jamSelesai
-          ? "bg-green-500 border-green-700"
-          : "bg-gray-400 border-gray-600 cursor-not-allowed"
-      }`}
-      disabled={
-        !(
-          lemburData.lokasi &&
-          lemburData.tugas &&
-          lemburData.tanggal &&
-          lemburData.jamMulai &&
-          lemburData.jamSelesai
-        )
-      }
-    >
-      Next ➜
-    </button>
-  </form>
-</MobileLayout>
-
   );
 
-  const renderStepTwo = () => (
-    <MobileLayout
-      title="LEMBUR"
-      className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm"
-    >
-      <div className="flex flex-col items-center">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSubmitStepTwo();
-          }}
-          className="w-full max-w-xl p-5 bg-white border border-gray-300 rounded-lg"
-        >
-          <h3 className="text-2xl font-semibold mb-4 text-center">Detail Lembur</h3>
-          <div className="p-3">
-            {["username", "lokasi", "tanggal", "jamMulai", "jamSelesai", "tugas"].map(
-              (key, index) => (
-                <div key={index}>
-                  <div className="flex justify-between text-justify py-2">
-                    <strong className="text-sm font-semibold pr-3 text-justify">
-                      {key.charAt(0).toUpperCase() + key.slice(1)}:
-                    </strong>
-                    <span className="text-gray-700 text-sm break-words">{lemburData[key]}</span>
-                  </div>
-                  {index < 5 && <hr className="border-gray-300" />}
-                </div>
-              )
-            )}
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    const username = localStorage.getItem("userName");
+    const nama = localStorage.getItem("nama"); // ambil nama dari localStorage
+    if (userId) {
+      setLemburData(data => ({ ...data, userId, username, nama }));
+    }
+    fetchLocations();
+  }, []);
+  
+
+  const renderStepOne = () => (
+    <MobileLayout title="Formulir Lembur">
+      <form onSubmit={handleSubmitStepOne} className="space-y-4 p-4">
+        <FormInput label="Tanggal" type="date" value={lemburData.tanggal} onChange={(e) => setLemburData(d => ({ ...d, tanggal: e.target.value }))}/>
+        <div className="mb-4">
+          <label className="block text-sm font-semibold mb-1">Lokasi</label>
+          <select value={lemburData.lokasi} onChange={(e) => {
+              const lokasi = e.target.value;
+              const nama_lokasi = locations.find(l => l.nama === lokasi)?.id || "";
+              setLemburData(d => ({ ...d, lokasi, nama_lokasi }));
+            }}
+            className="w-full p-2 text-lg border-2 rounded-lg text-sm tracking-wider "
+          >
+            <option value="">Pilih Lokasi</option>
+            {locations.map(loc => (
+              <option key={loc.id} value={loc.nama}>{loc.nama}</option>
+            ))}
+          </select>
+        </div>
+        <div className="mb-4">
+          <label className="block text-sm font-semibold mb-1">Tugas</label>
+          <textarea rows="2" value={lemburData.tugas} maxLength={CHAR_LIMIT} onChange={(e) => setLemburData(d => ({ ...d, tugas: e.target.value }))} className="w-full p-2 text-lg border-2 rounded-lg resize-vertical"/>
+        </div>
+        {["jamMulai", "jamSelesai"].map((key) => (
+          <div key={key} className="mb-4">
+            <label className="block text-sm font-semibold mb-1">
+              {key === "jamMulai" ? "Jam Mulai" : "Jam Selesai"}
+            </label>
+            <select  value={lemburData[key] || ""}  onChange={(e) => setLemburData(d => ({ ...d, [key]: e.target.value }))}  className="w-full p-2 text-lg border-2 rounded-lg">
+              <option value="">Pilih Jam</option>
+              {hours.map(h => (
+                <option key={h} value={`${h}:00`}>
+                  {`${h}:00`} ({getLabel(h)})
+                </option>
+              ))}
+            </select>
           </div>
-          <button
-            type="button"
-            className="w-full py-2 mt-3 text-lg font-semibold text-white bg-blue-500 rounded-md hover:bg-blue-600"
-            onClick={() => setCurrentStep("stepOne")}
-          >
-            KEMBALI
-          </button>
-          <button
-            type="submit"
-            className={`w-full py-2 mt-3 text-lg font-semibold text-white rounded-md ${
-              loading ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"
-            }`}
-            disabled={loading}
-          >
-            {loading ? "Mengirim..." : "KIRIM"}
-          </button>
-        </form>
-      </div>
+        ))}
+        <button type="submit" className="w-full py-2 px-4 bg-green-500 text-white rounded-lg font-bold">
+          Lihat Detail 
+          <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
+        </button>
+      </form>
     </MobileLayout>
   );
 
-  return <div>{currentStep === "stepOne" ? renderStepOne() : renderStepTwo()}</div>;
-};
+  const renderStepTwo = () => (
+    <MobileLayout title="Detail Pengajuan Lembur">
+      <form onSubmit={handleSubmitStepTwo} className="max-h-screen flex flex-col">
+        {/* CARD FULL HEIGHT */}
+        <div className="flex flex-col justify-between flex-grow w-full bg-white rounded-none shadow-none border-t p-6 space-y-6">
+          {/* HEADER */}
+          <div>
+            <div className="text-center mb-4">
+              <h2 className="text-lg font-bold text-gray-800">Rangkuman Pengajuan Lembur</h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Silakan periksa kembali data lembur sebelum dikirim
+              </p>
+            </div>
+            <hr className="border-gray-300" />
+            {/* DETAIL */}
+            <div className="space-y-4 text-sm md:text-base mt-4">
+              <div>
+                <p className="text-gray-600 font-medium">Nama Karyawan</p>
+                <p className="text-gray-900">{lemburData.nama || "-"}</p>
+              </div>
+              <div>
+                <p className="text-gray-600 font-medium">Lokasi Lembur</p>
+                <p className="text-gray-900">{lemburData.lokasi || "-"}</p>
+              </div>
+  
+              <div>
+                <p className="text-gray-600 font-medium">Tanggal Lembur</p>
+                <p className="text-gray-900">{lemburData.tanggal || "-"}</p>
+              </div>
+  
+              <div className="flex flex-col gap-1">
+                <p className="text-gray-600 font-medium">Waktu Lembur</p>
+                <p className="text-gray-900">
+                  {(lemburData.jamMulai || "-") + " "}
+                  <span className="text-sm text-gray-500">({getLabel(lemburData.jamMulai)})</span>
+                  {" - "}
+                  {(lemburData.jamSelesai || "-") + " "}
+                  <span className="text-sm text-gray-500">({getLabel(lemburData.jamSelesai)})</span>
+                </p>
+              </div>
 
-Lembur.propTypes = {
-  lemburData: PropTypes.object,
+              <div>
+                <p className="text-gray-600 font-medium mb-1">Tugas Lemburan</p>
+                <div className="text-gray-900 font-regular">
+                  {lemburData.tugas || "-"}
+                </div>
+              </div>
+            </div>
+          </div>
+  
+          {/* FOOTER - BUTTONS */}
+          <div className="flex justify-between gap-4 pt-4">
+            <button type="button" onClick={() => setStep("stepOne")} className="w-full py-2 px-4 bg-gray-500 text-white rounded-lg font-semibold shadow hover:bg-gray-600 transition">
+              <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
+              KEMBALI
+            </button>
+            <button type="submit" disabled={loading} className={`w-full py-2 px-4 text-white rounded-lg font-semibold shadow transition ${ loading ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700" }`}>
+              {loading ? "Mengirim..." : "KIRIM"}
+              <FontAwesomeIcon icon={faPaperPlane} className="ml-2" />
+            </button>
+          </div>
+        </div>
+      </form>
+    </MobileLayout>
+  );
+
+  return step === "stepOne" ? renderStepOne() : renderStepTwo();
 };
 
 export default Lembur;

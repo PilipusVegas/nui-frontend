@@ -8,6 +8,7 @@ import Absen from "./pages/absensi";
 import Lembur from "./pages/lembur";
 import Form from "./pages/form";
 import Profile from "./pages/profile";
+import EditProfile from "./pages/profile/edit";
 import Dashboard from "./pages/dashboard";
 import Notification from "./pages/notification";
 import LokasiPresensi from "./pages/lokasi/index";
@@ -36,6 +37,8 @@ import AbsenKantor from "./pages/kelolaPresensi/index";
 import KelolaPerusahaan from "./pages/perusahaan";
 import TambahPerusahaan from "./pages/perusahaan/tambah";
 import EditPerusahaan from "./pages/perusahaan/edit";
+
+
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem("isLoggedIn") === "true");
@@ -79,6 +82,7 @@ const App = () => {
     { path: "/notification", component: <Notification />, roles: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "14", "15", "16", "17", "18", "19", "20", "21", "22"] },
     { path: "/riwayat-absensi", component: <RiwayatAbsensi />, roles: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "14", "15", "16", "17", "18", "19", "20", "21", "22"] },
     { path: "/profile", component: <Profile />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"] },
+    { path: "profile/edit/:id", component: <EditProfile />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"] },
     { path: "/menu", component: <Menu />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"] },
     { path: "/absensi", component: <Absen />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"] },
     { path: "/lembur", component: <Lembur />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"] },

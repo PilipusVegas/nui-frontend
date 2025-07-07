@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faEdit, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faEdit, faExclamationCircle, faPlus, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 
 const KelolaPerusahaan = () => {
@@ -42,7 +42,7 @@ const KelolaPerusahaan = () => {
         <table className="w-full text-sm text-left">
           <thead className="bg-green-600 text-white">
             <tr>
-            <th className="px-6 py-1.5 font-semibold">No.</th>
+            <th className="pl-20 py-1.5 font-semibold">No.</th>
               <th className="px-6 py-1.5 font-semibold">Nama Perusahaan</th>
               <th className="px-6 py-1.5 font-semibold">Alamat Perusahaan</th>
               <th className="px-6 py-1.5 font-semibold text-center">Menu</th>
@@ -51,15 +51,18 @@ const KelolaPerusahaan = () => {
           <tbody>
             {perusahaan.length === 0 ? (
               <tr>
-                <td colSpan="3" className="text-center py-4 text-gray-500">
-                  Belum ada data perusahaan.
-                </td>
-              </tr>
+              <td colSpan="5" className="py-10 text-center text-gray-500">
+                <div className="flex flex-col items-center justify-center space-y-4">
+                  <FontAwesomeIcon icon={faTriangleExclamation} className="text-6xl text-gray-400" />
+                  <p className="text-lg font-medium text-gray-600">Belum ada data perusahaan.</p>
+                </div>
+              </td>
+            </tr>
             ) : (
               perusahaan.map((item, index) => (
                 <tr key={item.id} className="border-t hover:bg-gray-50 transition">
-                  <td className="px-6 py-1">{index + 1}</td>
-                  <td className="px-6 py-1">{item.nama}</td>
+                  <td className="pl-20 py-1">{index + 1}</td>
+                  <td className="px-6 py-1 font-semibold uppercase">{item.nama}</td>
                   <td className="px-6 py-1">{item.alamat}</td>
                   <td className="px-6 py-1 text-center">
                     <button onClick={() => navigate(`/perusahaan/edit/${item.id}`)} className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-1 rounded text-sm">

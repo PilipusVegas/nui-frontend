@@ -25,7 +25,6 @@ const FormDinas = () => {
     }
   };
   
-  // 🟢 Auto-fetch nama saat pertama kali render
   useEffect(() => {
     fetchNama();
   }, []);
@@ -60,7 +59,7 @@ const FormDinas = () => {
       setForm((prev) => ({
         ...prev,
         nama: selected.nama,
-        kadiv: selected.kadiv, // 🟢 Masukkan id ke kadiv
+        kadiv: selected.kadiv, 
       }));
       setQuery(selected.nama);
       setShowDropdown(false);

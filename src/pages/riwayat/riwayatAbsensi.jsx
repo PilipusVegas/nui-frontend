@@ -36,9 +36,6 @@ const Riwayat = () => {
         const absensiData = absensiRes.ok ? await absensiRes.json() : [];
         const lemburData = lemburRes.ok ? await lemburRes.json() : [];
   
-        // console.log("Absensi Data:", absensiData); 
-        // console.log("Lembur Data:", lemburData);
-  
         if (absensiData.length > 0) {
           const sortedAbsensi = absensiData.sort(
             (a, b) => new Date(b.jam_mulai) - new Date(a.jam_mulai)
@@ -226,11 +223,7 @@ const Riwayat = () => {
                 <div className="spinner-border text-green-500" role="status">
                   <span className="sr-only">Loading...</span>
                 </div>
-                <FontAwesomeIcon
-                  color="gray"
-                  icon={faSpinner}
-                  className="text-5xl mb-2 animate-spin"
-                />
+                <FontAwesomeIcon color="gray" icon={faSpinner} className="text-5xl mb-2 animate-spin"/>
                 <p className="text-sm text-gray-600">
                   Sabar, ini bukan error tetapi sedang loading
                 </p>

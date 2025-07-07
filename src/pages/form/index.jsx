@@ -18,8 +18,7 @@ const ListItem = ({ title, link, description }) => {
     </div>
 
     <div className="pt-6 flex justify-end">
-      <button
-        onClick={(e) => {
+      <button onClick={(e) => {
           e.stopPropagation();
           navigate(link);
         }}
@@ -48,19 +47,12 @@ const FormList = () => {
 
         {/* Card Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-1 gap-6">
-          <ListItem
-            title="Form Dinas Keluar Kantor"
-            link="/form-dinas"
-            description="Isi form ini untuk keperluan dinas luar kantor."
-          />
+          <ListItem title="Form Dinas Keluar Kantor" link="/form-dinas" description="Isi form ini untuk keperluan dinas luar kantor."/>
         </div>
 
         {/* Login Link */}
         <div className="text-center">
-          <a
-            href="/login"
-            className="text-sm text-gray-600  transition"
-          >
+          <a href="/login" className="text-sm text-gray-600  transition">
             Sudah punya akun? <span className="font-medium hover:text-green-600">Login</span>
           </a>
         </div>

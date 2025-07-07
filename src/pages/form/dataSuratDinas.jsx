@@ -147,13 +147,7 @@ const SuratDinas = () => {
             <label htmlFor="start-date" className="mb-1 font-medium">
               Dari Tanggal
             </label>
-            <input
-  id="start-date"
-  type="date"
-  value={startDate}
-  onChange={(e) => setStartDate(e.target.value)}
-  className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-/>
+            <input id="start-date" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"/>
           </div>
 
           <div className="flex items-end pb-5 sm:pb-2">
@@ -164,13 +158,7 @@ const SuratDinas = () => {
             <label htmlFor="end-date" className="mb-1 font-medium">
               Sampai Tanggal
             </label>
-            <input
-  id="end-date"
-  type="date"
-  value={endDate}
-  onChange={(e) => setEndDate(e.target.value)}
-  className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-/>
+            <input id="end-date" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"/>
           </div>
         </div>
       </div>
@@ -221,8 +209,8 @@ const SuratDinas = () => {
                 {filteredData.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="text-center py-10 text-gray-500">
-                      <FontAwesomeIcon icon={faCalendarAlt} className="text-3xl mb-2 text-gray-400" />
-                      <div className="mt-2">Tidak ada data surat dinas pada rentang tanggal ini.</div>
+                      <FontAwesomeIcon icon={faCalendarAlt} className="text-6xl mb-2 text-gray-400" />
+                      <div className="mt-2 text-lg font-semibold">Tidak ada data surat dinas pada rentang tanggal ini.</div>
                     </td>
                   </tr>
                 ) : (

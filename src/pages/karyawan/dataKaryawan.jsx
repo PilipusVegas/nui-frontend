@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faArrowRight, faEdit, faTrash, faSearch, faPlus} from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faArrowRight, faEdit, faTrash, faSearch, faPlus, faTriangleExclamation} from "@fortawesome/free-solid-svg-icons";
 
 const DataKaryawan = () => {
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ const DataKaryawan = () => {
   const [shiftList, setShiftList] = useState([]);
   const [selectedPerusahaan, setSelectedPerusahaan] = useState("");
   const [selectedShift, setSelectedShift] = useState("");
-  const itemsPerPage = 10;
+  const itemsPerPage = 12;
   const handleBackClick = () => navigate("/home");
   const indexOfFirstUser = (currentPage - 1) * itemsPerPage;
 
@@ -122,14 +122,6 @@ const DataKaryawan = () => {
           </div>
         </div>
 
-        {isLoading ? (
-          <div className="flex justify-center items-center">
-            <div className="loader">Loading...</div>
-          </div>
-        ) : errorMessage ? (
-          <p className="text-red-500 text-center">{errorMessage}</p>
-        ) : (
-          <>
             <div className="relative mb-0 hidden md:block">
               <table className="min-w-full table-auto bg-white border-collapse shadow-md rounded-lg">
                 <thead>
@@ -188,8 +180,11 @@ const DataKaryawan = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="5" className="py-3 px-4 text-center text-gray-500 border-b border-gray-200">
-                        Tidak ada karyawan ditemukan
+                      <td colSpan="7" className="py-10 px-4 text-center text-gray-500 border-b border-gray-200">
+                        <div className="flex flex-col items-center justify-center">
+                        <FontAwesomeIcon icon={faTriangleExclamation} className="text-6xl text-gray-400 mb-3" />
+                          <p className="text-base font-medium text-gray-600">Oops! Data karyawan gagal dimuat. Coba cek koneksi kamu dulu, ya</p>
+                        </div>
                       </td>
                     </tr>
                   )}
@@ -300,8 +295,6 @@ const DataKaryawan = () => {
                 </button>
               </div>
             </div>
-          </>
-        )}
       </div>
     </div>
   );
