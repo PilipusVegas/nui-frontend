@@ -13,7 +13,9 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
   const [isSelesaiSelected, setIsSelesaiSelected] = useState(false);
   const [koordinatSelesai, setKoordinatSelesai] = useState({latitude: null, longitude: null,});
   const isFormValid = () => jamSelesai && koordinatSelesai.latitude && fotoSelesai;
-  const [facingMode, setFacingMode] = useState("user"); // default kamera depan
+  const [facingMode, setFacingMode] = useState("user"); 
+  const [isCameraLoading, setIsCameraLoading] = useState(true);
+
 
   const switchCamera = async () => {
     try {
@@ -106,6 +108,7 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
   };
 
   const startVideo = async (source = "init") => {
+    setIsCameraLoading(true); // ← mulai loading kamera
     try {
       const constraints = {
         video: {
@@ -113,24 +116,27 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
         }
       };
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
+  
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.onloadedmetadata = () => {
           videoRef.current.play();
           setIsCameraReady(true);
+          setIsCameraLoading(false); // ← kamera siap
         };
       }
     } catch (error) {
-      console.error(`Gagal memulai kamera [${source}] :`, error);
+      console.error(`Gagal memulai kamera [${source}]:`, error);
       Swal.fire({
         title: "Gagal Mengakses Kamera",
         text: "Periksa izin kamera dan coba lagi.",
         icon: "error",
-        confirmButtonText: "Oke"
       });
       setIsCameraReady(false);
+      setIsCameraLoading(false);
     }
   };
+  
   
 
   useEffect(() => {
@@ -229,15 +235,23 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
         <form className="w-full max-w-lg p-4 bg-white rounded-lg shadow">
           {!fotoDiambil ? (
             <>
-              <video ref={videoRef} className="w-full h-[72vh] object-cover rounded-md -scale-x-100" />
+              <div className="relative w-full h-[72vh] rounded-md bg-black flex items-center justify-center">
+                <video ref={videoRef} className={`absolute inset-0 w-full h-full object-cover rounded-md -scale-x-100 ${isCameraLoading ? "opacity-0" : "opacity-100 transition-opacity duration-500"}`}/>
+                {isCameraLoading && (
+                  <div className="z-10 text-white animate-pulse font-semibold">
+                    Memuat kamera...
+                  </div>
+                )}
+              </div>
               <div className="flex gap-4 mt-4 w-full">
                 <button type="button" onClick={switchCamera} className="w-full py-4 text-sm font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600">
                   Balikkan Kamera
                 </button>
 
-                <button onClick={handleSelesai} disabled={!isCameraReady} className={`w-full py-4 text-sm font-semibold text-white rounded-lg ${ isCameraReady ? "bg-green-500 hover:bg-green-600" : "bg-gray-400 cursor-not-allowed"}`}>
+                <button onClick={handleSelesai} disabled={!isCameraReady || isCameraLoading} className={`w-full py-4 text-sm font-semibold text-white rounded-lg ${ isCameraReady && !isCameraLoading ? "bg-green-500 hover:bg-green-600" : "bg-gray-400 cursor-not-allowed" }`}>
                   Ambil Foto
                 </button>
+
               </div>
             </>
           ) : (

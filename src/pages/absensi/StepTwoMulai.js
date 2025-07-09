@@ -16,6 +16,8 @@
     const [loading, setLoading] = useState(true);
     const [facingMode, setFacingMode] = useState("user"); 
     const [switching, setSwitching] = useState(false);
+    const [loadingCamera, setLoadingCamera] = useState(true);
+
 
     const switchCamera = async () => {
       try {
@@ -42,9 +44,7 @@
         setSwitching(false);
       }
     };
-    
-    
-    
+
 
     useEffect(() => {
       setLoading(!(koordinatMulai?.latitude && koordinatMulai?.longitude));
@@ -140,6 +140,8 @@
     };
 
     const startVideo = async (source = "init") => {
+      setLoadingCamera(true); // <== mulai loading
+    
       try {
         const constraints = {
           video: {
@@ -155,6 +157,7 @@
             requestAnimationFrame(() => {
               videoRef.current.play();
               setIsCameraReady(true);
+              setLoadingCamera(false); // <== selesai loading setelah video siap
             });
           };
         }
@@ -170,12 +173,15 @@
           confirmButtonText: "Oke",
         });
     
-        // Kalau dari switch, balikin mode kamera sebelumnya
         if (source === "switch") {
           setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
         }
+    
+        setIsCameraReady(false);
+        setLoadingCamera(false);
       }
     };
+    
     
     useEffect(() => {
       stopVideoStream();
@@ -221,14 +227,23 @@
           <form className="w-full max-w-lg p-4 border-2 rounded-lg bg-white">
             {!fotoDiambil ? (
               <>
-                <video ref={videoRef} className="w-full h-[72vh] object-cover rounded-md -scale-x-100" />
+                <div className="relative w-full h-[72vh] rounded-md">
+                  <video ref={videoRef} className="w-full h-full object-cover rounded-md -scale-x-100" />
+                  {loadingCamera && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white font-bold text-sm rounded-md animate-pulse">
+                      Memuat kamera...
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex gap-4 mt-4 w-full">
                   <button type="button" onClick={switchCamera} className="w-full py-4 text-sm font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600">
                   {switching ? "Mengganti..." : "Balikkan Kamera"}
                   </button>
-                  <button onClick={handleMulai} disabled={!isCameraReady} className={`w-full py-4 text-sm font-semibold text-white rounded-lg ${ isCameraReady ? "bg-green-500 hover:bg-green-600" : "bg-gray-400 cursor-not-allowed"}`}>
+                  <button onClick={handleMulai} disabled={!isCameraReady || loadingCamera} className={`w-full py-4 text-sm font-semibold text-white rounded-lg ${ !isCameraReady || loadingCamera ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600" }`} >
                     Ambil Foto
                   </button>
+
                 </div>
               </>
             ) : (
