@@ -31,8 +31,10 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
         return;
       }
   
-      // Toggle kamera
-      setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
+      const newMode = facingMode === "user" ? "environment" : "user";
+      setFacingMode(newMode);
+      await startVideo("switch", newMode);
+
     } catch (error) {
       console.error("Gagal mengganti kamera:", error);
       Swal.fire("Gagal Mengganti Kamera", "Terjadi kesalahan saat mengakses kamera.", "error");
@@ -107,14 +109,15 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
     }
   };
 
-  const startVideo = async (source = "init") => {
-    setIsCameraLoading(true); // ← mulai loading kamera
+  const startVideo = async (source = "init", mode = facingMode) => {
+    setIsCameraLoading(true);
     try {
       const constraints = {
         video: {
-          facingMode: { ideal: facingMode }
-        }
+          facingMode: { ideal: mode }, // ← pakai mode parameter agar bisa kontrol langsung
+        },
       };
+  
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
   
       if (videoRef.current) {
@@ -122,27 +125,35 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
         videoRef.current.onloadedmetadata = () => {
           videoRef.current.play();
           setIsCameraReady(true);
-          setIsCameraLoading(false); // ← kamera siap
+          setIsCameraLoading(false);
         };
       }
     } catch (error) {
       console.error(`Gagal memulai kamera [${source}]:`, error);
-      Swal.fire({
-        title: "Gagal Mengakses Kamera",
-        text: "Periksa izin kamera dan coba lagi.",
-        icon: "error",
-      });
-      setIsCameraReady(false);
-      setIsCameraLoading(false);
+  
+      // fallback ke kamera depan
+      if (mode !== "user") {
+        setFacingMode("user");
+        await startVideo("fallback", "user");
+      } else {
+        Swal.fire({
+          title: "Gagal Mengakses Kamera",
+          text: "Pastikan izin kamera diberikan dan browser Anda mendukung.",
+          icon: "error",
+        });
+        setIsCameraReady(false);
+        setIsCameraLoading(false);
+      }
     }
   };
   
   
+  
 
-  useEffect(() => {
-    stopVideoStream();
-    startVideo();
-  }, [facingMode]);
+  // useEffect(() => {
+  //   stopVideoStream();
+  //   startVideo();
+  // }, [facingMode]);
   
 
   const resizeImage = (blob) => {

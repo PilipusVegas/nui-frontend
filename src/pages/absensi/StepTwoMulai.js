@@ -24,26 +24,19 @@
         setSwitching(true);
         stopVideoStream();
     
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const videoDevices = devices.filter((d) => d.kind === "videoinput");
-    
-        if (videoDevices.length < 2) {
-          Swal.fire("Kamera kedua tidak tersedia", "Perangkat hanya memiliki satu kamera. Menggunakan kamera depan.", "info");
-          setFacingMode("user");
-          startVideo("fallback"); // PENTING!
-          return;
-        }
-    
-        setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
+        const newMode = facingMode === "user" ? "environment" : "user";
+        setFacingMode(newMode);
+        await startVideo("switch"); // langsung jalankan setelah ubah mode
       } catch (error) {
         console.error("Gagal mengganti kamera:", error);
         Swal.fire("Gagal Mengganti Kamera", "Terjadi kesalahan saat mengakses perangkat.", "error");
         setFacingMode("user");
-        startVideo("fallback"); // Tambahan juga di sini, just in case
+        await startVideo("fallback");
       } finally {
         setSwitching(false);
       }
     };
+    
 
 
     useEffect(() => {
@@ -140,12 +133,12 @@
     };
 
     const startVideo = async (source = "init") => {
-      setLoadingCamera(true); // <== mulai loading
+      setLoadingCamera(true);
     
       try {
         const constraints = {
           video: {
-            facingMode: facingMode === "user" ? "user" : { exact: "environment" },
+            facingMode: { ideal: facingMode },
           },
         };
     
@@ -157,30 +150,30 @@
             requestAnimationFrame(() => {
               videoRef.current.play();
               setIsCameraReady(true);
-              setLoadingCamera(false); // <== selesai loading setelah video siap
+              setLoadingCamera(false);
             });
           };
         }
       } catch (error) {
         console.error("Gagal membuka kamera:", error);
+    
+        // Fallback kamera depan
+        if (facingMode !== "user") {
+          setFacingMode("user");
+        }
+    
         Swal.fire({
-          title: source === "switch" ? "Gagal Membalikkan Kamera" : "Gagal Mengakses Kamera",
-          text:
-            source === "switch"
-              ? "Kamera tidak tersedia atau akses ditolak. Mengembalikan ke mode sebelumnya."
-              : "Pastikan izin kamera sudah diberikan, lalu coba lagi.",
+          title: "Gagal Membuka Kamera",
+          text: "Perangkat mungkin tidak mendukung kamera belakang, atau akses ditolak.",
           icon: "error",
           confirmButtonText: "Oke",
         });
-    
-        if (source === "switch") {
-          setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
-        }
     
         setIsCameraReady(false);
         setLoadingCamera(false);
       }
     };
+    
     
     
     useEffect(() => {
