@@ -147,8 +147,6 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
     }
   };
   
-  
-  
 
   // useEffect(() => {
   //   stopVideoStream();
