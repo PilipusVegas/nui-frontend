@@ -13,6 +13,13 @@ const StepTwoMulai = ({ handleNextStepData }) => {
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [loadingPhoto, setLoadingPhoto] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [facingMode, setFacingMode] = useState("user"); // default kamera depan
+
+  const switchCamera = async () => {
+    const newFacing = facingMode === "user" ? "environment" : "user";
+    setFacingMode(newFacing);
+  };
+  
 
   useEffect(() => {
     setLoading(!(koordinatMulai?.latitude && koordinatMulai?.longitude));
@@ -107,17 +114,30 @@ const StepTwoMulai = ({ handleNextStepData }) => {
   const startVideo = async () => {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current.play();
-          setIsCameraReady(true);
+        const constraints = {
+          video: {
+            facingMode: { exact: facingMode }
+          }
         };
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.onloadedmetadata = () => {
+            videoRef.current.play();
+            setIsCameraReady(true);
+          };
+        }
       } catch (error) {
-        console.error(error);
+        console.error("Gagal memulai kamera:", error);
       }
     }
   };
+
+  useEffect(() => {
+    stopVideoStream(); // stop sebelum mulai ulang
+    startVideo();
+  }, [facingMode]);
+  
 
   const capturePhoto = () => {
     const video = videoRef.current;
@@ -157,9 +177,12 @@ const StepTwoMulai = ({ handleNextStepData }) => {
         <form className="w-full max-w-lg p-4 border-2 rounded-lg bg-white">
           {!fotoDiambil ? (
             <>
-              <video ref={videoRef} className="w-full h-[70vh] object-cover rounded-lg -scale-x-100" />
-              <div className="flex justify-center mt-4">
-                <button onClick={handleMulai} disabled={!isCameraReady} className={`w-full py-2 font-semibold text-white uppercase border-2 rounded-lg ${ isCameraReady ? "bg-green-500" : "bg-gray-400 cursor-not-allowed"}`}>
+              <video ref={videoRef} className="w-full h-[72vh] object-cover rounded-md -scale-x-100" />
+              <div className="flex gap-4 mt-4 w-full">
+                <button type="button" onClick={switchCamera} className="w-full py-4 text-sm font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600">
+                  Balikkan Kamera
+                </button>
+                <button onClick={handleMulai} disabled={!isCameraReady} className={`w-full py-4 text-sm font-semibold text-white rounded-lg ${ isCameraReady ? "bg-green-500 hover:bg-green-600" : "bg-gray-400 cursor-not-allowed"}`}>
                   Ambil Foto
                 </button>
               </div>

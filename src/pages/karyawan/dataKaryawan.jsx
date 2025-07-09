@@ -26,7 +26,7 @@ const DataKaryawan = () => {
     try {
       const res = await fetch(`${apiUrl}${endpoint}`);
       const json = await res.json();
-      if (res.ok && (json.success || Array.isArray(json))) {
+      if (res.ok && (json.data || Array.isArray(json))) {
         return json.data || json;
       } else {
         throw new Error(json.message || "Gagal mengambil data.");
@@ -39,12 +39,14 @@ const DataKaryawan = () => {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const [users, divisi] = await Promise.all([
+        const [users, divisi, perusahaan] = await Promise.all([
           fetchData("/profil"),
           fetchData("/karyawan/divisi"),
+          fetchData("/perusahaan"),
         ]);
         setUsers(users);
         setDivisiList(divisi);
+        setPerusahaanList(perusahaan);
       } catch (err) {
         setErrorMessage(err.message);
       } finally {
@@ -56,14 +58,19 @@ const DataKaryawan = () => {
   
   const filteredUsers = users.filter((user) => {
     const query = searchQuery.toLowerCase();
-    return (
-      (user?.nama?.toLowerCase().includes(query) ||
-        user?.nip?.toLowerCase().includes(query) ||
-        user?.perusahaan?.toLowerCase().includes(query) ||
-        user?.role?.toLowerCase().includes(query) ||
-        user?.shift?.toLowerCase().includes(query) ||
-        (user?.status === 1 ? "aktif" : "nonaktif").includes(query))
-    );
+    const matchSearch =
+    (user?.nama?.toLowerCase().includes(query) ||
+     user?.nip?.toLowerCase().includes(query) ||
+     user?.perusahaan?.toLowerCase().includes(query) ||
+     user?.role?.toLowerCase().includes(query) ||
+     (user?.shift || "").toLowerCase().includes(query) ||
+     (user?.status === 1 ? "aktif" : "nonaktif").includes(query));
+  
+  
+    const matchPerusahaan =
+      !selectedPerusahaan || user.id_perusahaan?.toString() === selectedPerusahaan;
+  
+    return matchSearch && matchPerusahaan;
   });
   
     const currentUsers = filteredUsers.slice(
@@ -102,25 +109,46 @@ const DataKaryawan = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex-grow px-6 pt-8 md:pt-6">
-        <div className="flex flex-wrap justify-between items-center mb-6">
-          <div className="flex items-center space-x-2 w-full sm:w-auto">
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex flex-wrap justify-between items-center gap-4">
+          <div className="flex items-center space-x-2">
             <FontAwesomeIcon icon={faArrowLeft} className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg" onClick={handleBackClick} title="Back to Home"/>
             <h1 className="text-3xl font-bold text-gray-800 pb-1">Kelola Karyawan</h1>
           </div>
 
-          <div className="flex items-center space-x-3 mt-4 ml-auto w-full sm:w-auto sm:mt-0">
-            <div className="relative w-full sm:w-auto">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                <FontAwesomeIcon icon={faSearch} />
-              </span>
-              <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Cari data karyawan..." aria-label="Search Karyawan" className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 px-2 py-2 pl-10 pr-4 w-full max-w-lg sm:max-w-lg rounded-md transition duration-200 ease-in-out"/>
-            </div>
-            <button onClick={() => navigate("/karyawan/tambah")} className="bg-green-600 flex text-center items-center text-white px-4 sm:px-4 py-2 font-bold rounded-md hover:bg-green-700 transition duration-150 sm:mt-0">
-              <FontAwesomeIcon icon={faPlus} className="sm:mr-2 sm:block" />
-              <span className="hidden sm:block">Tambah Karyawan</span>
-            </button>
-          </div>
+          <div className="flex items-end gap-3 ml-auto">
+        {/* Label + Select */}
+        <div className="flex flex-col">
+          <label htmlFor="filter-perusahaan" className="text-xs font-medium text-gray-600 mb-1 ml-1">
+            Tampilkan dari
+          </label>
+          <select id="filter-perusahaan" value={selectedPerusahaan} onChange={(e) => setSelectedPerusahaan(e.target.value)} className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 px-3 py-2 rounded-md">
+            <option value="">Semua Perusahaan</option>
+            {perusahaanList.map((perusahaan) => (
+              <option key={perusahaan.id} value={perusahaan.id}>
+                {perusahaan.nama}
+              </option>
+            ))}
+          </select>
         </div>
+
+        {/* Tombol Tambah */}
+        <button onClick={() => navigate("/karyawan/tambah")} className="bg-green-600 flex items-center text-white px-4 py-2 font-bold rounded-md hover:bg-green-700 transition duration-150">
+          <FontAwesomeIcon icon={faPlus} className="mr-2" />
+          <span>Tambah Karyawan</span>
+        </button>
+      </div>
+        </div>
+
+        <div className="relative w-full">
+          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+            <FontAwesomeIcon icon={faSearch} />
+          </span>
+          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Cari data karyawan..." aria-label="Search Karyawan" className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 px-2 py-2 pl-10 pr-4 w-full rounded-md transition duration-200 ease-in-out"/>
+        </div>
+      </div>
+
+
 
             <div className="relative mb-0 hidden md:block">
               <table className="min-w-full table-auto bg-white border-collapse shadow-md rounded-lg">

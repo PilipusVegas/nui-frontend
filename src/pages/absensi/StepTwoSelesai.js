@@ -12,6 +12,13 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
   const [isSelesaiSelected, setIsSelesaiSelected] = useState(false);
   const [koordinatSelesai, setKoordinatSelesai] = useState({latitude: null, longitude: null,});
   const isFormValid = () => jamSelesai && koordinatSelesai.latitude && fotoSelesai;
+  const [facingMode, setFacingMode] = useState("user"); // default kamera depan
+
+  const switchCamera = () => {
+    const newFacing = facingMode === "user" ? "environment" : "user";
+    setFacingMode(newFacing);
+  };
+  
 
   useEffect(() => {
     setLoading(!(koordinatSelesai?.latitude && koordinatSelesai?.longitude));
@@ -80,15 +87,29 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
   const startVideo = async () => {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current.play();
-          setIsCameraReady(true);
+        const constraints = {
+          video: { facingMode: { ideal: facingMode } }
         };
-      } catch (error) {}
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.onloadedmetadata = () => {
+            videoRef.current.play();
+            setIsCameraReady(true);
+          };
+        }
+      } catch (error) {
+        console.error("Gagal memulai kamera:", error);
+        setIsCameraReady(false);
+      }
     }
   };
+
+  useEffect(() => {
+    stopVideoStream();
+    startVideo();
+  }, [facingMode]);
+  
 
   const resizeImage = (blob) => {
     return new Promise((resolve) => {
@@ -181,13 +202,20 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
           {!fotoDiambil ? (
             <>
               <video ref={videoRef} className="w-full h-[72vh] object-cover rounded-md -scale-x-100" />
-              <button onClick={handleSelesai} disabled={!isCameraReady} className={`mt-4 w-full py-2 text-white font-bold rounded-lg ${ isCameraReady ? "bg-green-500 hover:bg-green-600" : "bg-gray-400 cursor-not-allowed" }`}>
-                Ambil Foto
-              </button>
+              <div className="flex gap-4 mt-4 w-full">
+                <button type="button" onClick={switchCamera} className="w-full py-4 text-sm font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600">
+                  Balikkan Kamera
+                </button>
+
+                <button onClick={handleSelesai} disabled={!isCameraReady} className={`w-full py-4 text-sm font-semibold text-white rounded-lg ${ isCameraReady ? "bg-green-500 hover:bg-green-600" : "bg-gray-400 cursor-not-allowed"}`}>
+                  Ambil Foto
+                </button>
+              </div>
+
             </>
           ) : (
             <>
-              <img src={fotoSelesai} alt="Foto Selesai" className="w-full h-[60vh] rounded-md mb-4 -scale-x-100" />
+              <img src={fotoSelesai} alt="Foto Selesai" className="w-full max-h-[70vh] rounded-md mb-4 -scale-x-100" />
               <div className="p-4 rounded-md border space-y-2">
                 <div className="flex justify-between">
                   <p className="font-bold">Jam:</p>

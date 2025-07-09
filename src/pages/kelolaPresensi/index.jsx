@@ -225,13 +225,6 @@ const AbsensiKantor = () => {
     return `${tgl}-${bln}-${thn}`;
   };
 
-  const formatMenitToJamMenit = (totalMenit) => {
-    if (!totalMenit || isNaN(totalMenit)) return "-";
-    const jam = Math.floor(totalMenit / 60);
-    const menit = totalMenit % 60;
-    return `${jam.toString().padStart(2, '0')}:${menit.toString().padStart(2, '0')}`;
-  };
-
   const formatOvertimeJamBulat = (totalMenit) => {
     const menit = parseInt(totalMenit, 10);
     if (!menit || isNaN(menit)) return "-";
@@ -319,7 +312,6 @@ const AbsensiKantor = () => {
           </div>
         </div>
       </div>
-
 
       {isDateSelected && (
       <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
