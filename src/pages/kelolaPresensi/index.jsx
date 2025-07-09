@@ -6,6 +6,7 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
 const AbsensiKantor = () => {
+  const allowedRoles = [4, 6];
   const navigate = useNavigate();
   const [absenData, setAbsenData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -18,17 +19,30 @@ const AbsensiKantor = () => {
   const [isDateSelected, setIsDateSelected] = useState(false);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const roleId = parseInt(localStorage.getItem("roleId"), 10);
-  const allowedRoles = [4, 6];
+  const [daftarPerusahaan, setDaftarPerusahaan] = useState([]);
+  const [idPerusahaanTerpilih, setIdPerusahaanTerpilih] = useState("");
+  const [namaPerusahaanTerpilih, setNamaPerusahaanTerpilih] = useState("");
   const canDownload = allowedRoles.includes(roleId);
   const canChangeTipe = allowedRoles.includes(roleId);
   const [tipeKaryawan, setTipeKaryawan] = useState(canChangeTipe ? "kantor" : "lapangan");
+  const handleBackClick = () => { navigate("/home");};
+
+  useEffect(() => {
+    const fetchPerusahaan = async () => {
+      try {
+        const res = await fetch(`${apiUrl}/perusahaan`);
+        const json = await res.json();
+        const data = Array.isArray(json) ? json : json.data; 
+        setDaftarPerusahaan(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Gagal mengambil data perusahaan:", error);
+        setDaftarPerusahaan([]);
+      }
+    };
+    fetchPerusahaan();
+  }, []);
   
   
-
-  const handleBackClick = () => {
-    navigate("/home");
-  };
-
   const fetchAbsenData = async () => {
     if (!startDate || !endDate) return;
   
@@ -60,11 +74,17 @@ const AbsensiKantor = () => {
   
 
   const filteredAbsenData = dataAbsen
+  .filter((item) =>
+    idPerusahaanTerpilih ? item.id_perusahaan?.toString() === idPerusahaanTerpilih : true
+  )
   .map((item) => ({
     ...item,
     nama: typeof item.nama === "string" ? item.nama : "-",
   }))
-  .filter((item) => item.nama.toLowerCase().includes(searchName.toLowerCase()));
+  .filter((item) =>
+    item.nama.toLowerCase().includes(searchName.toLowerCase())
+  );
+
 
 
   const handleRekapData = async () => {
@@ -75,11 +95,13 @@ const AbsensiKantor = () => {
   
     const totalCols = 5 + tanggalArray.length * 4;
     const offsetCol = 2;
-    const offsetRow = 4;
+    const offsetRow = 7;
   
     const jumlahKaryawan = filteredAbsenData.length;
+    const namaPerusahaan = namaPerusahaanTerpilih || "Semua Perusahaan";
     const summary1 = `Rekap data Periode : ${formatTanggal(startDate)} - ${formatTanggal(endDate)}`;
     const summary2 = `Jumlah karyawan pada periode ini : ${jumlahKaryawan} Karyawan`;
+    const summary3 = `Perusahaan: ${namaPerusahaan}`;
   
     // 🟡 Ringkasan
     worksheet.mergeCells(2, offsetCol, 2, offsetCol + totalCols - 1);
@@ -93,6 +115,12 @@ const AbsensiKantor = () => {
     summaryCell2.value = summary2;
     summaryCell2.font = { italic: true, size: 12 };
     summaryCell2.alignment = { vertical: 'middle', horizontal: 'left' };
+
+    worksheet.mergeCells(4, offsetCol, 4, offsetCol + totalCols - 1);
+    const summaryCell3 = worksheet.getCell(4, offsetCol);
+    summaryCell3.value = summary3;
+    summaryCell3.font = { italic: true, size: 12 };
+    summaryCell3.alignment = { vertical: 'middle', horizontal: 'left' };
   
     // 🔵 Header Utama (baris 5)
     const headerRow2 = ["Pegawai", "", "Jumlah", "", ""];
@@ -128,7 +156,7 @@ const AbsensiKantor = () => {
           item.nip ?? "-",
           item.nama,
           item.total_days,
-          formatMenitToJamMenit(item.total_late),
+          item.total_late,
           formatOvertimeJamBulat(item.total_overtime),
         ];
         tanggalArray.forEach((tgl) => {
@@ -143,7 +171,7 @@ const AbsensiKantor = () => {
           row.push(
             att.in ?? "-",
             att.out ?? "-",
-            formatMenitToJamMenit(att.late),
+            att.late ?? "-",
             overtimeFormatted
           );
         });
@@ -245,16 +273,16 @@ const AbsensiKantor = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
         {/* Kiri: Tombol Kembali dan Judul */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 w-full md:w-auto">
           <FontAwesomeIcon icon={faArrowLeft} title="Back to Home" onClick={handleBackClick} className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"/>
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">
             Kelola Presensi Karyawan
           </h2>
         </div>
 
-        {/* Kanan: Rentang Tanggal dan Select Tipe Karyawan */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 w-full md:w-auto">
-          {/* Rentang Tanggal */}
+        {/* Kanan: Seluruh Filter */}
+        <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-4 sm:gap-6 w-full md:w-auto justify-end">
+          {/* Filter Periode */}
           <div className="flex flex-col">
             <label className="text-xs font-medium text-gray-600 mb-1">
               Periode Tanggal: {startDate} s/d {endDate}
@@ -266,18 +294,32 @@ const AbsensiKantor = () => {
             </div>
           </div>
 
-          {/* Select Tipe Karyawan */}
+          {/* Filter Tipe Karyawan */}
           {canChangeTipe && (
             <div className="flex flex-col">
-              <label className="text-xs font-medium text-gray-600 mb-1">Tampilkan Dari : </label>
+              <label className="text-xs font-medium text-gray-600 mb-1">Tampilkan Dari :</label>
               <select value={tipeKaryawan} onChange={(e) => setTipeKaryawan(e.target.value)} className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full sm:w-auto">
                 <option value="kantor">Aplikasi Face Recognition</option>
                 <option value="lapangan">Aplikasi Absensi Online</option>
               </select>
             </div>
           )}
+
+          {/* Filter Perusahaan */}
+          <div className="flex flex-col">
+            <label className="text-xs font-medium text-gray-600 mb-1">Filter Perusahaan</label>
+            <select value={idPerusahaanTerpilih} onChange={(e) => { const selectedId = e.target.value; setIdPerusahaanTerpilih(selectedId); const nama = daftarPerusahaan.find((p) => p.id.toString() === selectedId)?.nama || ""; setNamaPerusahaanTerpilih(nama);}} className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full sm:w-auto">
+              <option value="">Semua Perusahaan</option>
+              {daftarPerusahaan.map((perusahaan) => (
+                <option key={perusahaan.id} value={perusahaan.id}>
+                  {perusahaan.nama}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
+
 
       {isDateSelected && (
       <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
@@ -289,23 +331,22 @@ const AbsensiKantor = () => {
           </span>
         </div>
 
-    {/* Kolom kanan: Tombol hanya untuk role tertentu */}
-    {canDownload && (
-      <div className="flex items-center gap-4 flex-wrap md:flex-nowrap justify-end w-full md:w-auto">
-        <button onClick={handleRekapData} disabled={filteredAbsenData.length === 0 || loading} className={`flex items-center justify-center gap-2 h-10 px-4 font-semibold rounded-md shadow transition ${
-            filteredAbsenData.length === 0 || loading
-              ? "bg-gray-400 text-white cursor-not-allowed"
-              : "bg-green-600 hover:bg-green-700 text-white"
-          }`}
-        >
-          <FontAwesomeIcon icon={faDownload} />
-          <span className="hidden md:inline">Unduh Excel</span>
-        </button>
-      </div>
-    )}
-  </div>
-)}
-
+            {/* Kolom kanan: Tombol hanya untuk role tertentu */}
+            {canDownload && (
+              <div className="flex items-center gap-4 flex-wrap md:flex-nowrap justify-end w-full md:w-auto">
+                <button onClick={handleRekapData} disabled={filteredAbsenData.length === 0 || loading} className={`flex items-center justify-center gap-2 h-10 px-4 font-semibold rounded-md shadow transition ${
+                    filteredAbsenData.length === 0 || loading
+                      ? "bg-gray-400 text-white cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700 text-white"
+                  }`}
+                >
+                  <FontAwesomeIcon icon={faDownload} />
+                  <span className="hidden md:inline">Unduh Excel</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
       {/* Data Table */}
       {isDateSelected && !error && dataAbsen.length > 0 && (
@@ -334,7 +375,7 @@ const AbsensiKantor = () => {
                     <td className="border border-gray-300 px-3 py-1 text-xs break-words">{item.nip}</td>
                     <td className="border border-gray-300 px-3 py-1 text-xs break-words font-semibold tracking-wider">{item.nama}</td>
                     <td className="border border-gray-300 px-3 py-1 text-center text-xs">{item.total_days}</td>
-                    <td className="border border-gray-300 px-3 py-1 text-center text-xs">{formatMenitToJamMenit(item.total_late)}</td>
+                    <td className="border border-gray-300 px-3 py-1 text-center text-xs">{item.total_late}</td>
                     <td className="border border-gray-300 px-3 py-1 text-center text-xs">{formatOvertimeJamBulat(item.total_overtime)}</td>
                   </tr>
                 ))}
@@ -370,7 +411,7 @@ const AbsensiKantor = () => {
                       const inTime = item.attendance[tanggal]?.in || "-";
                       const outTime = item.attendance[tanggal]?.out || "-";
                       const lateMinutes = item.attendance[tanggal]?.late;
-                      const LateTime = lateMinutes ? formatMenitToJamMenit(lateMinutes) : "-";
+                      const LateTime = lateMinutes ? lateMinutes : "-";
                       const isLate = lateMinutes > 1;
                       const overtimeRaw = item.attendance[tanggal]?.overtime ?? item.overtimes?.[tanggal]?.durasi;
                       const Overtime = overtimeRaw !== null && overtimeRaw !== undefined && overtimeRaw !== "" && overtimeRaw !== "0" && overtimeRaw !== 0 ? (tipeKaryawan === "lapangan" ? overtimeRaw : formatOvertimeJamBulat(overtimeRaw)) : "-";
