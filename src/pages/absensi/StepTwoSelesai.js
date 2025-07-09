@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import MobileLayout from "../../layouts/mobileLayout";
+import Swal from "sweetalert2";
 
 const StepTwoSelesai = ({ handleNextStepData }) => {
   const videoRef = useRef(null);
@@ -14,10 +15,30 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
   const isFormValid = () => jamSelesai && koordinatSelesai.latitude && fotoSelesai;
   const [facingMode, setFacingMode] = useState("user"); // default kamera depan
 
-  const switchCamera = () => {
-    const newFacing = facingMode === "user" ? "environment" : "user";
-    setFacingMode(newFacing);
+  const switchCamera = async () => {
+    try {
+      stopVideoStream();
+  
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter((d) => d.kind === "videoinput");
+  
+      if (videoDevices.length < 2) {
+        Swal.fire("Kamera kedua tidak tersedia", "Perangkat hanya memiliki satu kamera. Menggunakan kamera depan.", "info");
+        setFacingMode("user");
+        startVideo("fallback"); // ← penting untuk restart kamera depan
+        return;
+      }
+  
+      // Toggle kamera
+      setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
+    } catch (error) {
+      console.error("Gagal mengganti kamera:", error);
+      Swal.fire("Gagal Mengganti Kamera", "Terjadi kesalahan saat mengakses kamera.", "error");
+      setFacingMode("user");
+      startVideo("fallback"); // ← fallback eksplisit
+    }
   };
+  
   
 
   useEffect(() => {
@@ -84,26 +105,33 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
     }
   };
 
-  const startVideo = async () => {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      try {
-        const constraints = {
-          video: { facingMode: { ideal: facingMode } }
-        };
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.onloadedmetadata = () => {
-            videoRef.current.play();
-            setIsCameraReady(true);
-          };
+  const startVideo = async (source = "init") => {
+    try {
+      const constraints = {
+        video: {
+          facingMode: { ideal: facingMode }
         }
-      } catch (error) {
-        console.error("Gagal memulai kamera:", error);
-        setIsCameraReady(false);
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current.play();
+          setIsCameraReady(true);
+        };
       }
+    } catch (error) {
+      console.error(`Gagal memulai kamera [${source}] :`, error);
+      Swal.fire({
+        title: "Gagal Mengakses Kamera",
+        text: "Periksa izin kamera dan coba lagi.",
+        icon: "error",
+        confirmButtonText: "Oke"
+      });
+      setIsCameraReady(false);
     }
   };
+  
 
   useEffect(() => {
     stopVideoStream();
@@ -216,7 +244,7 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
             <>
               <img src={fotoSelesai} alt="Foto Selesai" className="w-full max-h-[70vh] rounded-md mb-4 -scale-x-100" />
               <div className="p-4 rounded-md border space-y-2">
-                <div className="flex justify-between">                                       
+                <div className="flex justify-between">
                   <p className="font-bold">Jam:</p>
                   <p> {currentTime?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false})}</p>
                 </div>
