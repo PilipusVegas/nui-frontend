@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import MobileLayout from "../../layouts/mobileLayout";
+import Swal from "sweetalert2";
 
 const StepTwoMulai = ({ handleNextStepData }) => {
   const videoRef = useRef(null);
@@ -13,13 +14,14 @@ const StepTwoMulai = ({ handleNextStepData }) => {
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [loadingPhoto, setLoadingPhoto] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [facingMode, setFacingMode] = useState("user"); // default kamera depan
+  const [facingMode, setFacingMode] = useState("user"); 
+  const [switching, setSwitching] = useState(false);
 
-  const switchCamera = async () => {
-    const newFacing = facingMode === "user" ? "environment" : "user";
-    setFacingMode(newFacing);
+  const switchCamera = () => {
+    stopVideoStream();
+    setIsCameraReady(false);
+    setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
   };
-  
 
   useEffect(() => {
     setLoading(!(koordinatMulai?.latitude && koordinatMulai?.longitude));
@@ -58,9 +60,12 @@ const StepTwoMulai = ({ handleNextStepData }) => {
   };
 
   const stopVideoStream = () => {
-    const tracks = videoRef.current?.srcObject?.getTracks();
-    tracks?.forEach((track) => track.stop());
-    videoRef.current.srcObject = null;
+    const video = videoRef.current;
+    if (video?.srcObject) {
+      const tracks = video.srcObject.getTracks();
+      tracks.forEach((track) => track.stop());
+      video.srcObject = null;
+    }
   };
 
   const handleSubmit = (e) => {
@@ -111,34 +116,49 @@ const StepTwoMulai = ({ handleNextStepData }) => {
     }
   };
 
-  const startVideo = async () => {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      try {
-        const constraints = {
-          video: {
-            facingMode: { exact: facingMode }
-          }
-        };
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.onloadedmetadata = () => {
+  const startVideo = async (source = "init") => {
+    try {
+      const constraints = {
+        video: {
+          facingMode: facingMode === "user" ? "user" : { exact: "environment" },
+        },
+      };
+  
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+  
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.onloadedmetadata = () => {
+          requestAnimationFrame(() => {
             videoRef.current.play();
             setIsCameraReady(true);
-          };
-        }
-      } catch (error) {
-        console.error("Gagal memulai kamera:", error);
+          });
+        };
+      }
+    } catch (error) {
+      console.error("Gagal membuka kamera:", error);
+      Swal.fire({
+        title: source === "switch" ? "Gagal Membalikkan Kamera" : "Gagal Mengakses Kamera",
+        text:
+          source === "switch"
+            ? "Kamera tidak tersedia atau akses ditolak. Mengembalikan ke mode sebelumnya."
+            : "Pastikan izin kamera sudah diberikan, lalu coba lagi.",
+        icon: "error",
+        confirmButtonText: "Oke",
+      });
+  
+      // Kalau dari switch, balikin mode kamera sebelumnya
+      if (source === "switch") {
+        setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
       }
     }
   };
-
+  
   useEffect(() => {
-    stopVideoStream(); // stop sebelum mulai ulang
-    startVideo();
+    stopVideoStream();
+    startVideo("switch");
   }, [facingMode]);
   
-
   const capturePhoto = () => {
     const video = videoRef.current;
     const canvas = document.createElement("canvas");
@@ -164,12 +184,13 @@ const StepTwoMulai = ({ handleNextStepData }) => {
   }, [fotoDiambil]);
 
   useEffect(() => {
-    startVideo();
+    startVideo("init");
     return () => {
       const tracks = videoRef.current?.srcObject?.getTracks();
       tracks?.forEach((track) => track.stop());
     };
   }, []);
+  
 
   return (
     <MobileLayout title="Absen Masuk" className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
@@ -180,7 +201,7 @@ const StepTwoMulai = ({ handleNextStepData }) => {
               <video ref={videoRef} className="w-full h-[72vh] object-cover rounded-md -scale-x-100" />
               <div className="flex gap-4 mt-4 w-full">
                 <button type="button" onClick={switchCamera} className="w-full py-4 text-sm font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600">
-                  Balikkan Kamera
+                {switching ? "Mengganti..." : "Balikkan Kamera"}
                 </button>
                 <button onClick={handleMulai} disabled={!isCameraReady} className={`w-full py-4 text-sm font-semibold text-white rounded-lg ${ isCameraReady ? "bg-green-500 hover:bg-green-600" : "bg-gray-400 cursor-not-allowed"}`}>
                   Ambil Foto

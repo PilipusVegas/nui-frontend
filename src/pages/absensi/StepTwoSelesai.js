@@ -211,13 +211,12 @@ const StepTwoSelesai = ({ handleNextStepData }) => {
                   Ambil Foto
                 </button>
               </div>
-
             </>
           ) : (
             <>
               <img src={fotoSelesai} alt="Foto Selesai" className="w-full max-h-[70vh] rounded-md mb-4 -scale-x-100" />
               <div className="p-4 rounded-md border space-y-2">
-                <div className="flex justify-between">
+                <div className="flex justify-between">                                       
                   <p className="font-bold">Jam:</p>
                   <p> {currentTime?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false})}</p>
                 </div>
