@@ -404,7 +404,7 @@ const AbsensiKantor = () => {
                       const outTime = item.attendance[tanggal]?.out || "-";
                       const lateMinutes = item.attendance[tanggal]?.late;
                       const LateTime = lateMinutes ? lateMinutes : "-";
-                      const isLate = lateMinutes > 1;
+                      const isLate = lateMinutes > 0;
                       const overtimeRaw = item.attendance[tanggal]?.overtime ?? item.overtimes?.[tanggal]?.durasi;
                       const Overtime = overtimeRaw !== null && overtimeRaw !== undefined && overtimeRaw !== "" && overtimeRaw !== "0" && overtimeRaw !== 0 ? (tipeKaryawan === "lapangan" ? overtimeRaw : formatOvertimeJamBulat(overtimeRaw)) : "-";
                       return (
