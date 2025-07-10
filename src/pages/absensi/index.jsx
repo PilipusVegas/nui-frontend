@@ -17,7 +17,22 @@ const Absensi = () => {
   const [attendanceHistory, setAttendanceHistory] = useState([]);
   const [faqOpen, setFaqOpen] = useState(null);
   const [allFaqOpen, setAllFaqOpen] = useState(true);
+  const [videoStreams, setVideoStreams] = useState({});
 
+  useEffect(() => {
+    const permissionCheck = async () => {
+      const permissionsGranted = await checkPermissions();
+      if (permissionsGranted) {
+        preloadCameras();
+      } else {
+        setCurrentStep(null);
+      }
+    };
+  
+    permissionCheck();
+  }, []);
+  
+  
   const toggleFaq = (index) => {
     setFaqOpen(faqOpen === index ? null : index);
   };
@@ -98,7 +113,6 @@ const Absensi = () => {
     try {
       const locationPermission = await navigator.permissions.query({ name: "geolocation" });
       const cameraPermission = await navigator.permissions.query({ name: "camera" });
-
       if (locationPermission.state !== "granted" || cameraPermission.state !== "granted") {
         Swal.fire({
           icon: "warning",
@@ -107,27 +121,7 @@ const Absensi = () => {
           confirmButtonText: "OK",
         });
         return false;
-      }
-
-      if (locationPermission.state === "prompt" || cameraPermission.state === "prompt") {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            // console.log("Location permission granted", position);
-          },
-          (error) => {
-            // console.error("Geolocation error:", error);
-          }
-        );
-
-        navigator.mediaDevices
-          .getUserMedia({ video: true })
-          .then((stream) => {
-            // console.log("Camera permission granted");
-          })
-          .catch((error) => {
-            console.error("Camera permission error:", error);
-          });
-      }
+      } 
 
       return true;
     } catch (error) {
@@ -136,23 +130,30 @@ const Absensi = () => {
     }
   };
 
-  navigator.geolocation.getCurrentPosition(
-    (position) => {
-      // console.log("Lokasi diperoleh:", position);
-    },
-    (error) => {
-      // console.error("Lokasi tidak dapat diakses:", error);
+  const preloadCameras = async () => {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoInputs = devices.filter((d) => d.kind === "videoinput");
+  
+      const streams = {};
+  
+      for (const device of videoInputs) {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { deviceId: { exact: device.deviceId } },
+        });
+        streams[device.label.includes("back") || device.label.includes("rear") ? "back" : "front"] = stream;
+      }
+  
+      setVideoStreams(streams);
+  
+      Object.values(streams).forEach((stream) => {
+        stream.getTracks().forEach((track) => track.stop());
+      });
+    } catch (err) {
+      console.warn("Preload kamera gagal:", err);
     }
-  );
-
-  navigator.mediaDevices
-    .getUserMedia({ video: true })
-    .then((stream) => {
-      // console.log("Kamera berhasil diakses.");
-    })
-    .catch((error) => {
-      // console.error("Akses kamera ditolak:", error);
-    });
+  };
+  
 
   const handleMulaiClick = async () => {
     const permissionsGranted = await checkPermissions();
@@ -175,7 +176,6 @@ const Absensi = () => {
         setCurrentStep(null);
       }
     };
-
     permissionCheck();
   }, []);
 
@@ -219,7 +219,6 @@ const Absensi = () => {
                           {/* Tanggal Masuk */}
                           <p className="text-[10px] text-gray-500 mb-1">
                             {new Date(item.jam_mulai).toLocaleDateString("id-ID", {
-                              // weekday: 'long',
                               day: "2-digit",
                               month: "short",
                               year: "numeric",
@@ -252,7 +251,6 @@ const Absensi = () => {
                             {/* Tanggal Pulang */}
                             <p className="text-[10px] text-gray-500 mb-1">
                               {new Date(item.jam_selesai).toLocaleDateString("id-ID", {
-                                // weekday: 'long',
                                 day: "2-digit",
                                 month: "short",
                                 year: "numeric",
@@ -294,7 +292,6 @@ const Absensi = () => {
                   </div>
                 )}
               </div>
-              {/* Riwayat Absensi */}
 
               {/* Absen Mulai / Absen Selesai */}
               {isSelesaiFlow ? (
@@ -308,8 +305,6 @@ const Absensi = () => {
                   <span className="text-lg font-medium">Absen Mulai</span>
                 </button>
               )}
-
-              {/* Absen Mulai / Absen Selesai */}
 
               {/* FAQ */}
               <div className="mt-6">
@@ -327,90 +322,53 @@ const Absensi = () => {
                   <div>
                     {/* FAQ 1 */}
                     <div>
-                      <button
-                        className="text-xs w-full text-left px-4 py-2 font-semibold hover:bg-gray-50 rounded-md"
-                        onClick={() => toggleFaq(0)}
-                      >
+                      <button className="text-xs w-full text-left px-4 py-2 font-semibold hover:bg-gray-50 rounded-md" onClick={() => toggleFaq(0)}>
                         Kenapa saya tidak bisa absen masuk?
-                        <FontAwesomeIcon
-                          icon={faqOpen === 0 ? faAngleUp : faAngleDown}
-                          className="float-right"
-                        />
+                        <FontAwesomeIcon icon={faqOpen === 0 ? faAngleUp : faAngleDown} className="float-right"/>
                       </button>
                       {faqOpen === 0 && (
                         <p className="text-[12px] text-white rounded-lg bg-green-600 mx-2 p-3 leading-6">
                           Hal ini dapat terjadi karena beberapa alasan:
                           <ul className="list-disc ml-4">
-                            <li>
-                              Aplikasi Anda belum memiliki izin lokasi yang aktif. Pastikan fitur
-                              GPS diaktifkan di perangkat Anda.
-                            </li>
-                            <li>
-                              Koneksi internet Anda tidak stabil atau terputus. Coba ganti ke
-                              jaringan Wi-Fi yang lebih stabil atau pastikan data seluler Anda
-                              aktif.
-                            </li>
-                            <li>
-                              Akun Anda belum diatur oleh admin untuk absensi. Jika Anda baru
-                              bergabung, pastikan admin telah mengonfigurasi akun Anda dengan benar.
-                            </li>
+                            <li> Aplikasi Anda belum memiliki izin lokasi yang aktif. Pastikan fitur GPS diaktifkan di perangkat Anda.</li>
+                            <li> Koneksi internet Anda tidak stabil atau terputus. Coba ganti ke jaringan Wi-Fi yang lebih stabil atau pastikan data seluler Anda aktif.</li>
+                            <li> Akun Anda belum diatur oleh admin untuk absensi. Jika Anda baru bergabung, pastikan admin telah mengonfigurasi akun Anda dengan benar.</li>
                           </ul>
-                          <b>Solusi:</b> Pastikan GPS diaktifkan, periksa koneksi internet Anda, dan
-                          jika masalah berlanjut, hubungi admin atau Tim HR/IT.
+                          <b>Solusi:</b> Pastikan GPS diaktifkan, periksa koneksi internet Anda, dan jika masalah berlanjut, hubungi admin atau Tim HR/IT.
                         </p>
                       )}
                     </div>
 
                     {/* FAQ 2 */}
                     <div>
-                      <button
-                        className="text-xs w-full text-left px-4 py-2 font-semibold mt-2 hover:bg-gray-50 rounded-md"
-                        onClick={() => toggleFaq(1)}
-                      >
+                      <button className="text-xs w-full text-left px-4 py-2 font-semibold mt-2 hover:bg-gray-50 rounded-md" onClick={() => toggleFaq(1)}>
                         Kenapa gambar absen tidak muncul?
-                        <FontAwesomeIcon
-                          icon={faqOpen === 1 ? faAngleUp : faAngleDown}
-                          className="float-right"
-                        />
+                        <FontAwesomeIcon icon={faqOpen === 1 ? faAngleUp : faAngleDown} className="float-right"/>
                       </button>
                       {faqOpen === 1 && (
                         <p className="text-[12px] text-white rounded-lg bg-green-600 mx-2 p-3 leading-6">
                           Gambar absen mungkin tidak muncul karena:
                           <ul className="list-disc ml-4">
                             <li>Anda belum memberikan izin akses kamera pada aplikasi.</li>
-                            <li>
-                              Aplikasi sedang mengalami kendala teknis atau bug yang menghambat
-                              pengambilan gambar.
-                            </li>
+                            <li> Aplikasi sedang mengalami kendala teknis atau bug yang menghambat pengambilan gambar.</li>
                           </ul>
-                          <b>Solusi:</b> Buka pengaturan perangkat Anda dan izinkan aplikasi
-                          mengakses kamera. Jika tetap tidak berhasil, coba muat ulang(Refresh)
-                          aplikasi atau laporkan masalah ke Tim IT.
+                          <b>Solusi:</b> Buka pengaturan perangkat Anda dan izinkan aplikasi mengakses kamera. Jika tetap tidak berhasil, coba muat ulang(Refresh) aplikasi atau laporkan masalah ke Tim IT.
                         </p>
                       )}
                     </div>
 
                     {/* FAQ 3 */}
                     <div>
-                      <button
-                        className="text-xs w-full text-left px-4 py-2 font-semibold mt-2 hover:bg-gray-50 rounded-md"
-                        onClick={() => toggleFaq(2)}
-                      >
+                      <button className="text-xs w-full text-left px-4 py-2 font-semibold mt-2 hover:bg-gray-50 rounded-md" onClick={() => toggleFaq(2)}>
                         Kenapa lokasi bekerja saya tidak ada di list lokasi?
-                        <FontAwesomeIcon
-                          icon={faqOpen === 2 ? faAngleUp : faAngleDown}
-                          className="float-right"
-                        />
+                        <FontAwesomeIcon icon={faqOpen === 2 ? faAngleUp : faAngleDown} className="float-right"/>
                       </button>
                       {faqOpen === 2 && (
                         <p className="text-[12px] text-white rounded-lg bg-green-600 mx-2 p-3 leading-6">
                           Lokasi bekerja Anda tidak muncul karena:
                           <ul className="list-disc ml-4">
                             <li>Lokasi tersebut belum terdaftar dalam sistem oleh admin.</li>
-                            <li>
-                              Terjadi masalah teknis dalam aplikasi yang menghalangi pembaruan
-                              lokasi.
-                            </li>
+                            <li> Terjadi masalah teknis dalam aplikasi yang menghalangi pembaruan lokasi.</li>
                           </ul>
                           <b>Solusi:</b> Hubungi Tim IT atau Admin untuk memastikan lokasi Anda
                           ditambahkan ke sistem absensi.
@@ -420,23 +378,14 @@ const Absensi = () => {
 
                     {/* FAQ 4 */}
                     <div>
-                      <button
-                        className="text-xs w-full text-left px-4 py-2 font-semibold mt-2 hover:bg-gray-50 rounded-md"
-                        onClick={() => toggleFaq(4)}
-                      >
+                      <button className="text-xs w-full text-left px-4 py-2 font-semibold mt-2 hover:bg-gray-50 rounded-md" onClick={() => toggleFaq(4)}>
                         Bagaimana jika saya ingin lembur?
-                        <FontAwesomeIcon
-                          icon={faqOpen === 4 ? faAngleUp : faAngleDown}
-                          className="float-right"
-                        />
+                        <FontAwesomeIcon icon={faqOpen === 4 ? faAngleUp : faAngleDown} className="float-right"/>
                       </button>
                       {faqOpen === 4 && (
                         <p className="text-[12px] text-white rounded-lg bg-green-600 mx-2 p-3  leading-6">
                           Jika Anda ingin lembur, silakan menuju halaman{" "}
-                          <Link
-                            to="/lembur"
-                            className="text-white font-bold border-2 border-white rounded-lg px-2 pb-1 mr-2 hover:underline"
-                          >
+                          <Link to="/lembur" className="text-white font-bold border-2 border-white rounded-lg px-2 pb-1 mr-2 hover:underline">
                             Form Lembur
                           </Link>
                           untuk mengajukan permintaan lembur sesuai prosedur yang berlaku.
@@ -446,23 +395,14 @@ const Absensi = () => {
 
                     {/* FAQ 5 */}
                     <div>
-                      <button
-                        className="text-xs w-full text-left px-4 py-2 font-semibold mt-2 hover:bg-gray-50 rounded-md"
-                        onClick={() => toggleFaq(5)}
-                      >
+                      <button className="text-xs w-full text-left px-4 py-2 font-semibold mt-2 hover:bg-gray-50 rounded-md" onClick={() => toggleFaq(5)}>
                         Bagaimana jika saya ingin pergi dinas keluar kantor?
-                        <FontAwesomeIcon
-                          icon={faqOpen === 5 ? faAngleUp : faAngleDown}
-                          className="float-right"
-                        />
+                        <FontAwesomeIcon icon={faqOpen === 5 ? faAngleUp : faAngleDown} className="float-right"/>
                       </button>
                       {faqOpen === 5 && (
                         <p className="text-[12px] text-white rounded-lg bg-green-600 mx-2 p-3  leading-6">
                           Jika Anda ingin lembur, silakan menuju halaman{" "}
-                          <Link
-                            to="/form"
-                            className="text-white font-bold border-2 border-white rounded-lg px-2 pb-1 mr-2 hover:underline"
-                          >
+                          <Link to="/form" className="text-white font-bold border-2 border-white rounded-lg px-2 pb-1 mr-2 hover:underline">
                             Form Dinas
                           </Link>
                           untuk mengajukan permintaan lembur sesuai prosedur yang berlaku.
@@ -472,26 +412,16 @@ const Absensi = () => {
 
                     {/* FAQ 6 */}
                     <div>
-                      <button
-                        className="text-xs w-full text-left px-4 py-2 font-semibold mt-2 hover:bg-gray-50 rounded-md"
-                        onClick={() => toggleFaq(8)}
-                      >
+                      <button className="text-xs w-full text-left px-4 py-2 font-semibold mt-2 hover:bg-gray-50 rounded-md" onClick={() => toggleFaq(8)}>
                         Bagaimana memastikan aplikasi ini berjalan lancar di perangkat saya?
-                        <FontAwesomeIcon
-                          icon={faqOpen === 8 ? faAngleUp : faAngleDown}
-                          className="float-right"
-                        />
+                        <FontAwesomeIcon icon={faqOpen === 8 ? faAngleUp : faAngleDown} className="float-right"/>
                       </button>
                       {faqOpen === 8 && (
                         <p className="text-[12px] text-white rounded-lg bg-green-600 mx-2 p-3 leading-6">
-                          Pastikan perangkat Anda memenuhi persyaratan berikut agar aplikasi
-                          berjalan lancar:
+                          Pastikan perangkat Anda memenuhi persyaratan berikut agar aplikasi berjalan lancar:
                           <ul className="list-disc ml-4">
                             <li>Perangkat Anda menggunakan versi terbaru dari aplikasi.</li>
-                            <li>
-                              Koneksi internet yang stabil (Wi-Fi atau data seluler yang cukup
-                              kuat).
-                            </li>
+                            <li> Koneksi internet yang stabil (Wi-Fi atau data seluler yang cukup kuat).</li>
                             <li>Memberikan izin yang diperlukan seperti akses GPS dan kamera.</li>
                           </ul>
                         </p>
@@ -499,8 +429,8 @@ const Absensi = () => {
                     </div>
                   </div>
                 )}
+
               </div>
-              {/* FAQ */}
             </div>
           </MobileLayout>
         );
