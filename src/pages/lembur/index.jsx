@@ -61,12 +61,6 @@ const Lembur = () => {
       Swal.fire("Form belum lengkap", "Mohon lengkapi semua isian", "error");
       return false;
     }
-    const mulai = parseInt(jamMulai.split(":")[0], 10);
-    const selesai = parseInt(jamSelesai.split(":")[0], 10);
-    if (selesai <= mulai) {
-      Swal.fire("Jam tidak valid", "Jam selesai harus lebih besar dari jam mulai", "error");
-      return false;
-    }
     return true;
   };
 
