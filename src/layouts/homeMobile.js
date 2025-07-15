@@ -93,16 +93,16 @@
       setHasNewNotifications(false);
     };
 
-    const IconButton = ({ icon, label, onClick, color, hasNotification, isActive }) => (
-      <button
-        onClick={onClick}
-        aria-label={label}
-        className={`flex flex-col items-center justify-center mb-1 py-2 px-4 relative transition-all duration-300 rounded-full ${
-          isActive ? "bg-white text-green-900" : " hover:text-green-900 px-2"
-        }`}
-      >
+    const IconButton = ({ icon, image, label, onClick, color, hasNotification, isActive,}) => (
+      <button onClick={onClick} aria-label={label} className={`flex flex-col items-center justify-center mb-1 py-2 px-4 relative transition-all duration-300 rounded-full ${ isActive ? "bg-white text-green-900" : " hover:text-green-900 px-2" }`}>
         <div className="relative">
-          <FontAwesomeIcon icon={icon} className={`text-lg ${color}`} />
+          {icon && <FontAwesomeIcon icon={icon} className={`text-lg ${color}`} />}
+          {image && (
+            <div className={`p-3 rounded-lg ${color}`}>
+              <img src={image} alt={label} className="w-8 h-8 object-contain mx-auto"/>
+            </div>
+          
+          )}
           {hasNotification && (
             <>
               <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 animate-ping" />
@@ -113,6 +113,7 @@
         <span className="mt-1 text-xs font-medium">{label}</span>
       </button>
     );
+    
 
     const calculateTotalHours = (startTime, endTime) => {
       const start = new Date(startTime);
@@ -144,7 +145,6 @@
       });
     };
 
-
     return (
       <div className="flex flex-col font-sans bg-gray-50 min-h-screen">
         {/* Header Hero */}
@@ -168,31 +168,12 @@
         <div className="grid grid-cols-4 gap-2 px-4">
           <IconButton icon={faCalendarCheck} label="Absen" onClick={() => navigate("/absensi")} color="p-4 rounded-lg bg-green-100 text-xl text-emerald-500"/>
           <IconButton icon={faClock} label="Lembur" onClick={() => navigate("/lembur")} color="p-4 rounded-lg bg-green-100 text-xl text-teal-500"/>
-          <IconButton icon={faPenFancy} label="e-Form"
-            onClick={() => navigate("/form")}
-            color="p-4 rounded-lg bg-green-100 text-xl text-blue-500"
-          />
-          <IconButton
-            icon={faBell}
-            label="Notifikasi"
-            onClick={handleNotificationClick}
-            hasNotification={hasNewNotifications}
-            color="p-4 rounded-lg bg-green-100 text-xl text-amber-600"
-          /> 
-          <IconButton
-            icon={faHistory}
-            label="Riwayat"
-            onClick={() => navigate("/riwayat-absensi")}
-            color="p-4 rounded-lg bg-green-100 text-xl text-indigo-600"
-          />
-          <IconButton
-            icon={faThList}
-            label="Lainnya"
-            onClick={() => navigate("/menu")}
-            color="p-4 rounded-lg bg-green-100 text-xl text-teal-600"
-          />
+          <IconButton icon={faPenFancy} label="e-Form" onClick={() => navigate("/form")} color="p-4 rounded-lg bg-green-100 text-xl text-blue-500"/>
+          <IconButton icon={faBell} label="Notifikasi" onClick={handleNotificationClick} hasNotification={hasNewNotifications} color="p-4 rounded-lg bg-green-100 text-xl text-amber-600"/> 
+          <IconButton icon={faHistory} label="Riwayat" onClick={() => navigate("/riwayat-absensi")} color="p-4 rounded-lg bg-green-100 text-xl text-indigo-600"/>
+          <IconButton icon={faThList} label="Lainnya" onClick={() => navigate("/menu")} color="p-4 rounded-lg bg-green-100 text-xl text-teal-600"/>
+          <IconButton image="/NOS.png" label="NOS" onClick={() => window.open("https://nos.nicourbanindonesia.com/mypanel/maintenance/add", "_blank")} color="bg-green-100"/>
         </div>
-
         {/* MENU UTAMA */}
 
         {/* MENU BANTUAN */}
@@ -203,19 +184,13 @@
 
         <div className="flex gap-4 px-4">
           {/* Team IT Card */}
-          <div
-            className="flex items-center gap-3 p-4 bg-green-100 rounded-lg cursor-pointer hover:bg-green-200 transition-all duration-300 w-full md:w-1/2"
-            onClick={() => window.open("https://wa.me/628980128222", "_blank")}
-          >
+          <div className="flex items-center gap-3 p-4 bg-green-100 rounded-lg cursor-pointer hover:bg-green-200 transition-all duration-300 w-full md:w-1/2" onClick={() => window.open("https://wa.me/628980128222", "_blank")}>
             <FontAwesomeIcon className="text-green-500 text-xl" icon={faWhatsapp} />
             <span className="font-medium text-gray-800">Team IT</span>
           </div>
 
           {/* Team Leader Card */}
-          <div
-            className="flex items-center gap-3 p-4 bg-green-100 rounded-lg cursor-pointer hover:bg-green-200 transition-all duration-300 w-full md:w-1/2"
-            onClick={() => window.open("https://wa.me/6287819999599", "_blank")}
-          >
+          <div className="flex items-center gap-3 p-4 bg-green-100 rounded-lg cursor-pointer hover:bg-green-200 transition-all duration-300 w-full md:w-1/2" onClick={() => window.open("https://wa.me/6287819999599", "_blank")}>
             <FontAwesomeIcon className="text-green-500 text-xl" icon={faWhatsapp} />
             <span className="font-medium text-gray-800">Team Leader</span>
           </div>
@@ -232,10 +207,7 @@
 
             {/* Link "See all" */}
             <p className="text-md text-green-600 hover:text-green-800">
-              <button
-                onClick={() => navigate("/riwayat-absensi")}
-                className="transition duration-200 ease-in-out hover:underline"
-              >
+              <button onClick={() => navigate("/riwayat-absensi")} className="transition duration-200 ease-in-out hover:underline">
                 see more <FontAwesomeIcon icon={faArrowRight} />
               </button>
             </p>
@@ -251,7 +223,6 @@
                     <div className="text-4xl font-bold text-white">
                       {new Date(item.jam_mulai).getDate()}
                     </div>
-
                     <div className="text-xs text-white">
                       {new Date(item.jam_mulai).toLocaleDateString("id-ID", {
                         weekday: "long",
@@ -302,25 +273,9 @@
 
         {/* MENU FOOTER */}
         <div className="fixed bottom-[-5px] left-0 w-full flex justify-around items-center p-2 bg-green-700 shadow-md text-white rounded-t-2xl">
-          <IconButton
-            icon={faHome}
-            label="Home"
-            isActive={location.pathname === "/home"}
-            onClick={() => navigate("/home")}
-          />
-          <IconButton
-            icon={faHistory}
-            label="Riwayat"
-            // hasNotification={hasNewNotifications}
-            isActive={location.pathname === "/riwayat-absensi"}
-            onClick={() => navigate("/riwayat-absensi")}
-          />
-          <IconButton
-            icon={faUser}
-            label="Profil"
-            isActive={location.pathname === "/profile"}
-            onClick={() => navigate("/profile")}
-          />
+          <IconButton icon={faHome} label="Home" isActive={location.pathname === "/home"} onClick={() => navigate("/home")}/>
+          <IconButton icon={faHistory} label="Riwayat" isActive={location.pathname === "/riwayat-absensi"} onClick={() => navigate("/riwayat-absensi")}/>
+          <IconButton icon={faUser}  label="Profil" isActive={location.pathname === "/profile"} onClick={() => navigate("/profile")}/>
         </div>
         {/* MENU FOOTER */}
       </div>

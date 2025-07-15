@@ -59,7 +59,7 @@ const Lembur = () => {
     const { tugas, lokasi, tanggal, jamMulai, jamSelesai } = lemburData;
     if (!tugas || !lokasi || !tanggal || !jamMulai || !jamSelesai) {
       Swal.fire("Form belum lengkap", "Mohon lengkapi semua isian", "error");
-      return false;
+      return false; 
     }
     return true;
   };
