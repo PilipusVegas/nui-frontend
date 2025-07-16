@@ -28,7 +28,6 @@ const Absensi = () => {
         setCurrentStep(null);
       }
     };
-  
     permissionCheck();
   }, []);
   
@@ -154,13 +153,34 @@ const Absensi = () => {
     }
   };
   
-
+  const requestCameraPermission = async () => {
+    try {
+      await navigator.mediaDevices.getUserMedia({ video: true });
+    } catch (error) {
+      console.error("Gagal akses kamera:", error);
+    }
+  };
+  
+  const requestLocationPermission = async () => {
+    try {
+      await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject);
+      });
+    } catch (error) {
+      console.error("Gagal akses lokasi:", error);
+    }
+  };
+  
   const handleMulaiClick = async () => {
+    await requestCameraPermission();
+    await requestLocationPermission();
+  
     const permissionsGranted = await checkPermissions();
     if (permissionsGranted) {
       setCurrentStep("stepOne");
     }
   };
+  
 
   const handleSelesaiClick = async () => {
     const permissionsGranted = await checkPermissions();
