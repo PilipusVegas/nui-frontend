@@ -446,9 +446,9 @@ const Absensi = () => {
                   <span className="text-lg font-medium">Absen Selesai</span>
                 </button>
               ) : (
-                <button className="w-full border border-green-600 text-green-600 py-3 rounded-md shadow-lg hover:bg-green-200 flex items-center justify-center gap-2 transition" onClick={handleMulaiClick}>
+                <button disabled={isLoading} className={`w-full py-3 rounded-md shadow-lg flex items-center justify-center gap-2 transition  ${isSelesaiFlow  ? "bg-teal-600 text-white hover:bg-teal-700"  : "border border-green-600 text-green-600 hover:bg-green-200"} ${isLoading && "opacity-60 cursor-not-allowed"}`} onClick={handleMulaiClick}>
                   <FontAwesomeIcon icon={faCalendarPlus} className="text-2xl" />
-                  <span className="text-lg font-medium">Absen Mulai</span>
+                  <span className="text-lg font-medium">{isLoading ? "Memuat..." : "Absen Mulai"}</span>
                 </button>
               )}
 
