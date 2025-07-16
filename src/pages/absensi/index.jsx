@@ -216,10 +216,34 @@ const Absensi = () => {
       console.error("Gagal akses lokasi:", error);
     }
   };
+
+  const requestPermissions = async () => {
+    try {
+      // Minta izin kamera — trigger Chrome permission popup
+      await navigator.mediaDevices.getUserMedia({ video: true });
+  
+      // Minta izin lokasi — trigger Chrome permission popup
+      await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject);
+      });
+  
+      // Jika semua berhasil
+      console.log("Izin diberikan");
+  
+    } catch (error) {
+      console.error("Izin ditolak:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Akses Ditolak",
+        text: "Mohon izinkan akses kamera dan lokasi.",
+      });
+    }
+  };
+  
   
   const handleMulaiClick = async () => {
     try {
-      // Trigger langsung dari user gesture
+      // Trigger izin — ini WAJIB dari user gesture (button click)
       await navigator.mediaDevices.getUserMedia({ video: true });
       await new Promise((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject);
@@ -227,9 +251,11 @@ const Absensi = () => {
   
       const permissionsGranted = await checkPermissions();
       if (permissionsGranted) {
+        preloadCameras(); // opsional, jika ingin preload sebelum mulai
         setCurrentStep("stepOne");
       }
     } catch (err) {
+      console.error("Izin ditolak:", err);
       Swal.fire({
         icon: "error",
         title: "Izin ditolak",
@@ -237,6 +263,7 @@ const Absensi = () => {
       });
     }
   };
+  
   
   
 
