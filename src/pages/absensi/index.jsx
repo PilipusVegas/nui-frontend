@@ -108,26 +108,72 @@ const Absensi = () => {
     if (attendanceData.userId) checkAttendance();
   }, [apiUrl, attendanceData.userId]);
 
+  // const checkPermissions = async () => {
+  //   try {
+  //     const locationPermission = await navigator.permissions.query({ name: "geolocation" });
+  //     const cameraPermission = await navigator.permissions.query({ name: "camera" });
+  //     if (locationPermission.state !== "granted" || cameraPermission.state !== "granted") {
+  //       Swal.fire({
+  //         icon: "warning",
+  //         title: "Perizinan Dibutuhkan",
+  //         text: "Mohon untuk menyalakan GPS dan perizinan kamera pada perangkat Anda.",
+  //         confirmButtonText: "OK",
+  //       });
+  //       return false;
+  //     } 
+
+  //     return true;
+  //   } catch (error) {
+  //     console.error("Error checking permissions:", error);
+  //     return false;
+  //   }
+  // };
+
   const checkPermissions = async () => {
     try {
+      if (!navigator.permissions || !navigator.permissions.query) {
+        console.warn("Browser tidak support Permissions API.");
+        return true;
+      }
       const locationPermission = await navigator.permissions.query({ name: "geolocation" });
       const cameraPermission = await navigator.permissions.query({ name: "camera" });
-      if (locationPermission.state !== "granted" || cameraPermission.state !== "granted") {
+  
+      const isLocationDenied = locationPermission.state === "denied";
+      const isCameraDenied = cameraPermission.state === "denied";
+  
+      if (isLocationDenied || isCameraDenied) {
+        Swal.fire({
+          icon: "error",
+          title: "Izin Ditolak Permanen",
+          html: `
+            <p>Anda telah menolak akses <b>${isCameraDenied ? "kamera" : ""} ${isCameraDenied && isLocationDenied ? "dan" : ""} ${isLocationDenied ? "lokasi" : ""}</b>.</p>
+            <p>Silakan buka <b>Pengaturan Browser</b> → <b>Setelan Situs</b> → <b>Izin</b> dan izinkan kembali akses yang dibutuhkan.</p>
+          `,
+          confirmButtonText: "Saya Mengerti",
+        });
+        return false;
+      }
+  
+      const isLocationGranted = locationPermission.state === "granted";
+      const isCameraGranted = cameraPermission.state === "granted";
+  
+      if (!isLocationGranted || !isCameraGranted) {
         Swal.fire({
           icon: "warning",
           title: "Perizinan Dibutuhkan",
-          text: "Mohon untuk menyalakan GPS dan perizinan kamera pada perangkat Anda.",
+          text: "Mohon aktifkan GPS dan izinkan akses kamera untuk melanjutkan.",
           confirmButtonText: "OK",
         });
         return false;
-      } 
-
+      }
+  
       return true;
     } catch (error) {
-      console.error("Error checking permissions:", error);
+      console.error("Gagal mengecek permission:", error);
       return false;
     }
   };
+  
 
   const preloadCameras = async () => {
     try {
@@ -140,7 +186,7 @@ const Absensi = () => {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { deviceId: { exact: device.deviceId } },
         });
-        streams[device.label.includes("back") || device.label.includes("rear") ? "back" : "front"] = stream;
+        streams[device.label.toLowerCase().includes("back") || device.label.toLowerCase().includes("rear") ? "back" : "front"] = stream;
       }
   
       setVideoStreams(streams);
@@ -172,14 +218,26 @@ const Absensi = () => {
   };
   
   const handleMulaiClick = async () => {
-    await requestCameraPermission();
-    await requestLocationPermission();
+    try {
+      // Trigger langsung dari user gesture
+      await navigator.mediaDevices.getUserMedia({ video: true });
+      await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject);
+      });
   
-    const permissionsGranted = await checkPermissions();
-    if (permissionsGranted) {
-      setCurrentStep("stepOne");
+      const permissionsGranted = await checkPermissions();
+      if (permissionsGranted) {
+        setCurrentStep("stepOne");
+      }
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Izin ditolak",
+        text: "Mohon izinkan akses kamera dan lokasi untuk menggunakan fitur ini.",
+      });
     }
   };
+  
   
 
   const handleSelesaiClick = async () => {
@@ -189,15 +247,15 @@ const Absensi = () => {
     }
   };
 
-  useEffect(() => {
-    const permissionCheck = async () => {
-      const permissionsGranted = await checkPermissions();
-      if (!permissionsGranted) {
-        setCurrentStep(null);
-      }
-    };
-    permissionCheck();
-  }, []);
+  // useEffect(() => {
+  //   const permissionCheck = async () => {
+  //     const permissionsGranted = await checkPermissions();
+  //     if (!permissionsGranted) {
+  //       setCurrentStep(null);
+  //     }
+  //   };
+  //   permissionCheck();
+  // }, []);
 
   const renderStep = () => {
     switch (currentStep) {
