@@ -18,6 +18,7 @@ const Absensi = () => {
   const [faqOpen, setFaqOpen] = useState(null);
   const [allFaqOpen, setAllFaqOpen] = useState(true);
   const [videoStreams, setVideoStreams] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const permissionCheck = async () => {
@@ -219,17 +220,11 @@ const Absensi = () => {
 
   const requestPermissions = async () => {
     try {
-      // Minta izin kamera — trigger Chrome permission popup
-      await navigator.mediaDevices.getUserMedia({ video: true });
-  
-      // Minta izin lokasi — trigger Chrome permission popup
+      await navigator.mediaDevices.getUserMedia({ video: true }); // Kamera
       await new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject);
+        navigator.geolocation.getCurrentPosition(resolve, reject); // Lokasi
       });
-  
-      // Jika semua berhasil
       console.log("Izin diberikan");
-  
     } catch (error) {
       console.error("Izin ditolak:", error);
       Swal.fire({
@@ -241,38 +236,86 @@ const Absensi = () => {
   };
   
   
-  const handleMulaiClick = async () => {
-    try {
-      // Trigger izin — ini WAJIB dari user gesture (button click)
-      await navigator.mediaDevices.getUserMedia({ video: true });
-      await new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject);
-      });
+  // const handleMulaiClick = async () => {
+  //   try {
+  //     // Trigger izin — ini WAJIB dari user gesture (button click)
+  //     await navigator.mediaDevices.getUserMedia({ video: true });
+  //     await new Promise((resolve, reject) => {
+  //       navigator.geolocation.getCurrentPosition(resolve, reject);
+  //     });
   
-      const permissionsGranted = await checkPermissions();
-      if (permissionsGranted) {
-        preloadCameras(); // opsional, jika ingin preload sebelum mulai
+  //     const permissionsGranted = await checkPermissions();
+  //     if (permissionsGranted) {
+  //       preloadCameras(); // opsional, jika ingin preload sebelum mulai
+  //       setCurrentStep("stepOne");
+  //     }
+  //   } catch (err) {
+  //     console.error("Izin ditolak:", err);
+  //     Swal.fire({
+  //       icon: "error",
+  //       title: "Izin ditolak",
+  //       text: "Mohon izinkan akses kamera dan lokasi untuk menggunakan fitur ini.",
+  //     });
+  //   }
+  // };
+  
+
+  // const handleSelesaiClick = async () => {
+  //   const permissionsGranted = await checkPermissions();
+  //   if (permissionsGranted) {
+  //     setCurrentStep("stepTwoSelesai");
+  //   }
+  // };
+
+  const handleMulaiClick = async () => {
+    setIsLoading(true);
+  
+    try {
+      let needToRequest = true;
+  
+      if (navigator.permissions && navigator.permissions.query) {
+        const locationStatus = await navigator.permissions.query({ name: "geolocation" });
+        const cameraStatus = await navigator.permissions.query({ name: "camera" });
+  
+        // Jika keduanya sudah granted, gak perlu trigger popup
+        needToRequest = locationStatus.state !== "granted" || cameraStatus.state !== "granted";
+      }
+  
+      if (needToRequest) {
+        await requestPermissions(); // Trigger native popup Chrome
+      }
+  
+      const granted = await checkPermissions();
+      if (granted) {
         setCurrentStep("stepOne");
       }
-    } catch (err) {
-      console.error("Izin ditolak:", err);
+    } catch (error) {
+      console.error("Terjadi kesalahan saat memproses perizinan:", error);
       Swal.fire({
         icon: "error",
-        title: "Izin ditolak",
-        text: "Mohon izinkan akses kamera dan lokasi untuk menggunakan fitur ini.",
+        title: "Kesalahan",
+        text: "Gagal memproses perizinan perangkat. Silakan coba ulang.",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
   
   
-  
-
   const handleSelesaiClick = async () => {
-    const permissionsGranted = await checkPermissions();
-    if (permissionsGranted) {
+    const locationStatus = await navigator.permissions.query({ name: "geolocation" });
+    const cameraStatus = await navigator.permissions.query({ name: "camera" });
+  
+    if (locationStatus.state !== "granted" || cameraStatus.state !== "granted") {
+      await requestPermissions(); // Trigger prompt izin
+    }
+  
+    const granted = await checkPermissions();
+    if (granted) {
       setCurrentStep("stepTwoSelesai");
     }
   };
+  
 
   // useEffect(() => {
   //   const permissionCheck = async () => {
@@ -369,9 +412,7 @@ const Absensi = () => {
                                   <FontAwesomeIcon icon={faSignOutAlt} className="text-xs transform rotate-180"/>
                                 </div>
                                 <div>
-                                  <p className="text-[10px] text-gray-500 font-bold">
-                                    Absen Pulang
-                                  </p>
+                                  <p className="text-[10px] text-gray-500 font-bold"> Absen Pulang</p>
                                   <p className="text-[14px] font-medium text-green-500">
                                     {new Date(item.jam_selesai).toLocaleTimeString("id-ID", {
                                       hour: "2-digit",
