@@ -101,13 +101,6 @@ const Lembur = () => {
     }
   };
 
-  const FormInput = ({ label, ...props }) => (
-    <div className="mb-4">
-      <label className="block text-sm font-semibold mb-1">{label}</label>
-      <input {...props} className="w-full p-2 text-lg border-2 rounded-lg" />
-    </div>
-  );
-
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     const username = localStorage.getItem("userName");
@@ -121,35 +114,51 @@ const Lembur = () => {
 
   const renderStepOne = () => (
     <MobileLayout title="Formulir Lembur">
-      <form onSubmit={handleSubmitStepOne} className="space-y-4 p-4">
-        <FormInput label="Tanggal" type="date" value={lemburData.tanggal} onChange={(e) => setLemburData(d => ({ ...d, tanggal: e.target.value }))}/>
+      <form onSubmit={handleSubmitStepOne} className="space-y-5 p-4">
         <div className="mb-4">
-          <label className="block text-sm font-semibold mb-1">Lokasi</label>
-          <select value={lemburData.lokasi} onChange={(e) => {
-              const lokasi = e.target.value;
-              const nama_lokasi = locations.find(l => l.nama === lokasi)?.id || "";
-              setLemburData(d => ({ ...d, lokasi, nama_lokasi }));
-            }}
-            className="w-full p-2 text-lg border-2 rounded-lg text-sm tracking-wider "
-          >
+          <label className="block text-sm font-semibold">Tanggal</label>
+          <p className="text-[10px] tracking-wide text-gray-500 mb-2">
+            Tentukan tanggal pelaksanaan lembur sesuai kebutuhan kerja.
+          </p>
+          <input type="date" value={lemburData.tanggal} onChange={(e) => setLemburData((d) => ({ ...d, tanggal: e.target.value }))} className="w-full p-2 text-sm font-reguler border-2 rounded-md"/>
+        </div>
+  
+        <div className="mb-4">
+          <label className="block text-sm font-semibold">Lokasi</label>
+          <p className="text-[10px] tracking-wide text-gray-500 mb-2">
+            Pilih lokasi di mana kegiatan lembur dilakukan.
+          </p>
+          <select value={lemburData.lokasi} onChange={(e) => { const lokasi = e.target.value; const nama_lokasi = locations.find((l) => l.nama === lokasi)?.id || ""; setLemburData((d) => ({ ...d, lokasi, nama_lokasi })); }} className="w-full p-3 text-sm font-reguler border-2 rounded-md tracking-wide">
             <option value="">Pilih Lokasi</option>
-            {locations.map(loc => (
-              <option key={loc.id} value={loc.nama}>{loc.nama}</option>
+            {locations.map((loc) => (
+              <option key={loc.id} value={loc.nama}>
+                {loc.nama}
+              </option>
             ))}
           </select>
         </div>
+  
         <div className="mb-4">
-          <label className="block text-sm font-semibold mb-1">Tugas</label>
-          <textarea rows="2" value={lemburData.tugas} maxLength={CHAR_LIMIT} onChange={(e) => setLemburData(d => ({ ...d, tugas: e.target.value }))} className="w-full p-2 text-lg border-2 rounded-lg resize-vertical"/>
+          <label className="block text-sm font-semibold">Tugas</label>
+          <p className="text-[10px] tracking-wide text-gray-500 mb-2">
+            Tuliskan ringkasan tugas yang dikerjakan saat lembur. Maksimal {CHAR_LIMIT} karakter.
+          </p>
+          <textarea rows="2" value={lemburData.tugas} maxLength={CHAR_LIMIT} onChange={(e) => setLemburData((d) => ({ ...d, tugas: e.target.value }))} className="w-full p-2 text-sm font-reguler border-2 rounded-md resize-vertical"/>
         </div>
+  
         {["jamMulai", "jamSelesai"].map((key) => (
           <div key={key} className="mb-4">
-            <label className="block text-sm font-semibold mb-1">
+            <label className="block text-sm font-semibold">
               {key === "jamMulai" ? "Jam Mulai" : "Jam Selesai"}
             </label>
-            <select  value={lemburData[key] || ""}  onChange={(e) => setLemburData(d => ({ ...d, [key]: e.target.value }))}  className="w-full p-2 text-lg border-2 rounded-lg">
+            <p className="text-[10px] tracking-wide text-gray-500 mb-2">
+              {key === "jamMulai"
+                ? "Pilih jam dimulainya lembur sesuai dengan jadwal atau kebutuhan lapangan."
+                : "Sistem hanya menerima jam bulat. Jika selesai di 07:30, pilih jam di atasnya seperti 08:00."}
+            </p>
+            <select value={lemburData[key] || ""} onChange={(e) => setLemburData((d) => ({ ...d, [key]: e.target.value })) } className="w-full p-2 text-sm font-reguler border-2 rounded-md">
               <option value="">Pilih Jam</option>
-              {hours.map(h => (
+              {hours.map((h) => (
                 <option key={h} value={`${h}:00`}>
                   {`${h}:00`} ({getLabel(h)})
                 </option>
@@ -157,14 +166,15 @@ const Lembur = () => {
             </select>
           </div>
         ))}
+  
         <button type="submit" className="w-full py-2 px-4 bg-green-500 text-white rounded-lg font-bold">
-          Lihat Detail 
+          Lihat Detail
           <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
         </button>
       </form>
     </MobileLayout>
   );
-
+  
   const renderStepTwo = () => (
     <MobileLayout title="Detail Pengajuan Lembur">
       <form onSubmit={handleSubmitStepTwo} className="max-h-screen flex flex-col">
@@ -189,12 +199,10 @@ const Lembur = () => {
                 <p className="text-gray-600 font-medium">Lokasi Lembur</p>
                 <p className="text-gray-900">{lemburData.lokasi || "-"}</p>
               </div>
-  
               <div>
                 <p className="text-gray-600 font-medium">Tanggal Lembur</p>
                 <p className="text-gray-900">{lemburData.tanggal || "-"}</p>
               </div>
-  
               <div className="flex flex-col gap-1">
                 <p className="text-gray-600 font-medium">Waktu Lembur</p>
                 <p className="text-gray-900">
@@ -205,7 +213,6 @@ const Lembur = () => {
                   <span className="text-sm text-gray-500">({getLabel(lemburData.jamSelesai)})</span>
                 </p>
               </div>
-
               <div>
                 <p className="text-gray-600 font-medium mb-1">Tugas Lemburan</p>
                 <div className="text-gray-900 font-regular">
