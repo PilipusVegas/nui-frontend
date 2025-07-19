@@ -105,98 +105,161 @@ const AbsensiKantor = () => {
   
     // 🟡 Ringkasan
     worksheet.mergeCells(2, offsetCol, 2, offsetCol + totalCols - 1);
-    const summaryCell1 = worksheet.getCell(2, offsetCol);
-    summaryCell1.value = summary1;
-    summaryCell1.font = { italic: true, size: 12 };
-    summaryCell1.alignment = { vertical: 'middle', horizontal: 'left' };
-  
     worksheet.mergeCells(3, offsetCol, 3, offsetCol + totalCols - 1);
-    const summaryCell2 = worksheet.getCell(3, offsetCol);
-    summaryCell2.value = summary2;
-    summaryCell2.font = { italic: true, size: 12 };
-    summaryCell2.alignment = { vertical: 'middle', horizontal: 'left' };
-
     worksheet.mergeCells(4, offsetCol, 4, offsetCol + totalCols - 1);
-    const summaryCell3 = worksheet.getCell(4, offsetCol);
-    summaryCell3.value = summary3;
-    summaryCell3.font = { italic: true, size: 12 };
-    summaryCell3.alignment = { vertical: 'middle', horizontal: 'left' };
+  
+    worksheet.getCell(2, offsetCol).value = summary1;
+    worksheet.getCell(2, offsetCol).font = { italic: true, size: 12 };
+    worksheet.getCell(2, offsetCol).alignment = { vertical: 'middle', horizontal: 'left' };
+  
+    worksheet.getCell(3, offsetCol).value = summary2;
+    worksheet.getCell(3, offsetCol).font = { italic: true, size: 12 };
+    worksheet.getCell(3, offsetCol).alignment = { vertical: 'middle', horizontal: 'left' };
+  
+    worksheet.getCell(4, offsetCol).value = summary3;
+    worksheet.getCell(4, offsetCol).font = { italic: true, size: 12 };
+    worksheet.getCell(4, offsetCol).alignment = { vertical: 'middle', horizontal: 'left' };
   
     // 🔵 Header Utama (baris 5)
-    const headerRow2 = ["Pegawai", "", "Jumlah", "", ""];
+    const headerRow2 = ["Pegawai", "", "Jumlah"];
     tanggalArray.forEach((tgl) => {
       const formattedDate = formatTanggal(tgl);
       headerRow2.push(formattedDate, "", "", "");
     });
+    headerRow2.push("Jumlah", "", ""); // untuk LATE & OVERTIME total di ujung
+  
     worksheet.getRow(offsetRow + 1).values = Array(offsetCol - 1).fill(null).concat(headerRow2);
   
-    // Merge "Pegawai" (NIP + Nama)
-    worksheet.mergeCells(offsetRow + 1, offsetCol, offsetRow + 1, offsetCol + 1);
+    worksheet.mergeCells(offsetRow + 1, offsetCol, offsetRow + 1, offsetCol + 1); // NIP + Nama
+    worksheet.mergeCells(offsetRow + 1, offsetCol + 2, offsetRow + 1, offsetCol + 2); // Kehadiran
   
-    // Merge "Jumlah" (Kehadiran, Keterlambatan, Lemburan)
-    worksheet.mergeCells(offsetRow + 1, offsetCol + 2, offsetRow + 1, offsetCol + 4);
-  
-    // Merge setiap tanggal (4 kolom: IN, OUT, LATE, OVERTIME)
     tanggalArray.forEach((_, i) => {
-      const start = offsetCol + 5 + i * 4;
+      const start = offsetCol + 3 + i * 4;
       const end = start + 3;
       worksheet.mergeCells(offsetRow + 1, start, offsetRow + 1, end);
     });
   
-    // 🔵 Baris Subheader (baris 6)
-    const headerRow3 = ["NIP", "Nama", "Kehadiran", "Keterlambatan", "Lemburan"];
+    const totalAfterTanggal = offsetCol + 3 + tanggalArray.length * 4;
+    worksheet.mergeCells(offsetRow + 1, totalAfterTanggal, offsetRow + 1, totalAfterTanggal + 1); // LATE
+    worksheet.mergeCells(offsetRow + 1, totalAfterTanggal + 2, offsetRow + 1, totalAfterTanggal + 2); // OVERTIME
+  
+    // 🔵 Subheader (baris 6)
+    const headerRow3 = ["NIP", "Nama", "Kehadiran"];
     tanggalArray.forEach(() => {
-      headerRow3.push("IN", "OUT", "LATE", "OVERTIME");
+      headerRow3.push("IN", "LATE", "OUT", "OVERTIME");
     });
+    headerRow3.push("Keterlambatan", "Lemburan");
+  
     worksheet.getRow(offsetRow + 2).values = Array(offsetCol - 1).fill(null).concat(headerRow3);
   
-    // 🟣 Baris Data Pegawai
-    filteredAbsenData.forEach((item, index) => {
-        const row = [
-          item.nip ?? "-",
-          item.nama,
-          item.total_days,
-          item.total_late,
-          formatOvertimeJamBulat(item.total_overtime),
-        ];
-        tanggalArray.forEach((tgl) => {
-          const att = item.attendance?.[tgl] || {};
-          const overtimeRaw = att.overtime ?? item.overtimes?.[tgl]?.durasi;
-        
-          const overtimeFormatted =
-            tipeKaryawan === "lapangan"
-              ? (overtimeRaw && overtimeRaw !== "0" ? overtimeRaw : "-")
-              : formatOvertimeJamBulat(overtimeRaw);
-        
-          row.push(
-            att.in ?? "-",
-            att.out ?? "-",
-            att.late ?? "-",
-            overtimeFormatted
-          );
+    // 🎯 Warnai tanggal & subheader jika hari Minggu
+    tanggalArray.forEach((tgl, index) => {
+      const dateObj = new Date(tgl);
+      const isSunday = dateObj.getDay() === 0;
+      if (isSunday) {
+        const colStart = offsetCol + 3 + index * 4;
+        const colEnd = colStart + 3;
+  
+        for (let col = colStart; col <= colEnd; col++) {
+          const headerCell = worksheet.getCell(offsetRow + 1, col);
+          const subHeaderCell = worksheet.getCell(offsetRow + 2, col);
+          headerCell.fill = subHeaderCell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFFF0000' },
+          };
+          headerCell.font = subHeaderCell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+        }
+  
+        filteredAbsenData.forEach((_, rowIndex) => {
+          for (let col = colStart; col <= colEnd; col++) {
+            const cell = worksheet.getCell(offsetRow + 3 + rowIndex, col);
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'FFFFCCCC' },
+            };
+          }
         });
-        
-      worksheet.getRow(offsetRow + 3 + index).values = Array(offsetCol - 1).fill(null).concat(row);
+      }
+    });
+  
+    // 🟣 Baris Data
+    filteredAbsenData.forEach((item, index) => {
+      const row = [
+        item.nip ?? "-",
+        item.nama,
+        item.total_days,
+      ];
+  
+      tanggalArray.forEach((tgl, tIndex) => {
+        const att = item.attendance?.[tgl] || {};
+        const overtimeRaw = att.overtime ?? item.overtimes?.[tgl]?.durasi;
+        const overtimeFormatted =
+          tipeKaryawan === "lapangan"
+            ? (overtimeRaw && overtimeRaw !== "0" ? overtimeRaw : "-")
+            : formatOvertimeJamBulat(overtimeRaw);
+        row.push(
+          att.in ?? "-",
+          att.late ?? "-",
+          att.out ?? "-",
+          overtimeFormatted
+        );
+      });
+  
+      row.push(item.total_late, formatOvertimeJamBulat(item.total_overtime));
+  
+      const excelRow = worksheet.getRow(offsetRow + 3 + index);
+      excelRow.values = Array(offsetCol - 1).fill(null).concat(row);
+  
+      // Warnai late dan hari Minggu
+      tanggalArray.forEach((tgl, tIndex) => {
+        const dateObj = new Date(tgl);
+        const isSunday = dateObj.getDay() === 0;
+        const baseCol = offsetCol + 3 + tIndex * 4;
+        const colLate = worksheet.getCell(offsetRow + 3 + index, baseCol + 1);
+        if (colLate.value && colLate.value !== "-") {
+          colLate.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFEF4444' },
+          };
+          colLate.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+        }
+  
+        if (isSunday) {
+          for (let offset = 0; offset <= 3; offset++) {
+            const cell = worksheet.getCell(offsetRow + 3 + index, baseCol + offset);
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'FFFFCCCC' },
+            };
+            if (cell.value && cell.value !== "-") {
+              cell.font = { color: { argb: 'FFFFFFFF' } };
+            }
+          }
+        }
+      });
     });
   
     // 🔧 Lebar kolom
     worksheet.columns = [
-      {}, // kolom 1 (kosong)
-      {}, // kolom 2 (kosong = offsetCol - 1)
+      {}, {}, // offset
       { width: 14 }, // NIP
       { width: 20 }, // Nama
       { width: 14 }, // Kehadiran
-      { width: 14 }, // Terlambat
-      { width: 14 }, // Lembur
       ...tanggalArray.flatMap(() => [
         { width: 12 }, // IN
-        { width: 12 }, // OUT
         { width: 12 }, // LATE
+        { width: 12 }, // OUT
         { width: 12 }, // OVERTIME
       ]),
+      { width: 14 }, // Jumlah LATE
+      { width: 14 }, // Jumlah OVERTIME
     ];
   
-    // 🧱 Tambahkan border dari baris ke-4 ke bawah
+    // 🧱 Border
     worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
       if (rowNumber < offsetRow) return;
       row.eachCell({ includeEmpty: false }, (cell) => {
@@ -209,13 +272,14 @@ const AbsensiKantor = () => {
       });
     });
   
-    // 💾 Simpan file
+    // 💾 Save
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
     saveAs(blob, `Rekap_Presensi_${formatTanggal(startDate)}_sampai_${formatTanggal(endDate)}.xlsx`);
   };
+  
 
   const formatTanggal = (tanggalString) => {
     const tanggal = new Date(tanggalString);
@@ -260,6 +324,12 @@ const AbsensiKantor = () => {
       fetchAbsenData();
     }
   }, [startDate, endDate, tipeKaryawan]);
+
+  const isSunday = (tanggalStr) => {
+    const day = new Date(tanggalStr).getDay(); // 0 = Sunday
+    return day === 0;
+  };
+  
   
   return (
     <div className="min-h-screen flex flex-col justify-start px-6 pt-6 pb-10">
@@ -380,20 +450,27 @@ const AbsensiKantor = () => {
               <thead>
                 <tr>
                   {tanggalArray.map((tanggal) => (
-                    <th key={tanggal} colSpan={4} className="sticky top-0 z-10 bg-green-600 text-white border border-green-800 px-2 py-1 text-center text-sm min-w-[120px]">
-                      {formatTanggal(tanggal)}
-                    </th>
+                    <th key={tanggal} colSpan={4} className={`sticky top-0 z-10 border border-green-800 px-2 py-1 text-center text-sm min-w-[120px]  ${isSunday(tanggal) ? "bg-red-600 text-white" : "bg-green-600 text-white"}`}>
+                    {formatTanggal(tanggal)}
+                  </th>
+                  
                   ))}
                 </tr>
                 <tr>
-                  {tanggalArray.map((tanggal) => (
-                    <React.Fragment key={`inout-${tanggal}`}>
-                      <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-2 py-1 text-xs text-center min-w-[60px]">In</th>
-                      <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-2 py-1 text-xs text-center min-w-[60px]">Out</th>
-                      <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-2 py-1 text-xs text-center min-w-[60px]">Late</th>
-                      <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-2 py-1 text-xs text-center min-w-[60px]">Overtime</th>
-                    </React.Fragment>
-                  ))}
+                  {tanggalArray.map((tanggal) => {
+                    const isRed = isSunday(tanggal);
+                    const baseClass = "sticky top-[20px] z-10 border px-2 py-1 text-xs text-center min-w-[60px]";
+                    const bgClass = isRed ? "bg-red-600 text-white border-red-700" : "bg-green-500 text-white border-green-600";
+
+                    return (
+                      <React.Fragment key={`inout-${tanggal}`}>
+                        <th className={`${baseClass} ${bgClass}`}>In</th>
+                        <th className={`${baseClass} ${bgClass}`}>Late</th>
+                        <th className={`${baseClass} ${bgClass}`}>Out</th>
+                        <th className={`${baseClass} ${bgClass}`}>Overtime</th>
+                      </React.Fragment>
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody>
@@ -406,25 +483,41 @@ const AbsensiKantor = () => {
                       const LateTime = lateMinutes ? lateMinutes : "-";
                       const isLate = lateMinutes > 0;
                       const overtimeRaw = item.attendance[tanggal]?.overtime ?? item.overtimes?.[tanggal]?.durasi;
-                      const Overtime = overtimeRaw !== null && overtimeRaw !== undefined && overtimeRaw !== "" && overtimeRaw !== "0" && overtimeRaw !== 0 ? (tipeKaryawan === "lapangan" ? overtimeRaw : formatOvertimeJamBulat(overtimeRaw)) : "-";
+                      const Overtime = overtimeRaw !== null && overtimeRaw !== undefined && overtimeRaw !== "" && overtimeRaw !== "0" && overtimeRaw !== 0
+                        ? (tipeKaryawan === "lapangan" ? overtimeRaw : formatOvertimeJamBulat(overtimeRaw))
+                        : "-";
+
+                      const isSundayTanggal = isSunday(tanggal);
+
+                      const sundayStyle = (value) => {
+                        return isSundayTanggal
+                          ? value !== "-"
+                            ? "text-white font-bold bg-red-500"
+                            : "text-red-600 font-semibold bg-red-600"
+                          : "";
+                      };
+
                       return (
                         <React.Fragment key={`time-${tanggal}-${idx}`}>
-                          <td className="border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px]">
+                          <td className={`border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px] ${sundayStyle(inTime)}`}>
                             <span className={inTime === "-" ? "text-gray-300" : ""}>
                               {inTime}
                             </span>
                           </td>
-                          <td className="border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px]">
-                            <span className={outTime === "-" ? "text-gray-300" : ""}>
-                              {outTime}
-                            </span>
-                          </td>
-                          <td className={`border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px] ${isLate ? "bg-red-700 text-white font-semibold" : "text-black"}`}>
+
+                          <td className={`border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px] ${isLate ? "bg-red-700 text-white font-semibold" : sundayStyle(LateTime)}`}>
                             <span className={LateTime === "-" ? "text-gray-300" : ""}>
                               {LateTime}
                             </span>
                           </td>
-                          <td className="border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px]">
+
+                          <td className={`border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px] ${sundayStyle(outTime)}`}>
+                            <span className={outTime === "-" ? "text-gray-300" : ""}>
+                              {outTime}
+                            </span>
+                          </td>
+
+                          <td className={`border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px] ${sundayStyle(Overtime)}`}>
                             <span className={Overtime === "-" ? "text-gray-300" : ""}>
                               {Overtime}
                             </span>
@@ -435,6 +528,8 @@ const AbsensiKantor = () => {
                   </tr>
                 ))}
               </tbody>
+
+
             </table>
           </div>
         </div>
