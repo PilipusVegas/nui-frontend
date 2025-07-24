@@ -20,7 +20,7 @@ const DataPenggajian = () => {
     const now = new Date();
     const start = new Date(
       now.getDate() >= 21 ? now.getFullYear() : now.getFullYear(),
-      now.getMonth() + (now.getDate() >= 21 ? -1 : 0), 22);
+      now.getMonth() + (now.getDate() >= 21 ? 0 : -1), 22);
     const end = new Date(start);
     end.setMonth(end.getMonth() + 1);
     end.setDate(21);
