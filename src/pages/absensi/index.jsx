@@ -1,13 +1,14 @@
+import Swal from "sweetalert2";
 import { useState, useEffect } from "react";
 import MobileLayout from "../../layouts/mobileLayout";
 import StepOne from "./StepOne";
-import Swal from "sweetalert2";
 import StepTwoMulai from "./StepTwoMulai";
 import StepTwoSelesai from "./StepTwoSelesai";
 import StepThree from "./StepThree";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarCheck, faCalendarPlus, faAngleDown, faSignInAlt, faSignOutAlt, faClock, faArrowRight, faAngleUp} from "@fortawesome/free-solid-svg-icons";
+import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 
 const Absensi = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -19,6 +20,7 @@ const Absensi = () => {
   const [allFaqOpen, setAllFaqOpen] = useState(true);
   const [videoStreams, setVideoStreams] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const user = getUserFromToken();
 
   useEffect(() => {
     const permissionCheck = async () => {
@@ -54,7 +56,7 @@ const Absensi = () => {
 
   const fetchAttendanceHistory = async () => {
     try {
-      const response = await fetch(`${apiUrl}/absen/riwayat/${attendanceData.userId}`);
+      const response = await fetchWithJwt(`${apiUrl}/absen/riwayat/${attendanceData.userId}`);
       const data = await response.json();
       if (response.ok) {
         const last24Hours = data.filter((item) => {
@@ -69,19 +71,30 @@ const Absensi = () => {
     }
   };
 
-  useEffect(() => {
-    const storedUserId = localStorage.getItem("userId");
-    const storedUsername = localStorage.getItem("userName");
-    if (storedUserId) {
-      setAttendanceData({ userId: storedUserId, username: storedUsername || "" });
-      fetchAttendanceHistory();
-    }
-  }, [apiUrl, attendanceData.userId]);
+// Jalankan hanya sekali saat komponen dimount
+useEffect(() => {
+  const storedUserId = user?.id_user;
+  const storedUsername = user?.nama_user;
+  if (storedUserId) {
+    setAttendanceData((prev) => ({
+      ...prev,
+      userId: storedUserId,
+      username: storedUsername || "",
+    }));
+  }
+}, []);
+
+useEffect(() => {
+  if (attendanceData.userId) {
+    fetchAttendanceHistory();
+  }
+}, [attendanceData.userId]);
+
 
   useEffect(() => {
     const checkAttendance = async () => {
       try {
-        const response = await fetch(`${apiUrl}/absen/cek/${attendanceData.userId}`);
+        const response = await fetchWithJwt(`${apiUrl}/absen/cek/${attendanceData.userId}`);
         const data = await response.json();
         if (response.ok && Array.isArray(data) && data.length > 0) {
           const { id_absen, id_user, username, id_lokasi, nama, deskripsi, jam_mulai } = data[0];
@@ -109,26 +122,6 @@ const Absensi = () => {
     if (attendanceData.userId) checkAttendance();
   }, [apiUrl, attendanceData.userId]);
 
-  // const checkPermissions = async () => {
-  //   try {
-  //     const locationPermission = await navigator.permissions.query({ name: "geolocation" });
-  //     const cameraPermission = await navigator.permissions.query({ name: "camera" });
-  //     if (locationPermission.state !== "granted" || cameraPermission.state !== "granted") {
-  //       Swal.fire({
-  //         icon: "warning",
-  //         title: "Perizinan Dibutuhkan",
-  //         text: "Mohon untuk menyalakan GPS dan perizinan kamera pada perangkat Anda.",
-  //         confirmButtonText: "OK",
-  //       });
-  //       return false;
-  //     } 
-
-  //     return true;
-  //   } catch (error) {
-  //     console.error("Error checking permissions:", error);
-  //     return false;
-  //   }
-  // };
 
   const checkPermissions = async () => {
     try {
@@ -138,26 +131,20 @@ const Absensi = () => {
       }
       const locationPermission = await navigator.permissions.query({ name: "geolocation" });
       const cameraPermission = await navigator.permissions.query({ name: "camera" });
-  
       const isLocationDenied = locationPermission.state === "denied";
       const isCameraDenied = cameraPermission.state === "denied";
-  
       if (isLocationDenied || isCameraDenied) {
         Swal.fire({
           icon: "error",
           title: "Izin Ditolak Permanen",
-          html: `
-            <p>Anda telah menolak akses <b>${isCameraDenied ? "kamera" : ""} ${isCameraDenied && isLocationDenied ? "dan" : ""} ${isLocationDenied ? "lokasi" : ""}</b>.</p>
-            <p>Silakan buka <b>Pengaturan Browser</b> → <b>Setelan Situs</b> → <b>Izin</b> dan izinkan kembali akses yang dibutuhkan.</p>
-          `,
+          html:  `<p>Anda telah menolak akses <b>${isCameraDenied ? "kamera" : ""} ${isCameraDenied && isLocationDenied ? "dan" : ""} ${isLocationDenied ? "lokasi" : ""}</b>.</p>
+                  <p>Silakan buka <b>Pengaturan Browser</b> → <b>Setelan Situs</b> → <b>Izin</b> dan izinkan kembali akses yang dibutuhkan.</p>`,
           confirmButtonText: "Saya Mengerti",
         });
         return false;
       }
-  
       const isLocationGranted = locationPermission.state === "granted";
       const isCameraGranted = cameraPermission.state === "granted";
-  
       if (!isLocationGranted || !isCameraGranted) {
         Swal.fire({
           icon: "warning",
@@ -167,7 +154,6 @@ const Absensi = () => {
         });
         return false;
       }
-  
       return true;
     } catch (error) {
       console.error("Gagal mengecek permission:", error);
@@ -180,18 +166,14 @@ const Absensi = () => {
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoInputs = devices.filter((d) => d.kind === "videoinput");
-  
       const streams = {};
-  
       for (const device of videoInputs) {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { deviceId: { exact: device.deviceId } },
         });
         streams[device.label.toLowerCase().includes("back") || device.label.toLowerCase().includes("rear") ? "back" : "front"] = stream;
       }
-  
       setVideoStreams(streams);
-  
       Object.values(streams).forEach((stream) => {
         stream.getTracks().forEach((track) => track.stop());
       });
@@ -199,30 +181,13 @@ const Absensi = () => {
       console.warn("Preload kamera gagal:", err);
     }
   };
-  
-  const requestCameraPermission = async () => {
-    try {
-      await navigator.mediaDevices.getUserMedia({ video: true });
-    } catch (error) {
-      console.error("Gagal akses kamera:", error);
-    }
-  };
-  
-  const requestLocationPermission = async () => {
-    try {
-      await new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject);
-      });
-    } catch (error) {
-      console.error("Gagal akses lokasi:", error);
-    }
-  };
+
 
   const requestPermissions = async () => {
     try {
-      await navigator.mediaDevices.getUserMedia({ video: true }); // Kamera
+      await navigator.mediaDevices.getUserMedia({ video: true }); 
       await new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject); // Lokasi
+        navigator.geolocation.getCurrentPosition(resolve, reject);
       });
       console.log("Izin diberikan");
     } catch (error) {
@@ -234,57 +199,20 @@ const Absensi = () => {
       });
     }
   };
-  
-  
-  // const handleMulaiClick = async () => {
-  //   try {
-  //     // Trigger izin — ini WAJIB dari user gesture (button click)
-  //     await navigator.mediaDevices.getUserMedia({ video: true });
-  //     await new Promise((resolve, reject) => {
-  //       navigator.geolocation.getCurrentPosition(resolve, reject);
-  //     });
-  
-  //     const permissionsGranted = await checkPermissions();
-  //     if (permissionsGranted) {
-  //       preloadCameras(); // opsional, jika ingin preload sebelum mulai
-  //       setCurrentStep("stepOne");
-  //     }
-  //   } catch (err) {
-  //     console.error("Izin ditolak:", err);
-  //     Swal.fire({
-  //       icon: "error",
-  //       title: "Izin ditolak",
-  //       text: "Mohon izinkan akses kamera dan lokasi untuk menggunakan fitur ini.",
-  //     });
-  //   }
-  // };
-  
 
-  // const handleSelesaiClick = async () => {
-  //   const permissionsGranted = await checkPermissions();
-  //   if (permissionsGranted) {
-  //     setCurrentStep("stepTwoSelesai");
-  //   }
-  // };
 
   const handleMulaiClick = async () => {
     setIsLoading(true);
-  
     try {
       let needToRequest = true;
-  
       if (navigator.permissions && navigator.permissions.query) {
         const locationStatus = await navigator.permissions.query({ name: "geolocation" });
         const cameraStatus = await navigator.permissions.query({ name: "camera" });
-  
-        // Jika keduanya sudah granted, gak perlu trigger popup
         needToRequest = locationStatus.state !== "granted" || cameraStatus.state !== "granted";
       }
-  
       if (needToRequest) {
-        await requestPermissions(); // Trigger native popup Chrome
+        await requestPermissions(); 
       }
-  
       const granted = await checkPermissions();
       if (granted) {
         setCurrentStep("stepOne");
@@ -309,23 +237,11 @@ const Absensi = () => {
     if (locationStatus.state !== "granted" || cameraStatus.state !== "granted") {
       await requestPermissions(); // Trigger prompt izin
     }
-  
     const granted = await checkPermissions();
     if (granted) {
       setCurrentStep("stepTwoSelesai");
     }
   };
-  
-
-  // useEffect(() => {
-  //   const permissionCheck = async () => {
-  //     const permissionsGranted = await checkPermissions();
-  //     if (!permissionsGranted) {
-  //       setCurrentStep(null);
-  //     }
-  //   };
-  //   permissionCheck();
-  // }, []);
 
   const renderStep = () => {
     switch (currentStep) {
@@ -342,6 +258,7 @@ const Absensi = () => {
       case "stepThree":
         return <StepThree formData={attendanceData} />
       default:
+
         return (
           <MobileLayout title="Absensi">
             <div className="w-full bg-white rounded-lg shadow-md py-5 px-4">
@@ -364,15 +281,9 @@ const Absensi = () => {
                       <div key={index} className="flex w-full sm:w-1/2 lg:w-1/2 xl:w-1/2 gap-3">
                         {/* Card Absen Masuk */}
                         <div className="flex-1 py-2 px-3 bg-white rounded-lg shadow border">
-                          {/* Tanggal Masuk */}
                           <p className="text-[10px] text-gray-500 mb-1">
-                            {new Date(item.jam_mulai).toLocaleDateString("id-ID", {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                            })}
+                            {new Date(item.jam_mulai).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric",})}
                           </p>
-                          {/* Absen Masuk */}
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <div className="pb-1 px-2 bg-blue-500 text-white rounded-full">
@@ -381,11 +292,7 @@ const Absensi = () => {
                               <div>
                                 <p className="text-[10px] text-gray-500 font-bold">Absen Masuk</p>
                                 <p className="text-[14px] font-medium text-green-500">
-                                  {new Date(item.jam_mulai).toLocaleTimeString("id-ID", {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                    second: "2-digit",
-                                  })}{" "}
+                                  {new Date(item.jam_mulai).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit",})}{" "}
                                   <span className="text-[10px] text-gray-500">WIB</span>
                                 </p>
                               </div>
@@ -398,11 +305,7 @@ const Absensi = () => {
                           <div className="flex-1 py-2 px-3 bg-white rounded-lg shadow border">
                             {/* Tanggal Pulang */}
                             <p className="text-[10px] text-gray-500 mb-1">
-                              {new Date(item.jam_selesai).toLocaleDateString("id-ID", {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric",
-                              })}
+                              {new Date(item.jam_selesai).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric",})}
                             </p>
 
                             {/* Absen Pulang */}
@@ -414,11 +317,7 @@ const Absensi = () => {
                                 <div>
                                   <p className="text-[10px] text-gray-500 font-bold"> Absen Pulang</p>
                                   <p className="text-[14px] font-medium text-green-500">
-                                    {new Date(item.jam_selesai).toLocaleTimeString("id-ID", {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                      second: "2-digit",
-                                    })}{" "}
+                                    {new Date(item.jam_selesai).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit",})}{" "}
                                     <span className="text-[10px] text-gray-500">WIB</span>
                                   </p>
                                 </div>
@@ -439,7 +338,6 @@ const Absensi = () => {
                 )}
               </div>
 
-              {/* Absen Mulai / Absen Selesai */}
               {isSelesaiFlow ? (
                 <button className="w-full bg-teal-600 text-white py-3 rounded-md shadow-lg hover:bg-teal-700 flex items-center justify-center gap-2 transition" onClick={handleSelesaiClick}>
                   <FontAwesomeIcon icon={faCalendarCheck} className="text-2xl" />
@@ -456,10 +354,7 @@ const Absensi = () => {
               <div className="mt-6">
                 <h3 className="text-sm font-semibold text-gray-800 mb-2 flex items-center justify-between cursor-pointer" onClick={() => setAllFaqOpen(!allFaqOpen)}>
                   <span className="flex items-center gap-2">
-                    <FontAwesomeIcon
-                      icon={faAngleDown}
-                      className={`text-green-500 transform ${allFaqOpen ? "rotate-180" : ""}`}
-                    />
+                    <FontAwesomeIcon icon={faAngleDown} className={`text-green-500 transform ${allFaqOpen ? "rotate-180" : ""}`}/>
                     Pertanyaan yang Sering Diajukan
                   </span>
                 </h3>
@@ -575,7 +470,6 @@ const Absensi = () => {
                     </div>
                   </div>
                 )}
-
               </div>
             </div>
           </MobileLayout>

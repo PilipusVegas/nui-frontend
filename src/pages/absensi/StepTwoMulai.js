@@ -1,6 +1,8 @@
     import { useState, useRef, useEffect } from "react";
     import MobileLayout from "../../layouts/mobileLayout";
     import Swal from "sweetalert2";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowRotateBack } from "@fortawesome/free-solid-svg-icons";
 
     const StepTwoMulai = ({ handleNextStepData }) => {
       const videoRef = useRef(null);
@@ -24,17 +26,20 @@
           stopVideoStream();
       
           const newMode = facingMode === "user" ? "environment" : "user";
-          setFacingMode(newMode); // update tetap, tapi async
       
-          await startVideo("switch", newMode); // ini kunci: pakai langsung mode
+          // startVideo dulu, lalu ubah state facingMode SETELAH sukses
+          await startVideo("switch", newMode);
+          setFacingMode(newMode);
         } catch (error) {
           console.error("Gagal mengganti kamera:", error);
           Swal.fire("Gagal Membalikkan Kamera", "Terjadi kesalahan saat mengakses kamera.", "error");
           await startVideo("fallback", "user");
+          setFacingMode("user");
         } finally {
           setSwitching(false);
         }
       };
+      
 
       useEffect(() => {
         setLoading(!(koordinatMulai?.latitude && koordinatMulai?.longitude));
@@ -130,10 +135,12 @@
       const startVideo = async (source = "init", mode = facingMode) => {
         setLoadingCamera(true);
         try {
+          // Matikan stream sebelumnya dulu
+          stopVideoStream();
+      
           const constraints = {
-            video: {
-              facingMode: { ideal: mode },
-            },
+            video: { facingMode: { ideal: mode } },
+            audio: false,
           };
       
           const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -141,19 +148,14 @@
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
             videoRef.current.onloadedmetadata = () => {
-              requestAnimationFrame(() => {
-                videoRef.current.play();
-                setIsCameraReady(true);
-                setLoadingCamera(false);
-              });
+              videoRef.current.play();
+              setIsCameraReady(true);
+              setLoadingCamera(false);
             };
           }
         } catch (error) {
           console.error(`Gagal membuka kamera [${source}]:`, error);
-      
-          // fallback ke depan kalau belakang gagal
           if (mode !== "user") {
-            setFacingMode("user");
             await startVideo("fallback", "user");
           } else {
             Swal.fire({
@@ -168,12 +170,6 @@
       };
       
       
-      
-      // useEffect(() => {
-      //   stopVideoStream();
-      //   startVideo("switch");
-      // }, [facingMode]);
-      
       const capturePhoto = () => {
         const video = videoRef.current;
         const canvas = document.createElement("canvas");
@@ -181,13 +177,21 @@
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob(async (blob) => {
-          setTimeout(() => {
-            setFotoMulai(URL.createObjectURL(blob));
-            setLoadingPhoto(false);
-          }, 500);
-        }, "image/png");
+      
+        canvas.toBlob((blob) => {
+          if (!blob) return;
+          
+          // Buat URL dari blob
+          const imageUrl = URL.createObjectURL(blob);
+          
+          // Jika kamu tetap butuh File-nya, bisa simpan file di state lain
+          // const file = new File([blob], "fotoMulai.jpg", { type: "image/jpeg" });
+      
+          setFotoMulai(imageUrl); // SIMPAN URL agar bisa langsung tampil di <img src=...>
+          setLoadingPhoto(false);
+        }, "image/jpeg");
       };
+      
 
       useEffect(() => {
         if (fotoDiambil) {
@@ -221,7 +225,6 @@
                     </div>
                   )}
                   </div>
-
                   <div className="flex gap-4 mt-4 w-full">
                     <button type="button" onClick={switchCamera} className="w-full py-4 text-sm font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600">
                     {switching ? "Mengganti..." : "Balikkan Kamera"}
@@ -229,7 +232,6 @@
                     <button onClick={handleMulai} disabled={!isCameraReady || loadingCamera} className={`w-full py-4 text-sm font-semibold text-white rounded-lg ${ !isCameraReady || loadingCamera ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600" }`} >
                       Ambil Foto
                     </button>
-
                   </div>
                 </>
               ) : (
@@ -264,7 +266,8 @@
 
                   <div className="flex justify-between mt-4">
                     <button onClick={handleUlangi} className="flex-1 py-2 px-4 text-red-600 border border-red-600 font-bold rounded-lg hover:bg-red-100">
-                      ↻ Ulangi
+                      <FontAwesomeIcon icon={faArrowRotateBack} className="mr-2" />
+                      Ulangi
                     </button>
                     <button type="submit" onClick={handleSubmit} disabled={!isFormValid() || loadingLocation || loadingPhoto} className={`w-1/2 py-2 ml-2 font-semibold text-white border-2 rounded-lg ${
                         isFormValid() && !loadingLocation && !loadingPhoto

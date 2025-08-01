@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { faArrowLeft, faSearch, faFolderOpen, faDownload   } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faSearch, faFolderOpen, faDownload, faEye   } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
 import ExcelJS from 'exceljs';
@@ -7,12 +7,8 @@ import { saveAs } from 'file-saver';
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { getDefaultPeriod } from "../../utils/getDefaultPeriod";
 
-const AbsensiKantor = () => {
-  const apiUrl = process.env.REACT_APP_API_BASE_URL;
-  const user = getUserFromToken();
-  const canChangeTipe = [1, 4].includes(user.id_perusahaan);
-  const canDownloadAdmin = user.id_role === 1;
-  const canDownloadHRD = [4, 6].includes(user.id_role);
+const DataPenggajian = () => {
+  const allowedRoles = [1, 4, 6];
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -22,18 +18,17 @@ const AbsensiKantor = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [isDateSelected, setIsDateSelected] = useState(false);
-  const [tipeKaryawan, setTipeKaryawan] = useState(canChangeTipe ? "kantor" : "lapangan");
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  const user = getUserFromToken();
+  const roleId = user?.id_role ?? 0;
+  const canDownload = allowedRoles.includes(roleId);
   const handleBackClick = () => { navigate("/home");};
   
-  const fetchAbsenData = async () => {
+  const fetchPenggajianData = async () => {
     if (!startDate || !endDate) return;
     setLoading(true);
     try {
-      const endpoint =
-        tipeKaryawan === "kantor"
-          ? `${apiUrl}/face/attendance/rekap?start=${startDate}&end=${endDate}`
-          : `${apiUrl}/rekap?startDate=${startDate}&endDate=${endDate}`;
-  
+      const endpoint = `${apiUrl}/payroll/rekap?startDate=${startDate}&endDate=${endDate}`;
       const response = await fetchWithJwt(endpoint);
       if (!response.ok) throw new Error("Gagal mengambil data absensi.");
       const result = await response.json();
@@ -50,8 +45,9 @@ const AbsensiKantor = () => {
       setLoading(false);
     }
   };
-
-  const filteredAbsenData = dataAbsen.map((item) => ({
+  
+  const filteredAbsenData = dataAbsen
+  .map((item) => ({
     ...item,
     nama: typeof item.nama === "string" ? item.nama : "-",
   }))
@@ -59,72 +55,30 @@ const AbsensiKantor = () => {
     item.nama.toLowerCase().includes(searchName.toLowerCase())
   );
 
-  const handleRekapAdmin = async () => {
-    if (!filteredAbsenData || filteredAbsenData.length === 0) return;
-  
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Rekap Sederhana");
-  
-    // 🔵 Header kolom
-    worksheet.columns = [
-      { header: "id_user", key: "id_user", width: 10 },
-      { header: "id_shift", key: "id_shift", width: 10 },
-      { header: "jam_mulai", key: "jam_mulai", width: 22 },
-      { header: "jam_selesai", key: "jam_selesai", width: 22 },
-    ];
-  
-    // 🔁 Loop data user dan tanggal attendance
-    filteredAbsenData.forEach((user) => {
-      const id_user = user.id_user ?? user.id ?? "-";
-      const id_shift = user.id_shift ?? 1;
-  
-      const attendance = user.attendance || {};
-      Object.entries(attendance).forEach(([tanggal, log]) => {
-        const jamIn = log?.in;
-        const jamOut = log?.out;
-        if (!jamIn && !jamOut) return;
-        const jamMulaiRaw = jamIn ? `${tanggal}T${jamIn}:00` : null;
-        const jamSelesaiRaw = jamOut ? `${tanggal}T${jamOut}:00` : null;
-        worksheet.addRow({
-          id_user,
-          id_shift,
-          jam_mulai: jamMulaiRaw ? formatDateTime(jamMulaiRaw) : "-",
-          jam_selesai: jamSelesaiRaw ? formatDateTime(jamSelesaiRaw) : "-",
-        });
-      });
-    });
-  
-    // 💾 Simpan file .xlsx
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    });
-  
-    const now = new Date();
-    const timestamp = now.toISOString().slice(0, 19).replace(/[-T:]/g, "");
-    saveAs(blob, `Rekap_Absensi_Sederhana_${timestamp}.xlsx`);
-  };
-
   const handleRekapData = async () => {
     if (!filteredAbsenData.length) return;
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Rekap Kelola Presensi");
+    const worksheet = workbook.addWorksheet("Rekap Penggajian Karyawan");
     const offsetCol = 2;
     const offsetRow = 7;
     const tanggalColSpan = tanggalArray.length * 4;
     const totalCols = 3 + tanggalColSpan + 2;
     const jumlahKaryawan = filteredAbsenData.length;
+  
     const summary1 = `Rekap data Periode : ${formatTanggal(startDate)} - ${formatTanggal(endDate)}`;
     const summary2 = `Jumlah karyawan pada periode ini : ${jumlahKaryawan} Karyawan`;
+  
     // 🟡 Ringkasan
     worksheet.mergeCells(2, offsetCol, 2, offsetCol + totalCols - 1);
     worksheet.getCell(2, offsetCol).value = summary1;
     worksheet.getCell(2, offsetCol).font = { italic: true, size: 12 };
     worksheet.getCell(2, offsetCol).alignment = { vertical: "middle", horizontal: "left" };
+  
     worksheet.mergeCells(3, offsetCol, 3, offsetCol + totalCols - 1);
     worksheet.getCell(3, offsetCol).value = summary2;
     worksheet.getCell(3, offsetCol).font = { italic: true, size: 12 };
     worksheet.getCell(3, offsetCol).alignment = { vertical: "middle", horizontal: "left" };
+  
     worksheet.mergeCells(4, offsetCol, 4, offsetCol + totalCols - 1);
     worksheet.getCell(4, offsetCol).font = { italic: true, size: 12 };
     worksheet.getCell(4, offsetCol).alignment = { vertical: "middle", horizontal: "left" };
@@ -132,6 +86,7 @@ const AbsensiKantor = () => {
     // 🔵 Header
     const headerRow1 = ["Pegawai", "", "Jumlah"];
     const headerRow2 = ["NIP", "Nama", "Kehadiran"];
+  
     tanggalArray.forEach((tgl) => {
       const formattedDate = formatTanggal(tgl);
       headerRow1.push(formattedDate, "", "", "");
@@ -140,8 +95,10 @@ const AbsensiKantor = () => {
   
     headerRow1.push("Jumlah", "");
     headerRow2.push("Keterlambatan", "Lemburan");
+  
     worksheet.getRow(offsetRow + 1).values = Array(offsetCol - 1).fill(null).concat(headerRow1);
     worksheet.getRow(offsetRow + 2).values = Array(offsetCol - 1).fill(null).concat(headerRow2);
+  
     // Merge header cells
     worksheet.mergeCells(offsetRow + 1, offsetCol, offsetRow + 1, offsetCol + 1); // Pegawai
     worksheet.mergeCells(offsetRow + 1, offsetCol + 2, offsetRow + 1, offsetCol + 2); // Jumlah
@@ -154,8 +111,10 @@ const AbsensiKantor = () => {
     // 🔴 Pewarnaan kolom hari Minggu dari header hingga baris terakhir karyawan
     tanggalArray.forEach((tgl, index) => {
       if (!isSunday(tgl)) return;
+
       const startCol = offsetCol + 3 + index * 4; // Kolom pertama untuk tanggal ini
       const endCol = startCol + 3; // IN, LATE, OUT, OVERTIME
+
       const startRow = offsetRow + 1; // Header (baris pertama tanggal)
       const endRow = offsetRow + 3 + jumlahKaryawan - 1; // Baris terakhir data karyawan
 
@@ -183,18 +142,20 @@ const AbsensiKantor = () => {
         item.nama,
         item.total_days,
       ];
+    
       const excelRow = worksheet.getRow(currentRowIndex);
       excelRow.values = Array(offsetCol - 1).fill(null).concat(baseRow);
+    
       let colIndex = offsetCol + 3;
-      const isEmptyValue = (val) => val === null || val === undefined || val === "" || val === 0;
+    
       tanggalArray.forEach((tgl) => {
         const att = item.attendance?.[tgl] || {};
         const overtimeRaw = att.overtime ?? item.overtimes?.[tgl]?.durasi;
         const overtimeFormatted = formatOvertimeJamBulat(overtimeRaw);
+    
         const isMinggu = isSunday(tgl);
-        const lateValue = parseInt(att.late ?? 0);
-        const isLate = lateValue >= 1;
-      
+        const isLate = parseInt(att.late ?? 0) > 0;
+    
         const cellStyles = {
           minggu: {
             fill: { type: "pattern", pattern: "solid", fgColor: { argb: "FFDC2626" } },
@@ -205,35 +166,27 @@ const AbsensiKantor = () => {
             font: { color: { argb: "FFFFFFFF" }, bold: true },
           },
         };
-      
+    
         const cellValues = [
-          isEmptyValue(att.in) ? "-" : att.in,
-          (lateValue === 0 || isNaN(lateValue)) ? "-" : lateValue.toString(),
-          isEmptyValue(att.out) ? "-" : att.out,
+          att.in ?? "-",
+          att.late ?? "-",
+          att.out ?? "-",
           overtimeFormatted,
         ];
-      
+    
         for (let i = 0; i < 4; i++) {
           const cell = worksheet.getCell(currentRowIndex, colIndex + i);
           cell.value = cellValues[i];
-      
           if (cell.value === "-") {
             cell.font = { color: { argb: "FF9CA3AF" }, italic: true };
           }
-      
-          if (i === 1 && cell.value === "-" && isMinggu) {
-            cell.font = { color: { argb: "FFFFFFFF" }, bold: true };
-          }
-      
           if (isMinggu) {
             Object.assign(cell, cellStyles.minggu);
           }
-      
           if (i === 1 && isLate) {
             Object.assign(cell, cellStyles.late);
           }
         }
-      
         colIndex += 4;
       });
     
@@ -276,7 +229,6 @@ const AbsensiKantor = () => {
     saveAs(blob, `Rekap Penggajian_${formatTanggal(startDate)}_s/d_${formatTanggal(endDate)}.xlsx`);
   };
   
-
   const formatTanggal = (tanggalString) => {
     const tanggal = new Date(tanggalString);
     const tgl = String(tanggal.getDate()).padStart(2, '0');
@@ -287,22 +239,11 @@ const AbsensiKantor = () => {
 
   const formatOvertimeJamBulat = (totalMenit) => {
     const menit = parseInt(totalMenit, 10);
-    if (isNaN(menit) || menit < 60) return "-";
+    if (isNaN(menit) || menit < 60) return "-"; // hanya jika >= 60 menit baru dihitung jam
     const jam = Math.floor(menit / 60);
     return `${jam.toString().padStart(2, '0')}:00`;
   };
-
-  function formatDateTime(dateString) {
-    const date = new Date(dateString);
-    const pad = (n) => String(n).padStart(2, "0");
-    const yyyy = date.getFullYear();
-    const mm = pad(date.getMonth() + 1);
-    const dd = pad(date.getDate());
-    const hh = pad(date.getHours());
-    const min = pad(date.getMinutes());
-    const ss = pad(date.getSeconds());
-    return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
-  }
+  
 
   useEffect(() => {
     if (!startDate && !endDate) {
@@ -315,84 +256,69 @@ const AbsensiKantor = () => {
   useEffect(() => {
     if (startDate && endDate) {
       setIsDateSelected(true);
-      fetchAbsenData();
+      fetchPenggajianData();
     }
-  }, [startDate, endDate, tipeKaryawan]);
+  }, [startDate, endDate]);
 
-  
-const isSunday = (dateStr) => {
-  const date = new Date(dateStr);
-  return date.getDay() === 0; // 0 = Minggu
-};
-  
+
+  const isSunday = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.getDay() === 0; // 0 = Minggu
+  };
+
   return (
-    <div className="min-h-screen flex flex-col justify-start">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
-        {/* Kiri: Tombol Kembali dan Judul */}
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          <FontAwesomeIcon icon={faArrowLeft} title="Back to Home" onClick={handleBackClick} className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"/>
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">
-            Kelola Presensi Karyawan
-          </h2>
-        </div>
-
-        {/* Kanan: Seluruh Filter */}
-        <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-4 sm:gap-6 w-full md:w-auto justify-end">
-          {/* Filter Periode */}
-          <div className="flex flex-col"> 
-            <label className="text-xs font-medium text-gray-600 mb-1">
-              Periode Tanggal: {startDate} s/d {endDate}
-            </label>
-            <div className="flex flex-row items-center gap-2 sm:gap-3">
-              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border border-gray-300 rounded-md px-4 py-2 text-sm w-full sm:w-auto"/>
-              <span className="text-sm text-gray-700">s/d</span>
-              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="border border-gray-300 rounded-md px-4 py-2 text-sm w-full sm:w-auto"/>
-            </div>
+    <div className="flex flex-col justify-start">
+      <div className="flex flex-col gap-4 mb-4">
+        {/* Header + Aksi (responsif, sejajar di desktop) */}
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          {/* Kiri: Tombol Kembali + Judul */}
+          <div className="flex items-center gap-3 flex-wrap shrink-0">
+            <FontAwesomeIcon icon={faArrowLeft} title="Back to Home" onClick={handleBackClick} className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"/>
+            <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800">
+              Kelola Penggajian Karyawan
+            </h2>
           </div>
 
-          {/* Filter Tipe Karyawan */}
-          {canChangeTipe && (
-            <div className="flex flex-col">
-              <label className="text-xs font-medium text-gray-600 mb-1">Tampilkan Dari :</label>
-              <select value={tipeKaryawan} onChange={(e) => setTipeKaryawan(e.target.value)} className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full sm:w-auto">
-                <option value="kantor">Aplikasi Face Recognition</option>
-                <option value="lapangan">Aplikasi Absensi Online</option>
-              </select>
+          {/* Kanan: Filter + Search + Unduh */}
+          {isDateSelected && (
+            <div className="flex flex-col gap-4 sm:grid sm:grid-cols-2 lg:flex lg:flex-row lg:items-end lg:gap-4 w-full">
+              {/* Filter Tanggal */}
+              <div className="flex flex-col w-full max-w-md">
+                <label className="text-xs font-medium text-gray-600 mb-1">
+                  Periode Tanggal: {startDate} s/d {endDate}
+                </label>
+                <div className="flex flex-nowrap gap-2">
+                  <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border border-gray-300 rounded-md px-4 py-2 text-sm w-full"/>
+                  <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="border border-gray-300 rounded-md px-4 py-2 text-sm w-full"/>
+                </div>
+              </div>
+
+              {/* Search + Unduh */}
+              <div className="flex flex-row items-center gap-2 w-full flex-wrap">
+                {/* Search */}
+                <div className="relative flex-1 min-w-[150px]">
+                  <input type="text" placeholder="Cari Nama Karyawan..." value={searchName} onChange={(e) => setSearchName(e.target.value)} className="w-full h-10 border border-gray-300 rounded-lg pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-green-600"/>
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    <FontAwesomeIcon icon={faSearch} />
+                  </span>
+                </div>
+
+                {/* Button Unduh */}
+                {canDownload && (
+                  <button onClick={handleRekapData} disabled={filteredAbsenData.length === 0 || loading} className={`flex items-center justify-center gap-2 h-10 px-4 rounded-md shadow transition
+                      ${filteredAbsenData.length === 0 || loading ? "bg-gray-400 text-white cursor-not-allowed" : "bg-green-600 hover:bg-green-700 text-white"}`}
+                    title="Unduh Excel"
+                  >
+                    <FontAwesomeIcon icon={faDownload} />
+                    <span className="hidden sm:inline text-sm">Unduh Excel</span>
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      {isDateSelected && (
-      <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-        {/* Kolom kiri: Search */}
-        <div className="w-full md:w-auto flex-1 relative">
-          <input type="text" placeholder="Cari Karyawan..." value={searchName} onChange={(e) => setSearchName(e.target.value)} className="w-full border border-gray-300 rounded-lg p-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-green-600"/>
-          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-            <FontAwesomeIcon icon={faSearch} />
-          </span>
-        </div>
-
-          {/* Kolom kanan: Tombol hanya untuk role tertentu */}
-          {canDownloadAdmin && (
-            <div className="flex items-center gap-4 flex-wrap md:flex-nowrap justify-end w-full md:w-auto">
-              <button onClick={handleRekapAdmin} disabled={filteredAbsenData.length === 0 || loading} className={`flex items-center justify-center gap-2 h-10 px-4 font-semibold rounded-md shadow transition ${ filteredAbsenData.length === 0 || loading ? "bg-gray-400 text-white cursor-not-allowed" : "bg-green-600 hover:bg-green-700 text-white" }`}>
-                <FontAwesomeIcon icon={faDownload} />
-                <span className="hidden md:inline">Unduh Excel (Admin)</span>
-              </button>
-            </div>
-          )}
-
-          {canDownloadHRD && (
-            <div className="flex items-center gap-4 flex-wrap md:flex-nowrap justify-end w-full md:w-auto">
-              <button onClick={handleRekapData} disabled={filteredAbsenData.length === 0 || loading} className={`flex items-center justify-center gap-2 h-10 px-4 font-semibold rounded-md shadow transition ${ filteredAbsenData.length === 0 || loading ? "bg-gray-400 text-white cursor-not-allowed" : "bg-green-600 hover:bg-green-700 text-white" }`}>
-                <FontAwesomeIcon icon={faDownload} />
-                <span className="hidden md:inline">Unduh Excel</span>
-              </button>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Data Table */}
       {isDateSelected && !error && dataAbsen.length > 0 && (
@@ -410,16 +336,25 @@ const isSunday = (dateStr) => {
                 <tr>
                   <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-3 py-1 text-xs text-center min-w-[100px]">NIP</th>
                   <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-3 py-1 text-xs text-center min-w-[150px]">Nama</th>
-                  <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-1 text-xs text-center min-w-[80px]">Kehadiran</th>
-                  <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-1 text-xs text-center min-w-[80px]">Keterlambatan</th>
-                  <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-1 text-xs text-center min-w-[80px]">Lemburan</th>
+                  <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-1 text-xs text-center min-w-[70px]">Kehadiran</th>
+                  <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-1 text-xs text-center min-w-[70px]">Keterlambatan</th>
+                  <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-1 text-xs text-center min-w-[70px]">Lemburan</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredAbsenData.map((item, idx) => (
                   <tr key={idx} className="hover:bg-gray-200">
-                    <td className="border border-gray-300 px-3 py-1 text-center text-xs break-words">{item.nip}</td>
-                    <td className="border border-gray-300 px-3 py-1 text-xs break-words font-semibold tracking-wider">{item.nama}</td>
+                    <td className="border border-gray-300 px-3 py-1 text-xs text-center break-words">{item.nip}</td>
+                    <td onClick={() => navigate(`/penggajian/${item.id_user}`)} className="relative group border border-gray-300 pl-2 pr-8 py-1 text-xs break-words font-semibold tracking-wider cursor-pointer  hover:bg-gray-200">
+                      {/* Nama dengan efek hover */}
+                      <span className="group-hover:text-green-600 group-hover:underline transition duration-200">
+                        {item.nama}
+                      </span>
+                      {/* Ikon Mata */}
+                      <div onClick={(e) => { e.stopPropagation(); navigate(`/penggajian/${item.id_user}`); }} className="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 group-hover:text-green-600 hidden group-hover:block transition duration-200" >
+                        <FontAwesomeIcon icon={faEye} />
+                      </div>
+                    </td>
                     <td className="border border-gray-300 px-3 py-1 text-center text-xs">{item.total_days}</td>
                     <td className="border border-gray-300 px-3 py-1 text-center text-xs">{item.total_late}</td>
                     <td className="border border-gray-300 px-3 py-1 text-center text-xs">{formatOvertimeJamBulat(item.total_overtime)}</td>
@@ -433,75 +368,62 @@ const isSunday = (dateStr) => {
             <table className="border-collapse w-full min-w-max bg-white">
               <thead>
                 <tr>
-                {tanggalArray.map((tanggal) => {
-                  const day = new Date(tanggal).getDay();
-                  const isSunday = day === 0;
-                  const bgColor = isSunday ? "bg-red-600" : "bg-green-600";
-                  const borderColor = isSunday ? "border-red-800" : "border-green-800";
-                  return (
-                    <th key={tanggal} colSpan={4} className={`sticky top-0 z-10 text-white ${bgColor} ${borderColor} border px-2 py-1 text-center text-sm min-w-[120px]`}>
-                      {formatTanggal(tanggal)}
-                    </th>
-                  );
-                })}
+                  {tanggalArray.map((tanggal) => {
+                    const isMinggu = isSunday(tanggal);
+                    const headerClass = isMinggu ? "bg-red-600 text-white border border-red-800" : "bg-green-600 text-white";
+                    return (
+                      <th key={tanggal} colSpan={4} className={`sticky top-0 z-10 border border-green-800 px-2 py-1 text-center text-sm min-w-[120px] ${headerClass}`}>
+                        {formatTanggal(tanggal)}
+                      </th>
+                    );
+                  })}
                 </tr>
                 <tr>
-                {tanggalArray.map((tanggal) => {
-                  const day = new Date(tanggal).getDay();
-                  const isSunday = day === 0;
-                  const bgColor = isSunday ? "bg-red-600" : "bg-green-500";
-                  const borderColor = isSunday ? "border-red-800" : "border-green-800";
-                  return (
-                    <React.Fragment key={tanggal}>
-                      <th className={`text-white ${bgColor} ${borderColor} border px-1 py-1 text-xs`}>IN</th>
-                      <th className={`text-white ${bgColor} ${borderColor} border px-1 py-1 text-xs`}>LATE</th>
-                      <th className={`text-white ${bgColor} ${borderColor} border px-1 py-1 text-xs`}>OUT</th>
-                      <th className={`text-white ${bgColor} ${borderColor} border px-1 py-1 text-xs`}>OVERTIME</th>
-                    </React.Fragment>
-                  );
-                })}
+                  {tanggalArray.map((tanggal) => {
+                    const isMinggu = isSunday(tanggal);
+                    const headerClass = isMinggu ? "bg-red-600 text-white border border-red-800" : "bg-green-500 text-white";
+                    return (
+                      <React.Fragment key={`inout-${tanggal}`}>
+                        <th className={`sticky top-[20px] z-10 border border-green-600 px-2 py-1 text-xs text-center min-w-[60px] ${headerClass}`}>IN</th>
+                        <th className={`sticky top-[20px] z-10 border border-green-600 px-2 py-1 text-xs text-center min-w-[60px] ${headerClass}`}>LATE</th>
+                        <th className={`sticky top-[20px] z-10 border border-green-600 px-2 py-1 text-xs text-center min-w-[60px] ${headerClass}`}>OUT</th>
+                        <th className={`sticky top-[20px] z-10 border border-green-600 px-2 py-1 text-xs text-center min-w-[60px] ${headerClass}`}>OVERTIME</th>
+                      </React.Fragment>
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody>
                 {filteredAbsenData.map((item, idx) => (
                   <tr key={idx} className="hover:bg-gray-200">
                     {tanggalArray.map((tanggal) => {
+                      const isMinggu = isSunday(tanggal);
+                      const bgColor = isMinggu ? "bg-red-600 text-white font-bold" : "";
                       const inTime = item.attendance[tanggal]?.in || "-";
                       const outTime = item.attendance[tanggal]?.out || "-";
                       const lateMinutes = item.attendance[tanggal]?.late;
                       const LateTime = lateMinutes ? lateMinutes : "-";
                       const isLate = lateMinutes > 0;
-                      const overtimeRaw = item.attendance[tanggal]?.overtime ?? item.overtimes?.[tanggal]?.durasi;
-                      const Overtime =
-                        overtimeRaw !== null && overtimeRaw !== undefined && overtimeRaw !== "" && overtimeRaw !== "0" && overtimeRaw !== 0
-                          ? tipeKaryawan === "lapangan"
-                            ? overtimeRaw
-                            : formatOvertimeJamBulat(overtimeRaw)
-                          : "-";
-                      const day = new Date(tanggal).getDay();
-                      const isSunday = day === 0;
-                      const tdClass = `border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px] ${
-                        isSunday ? "bg-red-600 text-white font-semibold" : ""
-                      }`;
-
+                      const overtimeRaw = item.attendance[tanggal]?.overtime;
+                      const Overtime = overtimeRaw !== null && overtimeRaw !== undefined && overtimeRaw !== "" && overtimeRaw !== "0" && overtimeRaw !== 0 ? formatOvertimeJamBulat(overtimeRaw) : "-";
                       return (
                         <React.Fragment key={`time-${tanggal}-${idx}`}>
-                          <td className={tdClass}>
-                          <span className={(inTime === "-" && !isSunday) ? "text-gray-300" : ""}>
+                          <td className={`border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px] ${bgColor}`}>
+                            <span className={inTime === "-" ? "text-gray-300" : ""}>
                               {inTime}
                             </span>
                           </td>
-                          <td className={`${tdClass} ${ isLate ? "bg-red-700 text-white font-semibold" : "" }`}>
+                          <td className={`border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px] ${bgColor} ${isLate ? "bg-red-700 text-white font-semibold" : "text-black"}`}>
                             <span className={LateTime === "-" ? "text-gray-300" : ""}>
                               {LateTime}
                             </span>
                           </td>
-                          <td className={tdClass}>
+                          <td className={`border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px] ${bgColor}`}>
                             <span className={outTime === "-" ? "text-gray-300" : ""}>
                               {outTime}
                             </span>
                           </td>
-                          <td className={tdClass}>
+                          <td className={`border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px] ${bgColor}`}>
                             <span className={Overtime === "-" ? "text-gray-300" : ""}>
                               {Overtime}
                             </span>
@@ -543,4 +465,4 @@ const isSunday = (dateStr) => {
   );
 };
 
-export default AbsensiKantor;
+export default DataPenggajian;

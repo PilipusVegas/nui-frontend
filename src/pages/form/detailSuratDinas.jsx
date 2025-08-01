@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faFileDownload, faTriangleExclamation  } from "@fortawesome/free-solid-svg-icons";
 import html2pdf from "html2pdf.js";
+import { fetchWithJwt } from "../../utils/jwtHelper";
 
 const SuratDinasDetail = () => {
   const { id } = useParams();
@@ -14,7 +15,7 @@ const SuratDinasDetail = () => {
   useEffect(() => {
     const fetchDetail = async () => {
       try {
-        const res = await fetch(`${apiUrl}/surat-dinas/${id}`);
+        const res = await fetchWithJwt(`${apiUrl}/surat-dinas/${id}`);
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const result = await res.json();
         setData(Array.isArray(result) ? result[0] : result);

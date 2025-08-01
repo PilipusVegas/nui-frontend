@@ -4,25 +4,17 @@ import MobileLayout from "../../layouts/mobileLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSave } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
+import { fetchWithJwt } from "../../utils/jwtHelper";
 
 const EditProfile = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const { id } = useParams();
   const navigate = useNavigate();
-
-  const [formData, setFormData] = useState({
-    nama: "",
-    username: "",
-    password: "",
-    nip: "",
-    perusahaan: "",
-    telp: "",
-  });
-
   const [isLoading, setIsLoading] = useState(true);
+  const [formData, setFormData] = useState({ nama: "", username: "", password: "", nip: "", perusahaan: "", telp: "",});
 
   useEffect(() => {
-    fetch(`${apiUrl}/profil/${id}`)
+    fetchWithJwt(`${apiUrl}/profil/${id}`)
       .then(res => res.json())
       .then(({ data }) => {
         if (data) {
@@ -47,7 +39,7 @@ const EditProfile = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    fetch(`${apiUrl}/profil/update/${id}`, {
+    fetchWithJwt(`${apiUrl}/profil/update/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
@@ -84,19 +76,19 @@ const EditProfile = () => {
           <div>
             <label className="block text-sm font-medium mb-1">Nama Lengkap</label>
             <p className="text-xs text-gray-500 mb-1">Tidak dapat diubah</p>
-            <input type="text" name="nama" value={formData.nama} disabled className="w-full bg-gray-300 border text-gray-500 font-semibold border-gray-300 rounded-lg px-4 py-2 focus:outline-none"/>
+            <input type="text" name="nama" value={formData.nama} disabled className="w-full bg-gray-200 border text-gray-400 border-gray-300 rounded-lg px-4 py-2 focus:outline-none"/>
           </div>
 
           <div>
             <label className="block text-sm font-medium mb-1">NIP</label>
             <p className="text-xs text-gray-500 mb-1">Tidak dapat diubah</p>
-            <input type="text" name="nip" value={formData.nip || "N/A"} disabled className="w-full bg-gray-300 text-gray-500 font-semibold border border-gray-300 rounded-lg px-4 py-2 focus:outline-none"/>
+            <input type="text" name="nip" value={formData.nip || "N/A"} disabled className="w-full bg-gray-200 text-gray-400 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none"/>
           </div>
 
           <div>
             <label className="block text-sm font-medium mb-1">Perusahaan</label>
             <p className="text-xs text-gray-500 mb-1">Tidak dapat diubah</p>
-            <input type="text" name="perusahaan" value={formData.perusahaan || "N/A"} disabled className="w-full bg-gray-300 text-gray-500 font-semibold border border-gray-300 rounded-lg px-4 py-2 focus:outline-none"/>
+            <input type="text" name="perusahaan" value={formData.perusahaan || "N/A"} disabled className="w-full bg-gray-200 text-gray-400 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none"/>
           </div>
 
           <div>

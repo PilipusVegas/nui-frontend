@@ -3,6 +3,7 @@ import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faArrowRight, faEdit, faTrash, faSearch, faPlus, faTriangleExclamation} from "@fortawesome/free-solid-svg-icons";
+import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 
 const DataKaryawan = () => {
   const navigate = useNavigate();
@@ -14,17 +15,16 @@ const DataKaryawan = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [perusahaanList, setPerusahaanList] = useState([]);
   const [shiftList, setShiftList] = useState([]);
-  const [selectedPerusahaan, setSelectedPerusahaan] = useState("");
   const [selectedShift, setSelectedShift] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState(""); // "1" untuk aktif, "0" untuk nonaktif
   const itemsPerPage = 12;
   const handleBackClick = () => navigate("/home");
   const indexOfFirstUser = (currentPage - 1) * itemsPerPage;
 
   const fetchData = async (endpoint) => {
     try {
-      const res = await fetch(`${apiUrl}${endpoint}`);
+      const res = await fetchWithJwt(`${apiUrl}${endpoint}`);
       const json = await res.json();
       if (res.ok && (json.data || Array.isArray(json))) {
         return json.data || json;
@@ -39,14 +39,12 @@ const DataKaryawan = () => {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const [users, divisi, perusahaan] = await Promise.all([
+        const [users, divisi] = await Promise.all([
           fetchData("/profil"),
           fetchData("/karyawan/divisi"),
-          fetchData("/perusahaan"),
         ]);
         setUsers(users);
         setDivisiList(divisi);
-        setPerusahaanList(perusahaan);
       } catch (err) {
         setErrorMessage(err.message);
       } finally {
@@ -59,20 +57,18 @@ const DataKaryawan = () => {
   const filteredUsers = users.filter((user) => {
     const query = searchQuery.toLowerCase();
     const matchSearch =
-    (user?.nama?.toLowerCase().includes(query) ||
-     user?.nip?.toLowerCase().includes(query) ||
-     user?.perusahaan?.toLowerCase().includes(query) ||
-     user?.role?.toLowerCase().includes(query) ||
-     (user?.shift || "").toLowerCase().includes(query) ||
-     (user?.status === 1 ? "aktif" : "nonaktif").includes(query));
+      (user?.nama?.toLowerCase().includes(query) ||
+      user?.nip?.toLowerCase().includes(query) ||
+      user?.perusahaan?.toLowerCase().includes(query) ||
+      user?.role?.toLowerCase().includes(query) ||
+      (user?.shift || "").toLowerCase().includes(query) ||
+      (user?.status === 1 ? "aktif" : "nonaktif").includes(query));
   
+    const matchShift = !selectedShift || user.shift?.toLowerCase() === selectedShift.toLowerCase();
+    const matchStatus = selectedStatus === "" || user.status?.toString() === selectedStatus;
   
-    const matchPerusahaan =
-      !selectedPerusahaan || user.id_perusahaan?.toString() === selectedPerusahaan;
-  
-    return matchSearch && matchPerusahaan;
+    return matchSearch && matchShift && matchStatus;
   });
-  
     const currentUsers = filteredUsers.slice(
       (currentPage - 1) * itemsPerPage,
       currentPage * itemsPerPage
@@ -90,7 +86,7 @@ const DataKaryawan = () => {
       if (!result.isConfirmed) return;
       try {
         setLoadingAction(true);
-        const res = await fetch(`${apiUrl}/profil/${id}`, { method: "DELETE" });
+        const res = await fetchWithJwt(`${apiUrl}/profil/${id}`, { method: "DELETE" });
         const json = await res.json();
         if (json.success) {
           Swal.fire("Berhasil!", json.message, "success");
@@ -106,57 +102,96 @@ const DataKaryawan = () => {
     });
   };
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedShift, selectedStatus]);
+  
+
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="flex-grow px-6 pt-8 md:pt-6">
-      <div className="flex flex-col gap-4 mb-6">
-        <div className="flex flex-wrap justify-between items-center gap-4">
-          <div className="flex items-center space-x-2">
-            <FontAwesomeIcon icon={faArrowLeft} className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg" onClick={handleBackClick} title="Back to Home"/>
-            <h1 className="text-3xl font-bold text-gray-800 pb-1">Kelola Karyawan</h1>
+    <div className="flex flex-col">
+      <div className="flex-grow">
+        <div className="flex flex-col gap-2">
+          {/* BARIS ATAS: JUDUL + TOMBOL TAMBAH */}  
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {/* Kiri: Icon Back + Judul */}
+          <div className="flex items-center space-x-3">
+            <FontAwesomeIcon icon={faArrowLeft} className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition rounded-full p-2 sm:p-3 shadow-lg" onClick={handleBackClick} title="Back to Home"/>
+            <h1 className="text-lg sm:text-3xl font-bold text-gray-800">Kelola Karyawan</h1>
           </div>
 
-          <div className="flex items-end gap-3 ml-auto">
-        {/* Label + Select */}
-        <div className="flex flex-col">
-          <label htmlFor="filter-perusahaan" className="text-xs font-medium text-gray-600 mb-1 ml-1">
-            Tampilkan dari
-          </label>
-          <select id="filter-perusahaan" value={selectedPerusahaan} onChange={(e) => setSelectedPerusahaan(e.target.value)} className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 px-3 py-2 rounded-md">
-            <option value="">Semua Perusahaan</option>
-            {perusahaanList.map((perusahaan) => (
-              <option key={perusahaan.id} value={perusahaan.id}>
-                {perusahaan.nama}
-              </option>
-            ))}
-          </select>
+          {/* Kanan: Tombol Tambah */}
+          <button onClick={() => navigate("/karyawan/tambah")} className="bg-green-600 flex items-center justify-center text-white px-3 py-1.5 sm:px-4 sm:py-3 font-semibold sm:font-bold rounded-md hover:bg-green-700 transition whitespace-nowrap text-xs sm:text-sm">
+            <FontAwesomeIcon icon={faPlus} className="mr-2 text-sm sm:text-base" />
+            <span className="inline sm:hidden pb-0.5">Tambah</span>
+            <span className="hidden sm:inline">Tambah Karyawan</span>
+          </button>
         </div>
 
-        {/* Tombol Tambah */}
-        <button onClick={() => navigate("/karyawan/tambah")} className="bg-green-600 flex items-center text-white px-4 py-2 font-bold rounded-md hover:bg-green-700 transition duration-150">
-          <FontAwesomeIcon icon={faPlus} className="mr-2" />
-          <span>Tambah Karyawan</span>
-        </button>
-      </div>
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 sm:gap-4 mb-4">
+          {/* Search Input */}
+          <div className="order-2 sm:order-1 relative w-full sm:flex-1">
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs">
+              <FontAwesomeIcon icon={faSearch} />
+            </span>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari karyawan..."
+              aria-label="Search Karyawan"
+              className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 pl-9 pr-3 py-1.5 rounded-md w-full text-xs sm:text-sm"
+            />
+          </div>
+
+          {/* Filter Controls */}
+          <div className="order-1 sm:order-2 grid grid-cols-2 gap-2 sm:gap-3 w-full sm:max-w-sm">
+            {/* Filter Shift */}
+            <div>
+              <label htmlFor="filter-shift" className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5 block">
+                Jadwal Shift
+              </label>
+              <select
+                id="filter-shift"
+                value={selectedShift}
+                onChange={(e) => setSelectedShift(e.target.value)}
+                className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 px-2 py-1.5 rounded-md text-xs sm:text-sm w-full"
+              >
+                <option value="">Semua</option>
+                {[...new Set(users.map((u) => u.shift).filter(Boolean))].map((shiftName, i) => (
+                  <option key={i} value={shiftName}>
+                    {shiftName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Filter Status */}
+            <div>
+              <label htmlFor="filter-status" className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5 block">
+                Status
+              </label>
+              <select
+                id="filter-status"
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 px-2 py-1.5 rounded-md text-xs sm:text-sm w-full"
+              >
+                <option value="">Semua</option>
+                <option value="1">Aktif</option>
+                <option value="0">Nonaktif</option>
+              </select>
+            </div>
+          </div>
         </div>
-
-        <div className="relative w-full">
-          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-            <FontAwesomeIcon icon={faSearch} />
-          </span>
-          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Cari data karyawan..." aria-label="Search Karyawan" className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 px-2 py-2 pl-10 pr-4 w-full rounded-md transition duration-200 ease-in-out"/>
+        
         </div>
-      </div>
-
-
-
             <div className="relative mb-0 hidden md:block">
               <table className="min-w-full table-auto bg-white border-collapse shadow-md rounded-lg">
                 <thead>
-                  <tr className="bg-green-600 text-white py-1 text-sm px-4">
+                  <tr className="bg-green-600 text-white py-2 text-sm px-4">
                     {["No.", "Perusahaan", "NIP", "Nama Karyawan", "Jadwal Shift", "Status", "Menu"].map(
                       (header, index) => (
-                        <th key={index} className={`px-4 py-1 font-semibold text-center ${ index === 0 ? "first:rounded-tl-lg" : "" } ${index === 5 ? "last:rounded-tr-lg" : ""}`}>
+                        <th key={index} className={`px-4 py-2 font-semibold text-center ${ index === 0 ? "first:rounded-tl-lg " : "last:rounded-tr-lg" }`}>
                           {header}
                         </th>
                       )
@@ -220,73 +255,58 @@ const DataKaryawan = () => {
               </table>
             </div>
 
-            <div className="flex justify-center text-center space-x-2 mt-4 hidden md:block">
-              <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1} className={`px-5 rounded-full font-medium transition-all duration-200 ${ currentPage === 1 ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-green-500 text-white hover:bg-green-900 shadow-lg" }`}>
-                <FontAwesomeIcon icon={faArrowLeft} />
-              </button>
-
-              <span className="px-4 rounded-full bg-white border border-gray-300 text-gray-700 shadow-sm">
-                {currentPage} / {Math.ceil(filteredUsers.length / itemsPerPage)}
-              </span>
-
-              <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(filteredUsers.length / itemsPerPage)))}
-                disabled={currentPage === Math.ceil(filteredUsers.length / itemsPerPage)}
-                className={`px-5 rounded-full font-xl transition-all duration-200 ${
-                  currentPage === Math.ceil(filteredUsers.length / itemsPerPage)
-                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    : "bg-green-600 text-white hover:bg-green-900 shadow-lg"
-                }`}
-              >
-                <FontAwesomeIcon icon={faArrowRight} />
-              </button>
-            </div>
-
-            
             <div className="md:hidden">
               {Array.isArray(currentUsers) && currentUsers.length > 0 ? (
                 currentUsers.map((user) => (
-                  <div key={user.id} className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 mb-3">
-                    {/* Nama & Role */}
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex-1">
-                        <h3 className="text-sm font-semibold text-gray-800 leading-tight capitalize">
-                          {user.nama || "Unknown Name"}
-                        </h3>
-                        <p className="text-xs text-gray-500">{user.role || "Unknown Role"}</p>
+                  <div key={user.id} className="bg-white border border-gray-200 rounded-lg shadow-sm text-xs text-gray-700 mb-3 overflow-hidden">
+                    {/* Section 1: Header (Nama, NIP, Role, Status) */}
+                    <div className="px-3 py-2 border-b">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="text-sm font-semibold text-gray-800 capitalize leading-snug">
+                            {user.nama || "Unknown Name"}
+                          </div>
+                          <div className="text-[11px] text-gray-500 leading-tight">
+                            NIP:{" "}
+                            <span className={user.nip ? "" : "italic text-gray-400"}>
+                              {user.nip || "N/A"}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-gray-500 leading-tight">
+                            {user.role || "Unknown Role"}
+                          </div>
+                        </div>
+                        <div>
+                          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${ user.status === 1 ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-500" }`}>
+                            {user.status === 1 ? "Aktif" : "Nonaktif"}
+                          </span>
+                        </div>
                       </div>
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
-                          user.status === 1
-                            ? "bg-green-100 text-green-700"
-                            : "bg-gray-200 text-gray-500"
-                        }`}
-                      >
-                        {user.status === 1 ? "Aktif" : "Nonaktif"}
-                      </span>
                     </div>
 
-                    {/* Info Baris Dua Kolom */}
-                    <div className="grid grid-cols-2 gap-x-4 text-xs text-gray-600 mb-3">
+                    {/* Section 2: Info Ringkas */}
+                    <div className="px-3 py-2 border-b grid grid-cols-2 gap-x-2">
                       <div>
-                        <span className="font-medium text-gray-500 block">Perusahaan</span>
-                        <span className={user.perusahaan ? "" : "italic text-gray-400"}>
+                        <div className="text-[11px] text-gray-400 mb-0.5">Perusahaan</div>
+                        <div className={user.perusahaan ? "" : "italic text-gray-300"}>
                           {user.perusahaan || "N/A"}
-                        </span>
+                        </div>
                       </div>
-                      <div>
-                        <span className="font-medium text-gray-500 block">Shift</span>
-                        <span className={user.shift ? "" : "italic text-gray-400"}>
+                      <div className="text-right">
+                        <div className="text-[11px] text-gray-400 mb-0.5">Shift</div>
+                        <div className={user.shift ? "" : "italic text-gray-300"}>
                           {user.shift || "N/A"}
-                        </span>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Tombol Aksi */}
-                    <div className="flex justify-end gap-2 border-t pt-2 mt-2">
-                      <button onClick={() => navigate(`/karyawan/edit/${user.id}`)} title="Edit" className="bg-yellow-400 hover:bg-yellow-500 text-white text-xs px-3 py-1 rounded shadow-sm">
+                    {/* Section 3: Aksi */}
+                    <div className="px-3 py-2 flex justify-end gap-2 bg-gray-50">
+                      <button onClick={() => navigate(`/karyawan/edit/${user.id}`)} title="Edit" className="bg-yellow-400 hover:bg-yellow-500 text-white text-[11px] px-2 py-0.5 rounded">
                         <FontAwesomeIcon icon={faEdit} className="mr-1" />
                         Edit
                       </button>
-                      <button onClick={() => handleDelete(user.id)} title="Hapus" className="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded shadow-sm">
+                      <button onClick={() => handleDelete(user.id)} title="Hapus" className="bg-red-500 hover:bg-red-600 text-white text-[11px] px-2 py-0.5 rounded">
                         <FontAwesomeIcon icon={faTrash} className="mr-1" />
                         Hapus
                       </button>
@@ -294,35 +314,30 @@ const DataKaryawan = () => {
                   </div>
                 ))
               ) : (
-                <div className="text-center text-gray-500 mt-10">Tidak ada karyawan ditemukan</div>
+                <div className="text-center text-gray-500 mt-10">
+                  Tidak ada karyawan ditemukan
+                </div>
               )}
-
-              {/* Pagination */}
-              <div className="flex justify-center space-x-2 my-6">
-                <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1} className={`px-5 py-1.5 rounded-full text-xs font-medium transition ${ currentPage === 1 ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-green-500 text-white hover:bg-green-600 shadow" }`}>
-                  <FontAwesomeIcon icon={faArrowLeft} />
-                </button>
-
-                <span className="px-4 py-1.5 rounded-full border border-gray-300 text-gray-700 text-xs shadow-sm">
-                  {currentPage} / {Math.ceil(filteredUsers.length / itemsPerPage)}
-                </span>
-
-                <button onClick={() =>
-                    setCurrentPage((prev) =>
-                      Math.min(prev + 1, Math.ceil(filteredUsers.length / itemsPerPage))
-                    )
-                  }
-                  disabled={currentPage === Math.ceil(filteredUsers.length / itemsPerPage)}
-                  className={`px-5 py-1.5 rounded-full text-xs font-medium transition ${
-                    currentPage === Math.ceil(filteredUsers.length / itemsPerPage)
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : "bg-green-600 text-white hover:bg-green-700 shadow"
-                  }`}
-                >
-                  <FontAwesomeIcon icon={faArrowRight} />
-                </button>
-              </div>
             </div>
+            
+          {/* Pagination - Versi Estetik dan Ramping */}
+          <div className="relative w-full flex justify-center items-center mt-5 text-gray-700">
+            <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1} className={`absolute left-0 flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200
+                ${ currentPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600 text-white shadow-md"}`} title="Halaman Sebelumnya"
+            >
+              <FontAwesomeIcon icon={faArrowLeft} className="text-base" />
+            </button>
+            <span className="text-sm font-medium px-6 py-2 rounded-full border border-gray-200 bg-white shadow-sm tracking-wide">
+              Halaman {currentPage} <span className="text-gray-400">/</span> {Math.ceil(filteredUsers.length / itemsPerPage)}
+            </span>
+            <button onClick={() =>  setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(filteredUsers.length / itemsPerPage)))}
+              disabled={currentPage === Math.ceil(filteredUsers.length / itemsPerPage)}
+              className={`absolute right-0 flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200
+                ${ currentPage === Math.ceil(filteredUsers.length / itemsPerPage) ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700 text-white shadow-md"}`} title="Halaman Berikutnya"
+            >
+              <FontAwesomeIcon icon={faArrowRight} className="text-base" />
+            </button>
+          </div>
       </div>
     </div>
   );

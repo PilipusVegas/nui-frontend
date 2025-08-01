@@ -3,6 +3,7 @@ import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faEdit, faTrash, faArrowLeft, faArrowRight, faSearch, faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
+import { fetchWithJwt } from "../../utils/jwtHelper";
 
 const DataLokasi = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -11,8 +12,8 @@ const DataLokasi = () => {
   const [lokasiData, setLokasiData] = useState([]);
   const [currentPageDesktop, setCurrentPageDesktop] = useState(1);
   const [currentPageMobile, setCurrentPageMobile] = useState(1);
-  const itemsPerPageDesktop = 15;
-  const itemsPerPageMobile = 5;
+  const itemsPerPageDesktop = 20;
+  const itemsPerPageMobile = 10;
 
   useEffect(() => {
     fetchLokasiData();
@@ -20,7 +21,7 @@ const DataLokasi = () => {
 
   const fetchLokasiData = async () => {
     try {
-      const response = await fetch(`${apiUrl}/lokasi/`);
+      const response = await fetchWithJwt(`${apiUrl}/lokasi/`);
       const data = await response.json();
       setLokasiData(data.data);
     } catch (error) {
@@ -40,7 +41,7 @@ const DataLokasi = () => {
     });
     if (result.isConfirmed) {
       try {
-        const response = await fetch(`${apiUrl}/lokasi/delete/${id}`, {
+        const response = await fetchWithJwt(`${apiUrl}/lokasi/delete/${id}`, {
           method: "DELETE",
         });
         if (response.ok) {
@@ -74,10 +75,10 @@ const DataLokasi = () => {
   const renderHeader = () => (
     <thead>
       <tr className="bg-green-500 text-white">
-        <th className="px-4 py-1 border-b text-sm font-semibold">No</th>
-        <th className="px-4 py-1 border-b text-sm font-semibold">Lokasi</th>
-        <th className="px-4 py-1 border-b text-sm font-semibold">Koordinat</th>
-        <th className="px-4 py-1 border-b text-sm font-semibold">Menu</th>
+        <th className="px-4 py-2 border-b text-sm font-semibold">No</th>
+        <th className="px-4 py-2 border-b text-sm font-semibold">Lokasi</th>
+        <th className="px-4 py-2 border-b text-sm font-semibold">Koordinat</th>
+        <th className="px-4 py-2 border-b text-sm font-semibold">Menu</th>
       </tr>
     </thead>
   );
@@ -85,7 +86,9 @@ const DataLokasi = () => {
   const renderBody = (items) =>
     items.map((lokasi, index) => (
       <tr key={lokasi.id} className="hover:bg-gray-200 transition-colors duration-150">
-        <td className="px-4 py-0.5 border-b text-xs text-center">{index + 1}</td>
+        <td className="px-4 py-0.5 border-b text-xs text-center">
+          {(currentPageDesktop - 1) * itemsPerPageDesktop + index + 1}
+        </td>
         <td className="px-4 py-0.5 border-b text-xs font-semibold uppercase">{lokasi.nama}</td>
         <td className="px-4 py-0.5 border-b text-xs">{lokasi.koordinat}</td>
         <td className="px-4 py-0.5 border-b text-xs text-center">
@@ -94,38 +97,44 @@ const DataLokasi = () => {
               <FontAwesomeIcon icon={faEdit} />
               <span>Edit</span>
             </button>
-            <button onClick={() => handleDelete(lokasi.id)} className="flex items-center space-x-1 text-xs bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
+            {/* <button onClick={() => handleDelete(lokasi.id)} className="flex items-center space-x-1 text-xs bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
               <FontAwesomeIcon icon={faTrash} />
               <span>Hapus</span>
-            </button>
+            </button> */}
           </div>
         </td>
       </tr>
     ));
 
-  const renderBodyMobile = (items) =>
+    const renderBodyMobile = (items) =>
     items.map((lokasi) => (
-      <div key={lokasi.id} className="bg-white border border-gray-200 rounded-xl shadow-md mb-4 p-4">
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="font-semibold text-gray-800">{lokasi.nama}</h3>
+      <div key={lokasi.id} className="bg-white border border-gray-200 rounded-xl shadow-sm mb-3 p-4 space-y-2">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-gray-800 truncate">
+            {lokasi.nama}
+          </h3>
         </div>
-        <div className="flex items-center text-sm text-gray-600 mb-4">
-          <FontAwesomeIcon icon={faMapMarkerAlt} className="text-green-500 mr-2" />
-          <span>{lokasi.koordinat}</span>
+        <div className="flex items-center text-sm text-gray-600 gap-2">
+          <FontAwesomeIcon icon={faMapMarkerAlt} className="text-green-500" />
+          <span className="truncate">{lokasi.koordinat}</span>
         </div>
-        <div className="flex justify-end space-x-3 pt-2 border-t">
-          <button onClick={() => navigate(`/lokasi-presensi/edit/${lokasi.id}`)} className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">
+        <hr className="border-gray-200" />
+        <div className="flex justify-end gap-2 pt-1">
+          <button onClick={() => navigate(`/lokasi-presensi/edit/${lokasi.id}`)} className="flex items-center gap-1 bg-yellow-400 hover:bg-yellow-500 text-white rounded px-3 py-1 text-xs shadow-sm">
             <FontAwesomeIcon icon={faEdit} />
+            <span>Edit</span>
           </button>
-          <button onClick={() => handleDelete(lokasi.id)} className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
+          <button onClick={() => handleDelete(lokasi.id)} className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white rounded px-3 py-1 text-xs shadow-sm">
             <FontAwesomeIcon icon={faTrash} />
+            <span>Hapus</span>
           </button>
         </div>
       </div>
     ));
+  
 
   return (
-    <div className="min-h-screen flex flex-col px-6 pt-6 bg-white">
+    <div className="flex flex-col bg-white">
       <div className="flex items-center justify-between mb-6 flex-wrap">
         <div className="flex items-center space-x-2 w-full sm:w-auto mb-4 sm:mb-0">
           <FontAwesomeIcon icon={faArrowLeft} className="cursor-pointer text-white bg-green-600 hover:bg-green-700 p-3 rounded-full shadow-lg" onClick={() => navigate("/home")} />
@@ -138,7 +147,8 @@ const DataLokasi = () => {
           </div>
           <button onClick={() => navigate("/lokasi-presensi/tambah")} className="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 flex items-center gap-2">
             <FontAwesomeIcon icon={faPlus} />
-            <span>Tambah Lokasi</span>
+            <span className="inline sm:hidden">Tambah</span>
+            <span className="hidden sm:inline">Tambah Lokasi</span>
           </button>
         </div>
       </div>
@@ -157,17 +167,38 @@ const DataLokasi = () => {
       <div className="md:hidden">{renderBodyMobile(currentItemsMobile)}</div>
 
       {/* Pagination */}
-      <div className="flex justify-center mt-4 gap-2 pb-10">
-        <button onClick={() => setCurrentPageDesktop((prev) => Math.max(prev - 1, 1))} disabled={currentPageDesktop === 1} className={`px-5 rounded-full ${currentPageDesktop === 1 ? "bg-gray-300 text-gray-500" : "bg-green-500 text-white hover:bg-green-700"}`}>
+      <div className="flex justify-between items-center mt-6">
+        {/* Tombol kiri */}
+        <button onClick={() => setCurrentPageDesktop((prev) => Math.max(prev - 1, 1))} disabled={currentPageDesktop === 1}
+          className={`rounded-full p-2 px-3 transition-all duration-200 ${
+            currentPageDesktop === 1
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+              : "bg-green-500 text-white hover:bg-green-600"
+          }`}
+        >
           <FontAwesomeIcon icon={faArrowLeft} />
         </button>
-        <span className="px-6 py-0.5 border rounded-full text-gray-700 text-sm">
-          {currentPageDesktop} / {Math.ceil(filteredLokasiData.length / itemsPerPageDesktop)}
+
+        {/* Info Halaman */}
+        <span className="text-sm text-gray-700 font-medium tracking-wide border border-gray-200 px-6 py-2 rounded-full">
+          Halaman <span className="font-semibold">{currentPageDesktop}</span> / {Math.ceil(filteredLokasiData.length / itemsPerPageDesktop)}
         </span>
-        <button onClick={() => setCurrentPageDesktop((prev) => Math.min(prev + 1, Math.ceil(filteredLokasiData.length / itemsPerPageDesktop)))} disabled={currentPageDesktop === Math.ceil(filteredLokasiData.length / itemsPerPageDesktop)} className={`px-5 rounded-full ${currentPageDesktop === Math.ceil(filteredLokasiData.length / itemsPerPageDesktop) ? "bg-gray-300 text-gray-500" : "bg-green-600 text-white hover:bg-green-700"}`}>
+
+        {/* Tombol kanan */}
+        <button onClick={() => setCurrentPageDesktop((prev) => Math.min(prev + 1, Math.ceil(filteredLokasiData.length / itemsPerPageDesktop)))}
+          disabled={
+            currentPageDesktop === Math.ceil(filteredLokasiData.length / itemsPerPageDesktop)
+          }
+          className={`rounded-full p-2 px-3 transition-all duration-200 ${
+            currentPageDesktop === Math.ceil(filteredLokasiData.length / itemsPerPageDesktop)
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+              : "bg-green-500 text-white hover:bg-green-600"
+          }`}
+        >
           <FontAwesomeIcon icon={faArrowRight} />
         </button>
       </div>
+
     </div>
   );
 };

@@ -1,50 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faPlus, faTimes,faEdit, faClock } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faPlus, faTimes,faEdit, faClock, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
+import { fetchWithJwt } from "../../utils/jwtHelper";
 
 const ShiftTable = () => {
   const [shiftList, setShiftList] = useState([]);
-  const [nama, setNama] = useState("");
-  const [jamMasuk, setJamMasuk] = useState("");
-  const [jamPulang, setJamPulang] = useState("");
-  const [editId, setEditId] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const navigate = useNavigate();
+  const [expandedShiftId, setExpandedShiftId] = useState(null);
+
+  const toggleDetail = (id) => {
+    setExpandedShiftId((prevId) => (prevId === id ? null : id));
+  };
 
   const fetchShift = async () => {
   try {
-    const res = await fetch(`${apiUrl}/shift`);
+    const res = await fetchWithJwt(`${apiUrl}/shift`);
     const data = await res.json();
-    
     const result = Array.isArray(data) ? data : data.data ?? [];
     setShiftList(result);
   } catch (err) {
     console.error("Gagal memuat data shift:", err);
   }
 };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const url = editId ? `${apiUrl}/shift/${editId}` : `${apiUrl}/shift`;
-    const method = editId ? "PUT" : "POST";
-    try {
-      await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nama, jam_masuk: jamMasuk, jam_pulang: jamPulang }),
-      });
-      setNama("");
-      setJamMasuk("");
-      setJamPulang("");
-      setEditId(null);
-      setIsModalOpen(false);
-      fetchShift();
-    } catch (err) {
-      console.error("Gagal menyimpan data shift:", err);
-    }
-  };
 
   useEffect(() => {
     fetchShift();
@@ -55,15 +34,16 @@ const ShiftTable = () => {
   };
 
   return (
-    <div className="w-full mx-auto p-6">
+    <div className="w-full mx-auto">
       <div className="flex items-center justify-between mb-6 w-full">
         <div className="flex items-center space-x-2 w-full sm:w-auto">
-          <FontAwesomeIcon icon={faArrowLeft} className="cursor-pointer text-white bg-green-600 hover:bg-green-700 rounded-full p-3 shadow-lg" onClick={handleBackClick} title="Kembali"/>
-          <h1 className="text-3xl font-bold text-gray-800 pb-1">Kelola Jam Kerja</h1>
+          <FontAwesomeIcon icon={faArrowLeft} className="cursor-pointer text-white bg-green-600 hover:bg-green-700 rounded-full p-2 sm:p-3 shadow-lg" onClick={handleBackClick} title="Kembali"/>
+          <h1 className="text-xl sm:text-3xl font-bold text-gray-800 pb-1">Kelola Jam Kerja</h1>
         </div>
-        <button onClick={() => navigate("/shift/tambah")} className="bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2 rounded shadow transition flex items-center">
+        <button onClick={() => navigate("/shift/tambah")} className="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-1.5 sm:py-2.5 rounded shadow transition flex items-center gap-2">
           <FontAwesomeIcon icon={faPlus} />
-          <span className="sm:block hidden ml-2">Tambah Shift</span>
+          <span className="inline sm:hidden text-sm">Tambah</span>
+          <span className="hidden sm:inline">Tambah Shift</span>
         </button>
       </div>
 
@@ -76,8 +56,8 @@ const ShiftTable = () => {
             </tr>
           </thead>
           <tbody>
-            {shiftList.length === 0 ? (
-              <tr>
+          {shiftList.length === 0 ? (
+            <tr>
               <td colSpan="3">
                 <div className="flex flex-col items-center justify-center py-10 text-gray-500">
                   <FontAwesomeIcon icon={faClock} className="text-6xl text-gray-400 mb-4" />
@@ -87,20 +67,46 @@ const ShiftTable = () => {
                 </div>
               </td>
             </tr>
-            ) : (
-              shiftList.map((item) => (
-                <tr key={item.id} className="border-t hover:bg-gray-50 transition">
-                    <td className="px-6 py-2 text-center font-semibold">{item.nama}</td>
-                    {/* <td className="px-6 py-2 text-center">{item.jam_masuk} - {item.jam_pulang}</td> */}
-                    <td className="px-6 py-2 text-center space-x-2">
-                    <button onClick={() => navigate(`/shift/edit/${item.id}`)} className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm shadow">
-                      <FontAwesomeIcon icon={faEdit} />
-                       <span className="ml-2">Edit</span> 
-                    </button>
-                    </td>
+            ) : shiftList.map((item) => (
+              <React.Fragment key={item.id}>
+                <tr className="border-t hover:bg-gray-50 transition text-sm">
+                  <td className="px-4 py-3 sm:text-center align-top font-semibold w-full sm:w-auto">
+                    <div className="flex flex-col sm:block text-center">
+                      <span className="block text-gray-800 text-base font-semibold">{item.nama}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-left sm:text-center w-full sm:w-auto">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:justify-center">
+                      {/* <button onClick={() => navigate(`/shift/edit/${item.id}`)} className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs shadow flex items-center justify-center">
+                        <FontAwesomeIcon icon={faEdit} className="mr-1" />
+                        <span>Edit</span>
+                      </button> */}
+                      <button onClick={() => toggleDetail(item.id)} className={`${expandedShiftId === item.id ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"} text-white px-3 py-1 rounded text-xs shadow flex items-center justify-center`}>
+                        <FontAwesomeIcon icon={expandedShiftId === item.id ? faEyeSlash : faEye} className="mr-1" />
+                        <span>{expandedShiftId === item.id ? "Tutup" : "Lihat Detail"}</span>
+                      </button>
+                    </div>
+                  </td> 
                 </tr>
-                ))
-            )}
+                {/* Detail Baris */}
+                {expandedShiftId === item.id && (
+                  <tr className="border-b transition-all">
+                    <td colSpan="2" className="px-6 py-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2 sm:gap-2">
+                        {item.detail.map((d, idx) => (
+                          <div key={idx} className="bg-gradient-to-tr from-white to-gray-50 border border-gray-200 rounded-lg shadow-sm px-4 py-1.5 flex justify-between items-center hover:shadow-md transition">
+                            <div className="font-semibold text-gray-800">{d.hari}</div>
+                            <div className="text-sm text-gray-600 font-medium">
+                              {d.jam_masuk} - {d.jam_pulang}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            ))}
           </tbody>
         </table>
       </div>

@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import MobileLayout from "../../layouts/mobileLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBuilding, faPhone, faUser, faPen, faArrowRight, faUserCircle, faIdBadge, faIdCard } from "@fortawesome/free-solid-svg-icons";
+import { faBuilding, faPhone, faUser, faPen, faArrowRight, faUserCircle, faIdBadge, faIdCard, faPeopleGroup } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
+import { getUserFromToken } from "../../utils/jwtHelper";
 
 const Profile = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const navigate = useNavigate();
+  const user = getUserFromToken();
   const [profileData, setProfileData] = useState({
     name: "",
     phone: "",
@@ -19,9 +21,9 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const id_user = localStorage.getItem("userId");
+    const id_user = user?.id_user;
     if (!id_user) {
-      console.error("User ID not found in localStorage.");
+      console.error("User ID not found.");
       setIsLoading(false);
       return;
     }
@@ -37,6 +39,7 @@ const Profile = () => {
             name: userProfile.nama,
             phone: userProfile.telp || "",
             division: userProfile.role_name || "No division",
+            perusahaan: userProfile.perusahaan,
             avatar: userProfile.foto || profileData.avatar,
             username: userProfile.username || "",
             nip: userProfile.nip || ""
@@ -58,7 +61,7 @@ const Profile = () => {
 
   return (
     <MobileLayout title="Profile">
-      <div className="py-8 pb-4 px-7 min-w-full mx-auto bg-white rounded-xl shadow-xl space-y-2">
+      <div className="py-8 pb-4 px-7 min-w-full mx-auto bg-white rounded-xl shadow-xl space-y-3">
         {/* Avatar Section */}
         <div className="flex flex-col justify-center items-center mb-10">
           <div className="relative w-32 h-32 mb-4">
@@ -71,7 +74,7 @@ const Profile = () => {
               </div>
             )}
           </div>
-          <button onClick={() => navigate(`/profile/edit/${localStorage.getItem("userId")}`)} className="flex items-center gap-2 border border-green-400 hover:bg-green-600 text-green-600 hover:text-white px-5 py-2 rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 transition-all duration-300 text-xs">
+          <button onClick={() => navigate(`/profile/edit/${user?.id_user}`)} className="flex items-center gap-2 border border-green-400 hover:bg-green-600 text-green-600 hover:text-white px-5 py-2 rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 transition-all duration-300 text-xs">
             <FontAwesomeIcon icon={faPen} />
             <span className="font-medium">Edit Profil</span>
           </button>
@@ -103,7 +106,7 @@ const Profile = () => {
 
         {/* Division */}
         <div className="flex items-center space-x-4 text-gray-600 font-medium">
-          <FontAwesomeIcon icon={faBuilding} className="text-green-600 text-lg" />
+          <FontAwesomeIcon icon={faPeopleGroup} className="text-green-600 text-lg" />
           <div className="flex flex-col space-y-1">
             <span>Divisi:</span>
             <span className="font-semibold text-gray-900 text-sm">
@@ -113,8 +116,18 @@ const Profile = () => {
         </div>
         <hr className="border-gray-300" />
 
-        {/* Phone */}
         <div className="flex items-center space-x-4 text-gray-600 font-medium">
+          <FontAwesomeIcon icon={faBuilding} className="text-green-600 text-lg" />
+          <div className="flex flex-col space-y-1">
+            <span>Perusahaan:</span>
+            <span className="font-semibold text-gray-900 text-sm">
+              {profileData.perusahaan || "-"}
+            </span>
+          </div>
+        </div>
+        <hr className="border-gray-300" />
+        {/* Phone */}
+        <div className="flex items-center space-x-4 text-gray-600 font-medium pb-3">
           <FontAwesomeIcon icon={faPhone} className="text-green-600 text-lg" />
           <div className="flex flex-col w-full">
             <span className="text-sm">Telepon:</span>
@@ -125,9 +138,9 @@ const Profile = () => {
         </div>
 
         {/* saya mau memberi text saran ditengah sini */ }
-        <div className="text-center text-[10px] uppercase tracking-wider text-gray-600 pt-5">
+        {/* <div className="text-center text-[10px] uppercase tracking-wider text-gray-600 pt-5">
           PT. Nico Urban Indonesia 
-        </div>
+        </div> */}
 
       </div>
     </MobileLayout>

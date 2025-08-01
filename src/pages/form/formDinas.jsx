@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import Swal from "sweetalert2";
+// import { fetch } from "../../utils/jwtHelper";
 
 const FormDinas = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -14,7 +15,6 @@ const FormDinas = () => {
   const [formData, setFormData] = useState({ nama: "", nomorTelepon: "", divisi: "" });
   const [kadivList, setKadivList] = useState([]);
 
-
   const fetchNama = async () => {
     try {
       const res = await fetch(`${apiUrl}/profil`);
@@ -28,7 +28,6 @@ const FormDinas = () => {
   useEffect(() => {
     fetchNama();
   }, []);
-  
   
 
   useEffect(() => {
@@ -78,10 +77,8 @@ const FormDinas = () => {
   });
 
 
-
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-  
     if (name === "bagian") {
       setForm((prev) => ({
         ...prev,
@@ -129,7 +126,7 @@ const FormDinas = () => {
         bagian: form.bagian,
         jadwal: form.jadwalTugas,
         waktu: form.jamBerangkat,
-        kadiv: form.kadiv, // 🟢 Tambahkan ini
+        kadiv: form.kadiv,
       };
       
 
@@ -248,10 +245,7 @@ const FormDinas = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center p-4" style={{ backgroundImage: "url('/wall.png')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", backgroundAttachment: "fixed", backgroundBlendMode: "overlay", backgroundColor: "rgba(0, 0, 0, 0.25)",  }}>
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-xl bg-white shadow-xl rounded-2xl p-6 sm:p-8 space-y-2 sm:space-y-3"
-      >
+      <form onSubmit={handleSubmit} className="w-full max-w-xl bg-white shadow-xl rounded-2xl p-6 sm:p-8 space-y-2 sm:space-y-3">
         <h2 className="text-lg sm:text-2xl font-bold text-center text-[#326058]">
           Formulir Dinas keluar kantor <br /> PT Nico Urban Indonesia
         </h2>
@@ -259,16 +253,7 @@ const FormDinas = () => {
         {/* Nama */}
         <div className="relative" ref={dropdownRef}>
           <label className="block text-gray-700 font-medium mb-1 text-sm">Nama</label>
-          <input type="text" value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setShowDropdown(true);
-            }}
-            onFocus={() => setShowDropdown(true)}
-            required
-            className="w-full rounded-xl border border-gray-300 px-3 py-2 sm:px-3 sm:py-3 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
-            placeholder="Ketik atau pilih nama"
-          />
+          <input type="text" value={query} onChange={(e) => { setQuery(e.target.value); setShowDropdown(true); }} onFocus={() => setShowDropdown(true)} required className="w-full rounded-xl border border-gray-300 px-3 py-2 sm:px-3 sm:py-3 focus:outline-none focus:ring-2 focus:ring-green-400 transition" placeholder="Ketik atau pilih nama"/>
           {showDropdown && (
             <ul className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-md max-h-60 overflow-y-auto">
               {filteredNama.length > 0 ? (
@@ -312,15 +297,10 @@ const FormDinas = () => {
 
         <div>
           <label className="block text-gray-700 font-medium mb-1 text-sm">Kepala Divisi</label>
-          <select
-            name="kadiv"
-            value={form.kadiv}
-            onChange={handleChange}
-            className="w-full rounded-xl border border-gray-300 px-3 py-2 sm:p-3 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
-          >
+          <select name="kadiv" value={form.kadiv} onChange={handleChange} className="w-full rounded-xl border border-gray-300 px-3 py-2 sm:p-3 focus:outline-none focus:ring-2 focus:ring-green-400 transition">
             <option value="">Pilih Kadiv</option>
             {listNama
-              .filter((profil) => profil.id_role === 5) 
+              .filter((profil) => profil.id_role === 5 || profil.id_role === 20) 
               .map((divisi) => (
                 <option key={divisi.id} value={divisi.id}>
                   {divisi.nama}
@@ -345,11 +325,8 @@ const FormDinas = () => {
         <div>
           <label className="flex items-start space-x-2 text-xs text-justify sm:text-xs text-red-600 font-medium">
             <input type="checkbox" name="setuju" checked={form.setuju} onChange={handleChange} className="h-3 w-5 mt-1 text-red-600 rounded focus:ring-2 focus:ring-red-500"/>
-            <span>
-              Saya menyatakan bahwa seluruh data yang saya isikan adalah benar. Saya memahami bahwa
-              <b> setiap bentuk kebohongan, manipulasi, atau penyalahgunaan data </b> akan dikenakan
-              sanksi sesuai aturan perusahaan, termasuk namun tidak terbatas pada:
-              <b>
+            <span>Saya menyatakan bahwa seluruh data yang saya isikan adalah benar. Saya memahami bahwa
+              <b> setiap bentuk kebohongan, manipulasi, atau penyalahgunaan data </b> akan dikenakan sanksi sesuai aturan perusahaan, termasuk namun tidak terbatas pada:<b>
                 {" "}
                 penurunan jabatan, pemotongan gaji, atau pemutusan hubungan kerja secara sepihak.{" "}
               </b>
@@ -406,17 +383,10 @@ const FormDinas = () => {
                 </select>
               </div>
               <div className="flex justify-between gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="px-4 py-2 bg-gray-400 rounded-md hover:bg-gray-400 text-sm text-white"
-                >
+                <button type="button" onClick={() => setIsOpen(false)} className="px-4 py-2 bg-gray-400 rounded-md hover:bg-gray-400 text-sm text-white">
                   Batal
                 </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-[#326058] text-white rounded-md hover:bg-green-700 text-sm"
-                >
+                <button type="submit" className="px-4 py-2 bg-[#326058] text-white rounded-md hover:bg-green-700 text-sm">
                   Daftar
                 </button>
               </div>

@@ -1,14 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faArrowLeft,
-  faEye,
-  faCheck,
-  faSearch,
-  faArrowRight,
-  faCalendarAlt,
-} from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faEye, faCheck, faSearch, faArrowRight, faCalendarAlt,} from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
+import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
+import { getDefaultPeriod } from "../../utils/getDefaultPeriod";
 
 const SuratDinas = () => {
   const [data, setData] = useState([]);
@@ -18,12 +13,12 @@ const SuratDinas = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
-  const roleId = parseInt(localStorage.getItem("roleId"));
+  const user = getUserFromToken();
   const navigate = useNavigate();
 
   const handleApprove = async (item) => {
     try {
-      const response = await fetch(`${apiUrl}/surat-dinas/${item.id}`, {
+      const response = await fetchWithJwt(`${apiUrl}/surat-dinas/${item.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -34,7 +29,6 @@ const SuratDinas = () => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
       setData((prevData) =>
         prevData.map((dataItem) =>
           dataItem.id === item.id ? { ...dataItem, status: 1 } : dataItem
@@ -58,42 +52,32 @@ const SuratDinas = () => {
     setFilteredData(filtered);
   }, [searchTerm, data]);
 
-  useEffect(() => {
-    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange();
-    setStartDate(defaultStart);
-    setEndDate(defaultEnd);
-    fetchData(defaultStart, defaultEnd);
-  }, []);
-  
 
-  const fetchData = async (start = "", end = "") => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const query = start && end ? `?startDate=${start}&endDate=${end}` : "";
-      const res = await fetch(`${apiUrl}/surat-dinas${query}`);
+      const res = await fetchWithJwt(`${apiUrl}/surat-dinas`);
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const result = await res.json();
       setData(result);
       setFilteredData(result);
     } catch (err) {
-      console.error("Gagal memuat data:", err);
+      console.error("❌ Gagal memuat data:", err);
     } finally {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (startDate && endDate) {
-      fetchData(startDate, endDate);
-    }
-  }, [startDate, endDate]);
   
+    useEffect(() => {
+    setStartDate("");
+    setEndDate("");
+    fetchData();
+  }, []);
 
   const handleBackClick = () => {
     navigate(-1);
   };
   
-
   const formatTanggal = (isoDate) => {
     const d = new Date(isoDate);
     const day = String(d.getDate()).padStart(2, "0");
@@ -112,30 +96,33 @@ const SuratDinas = () => {
     navigate(`/surat-dinas/${item.id}`);
   };
 
-  const getDefaultDateRange = () => {
-    const today = new Date();
-    const start = new Date(today.getFullYear(), today.getMonth(), 22); 
-    const end = new Date(today.getFullYear(), today.getMonth() + 1, 21); 
-    const format = (date) => date.toISOString().split("T")[0]; 
-    return {
-      startDate: format(start),
-      endDate: format(end),
-    };
-  };
+  useEffect(() => {
+    if (!startDate || !endDate) return;
+  
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+  
+    const filtered = data.filter((item) => {
+      const itemDate = new Date(item.tgl);
+      return itemDate >= start && itemDate <= end;
+    });
+  
+    setFilteredData(
+      filtered.filter((item) =>
+        item.nama.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
+  }, [startDate, endDate, data]);
   
 
+  
   return (
-    <div className="w-full mx-auto p-7">
+    <div className="w-full mx-auto">
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         {/* Tombol Back & Judul */}
         <div className="flex items-center gap-3">
-          <FontAwesomeIcon
-            icon={faArrowLeft}
-            title="Kembali"
-            onClick={handleBackClick}
-            className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-md"
-          />
+          <FontAwesomeIcon icon={faArrowLeft} title="Kembali" onClick={handleBackClick} className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-md"/>
           <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-800">
             Data Surat Dinas Keluar Kantor
           </h1>
@@ -179,30 +166,16 @@ const SuratDinas = () => {
         </div>
       </div>
 
-      {!startDate || !endDate ? (
-  <div className="flex items-center justify-center">
-    <div className="text-center w-full text-yellow-700 bg-yellow-100 p-4 rounded-lg border border-yellow-300">
-      <div className="text-3xl mb-2">
-        <FontAwesomeIcon icon={faCalendarAlt} />
-      </div>
-      <div>
-        Silakan pilih rentang tanggal terlebih dahulu untuk menampilkan data.
-      </div>
-    </div>
-  </div>
-      ) : (
-        <>
           {/* Tabel Desktop */}
           <div className="hidden md:block overflow-x-auto rounded-lg shadow-md">
             <table className="min-w-full bg-white text-sm text-left">
               <thead className="bg-green-600 text-white">
                 <tr>
-                  <th className="px-6 py-1 text-center">Tanggal</th>
-                  <th className="px-6 py-1 text-center">Nama Karyawan</th>
-                  {/* <th className="px-6 py-1 text-center">Divisi</th> */}
-                  <th className="px-6 py-1 text-center">Jam Berangkat</th>
-                  <th className="px-6 py-1 text-center">Status</th>
-                  <th className="px-6 py-1 text-center">Menu</th>
+                  <th className="px-6 py-2 text-center">Tanggal</th>
+                  <th className="px-6 py-2 text-center">Nama Karyawan</th>
+                  <th className="px-6 py-2 text-center">Jam Berangkat</th>
+                  <th className="px-6 py-2 text-center">Status</th>
+                  <th className="px-6 py-2 text-center">Menu</th>
                 </tr>
               </thead>
               <tbody>
@@ -232,7 +205,7 @@ const SuratDinas = () => {
                           </span>
                         </td>
                         <td className="px-6 py-1 text-sm text-center">
-                          {item.status === 0 && roleId === 5 && (
+                          {item.status === 0 && [5, 1].includes((user.id_role)) ? (
                             <>
                               <button className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs mr-2" onClick={() => handleApprove(item)}>
                                 <FontAwesomeIcon icon={faCheck} className="mr-2" />
@@ -243,14 +216,7 @@ const SuratDinas = () => {
                                 Detail
                               </button>
                             </>
-                          )}
-                          {item.status === 1 && (
-                            <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs" onClick={() => handleDetail(item)}>
-                              <FontAwesomeIcon icon={faEye} className="mr-2" />
-                              Detail
-                            </button>
-                          )}
-                          {item.status === 0 && roleId !== 5 && (
+                          ) : (
                             <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs" onClick={() => handleDetail(item)}>
                               <FontAwesomeIcon icon={faEye} className="mr-2" />
                               Detail
@@ -296,7 +262,7 @@ const SuratDinas = () => {
                     </div>
                   </div>
 
-                  {item.status === 0 && roleId === 5 && (
+                  {item.status === 0 && user.id_role === 5 && (
                     <div className="mt-4 flex justify-end gap-2">
                       <button onClick={() => handleApprove(item)} className="inline-flex items-center px-3 py-1.5 rounded-md bg-green-600 hover:bg-green-700 text-white text-xs transition">
                         <FontAwesomeIcon icon={faCheck} className="mr-1" />
@@ -312,8 +278,6 @@ const SuratDinas = () => {
               );
             })}
           </div>
-        </>
-      )}
     </div>
   );
 };

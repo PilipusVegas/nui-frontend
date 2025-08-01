@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
+import { fetchWithJwt } from "../../utils/jwtHelper";
 
 const TambahLokasi = () => {
   const [nama, setNama] = useState("");
@@ -38,7 +39,7 @@ const TambahLokasi = () => {
     });
     if (!confirm.isConfirmed) return;
     try {
-      const res = await fetch(`${apiUrl}/lokasi/create`, {
+      const res = await fetchWithJwt(`${apiUrl}/lokasi/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nama, koordinat }),

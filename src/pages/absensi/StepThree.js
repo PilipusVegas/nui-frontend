@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import MobileLayout from "../../layouts/mobileLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { fetchWithJwt } from "../../utils/jwtHelper";
 
 const StepThree = ({ formData = {} }) => {
   const navigate = useNavigate();
@@ -44,89 +45,107 @@ const StepThree = ({ formData = {} }) => {
     { label: "Jam Selesai", value: jamSelesai },
   ].filter((item) => item.value);
 
+  const parseCoordinates = (coordinates) => {
+    if (!coordinates) return null;
+    const [latitude, longitude] = coordinates.split(",").map(parseFloat);
+    return { latitude, longitude };
+  };
+
+  const blobUrlToFile = async (blobUrl, filename) => {
+    const response = await fetch(blobUrl); // jangan pakai fetchWithJwt!
+    const blob = await response.blob();
+    return new File([blob], filename, { type: blob.type });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const formDataToSend = new FormData();
-    if (fotoMulai && fotoMulai.startsWith("blob:")) {
-      const response = await fetch(fotoMulai);
-      const blob = await response.blob();
-      const file = new File([blob], "fotoMulai.jpg", { type: blob.type });
-      formDataToSend.append("foto", file);
-    }
-
-    const parseCoordinates = (coordinates) => {
-      if (!coordinates) return null;
-      const [latitude, longitude] = coordinates.split(",").map(parseFloat);
-      return { latitude, longitude };
-    };
-
-    const titikKoordinatMulai = parseCoordinates(koordinatMulai);
-    const titikKoordinatSelesai = parseCoordinates(koordinatSelesai);
-    let endpoint;
-    let notificationTitle;
-
-    if (id_absen) {
-      endpoint = "/absen/selesai";
-      notificationTitle = "Absen Selesai Berhasil!";
-      formDataToSend.append("id_absen", id_absen);
-      if (fotoSelesai && fotoSelesai.startsWith("blob:")) {
-        const response = await fetch(fotoSelesai);
-        const blob = await response.blob();
-        const file = new File([blob], "fotoSelesai.jpg", { type: blob.type });
-        formDataToSend.append("foto", file);
-      }
-      if (userId) formDataToSend.append("id_user", userId.toString());
-      if (titikKoordinatSelesai) {
-        formDataToSend.append("lat", titikKoordinatSelesai.latitude.toString());
-        formDataToSend.append("lon",titikKoordinatSelesai.longitude.toString());
-      }
-    } else {
-      endpoint = "/absen/mulai";
-      notificationTitle = "Absen Mulai Berhasil!";
-      if (userId) formDataToSend.append("id_user", userId.toString());
-      if (id_shift) formDataToSend.append("id_shift", id_shift.toString());
-      if (tugas) formDataToSend.append("deskripsi", tugas);
-      if (id_lokasi) formDataToSend.append("id_lokasi", id_lokasi);
-      if (titikKoordinatMulai) {
-        formDataToSend.append("lat", titikKoordinatMulai.latitude.toString());
-        formDataToSend.append("lon", titikKoordinatMulai.longitude.toString());
-      }
-      if (!formDataToSend.has("foto") && fotoMulai instanceof File) {
-        formDataToSend.append("foto", fotoMulai);
-      }
-    }
+    let endpoint = "";
+    let notificationTitle = "";
+  
     try {
-      const response = await fetch(`${apiUrl}${endpoint}`, {
+      if (id_absen) {
+        endpoint = "/absen/selesai";
+        notificationTitle = "Absen Selesai Berhasil!";
+        formDataToSend.append("id_absen", id_absen);
+  
+        if (fotoSelesai?.startsWith?.("blob:")) {
+          const file = await blobUrlToFile(fotoSelesai, "fotoSelesai.jpg");
+          formDataToSend.append("foto", file);
+        } else if (fotoSelesai instanceof File) {
+          formDataToSend.append("foto", fotoSelesai);
+        }
+  
+        if (userId) formDataToSend.append("id_user", userId.toString());
+  
+        const titikSelesai = parseCoordinates(koordinatSelesai);
+        if (titikSelesai) {
+          formDataToSend.append("lat", titikSelesai.latitude.toString());
+          formDataToSend.append("lon", titikSelesai.longitude.toString());
+        }
+  
+      } else {
+        endpoint = "/absen/mulai";
+        notificationTitle = "Absen Mulai Berhasil!";
+  
+        if (userId) formDataToSend.append("id_user", String(userId));
+        if (id_shift) formDataToSend.append("id_shift", String(id_shift));
+        if (tugas) formDataToSend.append("deskripsi", tugas);
+        if (id_lokasi) formDataToSend.append("id_lokasi", String(id_lokasi));
+  
+        const titikMulai = parseCoordinates(koordinatMulai);
+        if (titikMulai) {
+          formDataToSend.append("lat", String(titikMulai.latitude));
+          formDataToSend.append("lon", String(titikMulai.longitude));
+        }
+  
+        if (fotoMulai?.startsWith?.("blob:")) {
+          const file = await blobUrlToFile(fotoMulai, "fotoMulai.jpg");
+          formDataToSend.append("foto", file);
+        } else if (fotoMulai instanceof File) {
+          formDataToSend.append("foto", fotoMulai);
+        }
+      }
+  
+      const response = await fetchWithJwt(`${apiUrl}${endpoint}`, {
         method: "POST",
         body: formDataToSend,
       });
+  
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Gagal mengirim data");
+        let errorMessage = "Gagal mengirim data";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (_) {
+          // Kosongkan, fallback ke default message
+        }
+        throw new Error(errorMessage);
       }
+  
       setIsSuccess(true);
-      const currentTime = new Intl.DateTimeFormat("id-ID", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-        hour: "numeric",
-        minute: "numeric",
-        second: "numeric",
-      }).format(new Date());
-
+  
       Swal.fire({
         title: notificationTitle,
-        text: currentTime,
+        text: new Intl.DateTimeFormat("id-ID", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+          second: "numeric",
+        }).format(new Date()),
         icon: "success",
       });
+  
     } catch (error) {
-      console.error("Error details:", error);
+      console.error("Error:", error);
       Swal.fire({
         title: "Gagal Menyimpan Data",
-        text: "Terjadi kesalahan saat menyimpan data. Silakan cek koneksi internet Anda dan coba lagi.",
+        text: error.message || "Terjadi kesalahan. Coba lagi.",
         icon: "error",
         confirmButtonText: "Coba lagi",
       });
@@ -141,26 +160,32 @@ const StepThree = ({ formData = {} }) => {
     }
   }, [isSuccess, navigate]);
 
+  useEffect(() => {
+    return () => {
+      if (fotoMulai instanceof File) URL.revokeObjectURL(fotoMulai);
+      if (fotoSelesai instanceof File) URL.revokeObjectURL(fotoSelesai);
+    };
+  }, [fotoMulai, fotoSelesai]);
+
   return (
     <MobileLayout title="Konfirmasi Absensi" className="p-4">
       <div className="flex flex-col items-center">
         <form onSubmit={handleSubmit} className="w-full max-w-md bg-white p-3 rounded-xl shadow border space-y-4">
-
-          {/* Foto Mulai */}
           {fotoMulai && (
-            <div>
-              <img src={fotoMulai} alt="Foto Mulai" className="w-full aspect-5/5 object-cover rounded-lg border -scale-x-100"/>
-            </div>
+            <img
+              src={fotoMulai instanceof File ? URL.createObjectURL(fotoMulai) : fotoMulai}
+              alt="Foto Mulai"
+              className="w-full aspect-5/5 object-cover rounded-lg border -scale-x-100"
+            />
           )}
-  
-          {/* Foto Selesai */}
           {fotoSelesai && (
-            <div>
-              <img src={fotoSelesai} alt="Foto Selesai" className="w-full aspect-5/5 object-cover rounded-lg border -scale-x-100"/>
-            </div>
+            <img
+              src={fotoSelesai instanceof File ? URL.createObjectURL(fotoSelesai) : fotoSelesai}
+              alt="Foto Selesai"
+              className="w-full aspect-5/5 object-cover rounded-lg border -scale-x-100"
+            />
           )}
-  
-          {/* Ringkasan */}
+
           <div className="border rounded-lg px-3 py-2">
             <h3 className="text-sm font-semibold text-gray-700 mb-2">Detail Absensi</h3>
             <div className="divide-y text-xs text-gray-800">
@@ -172,9 +197,10 @@ const StepThree = ({ formData = {} }) => {
               ))}
             </div>
           </div>
-  
-          {/* Tombol Submit */}
-          <button type="submit" className={`w-full py-2.5 text-sm font-semibold rounded-md transition-all ${
+
+          <button
+            type="submit"
+            className={`w-full py-2.5 text-sm font-semibold rounded-md transition-all ${
               isLoading
                 ? "bg-green-300 text-white cursor-not-allowed"
                 : "bg-green-500 text-white hover:bg-green-600"
@@ -194,7 +220,6 @@ const StepThree = ({ formData = {} }) => {
       </div>
     </MobileLayout>
   );
-  
 };
 
 StepThree.propTypes = {

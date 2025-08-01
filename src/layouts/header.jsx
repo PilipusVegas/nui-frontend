@@ -1,31 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars, faUser, faKey, faSignOutAlt, faTag } from "@fortawesome/free-solid-svg-icons";
+import { faBars, faUser, faSignOutAlt, faBarsStaggered } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import logo from "../assets/logo.png";
+import { getUserFromToken } from "../utils/jwtHelper";
 
-const Header = ({ toggleSidebar }) => {
+const Header = ({ toggleSidebar, isSidebarOpen }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileMenuRef = useRef(null);
   const navigate = useNavigate();
-
-  const GetNamaDivisi = (id) => {
-    const roles = {
-      1: "Admin Utama",
-      2: "IT",
-      3: "Teknisi",
-      4: "Manajer HRD",
-      5: "PA",
-      6: "Staff HRD",
-    };
-    return roles[id] || "Divisi Tidak Diketahui";
-  };
-
-  const username = localStorage.getItem("nama") || "Guest";
-  const roleId = localStorage.getItem("roleId");
-  const role = roleId ? GetNamaDivisi(roleId) : "No Role";
-
+  const user = getUserFromToken();
   const toggleProfile = () => setIsProfileOpen((prev) => !prev);
 
   const handleLogout = () => {
@@ -40,13 +24,17 @@ const Header = ({ toggleSidebar }) => {
       cancelButtonText: "Batal",
     }).then((result) => {
       if (result.isConfirmed) {
-        localStorage.clear();
-        navigate("/login");
-        window.location.reload();
-        Swal.fire("Logout berhasil!", "Anda telah keluar dari akun.", "success");
+        // Bersihkan token
+        localStorage.removeItem("token");
+  
+        // Redirect paksa ke login
+        window.location.href = "/login";
+  
+        // ❌ Jangan pakai Swal.fire lagi di sini, karena halaman akan berubah
       }
     });
   };
+  
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -60,72 +48,51 @@ const Header = ({ toggleSidebar }) => {
   }, []);
 
   return (
-  <header className="bg-gradient-to-b from-green-600 to-green-400 text-white px-4 sm:px-8 py-3 sticky top-0 z-50 rounded-b-2xl shadow-md backdrop-blur-md">
-    <div className="flex items-center justify-between">
-      {/* Logo + Sidebar Toggle (Mobile) */}
-      <div className="flex sm:hidden w-full items-center justify-center relative">
-        <FontAwesomeIcon
-          icon={faBars}
-          className="text-white text-lg p-2 bg-green-500 hover:bg-green-600 rounded-full transition-all duration-300 border-2 border-transparent hover:border-white absolute left-2 active:scale-95"
-          onClick={toggleSidebar}
-        />
+    <header className="bg-green-600 text-white px-3 sm:px-6 py-2 sticky top-0 backdrop-blur-md shadow-md">
+      <div className="flex items-center justify-between">
+        {/* Sidebar & Brand */}
+        <div className="flex items-center gap-3">
+          {/* Tombol Toggle Sidebar - Timeless, tanpa warna tapi timbul */}
+          <FontAwesomeIcon icon={isSidebarOpen ? faBars : faBarsStaggered} className="text-white text-xl p-2 rounded-xl border border-white/30 shadow-md hover:shadow-lg hover:scale-105 cursor-pointer transition-all duration-200 active:scale-95 backdrop-blur-sm" onClick={toggleSidebar} />
+          {/* Brand */}
+          <h1 className="text-lg sm:text-xl font-semibold tracking-wide whitespace-nowrap text-white drop-shadow-md">
+            {user.perusahaan}
+          </h1>
+        </div>
 
-        <div className="flex flex-col items-center justify-center pl-10 select-none">
-          <img src={logo} alt="PT. Nico Urban Indonesia Logo" className="h-7 sm:h-8 mb-1" />
-          <span className="text-xs font-medium text-green-900 text-center drop-shadow-sm">
-            PT. Nico Urban Indonesia
-          </span>
+        <div className="relative flex items-center gap-2.5">
+          {/* Info User */}
+          <div className="hidden sm:flex flex-col items-end text-sm text-white leading-tight">
+            <span className="font-semibold tracking-tight tracking-wide capitalize">{user.nama_user}</span>
+            <span className="text-white/80 text-xs italic">{user.role}</span>
+          </div>
+
+          {/* Tombol Profil */}
+          <button onClick={toggleProfile} className="relative w-11 h-11 rounded-full bg-white/15 hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-300 flex items-center justify-center group border-double border-white/80 border-2" aria-label="Buka Profil">
+            <FontAwesomeIcon icon={faUser} className="text-white text-base" />
+            <div className="absolute inset-0 rounded-full border border-white/40 group-hover:border-white/80 transition-all duration-300 pointer-events-none" />
+          </button>
+
+          {/* Dropdown Menu */}
+          {isProfileOpen && (
+            <div ref={profileMenuRef} className="absolute right-0 top-14 w-56 bg-white text-gray-800 text-sm rounded-xl shadow-xl ring-1 ring-black/10 animate-fade-in-up overflow-hidden">
+              <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 border-b border-gray-200">
+                <FontAwesomeIcon icon={faUser} className="text-green-600 text-lg" />
+                <div className="flex flex-col">
+                  <span className="font-semibold leading-snug">{user.nama_user}</span>
+                  <span className="text-xs text-gray-500">{user.role}</span>
+                </div>
+              </div>
+              <button onClick={handleLogout} className="w-full px-4 py-2 flex items-center gap-3 hover:bg-red-50 text-red-600 font-medium transition-all duration-200">
+                <FontAwesomeIcon icon={faSignOutAlt} className="text-red-500" />
+                <span>Keluar</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Title (Desktop Only) */}
-      <h1 className="text-lg sm:text-xl font-bold hidden sm:block tracking-wide drop-shadow-md">
-        PT. Nico Urban Indonesia
-      </h1>
-
-      {/* Profile Dropdown */}
-      <div className="relative">
-        <button
-          onClick={toggleProfile}
-          className="flex items-center gap-2 text-white hover:text-green-100 transition-colors"
-        >
-          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center border-2 border-white shadow-inner hover:scale-105 transition-transform duration-200">
-            <FontAwesomeIcon icon={faUser} className="text-xl" />
-          </div>
-        </button>
-
-        {/* Profile Menu Dropdown */}
-        {isProfileOpen && (
-          <div
-            ref={profileMenuRef}
-            className="absolute right-0 mt-3 w-52 bg-white text-black rounded-xl shadow-xl border border-gray-100 animate-fade-in-up z-50"
-          >
-            {/* Info Pengguna */}
-            <div className="flex items-center px-4 py-3 text-green-600 font-semibold">
-              <FontAwesomeIcon icon={faUser} className="text-xl mr-3" />
-              <div className="flex flex-col text-sm">
-                <span>{username}</span>
-                <span className="text-xs text-gray-500">{role}</span>
-              </div>
-            </div>
-
-            <hr className="border-t border-gray-200" />
-
-            {/* Logout Button */}
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-2 px-4 py-2 text-left text-gray-700 hover:bg-green-50 rounded-b-xl transition-all duration-200"
-            >
-              <FontAwesomeIcon icon={faSignOutAlt} className="text-green-600" />
-              <span>Logout</span>
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  </header>
-);
-
+    </header>
+  );
 };
 
 export default Header;

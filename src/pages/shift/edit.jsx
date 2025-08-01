@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
-
+import { fetchWithJwt } from "../../utils/jwtHelper";
 const hariList = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
 const EditShift = () => {
@@ -15,7 +15,7 @@ const EditShift = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`${apiUrl}/shift/${id}`);
+        const res = await fetchWithJwt(`${apiUrl}/shift/${id}`);
         const resData = await res.json();
         const data = resData.data; 
         setNama(data.nama || "");
@@ -45,7 +45,7 @@ const EditShift = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${apiUrl}/shift/${id}`, {
+      const res = await fetchWithJwt(`${apiUrl}/shift/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nama, detail }),
@@ -59,17 +59,17 @@ const EditShift = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <div className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-sm border-b">
+    <div className="bg-white flex flex-col">
+      <div className="w-full flex items-center justify-between pb-4 bg-white shadow-sm border-b">
         <div className="flex items-center space-x-2">
-          <button onClick={() => navigate("/shift")} className="bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded-full" title="Kembali">
+          <button onClick={() => navigate("/shift")} className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 sm:p-3 sm:px-4 rounded-full" title="Kembali">
             <FontAwesomeIcon icon={faArrowLeft} />
           </button>
-          <h1 className="text-2xl font-bold text-gray-800 mb-1">Edit Shift</h1>
+          <h1 className="text-xl sm:text-3xl font-bold text-gray-800 mb-1">Edit Shift</h1>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex-grow p-10 w-full mx-auto space-y-6">
+      <form onSubmit={handleSubmit} className="flex-grow p-2 sm:p-6 w-full mx-auto space-y-6">
         <div>
           <label className="block mb-1 font-medium text-gray-700">Nama Shift</label>
           <p className="text-xs text-gray-500 mb-2">Contoh: Shift Pagi, Shift Malam, Setengah Hari</p>
@@ -77,7 +77,7 @@ const EditShift = () => {
         </div>
         {detail.map((item, index) => (
         <div key={item.hari} className="mb-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+            <div className="grid grid-cols-3 sm:grid-cols-3 gap-4 items-center">
             <label className="font-semibold text-gray-700">{item.hari}</label>
             <input type="time" value={item.jam_masuk} onChange={(e) => handleDetailChange(index, "jam_masuk", e.target.value)} required className="border px-3 py-2 rounded-lg"/>
             <input type="time" value={item.jam_pulang} onChange={(e) => handleDetailChange(index, "jam_pulang", e.target.value)} required className="border px-3 py-2 rounded-lg"/>
@@ -92,7 +92,7 @@ const EditShift = () => {
           </button>
           <button type="submit" className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center shadow">
             <FontAwesomeIcon icon={faSave} className="mr-2" />
-            Simpan Perubahan
+            Simpan
           </button>
         </div>
       </form>

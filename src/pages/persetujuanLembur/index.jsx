@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import "sweetalert2/dist/sweetalert2.min.css";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import { faCheck, faArrowLeft, faClock, faUser, faInfoCircle, faMapMarkerAlt, faTimes, faSearch, faTriangleExclamation,} from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faArrowLeft, faClock, faUser, faInfoCircle, faMapMarkerAlt, faTimes, faSearch, faTriangleExclamation, faArrowRight,} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { fetchWithJwt } from "../../utils/jwtHelper";
 
 const DataApproval = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -16,10 +17,26 @@ const DataApproval = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalDescription, setModalDescription] = useState("");
   const handleBackClick = () => navigate("/home");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
 
+  const paginatedData = (() => {
+    const statusFiltered = approvalData.filter((approval) => {
+      const matchesSearch = approval.nama_user.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesSearch && approval.status_lembur === selectedStatus;
+    });
+  
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return {
+      total: statusFiltered.length,
+      data: statusFiltered.slice(startIndex, endIndex)
+    };
+  })();
+  
   const fetchApprovalData = async () => {
     try {
-      const response = await fetch(`${apiUrl}/lembur/approve/`, {
+      const response = await fetchWithJwt(`${apiUrl}/lembur/approve/`, {
         method: "GET",
       });
       if (!response.ok) {
@@ -70,7 +87,7 @@ const DataApproval = () => {
       if (result.isConfirmed) {
         const userId = localStorage.getItem("userId");
         try {
-          const response = await fetch(`${apiUrl}/lembur/approve/${id}`, {
+          const response = await fetchWithJwt(`${apiUrl}/lembur/approve/${id}`, {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
@@ -108,7 +125,7 @@ const DataApproval = () => {
       if (result.isConfirmed) {
         const userId = localStorage.getItem("userId");
         try {
-          const response = await fetch(`${apiUrl}/lembur/approve/${id}`, {
+          const response = await fetchWithJwt(`${apiUrl}/lembur/approve/${id}`, {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
@@ -136,7 +153,7 @@ const DataApproval = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col p-6">
+    <div className="flex flex-col">
       {/* Header and Filter Section */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         {/* Header */}
@@ -145,18 +162,14 @@ const DataApproval = () => {
           <h1 className="text-xl sm:text-3xl font-bold text-gray-800 pb-1">Persetujuan Lembur</h1>
         </div>
 
-        {/* Wrapper untuk Search Bar dan Filter */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
-          {/* Wrapper untuk ikon dan input */}
           <div className="relative flex items-center w-full sm:w-auto">
-            {/* Ikon pencarian */}
             <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"/>
-            {/* Search Input */}
             <input type="text" value={searchQuery} placeholder="Cari Nama Karyawan..." className="border border-gray-300 p-2 pl-10 rounded-lg w-full sm:max-w-md" onChange={(e) => setSearchQuery(e.target.value)}/>
           </div>
 
           {/* Filter Dropdown */}
-          <select value={selectedStatus} onChange={(e) => setSelectedStatus(Number(e.target.value))} className="border border-gray-300 p-2 rounded-lg w-full sm:w-auto">
+          <select value={selectedStatus} onChange={(e) => { setSelectedStatus(Number(e.target.value)); setCurrentPage(1); }}  className="border border-gray-300 p-2 rounded-lg w-full sm:w-auto">
             <option value={0}>Permohonan Lembur</option>
             <option value={1}>Disetujui</option>
             <option value={2}>Ditolak</option>
@@ -171,7 +184,7 @@ const DataApproval = () => {
               <thead>
                 <tr className="bg-green-500 text-white text-xs md:text-sm">
                   {[ "No.", "Tanggal", "Nama Karyawan", "Lokasi Tugas", "Deskripsi", "Waktu Lembur", selectedStatus === 1 || selectedStatus === 2 ? "Status" : "Menu",].map((header) => (
-                    <th key={header} className="py-1 px-4 text-center">
+                    <th key={header} className="py-2 px-4 text-center">
                       {header}
                     </th>
                   ))}
@@ -179,26 +192,26 @@ const DataApproval = () => {
               </thead>
               <tbody className="text-gray-700 text-center">
                 {filteredApproval.length > 0 ? (
-                  filteredApproval.map((approval, index) => (
+                  paginatedData.data.map((approval, index) => (
                     <tr key={approval.id_lembur} className="hover:bg-gray-100 border-b border-gray-200">
-                      <td className="py-1 px-4">{index + 1}</td>
-                      <td className="py-1 px-4">
+                      <td className="py-0.5 px-4 text-xs">{index + 1}</td>
+                      <td className="py-0.5 px-4 text-xs">
                         {new Date(approval.tanggal).toLocaleDateString("id-ID")}
                       </td>
-                      <td className="text-left font-semibold py-1 px-4">{approval.nama_user}</td>
-                      <td className="py-1 px-4">{approval.lokasi}</td>
-                      <td className="py-1 px-4 text-center">
+                      <td className="text-left font-semibold py-0.5 px-4 text-xs">{approval.nama_user}</td>
+                      <td className="py-0.5 px-4 text-xs">{approval.lokasi}</td>
+                      <td className="py-0.5 px-4 text-xs text-center">
                       <div className="flex justify-center">
-                        <button onClick={() => openModalWithDescription(approval.deskripsi)} className="flex items-center space-x-2 bg-sky-500 hover:bg-sky-600 text-white text-xs px-4 py-1 rounded font-semibold transition">
+                        <button onClick={() => openModalWithDescription(approval.deskripsi)} className="flex items-center space-x-2 bg-sky-500 hover:bg-sky-600 text-white px-4 text-xs py-1 rounded font-semibold transition">
                           <FontAwesomeIcon icon={faSearch} />
-                          <span>View</span>
+                          <span>Detail</span>
                         </button>
                       </div>
                     </td>
-                    <td className="px-4 py-1 text-sm font-medium text-gray-700 whitespace-nowrap">
+                    <td className="px-4 text-xs py-0.5 text-sm font-medium text-gray-700 whitespace-nowrap">
                       {approval.jam_mulai} <span className="text-gray-600 font-bold">-</span> {approval.jam_selesai}
                     </td>
-                      <td className="py-1 px-4">
+                      <td className="py-0.5 px-4 text-xs">
                         {approval.status_lembur === 1 ? (
                           <>
                           <div className="flex flex-col space-y-0.5">
@@ -214,12 +227,12 @@ const DataApproval = () => {
                           </div>
                           </>
                         ) : (
-                          <div className="flex space-x-2 justify-center">
-                              <button onClick={() => handleApprove(approval.id_lembur)} className="flex items-center justify-center space-x-2 bg-green-500 hover:bg-green-600 text-white text-xs px-4 py-1 rounded font-semibold transition">
+                          <div className="flex space-x-2 py-2 justify-center">
+                              <button onClick={() => handleApprove(approval.id_lembur)} className="flex items-center justify-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-4 text-xs py-2 rounded font-semibold transition">
                                 <FontAwesomeIcon icon={faCheck} />
                                 <span>Setujui</span>
                               </button>
-                              <button onClick={() => handleReject(approval.id_lembur)} className="flex items-center justify-center space-x-2 bg-red-500 hover:bg-red-600 text-white text-xs px-4 py-1 rounded font-semibold transition">
+                              <button onClick={() => handleReject(approval.id_lembur)} className="flex items-center justify-center space-x-2 bg-red-500 hover:bg-red-600 text-white px-4 text-xs py-2 rounded font-semibold transition">
                                 <FontAwesomeIcon icon={faTimes} />
                                 <span>Tolak</span>
                               </button>
@@ -246,112 +259,128 @@ const DataApproval = () => {
       </div>
 
       {/* Tabel untuk Mobile */}
-      <div className="md:hidden space-y-6">
+      <div className="md:hidden space-y-4">
         {filteredApproval.length > 0 ? (
-          filteredApproval.map((approval, index) => (
-            <div key={approval.id_lembur} className={`bg-white border-l-4 ${
-                approval.status_lembur === 1
-                  ? "border-green-500"
-                  : approval.status_lembur === 2
-                  ? "border-red-500"
-                  : "border-yellow-400"
-              } shadow-md rounded-lg p-4 flex flex-col space-y-4`}
-            >
-              {/* Header Card */}
-              <div className="flex justify-between items-center">
-                <p className="text-gray-600 text-sm">
-                  {" "}
-                  <span className="text-gray-700 text-xs font-normal">
-                    <FontAwesomeIcon icon={faMapMarkerAlt} className="text-green-700 text-base mr-1"/>
-                    {approval.lokasi}
-                  </span>
-                </p>
-                <span
-                  className={`px-1 py-1 rounded-full text-xs font-semibold ${
-                    approval.status_lembur === 1
-                      ? "bg-green-100 text-green-600"
-                      : approval.status_lembur === 2
-                      ? "bg-red-100 text-red-600"
-                      : "bg-yellow-200 text-yellow-600"
-                  }`}
-                >
-                  {approval.status_lembur === 1
-                    ? "Disetujui"
-                    : approval.status_lembur === 2
-                    ? "Ditolak"
-                    : "Pending"}
-                </span>
-              </div>
-
-              {/* Body Card */}
-              <div className="grid grid-cols-1 gap-4 p-4 bg-white rounded-lg shadow-md">
-                {/* Nama User & Lokasi */}
-                <div className="flex items-center gap-2">
-                  <FontAwesomeIcon icon={faUser} className="text-gray-500 text-base" />
-                  <div className="flex flex-col w-full">
-                    <div className="flex justify-between items-center">
-                      <p className="text-gray-800 font-semibold text-sm">{approval.nama_user}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-gray-800 font-semibold text-xs">
-                      {new Date(approval.tanggal).toLocaleDateString("id-ID", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </p>
+          paginatedData.data.map((approval) => (
+            <div key={approval.id_lembur} className={`border-l-4 ${ approval.status_lembur === 1 ? "border-green-500" : approval.status_lembur === 2 ? "border-red-500" : "border-yellow-400" } bg-white rounded-lg shadow-sm p-4 space-y-3 text-sm`}>
+              {/* Header */}
+              <div className="flex justify-between items-start">
+                <div className="space-y-1">
+                  <p className="font-semibold text-gray-800">{approval.nama_user}</p>
+                  <div className="text-gray-500 text-[10px] flex items-center gap-1">
+                    <FontAwesomeIcon icon={faMapMarkerAlt} className="text-green-600" />
+                    <span>{approval.lokasi}</span>
                   </div>
                 </div>
-
-                {/* Jam Mulai - Jam Selesai */}
+                <div className="flex flex-col items-end space-y-1">
+                  <span className="text-[11px] text-gray-400">
+                    {new Date(approval.tanggal).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric",})}
+                  </span>
+                  <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${ approval.status_lembur === 1 ? "bg-green-100 text-green-600" : approval.status_lembur === 2 ? "bg-red-100 text-red-600" : "bg-yellow-100 text-yellow-600" }`}>
+                    {approval.status_lembur === 1 ? "Disetujui" : approval.status_lembur === 2 ? "Ditolak" : "Pending"}
+                  </span>
+                </div>
+              </div>
+              <hr className="border-gray-100" />
+              <div className="flex justify-between items-center gap-4 text-gray-700">
                 <div className="flex items-center gap-2">
-                  <FontAwesomeIcon icon={faClock} className="text-gray-500 text-base" />
-                  <p className="text-gray-800 text-xs">
+                  <FontAwesomeIcon icon={faClock} className="text-gray-500 text-sm" />
+                  <span>
                     <span className="font-medium">{approval.jam_mulai}</span> -{" "}
                     <span className="font-medium">{approval.jam_selesai}</span>
-                  </p>
+                  </span>
                 </div>
-
-                {/* Deskripsi */}
-                <div className="flex items-center gap-2">
-                  <FontAwesomeIcon icon={faInfoCircle} className="text-gray-500 text-base" />
-                  <button onClick={() => openModalWithDescription(approval.deskripsi)} className="text font-medium text-xs underline hover:text-blue-700 hover:underline transition duration-150">
-                    Lihat Deskripsi
-                  </button>
-                </div>
+                <button onClick={() => openModalWithDescription(approval.deskripsi)} className="text-xs font-medium text-blue-600 underline hover:text-blue-700 transition flex items-center gap-1">
+                  <FontAwesomeIcon icon={faInfoCircle} className="text-blue-500 text-sm" />
+                  Lihat Deskripsi
+                </button>
               </div>
-
-              {/* Action Buttons */}
               {approval.status_lembur === 0 && (
-                <div className="flex space-x-20">
-                  <button onClick={() => handleReject(approval.id_lembur)} className="flex-1 flex items-center justify-center bg-red-500 text-white rounded-lg px-0 py-2 text-sm font-semibold hover:bg-red-600 transition-all">
-                    <FontAwesomeIcon icon={faTimes} className="mr-2" />
+                <div className="pt-2 flex gap-4">
+                  <button onClick={() => handleReject(approval.id_lembur)} className="flex-1 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white text-xs py-2 rounded-md font-semibold gap-2">
+                    <FontAwesomeIcon icon={faTimes} />
+                    Tolak
                   </button>
-                  <button onClick={() => handleApprove(approval.id_lembur)} className="flex-1 flex items-center justify-center bg-green-500 text-white rounded-lg px-0 py-2 text-sm font-semibold hover:bg-green-600 transition-all">
-                    <FontAwesomeIcon icon={faCheck} className="mr-2" />
+                  <button onClick={() => handleApprove(approval.id_lembur)} className="flex-1 flex items-center justify-center bg-green-500 hover:bg-green-600 text-white text-xs py-2 rounded-md font-semibold gap-2">
+                    <FontAwesomeIcon icon={faCheck} />
+                    Setujui
                   </button>
                 </div>
               )}
             </div>
           ))
         ) : (
-          <p className="text-gray-500 text-center">Data tidak ditemukan.</p>
+          <p className="text-center text-gray-400 text-sm">Tidak ada data lembur.</p>
         )}
       </div>
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 px-4">
-          <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-lg mx-auto">
-            <button onClick={() => setIsModalOpen(false)} className="absolute top-2 right-3 text-gray-600 hover:text-red-600">
-              <FontAwesomeIcon icon={faTimes} />
-            </button>
-            <h2 className="text-xl font-bold mb-4">Rincian Tugas</h2>
-            <p>{modalDescription || "Deskripsi tidak tersedia."}</p>
-          </div>
+      {paginatedData.total > itemsPerPage && (
+        <div className="relative flex justify-center items-center mt-6 text-sm sm:text-base">
+          {/* Panah kiri */}
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className={`absolute left-0 px-3 py-2 rounded-full border shadow-sm transition-all duration-200
+              ${
+                currentPage === 1
+                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  : "bg-green-600 text-white hover:bg-green-700"
+              }`}
+          >
+            <FontAwesomeIcon icon={faArrowLeft} />
+          </button>
+
+          {/* Info halaman */}
+          <span className="px-5 py-2 rounded-full bg-white border border-gray-300 text-gray-700 font-semibold shadow-sm">
+            Halaman {currentPage} / {Math.ceil(paginatedData.total / itemsPerPage)}
+          </span>
+
+          {/* Panah kanan */}
+          <button
+            onClick={() =>
+              setCurrentPage((prev) =>
+                Math.min(prev + 1, Math.ceil(paginatedData.total / itemsPerPage))
+              )
+            }
+            disabled={currentPage === Math.ceil(paginatedData.total / itemsPerPage)}
+            className={`absolute right-0 px-3 py-2 rounded-full border shadow-sm transition-all duration-200
+              ${
+                currentPage === Math.ceil(paginatedData.total / itemsPerPage)
+                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  : "bg-green-600 text-white hover:bg-green-700"
+              }`}
+          >
+            <FontAwesomeIcon icon={faArrowRight} />
+          </button>
         </div>
       )}
+
+
+      {/* Modal */}
+      {isModalOpen && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 px-4">
+    <div className="relative bg-white w-full max-w-2xl mx-auto rounded-2xl shadow-xl p-6 sm:p-8 transition-all duration-300">
+      
+      {/* Tombol Close */}
+      <button
+        onClick={() => setIsModalOpen(false)}
+        className="absolute top-4 right-4 text-gray-500 hover:text-red-600 text-2xl transition"
+        aria-label="Tutup"
+      >
+        <FontAwesomeIcon icon={faTimes} />
+      </button>
+
+      {/* Judul Modal */}
+      <h2 className="text-2xl font-semibold text-gray-800 mb-4">Rincian Tugas</h2>
+
+      {/* Isi Deskripsi */}
+      <p className="text-gray-600 leading-relaxed whitespace-pre-line">
+        {modalDescription || "Deskripsi tidak tersedia."}
+      </p>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };

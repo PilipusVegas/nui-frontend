@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faChevronDown, faChevronUp, faSearch } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
+import {fetchWithJwt} from "../../utils/jwtHelper"
 
 const HistoryPenggajian = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -16,7 +17,7 @@ const HistoryPenggajian = () => {
 
   const fetchPayrollData = async (startDate, endDate) => {
     try {
-      const res = await fetch(`${apiUrl}/payroll?startDate=${startDate}&endDate=${endDate}`);
+      const res = await fetchWithJwt(`${apiUrl}/payroll?startDate=${startDate}&endDate=${endDate}`);
       if (!res.ok) throw new Error("Gagal memuat data");
       return await res.json();
     } catch (err) {
@@ -63,7 +64,7 @@ const HistoryPenggajian = () => {
     setActiveUserDetailId(userId);
     if (userDetails[userId]) return;
     try {
-      const res = await fetch(`${apiUrl}/payroll/detail/${userId}?startDate=${startDate}&endDate=${endDate}`);
+      const res = await fetchWithJwt(`${apiUrl}/payroll/detail/${userId}?startDate=${startDate}&endDate=${endDate}`);
       if (!res.ok) throw new Error("Gagal memuat detail");
       const result = await res.json();
       setUserDetails((prev) => ({ ...prev, [userId]: result }));

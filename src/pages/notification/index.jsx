@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell } from "@fortawesome/free-solid-svg-icons";
 import MobileLayout from "../../layouts/mobileLayout";
 import NotificationDetail from "./notificationDetail";
+import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 
 const Notification = () => {
   const [notifications, setNotifications] = useState([]);
@@ -13,18 +14,19 @@ const Notification = () => {
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [loading, setLoading] = useState(true);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  const user = getUserFromToken();
 
   useEffect(() => {
-    const id_user = localStorage.getItem("userId");
+    const id_user = user?.id_user;
     if (!id_user) {
-      console.log("No user ID found in localStorage. Skipping fetch.");
+      console.log("No user ID found. Skipping fetch.");
       setNotifications([]);
       setLoading(false);
       return;
     }
     if (hasFetched) return;
 
-    fetch(`${apiUrl}/notif/user/${id_user}`)
+    fetchWithJwt(`${apiUrl}/notif/user/${id_user}`)
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -82,7 +84,7 @@ const Notification = () => {
       return;
     }
 
-    fetch(`${apiUrl}/notif/${id}`, {
+    fetchWithJwt(`${apiUrl}/notif/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -120,11 +122,7 @@ const Notification = () => {
         </>
       ) : notifications.length > 0 ? (
         notifications.map((notification, index) => (
-          <div
-            key={notification.id}
-            onClick={() => handleNotificationClick(notification.id)}
-            className={`p-4 rounded-lg mb-2 border border-gray-300 shadow-sm cursor-pointer ${
-              notification.is_read || clickedNotifications.includes(notification.id)
+          <div key={notification.id} onClick={() => handleNotificationClick(notification.id)} className={`p-4 rounded-lg mb-2 border border-gray-300 shadow-sm cursor-pointer ${ notification.is_read || clickedNotifications.includes(notification.id)
                 ? "bg-gray-300"
                 : "bg-white border-green-800"
             }`}

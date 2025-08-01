@@ -3,7 +3,8 @@
   import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
   import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
   import Swal from "sweetalert2";
-  import { faCalendarCheck, faClock, faBell, faHistory, faThList, faHome, faUser, faSignOutAlt, faQuestionCircle, faMapMarkerAlt, faArrowRight, faList, faPen, faPenFancy,} from "@fortawesome/free-solid-svg-icons";
+  import { faCalendarCheck, faClock, faBell, faHistory, faThList, faHome, faUser, faSignOutAlt, faQuestionCircle, faMapMarkerAlt, faArrowRight, faList, faPen, faPenFancy, faPeopleGroup,} from "@fortawesome/free-solid-svg-icons";
+  import { fetchWithJwt, getUserFromToken  } from "../utils/jwtHelper";
 
   const HomeMobile = ({ handleLogout }) => {
     const navigate = useNavigate();
@@ -11,70 +12,68 @@
     const [profileData, setProfileData] = useState(null);
     const [attendanceData, setAttendanceData] = useState([]);
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
-    const idUser = localStorage.getItem("userId");
+    const user = getUserFromToken();
     const [loading, setLoading] = useState(true);
     const [hasNewNotifications, setHasNewNotifications] = useState(false);
 
     useEffect(() => {
-      const idUser = localStorage.getItem("userId");
+      const user = getUserFromToken();
+      const idUser = user?.id_user;
       if (idUser) {
         const fetchNotifications = async () => {
           try {
             setLoading(true);
-            const response = await fetch(`${apiUrl}/notif/user/${idUser}`, {
+            const response = await fetchWithJwt(`${apiUrl}/notif/user/${idUser}`, {
               headers: { "Cache-Control": "no-cache" },
             });
             if (!response.ok) {
               throw new Error("Gagal mengambil data notifikasi");
             }
-
             const data = await response.json();
-            if (data && data.data && data.data.length > 0) {
-              const unreadNotifications = data.data.some((notif) => notif.is_read === 0);
-              setHasNewNotifications(unreadNotifications);
-            } else {
-              setHasNewNotifications(false);
-            }
+            const unreadNotifications = data?.data?.some((notif) => notif.is_read === 0);
+            setHasNewNotifications(unreadNotifications);
           } catch (error) {
             console.error("Terjadi kesalahan:", error);
           } finally {
             setLoading(false);
           }
         };
-
         fetchNotifications();
       } else {
         setLoading(false);
       }
-
       return () => {
         setLoading(false);
       };
     }, [apiUrl]);
+    
 
 
     useEffect(() => {
+      const user = getUserFromToken();
+      const idUser = user?.id_user;
       if (!idUser) return;
-    
-      fetch(`${apiUrl}/profil/${idUser}`)
-        .then((res) => res.json())
-        .then((result) => {
+      const fetchProfile = async () => {
+        try {
+          const res = await fetchWithJwt(`${apiUrl}/profil/${idUser}`);
+          const result = await res.json();
           if (result.success) {
             setProfileData(result.data);
           }
-        })
-        .catch((err) => {
-          console.error('Gagal memuat data profil:', err);
-        });
-    }, [apiUrl, idUser]);
+        } catch (err) {
+          console.error("Gagal memuat data profil:", err);
+        }
+      };
+      fetchProfile();
+    }, [apiUrl]);
 
-    
 
     useEffect(() => {
-      const idUser = localStorage.getItem("userId");
+      const user = getUserFromToken();
+      const idUser = user?.id_user;
       const fetchAttendance = async () => {
         try {
-          const response = await fetch(`${apiUrl}/absen/riwayat/${idUser}`);
+          const response = await fetchWithJwt(`${apiUrl}/absen/riwayat/${idUser}`);
           if (!response.ok) {
             throw new Error("Failed to fetch attendance data");
           }
@@ -84,9 +83,9 @@
           console.error("Error fetching attendance:", error);
         }
       };
-
-      fetchAttendance();
+      if (idUser) fetchAttendance();
     }, [apiUrl]);
+
 
     const handleNotificationClick = () => {
       navigate("/notification");
@@ -148,18 +147,31 @@
     return (
       <div className="flex flex-col font-sans bg-gray-50 min-h-screen">
         {/* Header Hero */}
-        <div className="bg-green-700 rounded-b-2xl px-8 py-4 relative shadow-lg">
-          <button onClick={confirmLogout} title="Logout" className="absolute top-3 right-3 text-lg text-white hover:text-green-700 transition-colors hover:bg-white px-2 py-1 rounded-full">
+        <div className="bg-green-700 rounded-b-2xl px-8 py-2 relative shadow-lg">
+          <button onClick={confirmLogout} title="Logout" className="absolute top-3 right-3 text-xl text-white hover:text-green-700 transition-colors hover:bg-white px-2 py-1 rounded-full">
             <FontAwesomeIcon icon={faSignOutAlt} />
           </button>
           <div className="flex flex-col py-5">
-            <h2 className="text-xs font-semibold text-white">Selamat Datang,</h2>
-            <div className="text-3xl font-bold text-white mb-2"> {profileData?.nama || "User"}</div>
-            <div className="text-sm text-white font-semibold bg-yellow p-">
-            {profileData?.role_name || "Divisi Tidak Diketahui"} • Kantor Palem
+            <h2 className="text-sm font-semibold text-white">Selamat Bekerja,</h2>
+            <div className="text-3xl font-bold text-white mb-2">
+              {user?.nama_user || "User"}
+            </div>
+            <div className="text-sm text-white font-semibold inline-flex items-center gap-2 bg-white/20 px-3 py-1 rounded-md w-fit">
+              <FontAwesomeIcon icon={faPeopleGroup} className="mr-1" />
+              {profileData?.role_name || "N/A"}
             </div>
           </div>
         </div>
+
+        {/* NOTIFIKASI CARD */}
+        {/* <div className="flex flex-row items-center p-1 mt-2">
+          <span className="text-sm font-semibold pl-3">Notifikasi</span>
+        </div>
+        <div className="grid grid-cols-4 gap-2 px-4">
+          {notifications.map((notification) => (
+            <NotificationCard key={notification.id} notification={notification} setShowDetail={setShowDetail} />
+          ))}
+        </div> */}
 
         {/* MENU UTAMA */}
         <div className="flex flex-row items-center p-1 mt-2">
@@ -172,7 +184,7 @@
           <IconButton icon={faBell} label="Notifikasi" onClick={handleNotificationClick} hasNotification={hasNewNotifications} color="p-4 rounded-lg bg-green-100 text-xl text-amber-600"/> 
           <IconButton icon={faHistory} label="Riwayat" onClick={() => navigate("/riwayat-absensi")} color="p-4 rounded-lg bg-green-100 text-xl text-indigo-600"/>
           <IconButton icon={faThList} label="Lainnya" onClick={() => navigate("/menu")} color="p-4 rounded-lg bg-green-100 text-xl text-teal-600"/>
-          <IconButton image="/NOS.png" label="NOS" onClick={() => window.open("https://nos.nicourbanindonesia.com/mypanel/maintenance/add", "_blank")} color="bg-green-100"/>
+          <IconButton image="/NOS.png" label="NOS" onClick={() => window.open("https://nos.nicourbanindonesia.com/mypanel/maintenance", "_blank")} color="bg-green-100"/>
         </div>
         {/* MENU UTAMA */}
 
@@ -246,12 +258,9 @@
                         </div>
                         <span className="text-xs text-gray-600">Check Out</span>
                       </div>
-
                       <div>
                         <div className="text-lg text-green-700 font-bold">
-                          {item.jam_selesai
-                            ? calculateTotalHours(item.jam_mulai, item.jam_selesai)
-                            : "-"}
+                          {item.jam_selesai ? calculateTotalHours(item.jam_mulai, item.jam_selesai) : "-"}
                         </div>
                         <span className="text-xs text-gray-600">Total Jam</span>
                       </div>

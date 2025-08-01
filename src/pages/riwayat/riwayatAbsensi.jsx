@@ -1,14 +1,9 @@
 import React, { useEffect, useState } from "react";
 import MobileLayout from "../../layouts/mobileLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faSearch,
-  faCalendarCheck,
-  faClock,
-  faExclamationTriangle,
-  faSpinner,
-} from "@fortawesome/free-solid-svg-icons";
+import { faSearch, faCalendarCheck, faClock, faExclamationTriangle, faSpinner,} from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
+import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 
 const Riwayat = () => {
   const [activeTab, setActiveTab] = useState("absensi");
@@ -20,15 +15,15 @@ const Riwayat = () => {
   const [error, setError] = useState(null);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const navigate = useNavigate();
-  const id_user = localStorage.getItem("userId");
+  const user = getUserFromToken();
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const [absensiRes, lemburRes] = await Promise.all([
-          fetch(`${apiUrl}/absen/riwayat/${id_user}`),
-          fetch(`${apiUrl}/lembur/riwayat/${id_user}`),
+          fetchWithJwt(`${apiUrl}/absen/riwayat/${user.id_user}`),
+          fetchWithJwt(`${apiUrl}/lembur/riwayat/${user.id_user}`),
         ]);
   
         if (!absensiRes.ok && !lemburRes.ok) throw new Error("Gagal memuat data.");
@@ -65,7 +60,7 @@ const Riwayat = () => {
     };
   
     fetchData();
-  }, [apiUrl, id_user]);
+  }, [apiUrl, user.id_user]);
   
 
   const groupDataByTag = (data, dateField) => {
@@ -207,13 +202,7 @@ const Riwayat = () => {
             <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
               <FontAwesomeIcon icon={faSearch} className="text-gray-500" />
             </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={handleSearch}
-              className="w-full pl-10 px-2 py-1 border border-green-300 rounded-lg"
-              placeholder={`Cari Riwayat ${activeTab === "absensi" ? "Absensi" : "Lembur"}...`}
-            />
+            <input type="text" value={searchQuery} onChange={handleSearch} className="w-full pl-10 px-2 py-1 border border-green-300 rounded-lg" placeholder={`Cari Riwayat ${activeTab === "absensi" ? "Absensi" : "Lembur"}...`}/>
           </div>
 
           {/* Data Riwayat */}

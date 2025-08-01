@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
+import { fetchWithJwt } from "../../utils/jwtHelper";
 
 const EditLokasi = () => {
   const { id } = useParams();
@@ -26,10 +27,11 @@ const EditLokasi = () => {
     }
   };
 
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`${apiUrl}/lokasi/${id}`);
+        const res = await fetchWithJwt(`${apiUrl}/lokasi/${id}`);
         if (!res.ok) throw new Error("Gagal memuat data lokasi.");
         const data = await res.json();
   
@@ -60,7 +62,7 @@ const EditLokasi = () => {
     if (!confirm.isConfirmed) return;
 
     try {
-      const res = await fetch(`${apiUrl}/lokasi/update/${id}`, {
+      const res = await fetchWithJwt(`${apiUrl}/lokasi/update/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nama, koordinat }),
