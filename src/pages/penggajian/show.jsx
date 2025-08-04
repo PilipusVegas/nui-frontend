@@ -347,7 +347,11 @@ const DetailPenggajian = () => {
                         {typeof record?.late === "number" ? record.late === 0 ? 0 : `${record.late} Menit` : "-"}
                       </td>
                       <td className="px-4 py-0.5">{record?.out || "-"}</td>
-                      <td className="px-4 py-0.5">{record?.overtime || "-"}</td>
+                      <td className="px-4 py-0.5">
+                        {typeof record?.overtime === "number"
+                          ? `${String(Math.floor(record.overtime / 60)).padStart(2, "0")}:00`
+                          : "-"}
+                      </td>
                     </tr>
                   );
                 })}
