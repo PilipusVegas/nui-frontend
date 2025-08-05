@@ -269,8 +269,7 @@ const DataPenggajian = () => {
   return (
     <div className="flex flex-col justify-start">
       <div className="flex flex-col gap-4 mb-4">
-        {/* Header + Aksi (responsif, sejajar di desktop) */}
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           {/* Kiri: Tombol Kembali + Judul */}
           <div className="flex items-center gap-3 flex-wrap shrink-0">
             <FontAwesomeIcon icon={faArrowLeft} title="Back to Home" onClick={handleBackClick} className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"/>
@@ -279,10 +278,9 @@ const DataPenggajian = () => {
             </h2>
           </div>
 
-          {/* Kanan: Filter + Search + Unduh */}
+          {/* Kanan: Rentang Tanggal */}
           {isDateSelected && (
-            <div className="flex flex-col gap-4 sm:grid sm:grid-cols-2 lg:flex lg:flex-row lg:items-end lg:gap-4 w-full">
-              {/* Filter Tanggal */}
+            <div className="flex flex-col sm:flex-row sm:items-end lg:items-center gap-2 w-full lg:w-auto">
               <div className="flex flex-col w-full max-w-md">
                 <label className="text-xs font-medium text-gray-600 mb-1">
                   Periode Tanggal: {startDate} s/d {endDate}
@@ -293,30 +291,39 @@ const DataPenggajian = () => {
                 </div>
               </div>
 
-              {/* Search + Unduh */}
-              <div className="flex flex-row items-center gap-2 w-full flex-wrap">
-                {/* Search */}
-                <div className="relative flex-1 min-w-[150px]">
-                  <input type="text" placeholder="Cari Nama Karyawan..." value={searchName} onChange={(e) => setSearchName(e.target.value)} className="w-full h-10 border border-gray-300 rounded-lg pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-green-600"/>
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                    <FontAwesomeIcon icon={faSearch} />
-                  </span>
-                </div>
-
-                {/* Button Unduh */}
-                {canDownload && (
-                  <button onClick={handleRekapData} disabled={filteredAbsenData.length === 0 || loading} className={`flex items-center justify-center gap-2 h-10 px-4 rounded-md shadow transition
-                      ${filteredAbsenData.length === 0 || loading ? "bg-gray-400 text-white cursor-not-allowed" : "bg-green-600 hover:bg-green-700 text-white"}`}
-                    title="Unduh Excel"
-                  >
-                    <FontAwesomeIcon icon={faDownload} />
-                    <span className="hidden sm:inline text-sm">Unduh Excel</span>
-                  </button>
-                )}
-              </div>
+              {/* Tombol Unduh Excel untuk Desktop */}
+              {canDownload && (
+                <button onClick={handleRekapData} disabled={filteredAbsenData.length === 0 || loading} className={`hidden sm:flex items-center justify-center gap-2 h-10 px-4 sm:mt-5 rounded-md shadow transition whitespace-nowrap ${filteredAbsenData.length === 0 || loading
+                      ? "bg-gray-400 text-white cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700 text-white"
+                    }`}
+                  title="Unduh Excel"
+                >
+                  <FontAwesomeIcon icon={faDownload} />
+                  <span className="hidden sm:inline text-sm">Unduh Excel</span>
+                </button>
+              )}
             </div>
           )}
         </div>
+        {isDateSelected && (
+        <div className="w-full flex items-center gap-2 ">
+          {/* Search Bar */}
+          <div className="relative flex-1">
+            <input type="text" placeholder="Cari Nama Karyawan..." value={searchName} onChange={(e) => setSearchName(e.target.value)} className="w-full h-10 border border-green-600 rounded-lg pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"/>
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-600">
+              <FontAwesomeIcon icon={faSearch} />
+            </span>
+          </div>
+
+          {/* Tombol Unduh Excel - Mobile Only */}
+          {canDownload && (
+            <button onClick={handleRekapData} disabled={filteredAbsenData.length === 0 || loading} className={`flex items-center justify-center h-10 w-10 rounded-md transition sm:hidden ${filteredAbsenData.length === 0 || loading ? "bg-gray-300 text-white cursor-not-allowed" : "bg-green-600 hover:bg-green-700 text-white" }`} title="Unduh Excel">
+              <FontAwesomeIcon icon={faDownload} />
+            </button>
+          )}
+        </div>
+        )}
       </div>
 
 
