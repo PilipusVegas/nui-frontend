@@ -17,7 +17,7 @@ const FormDinas = () => {
 
   const fetchNama = async () => {
     try {
-      const res = await fetch(`${apiUrl}/profil`);
+      const res = await fetch(`${apiUrl}/surat-dinas/profil`);
       const data = await res.json();
       setListNama(data.data);
     } catch (err) {
