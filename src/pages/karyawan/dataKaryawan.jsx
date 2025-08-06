@@ -6,6 +6,7 @@ import { faArrowLeft, faArrowRight, faEdit, faTrash, faSearch, faPlus, faTriangl
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 
 const DataKaryawan = () => {
+  const editable = getUserFromToken();
   const navigate = useNavigate();
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const [users, setUsers] = useState([]);
@@ -133,14 +134,7 @@ const DataKaryawan = () => {
             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs">
               <FontAwesomeIcon icon={faSearch} />
             </span>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari karyawan..."
-              aria-label="Search Karyawan"
-              className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 pl-9 pr-3 py-1.5 rounded-md w-full text-xs sm:text-sm"
-            />
+            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Cari karyawan..." aria-label="Search Karyawan" className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 pl-9 pr-3 py-1.5 rounded-md w-full text-xs sm:text-sm"/>
           </div>
 
           {/* Filter Controls */}
@@ -150,12 +144,7 @@ const DataKaryawan = () => {
               <label htmlFor="filter-shift" className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5 block">
                 Jadwal Shift
               </label>
-              <select
-                id="filter-shift"
-                value={selectedShift}
-                onChange={(e) => setSelectedShift(e.target.value)}
-                className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 px-2 py-1.5 rounded-md text-xs sm:text-sm w-full"
-              >
+              <select id="filter-shift" value={selectedShift} onChange={(e) => setSelectedShift(e.target.value)} className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 px-2 py-1.5 rounded-md text-xs sm:text-sm w-full">
                 <option value="">Semua</option>
                 {[...new Set(users.map((u) => u.shift).filter(Boolean))].map((shiftName, i) => (
                   <option key={i} value={shiftName}>
@@ -170,12 +159,7 @@ const DataKaryawan = () => {
               <label htmlFor="filter-status" className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5 block">
                 Status
               </label>
-              <select
-                id="filter-status"
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 px-2 py-1.5 rounded-md text-xs sm:text-sm w-full"
-              >
+              <select id="filter-status" value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)} className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 px-2 py-1.5 rounded-md text-xs sm:text-sm w-full">
                 <option value="">Semua</option>
                 <option value="1">Aktif</option>
                 <option value="0">Nonaktif</option>
@@ -230,14 +214,17 @@ const DataKaryawan = () => {
                           </span>
                         </td>
                         <td className="py-2 px-4 text-center border-b border-gray-200 flex justify-center gap-2">
-                        <button onClick={() => navigate(`/karyawan/edit/${user.id}`)} className="bg-yellow-500 hover:bg-yellow-600 px-3 py-1 pb-1.5 rounded text-white text-xs" title="Edit">
-                          <FontAwesomeIcon icon={faEdit} className="mr-2" />
-                          Edit
-                        </button>
-                          <button onClick={() => handleDelete(user.id)} className="bg-red-600 hover:bg-red-700 px-3 py-1 pb-1.5 rounded text-white text-xs" title="Delete">
-                            <FontAwesomeIcon icon={faTrash} className="mr-2"/>
+                        {/* yang bisa edit hanya user role_id = 1 dan 4*/}
+                        <>
+                          <button onClick={() => navigate(`/karyawan/edit/${user.id}`)} className={`px-3 py-1 pb-1.5 rounded text-white text-xs flex items-center justify-center  ${[1, 4].includes(editable?.id_role) ? "bg-yellow-500 hover:bg-yellow-600" : "bg-gray-400 cursor-not-allowed"}`} disabled={!([1, 4].includes(editable?.id_role))} title="Edit">
+                            <FontAwesomeIcon icon={faEdit} className="mr-2" />
+                            Edit
+                          </button>
+                          <button onClick={() => handleDelete(user.id)} className={`px-3 py-1 pb-1.5 rounded text-white text-xs flex items-center justify-center  ${[1, 4].includes(editable?.id_role) ? "bg-red-600 hover:bg-red-700" : "bg-gray-400 cursor-not-allowed"}`} disabled={!([1, 4].includes(editable?.id_role))} title="Hapus">
+                            <FontAwesomeIcon icon={faTrash} className="mr-2" />
                             Hapus
                           </button>
+                        </>
                         </td>
                       </tr>
                     ))
@@ -302,14 +289,16 @@ const DataKaryawan = () => {
 
                     {/* Section 3: Aksi */}
                     <div className="px-3 py-2 flex justify-end gap-2 bg-gray-50">
-                      <button onClick={() => navigate(`/karyawan/edit/${user.id}`)} title="Edit" className="bg-yellow-400 hover:bg-yellow-500 text-white text-[11px] px-2 py-0.5 rounded">
+                    <>
+                      <button onClick={() => navigate(`/karyawan/edit/${user.id}`)} title="Edit" className={`text-white text-[11px] px-2 py-0.5 rounded flex items-center justify-center ${[1, 4].includes(editable?.id_role) ? "bg-yellow-400 hover:bg-yellow-500" : "bg-gray-400 cursor-not-allowed"}`} disabled={!([1, 4].includes(editable?.id_role))}>
                         <FontAwesomeIcon icon={faEdit} className="mr-1" />
                         Edit
                       </button>
-                      <button onClick={() => handleDelete(user.id)} title="Hapus" className="bg-red-500 hover:bg-red-600 text-white text-[11px] px-2 py-0.5 rounded">
+                      <button onClick={() => handleDelete(user.id)} title="Hapus" className={`text-white text-[11px] px-2 py-0.5 rounded flex items-center justify-center ${[1, 4].includes(editable?.id_role) ? "bg-red-500 hover:bg-red-600" : "bg-gray-400 cursor-not-allowed"}`} disabled={!([1, 4].includes(editable?.id_role))}>
                         <FontAwesomeIcon icon={faTrash} className="mr-1" />
                         Hapus
                       </button>
+                    </>
                     </div>
                   </div>
                 ))
