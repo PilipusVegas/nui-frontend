@@ -4,10 +4,11 @@ import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { faCheck, faArrowLeft, faClock, faUser, faInfoCircle, faMapMarkerAlt, faTimes, faSearch, faTriangleExclamation, faArrowRight,} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { fetchWithJwt } from "../../utils/jwtHelper";
+import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 
 const DataApproval = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  const user = getUserFromToken();
   const navigate = useNavigate();
   const [approvalData, setApprovalData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -110,7 +111,6 @@ const DataApproval = () => {
     });
   };
   
-
   const handleReject = async (id) => {
     Swal.fire({
       title: "Anda yakin ingin menolak?",
@@ -228,14 +228,34 @@ const DataApproval = () => {
                           </>
                         ) : (
                           <div className="flex space-x-2 py-2 justify-center">
-                              <button onClick={() => handleApprove(approval.id_lembur)} className="flex items-center justify-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-4 text-xs py-2 rounded font-semibold transition">
-                                <FontAwesomeIcon icon={faCheck} />
-                                <span>Setujui</span>
-                              </button>
-                              <button onClick={() => handleReject(approval.id_lembur)} className="flex items-center justify-center space-x-2 bg-red-500 hover:bg-red-600 text-white px-4 text-xs py-2 rounded font-semibold transition">
-                                <FontAwesomeIcon icon={faTimes} />
-                                <span>Tolak</span>
-                              </button>
+                            {/* saya ingin yang bisa menyetujui hanya id_role 5 dan 20 */}
+                            {(user.id_role === 5 || user.id_role === 20) && (
+                              <>
+                                {user.id_user === 104 ? (
+                                  <>
+                                    <button disabled className="flex items-center justify-center space-x-2 bg-green-300 text-white px-4 text-xs py-2 rounded font-semibold opacity-60 cursor-not-allowed">
+                                      <FontAwesomeIcon icon={faCheck} />
+                                      <span>Setujui</span>
+                                    </button>
+                                    <button disabled className="flex items-center justify-center space-x-2 bg-red-300 text-white px-4 text-xs py-2 rounded font-semibold opacity-60 cursor-not-allowed">
+                                      <FontAwesomeIcon icon={faTimes} />
+                                      <span>Tolak</span>
+                                    </button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <button onClick={() => handleApprove(approval.id_lembur)} className="flex items-center justify-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-4 text-xs py-2 rounded font-semibold transition">
+                                      <FontAwesomeIcon icon={faCheck} />
+                                      <span>Setujui</span>
+                                    </button>
+                                    <button onClick={() => handleReject(approval.id_lembur)} className="flex items-center justify-center space-x-2 bg-red-500 hover:bg-red-600 text-white px-4 text-xs py-2 rounded font-semibold transition">
+                                      <FontAwesomeIcon icon={faTimes} />
+                                      <span>Tolak</span>
+                                    </button>
+                                  </>
+                                )}
+                              </>
+                            )}
                             </div>
                         )}
                       </td>
@@ -295,7 +315,7 @@ const DataApproval = () => {
                   Lihat Deskripsi
                 </button>
               </div>
-              {approval.status_lembur === 0 && (
+              {approval.status_lembur === 0 && (user.id_user !== 104 && (user.id_role === 5 || user.id_role === 20)) && (
                 <div className="pt-2 flex gap-4">
                   <button onClick={() => handleReject(approval.id_lembur)} className="flex-1 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white text-xs py-2 rounded-md font-semibold gap-2">
                     <FontAwesomeIcon icon={faTimes} />
@@ -317,9 +337,7 @@ const DataApproval = () => {
       {paginatedData.total > itemsPerPage && (
         <div className="relative flex justify-center items-center mt-6 text-sm sm:text-base">
           {/* Panah kiri */}
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
+          <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1}
             className={`absolute left-0 px-3 py-2 rounded-full border shadow-sm transition-all duration-200
               ${
                 currentPage === 1
@@ -358,29 +376,28 @@ const DataApproval = () => {
 
       {/* Modal */}
       {isModalOpen && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 px-4">
-    <div className="relative bg-white w-full max-w-2xl mx-auto rounded-2xl shadow-xl p-6 sm:p-8 transition-all duration-300">
-      
-      {/* Tombol Close */}
-      <button
-        onClick={() => setIsModalOpen(false)}
-        className="absolute top-4 right-4 text-gray-500 hover:text-red-600 text-2xl transition"
-        aria-label="Tutup"
-      >
-        <FontAwesomeIcon icon={faTimes} />
-      </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 px-4">
+          <div className="relative bg-white w-full max-w-2xl mx-auto rounded-2xl shadow-xl p-6 sm:p-8 transition-all duration-300">
+            
+            {/* Tombol Close */}
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-red-600 text-2xl transition"
+              aria-label="Tutup"
+            >
+              <FontAwesomeIcon icon={faTimes} />
+            </button>
 
-      {/* Judul Modal */}
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">Rincian Tugas</h2>
+            {/* Judul Modal */}
+            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Rincian Tugas</h2>
 
-      {/* Isi Deskripsi */}
-      <p className="text-gray-600 leading-relaxed whitespace-pre-line">
-        {modalDescription || "Deskripsi tidak tersedia."}
-      </p>
-    </div>
-  </div>
-)}
-
+            {/* Isi Deskripsi */}
+            <p className="text-gray-600 leading-relaxed whitespace-pre-line">
+              {modalDescription || "Deskripsi tidak tersedia."}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
