@@ -57,7 +57,7 @@ const HomeDesktop = () => {
     { title: "Kelola Presensi Karyawan", icon: faBriefcase, color: "text-blue-500", link: "/kelola-presensi", roles: [1, 4, 5, 6 ],},
     { title: "Surat Dinas", icon: faFileSignature,  color: "text-sky-500", link: "/surat-dinas", roles: [1, 4, 5, 6, 13],},
     { title: "Penggajian", icon: faSackDollar, color: "text-yellow-500", link: "/penggajian",  roles: [1, 4, 6, 13],},
-    { title: "Persetujuan Lembur", icon: faCheckCircle, color: "text-teal-500", link: "/persetujuan-lembur", roles: [1, 4, 5, 6],},
+    { title: "Persetujuan Lembur", icon: faCheckCircle, color: "text-teal-500", link: "/persetujuan-lembur", roles: [1, 4, 5, 6, 20],},
     { title: "Data Lokasi Presensi", icon: faMapPin, color: "text-orange-500", link: "/lokasi-presensi", roles: [1, 5],},
     { title: "Karyawan", icon: faUserGroup, color: "text-violet-500", link: "/karyawan", roles: [1, 4, 6, 13],},
     { title: "Divisi", icon: faNetworkWired, color: "text-indigo-500", link: "/divisi", roles: [1, 4, 6],},
@@ -188,7 +188,6 @@ const HomeDesktop = () => {
     </div>
   );
   
-  
   return (
     <div className="flex bg-gray-100">
       <div className="flex-1 bg-white rounded-lg transition-all duration-300 ease-in-out">
@@ -199,7 +198,7 @@ const HomeDesktop = () => {
 
         {/* GIF Kucing di kanan bawah */}
         <div className="absolute bottom-2 right-4 w-20 sm:w-32 opacity-60 group-hover:opacity-80 transition-opacity duration-300 pointer-events-none z-0">
-          <img src="https://i.pinimg.com/originals/48/5e/83/485e83ad5709e90ba5a0cffccb717e08.gif" alt="Kucing lucu" className="w-full h-auto object-contain"/>
+          <img src="https://i.pinimg.com/originals/5f/93/49/5f934966a1d20bae1909c9ef2278bd4c.gif" alt="Kucing lucu" className="w-full h-auto object-contain"/>
         </div>
 
         {/* Konten */}

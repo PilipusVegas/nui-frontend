@@ -70,7 +70,7 @@ const MenuSidebar = ({ handleLogout, perusahaanId, roleId, isOpen, toggleSidebar
     {
       sectionTitle: "Lainnya",
       items: [
-        { label: "Persetujuan Lembur", icon: faCheckSquare, path: "/persetujuan-lembur", roles: [1, 4, 5, 6], perusahaan: [1, 4]},
+        { label: "Persetujuan Lembur", icon: faCheckSquare, path: "/persetujuan-lembur", roles: [1, 4, 5, 6, 20], perusahaan: [1, 4]},
         { label: "Titik Lokasi Absensi", icon: faLocationArrow, path: "/lokasi-presensi", roles: [1, 5] },
         { label: "Kelola Perusahaan", icon: faBuilding, path: "/perusahaan", roles: [1, 4, 6] },
       ],
