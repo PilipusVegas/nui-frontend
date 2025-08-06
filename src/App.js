@@ -203,7 +203,7 @@ const App = () => {
     // DESKTOP
     { path: "/persetujuan-presensi", component: <PersetujuanPresensi />, roles: ["1", "4", "5", "6", "20"], allowedCompanies: ["1","4"], layout: SidebarLayout },
     { path: "/persetujuan-presensi/:id_user", component: <DetailPersetujuanPresensi />, roles: ["1", "4", "5", "6", "20"], allowedCompanies: ["1","4"], layout: SidebarLayout },
-    { path: "/persetujuan-lembur", component: <PersetujuanLembur />, roles: ["1", "4", "5", "6"],  allowedCompanies: ["1","4"],  layout: SidebarLayout },
+    { path: "/persetujuan-lembur", component: <PersetujuanLembur />, roles: ["1", "4", "5", "6", "20"],  allowedCompanies: ["1","4"],  layout: SidebarLayout },
     { path: "/lokasi-presensi", component: <LokasiPresensi />, roles: ["1", "5"], layout: SidebarLayout },
     { path: "/lokasi-presensi/edit/:id", component: <EditLokasi />, roles: ["1", "5"], layout: SidebarLayout },
     { path: "/lokasi-presensi/tambah", component: <TambahLokasi />, roles: ["1", "5"], layout: SidebarLayout },
