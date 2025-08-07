@@ -78,11 +78,7 @@ const EditKaryawan = () => {
         const payload = {
             ...currentUser,
             ...(currentUser.id_role === 4 || currentUser.id_role === 6
-                ? {
-                    perusahaan_hrd: managedCompanies.map((id) => ({
-                        id_perusahaan: id,
-                    })),
-                }
+                ? {perusahaan_hrd: managedCompanies.map((id) => ({ id_perusahaan: id,})),}
                 : {}),
         };
         try {
@@ -112,7 +108,7 @@ const EditKaryawan = () => {
     return (
         <div className="bg-white flex flex-col">
             {/* Header */}
-            <div className="w-full flex items-center justify-between pb-4 bg-white shadow-sm border-b">
+            <div className="w-full flex items-center justify-between pb-2 bg-white">
                 <div className="flex items-center space-x-2">
                     <button onClick={handleBack} className="bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded-full" title="Kembali">
                         <FontAwesomeIcon icon={faArrowLeft} />
@@ -121,8 +117,25 @@ const EditKaryawan = () => {
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="flex-grow py-5 px-3 w-full mx-auto space-y-6">
+            <form onSubmit={handleSubmit} className="flex-grow pb-5 px-3 w-full mx-auto space-y-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    {/* === Biodata Karyawan === */}
+                    <div className="col-span-full flex items-center gap-4 my-3">
+                    <div className="flex-grow h-px bg-gradient-to-r from-transparent via-green-600 to-transparent" />
+                    <h3 className="text-base md:text-lg font-semibold tracking-wide text-green-700 uppercase whitespace-nowrap">
+                        Data Pribadi Karyawan
+                    </h3>
+                    <div className="flex-grow h-px bg-gradient-to-r from-transparent via-green-600 to-transparent" />
+                    </div>
+
+                    {/* NIK */}
+                    <div>
+                        <label className="block mb-1 font-medium text-gray-700">NIK</label>
+                        <p className="text-xs text-gray-500 mb-2 -mt-1.5">Masukkan Nomor Induk Kependudukan (NIK).</p>
+                        <input type="text" name="nip" value={currentUser.nik} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                    </div>
+
                     {/* NIP */}
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">NIP</label>
@@ -130,11 +143,97 @@ const EditKaryawan = () => {
                         <input type="text" name="nip" value={currentUser.nip} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     </div>
 
+                    {/* NPWP */}
+                    <div>
+                        <label className="block mb-1 font-medium text-gray-700">NPWP</label>
+                        <p className="text-xs text-gray-500 mb-2 -mt-1.5">Masukkan Nomor Pokok Wajib Pajak (NPWP).</p>
+                        <input type="text" name="nip" value={currentUser.npwp} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                    </div>
+
                     {/* Nama */}
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">Nama Lengkap</label>
                         <p className="text-xs text-gray-500 mb-2 -mt-1.5">Masukkan <span className="font-semibold text-gray-800">nama lengkap</span> karyawan.</p>
                         <input type="text" name="nama" value={currentUser.nama} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                    </div>
+
+                    {/* Telepon */}
+                    <div>
+                        <label className="block mb-1 font-medium text-gray-700">No. Telepon</label>
+                        <p className="text-xs text-gray-500 mb-2 -mt-1.5">Masukkan nomor telepon aktif.</p>
+                        <input type="text" name="telp" value={currentUser.telp} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                    </div>
+
+                    {/* No Rekening */}
+                    <div>
+                        <label className="block mb-1 font-medium text-gray-700">Nomor Rekening</label>
+                        <p className="text-xs text-gray-500 mb-2 -mt-1.5">Masukkan Nomor Rekening Karyawan.</p>
+                        <input type="text" name="ne_rek" value={currentUser.no_rek} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                    </div>
+
+                    {/* STATUS NIKAH */}
+                    <div>
+                    <label className="block mb-1 font-medium text-gray-700">Status Nikah</label>
+                    <p className="text-xs text-gray-500 mb-2 -mt-1.5">Pilih status pernikahan karyawan.</p>
+                    <select name="status_nikah" value={currentUser.status_nikah || ""} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                        <option value="">Pilih Status</option>
+                        <option value="Belum_Menikah">Belum Menikah</option>
+                        <option value="Sudah_Menikah">Sudah Menikah</option>
+                        <option value="Cerai">Cerai</option>
+                    </select>
+                    </div>
+
+                    {/* JUMLAH ANAK - Tampilkan jika Sudah Menikah */}
+                    {currentUser.status_nikah === "Sudah_Menikah" && (
+                    <div>
+                        <label className="block mb-1 font-medium text-gray-700">Jumlah Anak</label>
+                        <p className="text-xs text-gray-500 mb-2 -mt-1.5">Masukkan jumlah anak (jika ada). Jika belum mempunyai anak maka isi 0 saja</p>
+                        <input type="number" name="jml_anak" value={currentUser.jml_anak || ""} onChange={handleChange} min="0" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"/>
+                    </div>
+                    )}
+
+                    {/* === PENEMPATAN KERJA & DIVISI === */}
+                    <div className="col-span-full flex items-center gap-4 my-3">
+                    <div className="flex-grow h-px bg-gradient-to-r from-transparent via-green-600 to-transparent" />
+                    <h3 className="text-base md:text-lg font-semibold tracking-wide text-green-700 uppercase whitespace-nowrap">
+                        Penempatan Kerja & Divisi
+                    </h3>
+                    <div className="flex-grow h-px bg-gradient-to-r from-transparent via-green-600 to-transparent" />
+                    </div>
+
+                    {/* Perusahaan */}
+                    <div>
+                    <label className="block mb-1 font-medium text-gray-700">Perusahaan</label>
+                    <p className="text-xs text-gray-500 mb-2 -mt-1.5">Pilih perusahaan sesuai tempat kerja.</p>
+                    <select name="id_perusahaan" value={currentUser.id_perusahaan} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                        <option value="">Pilih Perusahaan</option>
+                        {perusahaanList.map((item) => (
+                        <option key={item.id} value={item.id}>
+                            {item.nama}
+                        </option>
+                        ))}
+                    </select>
+
+                    {/* Keterangan jumlah shift */}
+                    {currentUser.id_perusahaan !== "" && currentUser.id_perusahaan !== null && !isNaN(currentUser.id_perusahaan) && (
+                    (() => {
+                        const idPerusahaan = parseInt(currentUser.id_perusahaan);
+                        const jumlahShift = shiftList.filter((shift) =>
+                        shift.perusahaan.some((p) => p.id_perusahaan === idPerusahaan)
+                        ).length;
+
+                        return (
+                        <div className="mt-2 text-sm text-gray-600 flex items-center gap-2">
+                            <p> Perusahaan ini memiliki <strong>{jumlahShift}</strong> shift. </p>
+                            {jumlahShift === 0 && (
+                            <span onClick={() => navigate(`/perusahaan/edit/${idPerusahaan}`)} className="cursor-pointer px-2 py-0.5 bg-green-50 border border-green-400 text-green-700 rounded-md hover:bg-green-100 transition">
+                                Tambah shift
+                            </span>
+                            )}
+                        </div>
+                        );
+                    })()
+                    )}
                     </div>
 
                     {/* Divisi */}
@@ -153,15 +252,9 @@ const EditKaryawan = () => {
                         </select>
                     </div>
 
-                    {/* Telepon */}
-                    <div>
-                        <label className="block mb-1 font-medium text-gray-700">No. Telepon</label>
-                        <p className="text-xs text-gray-500 mb-2 -mt-1.5">Masukkan nomor telepon aktif.</p>
-                        <input type="text" name="telp" value={currentUser.telp} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
-                    </div>
-
+                     {/* Pengelolaan Perusahaan */}
                     {(currentUser.id_role === 4 || currentUser.id_role === 6) && (
-                        <div className="md:col-span-2 border-4 border-green-200 rounded-2xl p-5 shadow-sm transition-all duration-300">
+                        <div className="md:col-span-2 border-4 border-green-300 border-dashed rounded-2xl p-5 shadow-sm transition-all duration-300">
                             <label className="block text-md font-semibold text-gray-800 mb-1">
                                 Pilih Perusahaan yang akan dikelola
                             </label>
@@ -174,7 +267,6 @@ const EditKaryawan = () => {
                                     <option value="" disabled hidden>
                                         Pilih perusahaan...
                                     </option>
-
                                     {perusahaanList.filter((item) => !managedCompanies.includes(item.id)).length > 0 ? (
                                         perusahaanList
                                             .filter((item) => !managedCompanies.includes(item.id))
@@ -189,7 +281,6 @@ const EditKaryawan = () => {
                                         </option>
                                     )}
                                 </select>
-
                                 {/* Note kecil */}
                                 {perusahaanList.filter((item) => !managedCompanies.includes(item.id)).length === 0 && (
                                     <p className="mt-2 text-xs text-gray-500 italic">
@@ -207,16 +298,9 @@ const EditKaryawan = () => {
                                     {perusahaanList
                                         .filter((item) => managedCompanies.includes(item.id))
                                         .map((item) => (
-                                        <div
-                                            key={item.id}
-                                            className="group flex justify-between items-center bg-green-50 border border-green-300 text-green-800 rounded-lg px-3 py-2 text-sm hover:bg-green-100 transition"
-                                        >
+                                        <div key={item.id} className="group flex justify-between items-center bg-green-50 border border-green-300 text-green-800 rounded-lg px-3 py-2 text-sm hover:bg-green-100 transition">
                                             <span className="truncate max-w-[85%]">{item.nama}</span>
-                                            <button
-                                            onClick={() => setManagedCompanies(managedCompanies.filter((id) => id !== item.id))}
-                                            className="ml-2 text-red-500 hover:text-red-600"
-                                            title="Hapus"
-                                            >
+                                            <button onClick={() => setManagedCompanies(managedCompanies.filter((id) => id !== item.id))} className="ml-2 text-red-500 hover:text-red-600" title="Hapus" >
                                             <FontAwesomeIcon icon={faTimes} className="text-xs" />
                                             </button>
                                         </div>
@@ -227,45 +311,14 @@ const EditKaryawan = () => {
                         </div>
                     )}
 
-                {/* Perusahaan */}
-                <div>
-                <label className="block mb-1 font-medium text-gray-700">Perusahaan</label>
-                <p className="text-xs text-gray-500 mb-2 -mt-1.5">Pilih perusahaan sesuai tempat kerja.</p>
-                <select name="id_perusahaan" value={currentUser.id_perusahaan} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
-                    <option value="">Pilih Perusahaan</option>
-                    {perusahaanList.map((item) => (
-                    <option key={item.id} value={item.id}>
-                        {item.nama}
-                    </option>
-                    ))}
-                </select>
-
-                {/* Keterangan jumlah shift */}
-                {currentUser.id_perusahaan !== "" && currentUser.id_perusahaan !== null && !isNaN(currentUser.id_perusahaan) && (
-                (() => {
-                    const idPerusahaan = parseInt(currentUser.id_perusahaan);
-                    const jumlahShift = shiftList.filter((shift) =>
-                    shift.perusahaan.some((p) => p.id_perusahaan === idPerusahaan)
-                    ).length;
-
-                    return (
-                    <div className="mt-2 text-sm text-gray-600 flex items-center gap-2">
-                        <p>
-                        Perusahaan ini memiliki <strong>{jumlahShift}</strong> shift.
-                        </p>
-                        {jumlahShift === 0 && (
-                        <span
-                            onClick={() => navigate(`/perusahaan/edit/${idPerusahaan}`)}
-                            className="cursor-pointer px-2 py-0.5 bg-green-50 border border-green-400 text-green-700 rounded-md hover:bg-green-100 transition"
-                        >
-                            Tambah shift
-                        </span>
-                        )}
+                    {/* === PENEMPATAN KERJA & DIVISI === */}
+                    <div className="col-span-full flex items-center gap-4 my-3">
+                    <div className="flex-grow h-px bg-gradient-to-r from-transparent via-green-600 to-transparent" />
+                    <h3 className="text-base md:text-lg font-semibold tracking-wide text-green-700 uppercase whitespace-nowrap">
+                        kelola jadwal kerja
+                    </h3>
+                    <div className="flex-grow h-px bg-gradient-to-r from-transparent via-green-600 to-transparent" />
                     </div>
-                    );
-                })()
-                )}
-                </div>
 
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">Shift</label>
@@ -287,8 +340,7 @@ const EditKaryawan = () => {
                             )
                             }
                         </select>
-                        </div>
-
+                    </div>
 
                     {Boolean(currentUser.id_shift) && Number(currentUser.id_shift) !== 0 && (
                         <div className="md:col-span-2 mt-5 bg-white border border-green-300 rounded-xl p-4">
@@ -321,6 +373,15 @@ const EditKaryawan = () => {
                         </div>
                     )}
 
+                    {/* === PENEMPATAN KERJA & DIVISI === */}
+                    <div className="col-span-full flex items-center gap-4 my-3">
+                    <div className="flex-grow h-px bg-gradient-to-r from-transparent via-green-600 to-transparent" />
+                    <h3 className="text-base md:text-lg font-semibold tracking-wide text-green-700 uppercase whitespace-nowrap">
+                        akun absensi karyawan
+                    </h3>
+                    <div className="flex-grow h-px bg-gradient-to-r from-transparent via-green-600 to-transparent" />
+                    </div>
+
                     {/* Username */}
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">Username</label>
@@ -341,14 +402,58 @@ const EditKaryawan = () => {
                     </div>
 
                     {/* Status Karyawan */}
-                    <div className="md:col-span-2 flex items-center space-x-3 mt-10 justify-center">
-                        <label className="font-medium text-gray-700">Status Karyawan</label>
-                        <button type="button" onClick={handleToggleStatus} className={`w-14 h-8 flex items-center rounded-full p-1 transition-colors duration-300 ${currentUser.status === 1 ? "bg-green-500" : "bg-gray-300"}`}>
-                            <div className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300 ${currentUser.status === 1 ? "translate-x-6" : "translate-x-0"}`} />
+                    <div className="md:col-span-2 mt-6 flex flex-col gap-3 rounded-xl border border-green-400 bg-white shadow-sm p-5">
+                    <div className="flex items-center justify-between">
+                        <div>
+                        <h4 className="text-sm font-semibold text-gray-800 tracking-wide">
+                            Status Karyawan
+                        </h4>
+                        <p className="text-xs text-gray-500 mt-1">
+                            Tentukan apakah karyawan ini <span className="font-medium text-green-700">masih aktif bekerja</span> dan bisa melakukan absensi.
+                        </p>
+                        </div>
+
+                        {/* Toggle Switch */}
+                        <div className="flex items-center gap-2">
+                        <span className={`text-sm font-bold ${ currentUser.status === 1 ? "text-green-700" : "text-red-500"}`}>
+                            {currentUser.status === 1 ? "AKTIF" : "NONAKTIF"}
+                        </span>
+                        <button type="button" onClick={handleToggleStatus} className={`w-14 h-8 flex items-center rounded-full p-1 transition-colors duration-300 ${ currentUser.status === 1 ? "bg-green-500" : "bg-gray-300"}`} title="Ubah Status">
+                            <div className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300 ${ currentUser.status === 1 ? "translate-x-6" : "translate-x-0"}`}/>
                         </button>
-                        <span className="text-sm text-gray-600">{currentUser.status === 1 ? "Aktif" : "Nonaktif"}</span>
+                        </div>
+                    </div>
+
+                    {/* Info Box */}
+                    <div className="mt-2 text-sm text-gray-700 bg-green-50 border border-green-200 rounded-md p-4 leading-relaxed tracking-wide">
+                    <p className="font-semibold text-gray-800 mb-2">Panduan Penggunaan Absensi</p>
+
+                    <ul className="list-disc list-inside ml-2 space-y-1 text-xs text-gray-600">
+                        <li>
+                        <strong className="text-green-700">Karyawan Lapangan</strong> 
+                        <span> wajib menggunakan </span> 
+                        <strong>Aplikasi Absensi Online</strong> untuk melakukan presensi harian.
+                        </li>
+                        <li>
+                        <strong className="text-green-700">Karyawan Kantor</strong> 
+                        <span> wajib menggunakan </span>
+                        <strong>Absensi Face Recognition</strong> di perangkat kantor.
+                        </li>
+                    </ul>
+
+                    <p className="mt-2 text-xs text-gray-600">
+                        Sistem <strong className="text-red-600">tidak memperbolehkan penggunaan silang</strong>. 
+                        Data dari absensi lapangan dan kantor diproses secara <strong>terpisah</strong>.
+                    </p>
+
+                    <p className="mt-3 text-xs text-gray-700">
+                        <strong>Status Aktif</strong> diperlukan agar karyawan bisa login dan melakukan absensi sesuai penugasannya.
+                        Jika status <span className="font-semibold text-red-600">Nonaktif</span>, maka akses absensi akan <strong>dinonaktifkan sepenuhnya</strong>.
+                    </p>
+                    </div>
                     </div>
                 </div>
+
                 {/* Tombol Aksi */}
                 <div className="flex justify-between space-x-4 pt-6">
                     <button type="button" onClick={handleBack} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center shadow">
