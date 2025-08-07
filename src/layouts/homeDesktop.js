@@ -13,8 +13,6 @@ const HomeDesktop = () => {
   const [infoContent, setInfoContent] = useState("");
   const [infoTitle, setInfoTitle] = useState("");
 
-
-
   const handleCardClick = (path) => {
     navigate(path);
   };
@@ -53,13 +51,13 @@ const HomeDesktop = () => {
   }, [roleId]);
   
   const allCards = [
-    { title: "Persetujuan Presensi Harian", icon: faLocationArrow, color: "text-emerald-500", link: "/persetujuan-presensi", roles: [1, 4, 5, 6, 20],},
+    { title: "Persetujuan Presensi Harian", icon: faLocationArrow, color: "text-emerald-500", link: "/persetujuan-presensi", roles: [1, 4, 5, 6, 13, 20],},
     { title: "Kelola Presensi Karyawan", icon: faBriefcase, color: "text-blue-500", link: "/kelola-presensi", roles: [1, 4, 5, 6 ],},
-    { title: "Surat Dinas", icon: faFileSignature,  color: "text-sky-500", link: "/surat-dinas", roles: [1, 4, 5, 6, 13],},
-    { title: "Penggajian", icon: faSackDollar, color: "text-yellow-500", link: "/penggajian",  roles: [1, 4, 6, 13],},
+    { title: "Surat Dinas", icon: faFileSignature,  color: "text-sky-500", link: "/surat-dinas", roles: [1, 4, 5, 6],},
+    { title: "Penggajian", icon: faSackDollar, color: "text-yellow-500", link: "/penggajian",  roles: [1, 4, 6],},
     { title: "Persetujuan Lembur", icon: faCheckCircle, color: "text-teal-500", link: "/persetujuan-lembur", roles: [1, 4, 5, 6, 20],},
     { title: "Data Lokasi Presensi", icon: faMapPin, color: "text-orange-500", link: "/lokasi-presensi", roles: [1, 5],},
-    { title: "Karyawan", icon: faUserGroup, color: "text-violet-500", link: "/karyawan", roles: [1, 4, 6, 13],},
+    { title: "Karyawan", icon: faUserGroup, color: "text-violet-500", link: "/karyawan", roles: [1, 4, 6],},
     { title: "Divisi", icon: faNetworkWired, color: "text-indigo-500", link: "/divisi", roles: [1, 4, 6],},
     { title: "Shift", icon: faClockRotateLeft, color: "text-rose-500", link: "/shift", roles: [1, 4, 6],},
     { title: "Perusahaan", icon: faCity, color: "text-blue-700", link: "/perusahaan", roles: [1, 4, 6]},

@@ -30,12 +30,14 @@
         const user = getUserFromToken();
         const userRole = user?.id_role;
         let filteredData = [];
-        if ([1, 4, 6].includes(userRole)) {
+        if ([1, 4, 6,].includes(userRole)) {
           filteredData = data; // tampilkan semua
         } else if (userRole === 20) {
           filteredData = data.filter(item => item.id_role === 22);
         } else if (userRole === 5) {
           filteredData = data.filter(item => item.id_role === 3);
+        } else if (userRole === 13) {
+          filteredData = data.filter(item => item.id_role === 22);
         }
     
         setAbsenData(Array.isArray(filteredData) ? filteredData : []);
@@ -120,7 +122,6 @@
                             absen.unapproved
                           )}
                         </span>
-
                         <span className={`text-[11px] tracking-wide ${parseInt(absen.unapproved) === 0 ? "pr-3.5 pl-0" : "pr-0.5"}`}>
                           {parseInt(absen.unapproved) === 0 ? "Approved" : "Unapproved"}
                         </span>

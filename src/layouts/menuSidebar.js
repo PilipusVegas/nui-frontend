@@ -43,14 +43,14 @@ const MenuSidebar = ({ handleLogout, perusahaanId, roleId, isOpen, toggleSidebar
     {
       sectionTitle: "Manajemen Karyawan",
       items: [
-        { label: "Kelola Karyawan", icon: faPeopleGroup, path: "/karyawan", roles: [1, 4, 6, 13] },
+        { label: "Kelola Karyawan", icon: faPeopleGroup, path: "/karyawan", roles: [1, 4, 6] },
         { label: "Kelola Struktur Divisi", icon: faUsersCog, path: "/divisi", roles: [1, 4, 6] },
       ],
     },
     {
       sectionTitle: "Manajemen Presensi",
       items: [
-        { label: "Persetujuan Presensi", icon: faCheckSquare, path: "/persetujuan-presensi", roles: [1, 4, 5, 6, 20], perusahaan: [1, 4]},
+        { label: "Persetujuan Presensi", icon: faCheckSquare, path: "/persetujuan-presensi", roles: [1, 4, 5, 6, 13, 20], perusahaan: [1, 4]},
         {
           label: "Presensi Karyawan", icon: faUserCheck, roles: [1, 4, 5, 6],
           submenu: [
@@ -58,13 +58,13 @@ const MenuSidebar = ({ handleLogout, perusahaanId, roleId, isOpen, toggleSidebar
             { label: "Kelola Jam Kerja", path: "/shift", roles: [1, 4, 6] },
           ],
         },
-        { label: "Kelola Penggajian", icon: faBook, path: "/penggajian", roles: [1, 4, 6, 13] },
+        { label: "Kelola Penggajian", icon: faBook, path: "/penggajian", roles: [1, 4, 6] },
       ],
     },
     {
       sectionTitle: "E-Form",
       items: [
-        { label: "Dinas Keluar Kantor", icon: faPenFancy, path: "/surat-dinas", roles: [1, 4, 5, 6, 13] },
+        { label: "Dinas Keluar Kantor", icon: faPenFancy, path: "/surat-dinas", roles: [1, 4, 5, 6] },
       ],
     },
     {
