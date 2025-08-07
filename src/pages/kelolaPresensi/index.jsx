@@ -114,21 +114,31 @@ const AbsensiKantor = () => {
     const tanggalColSpan = tanggalArray.length * 4;
     const totalCols = 3 + tanggalColSpan + 2;
     const jumlahKaryawan = filteredAbsenData.length;
-    const summary1 = `Rekap data Periode : ${formatTanggal(startDate)} - ${formatTanggal(endDate)}`;
-    const summary2 = `Jumlah karyawan pada periode ini : ${jumlahKaryawan} Karyawan`;
-    // 🟡 Ringkasan
+    const summary1 = `Periode Rekapitulasi Presensi: ${formatTanggal(startDate)} - ${formatTanggal(endDate)}`;
+    const summary2 = `Jumlah Karyawan: ${jumlahKaryawan} orang`;
+    const summary3 = `Tipe Karyawan: ${tipeKaryawan === "kantor" ? "Karyawan Kantor (Face Recognition)" : "Karyawan Lapangan (Aplikasi Absensi Online)"}`;
+    const summary4 = `Catatan: Presensi Lapangan dilakukan via aplikasi absensi online (berbasis lokasi kerja). Presensi Kantor menggunakan sistem Face Recognition. Data ini menyajikan ringkasan kehadiran, keterlambatan, dan lemburan secara terstruktur untuk keperluan monitoring dan evaluasi.`;
+
     worksheet.mergeCells(2, offsetCol, 2, offsetCol + totalCols - 1);
     worksheet.getCell(2, offsetCol).value = summary1;
-    worksheet.getCell(2, offsetCol).font = { italic: true, size: 12 };
+    worksheet.getCell(2, offsetCol).font = { bold: true, size: 16 };
     worksheet.getCell(2, offsetCol).alignment = { vertical: "middle", horizontal: "left" };
+
     worksheet.mergeCells(3, offsetCol, 3, offsetCol + totalCols - 1);
     worksheet.getCell(3, offsetCol).value = summary2;
-    worksheet.getCell(3, offsetCol).font = { italic: true, size: 12 };
+    worksheet.getCell(3, offsetCol).font = { size: 12 };
     worksheet.getCell(3, offsetCol).alignment = { vertical: "middle", horizontal: "left" };
+
     worksheet.mergeCells(4, offsetCol, 4, offsetCol + totalCols - 1);
-    worksheet.getCell(4, offsetCol).font = { italic: true, size: 12 };
+    worksheet.getCell(4, offsetCol).value = summary3;
+    worksheet.getCell(4, offsetCol).font = { size: 12 };
     worksheet.getCell(4, offsetCol).alignment = { vertical: "middle", horizontal: "left" };
   
+    worksheet.mergeCells(5, offsetCol, 5, offsetCol + totalCols - 1);
+    worksheet.getCell(5, offsetCol).value = summary4;
+    worksheet.getCell(5, offsetCol).font = { size: 10, color: { argb: "FF6B7280" }, italic: true };
+    worksheet.getCell(5, offsetCol).alignment = { vertical: "middle", horizontal: "left" };
+
     // 🔵 Header
     const headerRow1 = ["Pegawai", "", "Jumlah"];
     const headerRow2 = ["NIP", "Nama", "Kehadiran"];
@@ -233,7 +243,6 @@ const AbsensiKantor = () => {
             Object.assign(cell, cellStyles.late);
           }
         }
-      
         colIndex += 4;
       });
     
@@ -249,7 +258,7 @@ const AbsensiKantor = () => {
       { width: 20 }, // Nama
       { width: 14 }, // Kehadiran
       ...tanggalArray.flatMap(() => [
-        { width: 12 }, { width: 12 }, { width: 12 }, { width: 12 }
+        { width: 6 }, { width: 6 }, { width: 6 }, { width: 10 }
       ]),
       { width: 14 }, // Total Late
       { width: 14 }, // Total Overtime
@@ -273,7 +282,9 @@ const AbsensiKantor = () => {
     const blob = new Blob([buffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
-    saveAs(blob, `Rekap Penggajian_${formatTanggal(startDate)}_s/d_${formatTanggal(endDate)}.xlsx`);
+    const tipeLabel = tipeKaryawan === "kantor" ? "Kantor" : "Lapangan";
+    const namaFile = `Rekap_Presensi_${tipeLabel}_${formatTanggalShort(startDate)}_${formatTanggalShort(endDate)}.xlsx`;
+    saveAs(blob, namaFile);
   };
   
 
@@ -285,6 +296,15 @@ const AbsensiKantor = () => {
     return `${tgl}-${bln}-${thn}`;
   };
 
+  const formatTanggalShort = (tanggalString) => {
+    const bulanSingkat = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+    const tanggal = new Date(tanggalString);
+    const tgl = String(tanggal.getDate()).padStart(2, "0");
+    const bln = bulanSingkat[tanggal.getMonth()];
+    const thn = tanggal.getFullYear();
+    return `${tgl}-${bln}-${thn}`;
+  };
+  
   const formatOvertimeJamBulat = (totalMenit) => {
     const menit = parseInt(totalMenit, 10);
     if (isNaN(menit) || menit < 60) return "-";
