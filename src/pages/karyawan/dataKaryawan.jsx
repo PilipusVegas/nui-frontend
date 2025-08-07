@@ -44,7 +44,10 @@ const DataKaryawan = () => {
           fetchData("/profil"),
           fetchData("/karyawan/divisi"),
         ]);
-        setUsers(users);
+        const filteredUsers = editable?.id_role === 1 
+          ? users 
+          : users.filter((user) => user.id_role !== 4); // misal: selain Manajer HRD
+        setUsers(filteredUsers);
         setDivisiList(divisi);
       } catch (err) {
         setErrorMessage(err.message);
@@ -53,7 +56,9 @@ const DataKaryawan = () => {
       }
     };
     fetchAll();
-  }, [apiUrl]);
+  }, [apiUrl, editable]);
+  
+  
   
   const filteredUsers = users.filter((user) => {
     const query = searchQuery.toLowerCase();
@@ -64,10 +69,8 @@ const DataKaryawan = () => {
       user?.role?.toLowerCase().includes(query) ||
       (user?.shift || "").toLowerCase().includes(query) ||
       (user?.status === 1 ? "aktif" : "nonaktif").includes(query));
-  
     const matchShift = !selectedShift || user.shift?.toLowerCase() === selectedShift.toLowerCase();
     const matchStatus = selectedStatus === "" || user.status?.toString() === selectedStatus;
-  
     return matchSearch && matchShift && matchStatus;
   });
     const currentUsers = filteredUsers.slice(
@@ -107,12 +110,11 @@ const DataKaryawan = () => {
     setCurrentPage(1);
   }, [searchQuery, selectedShift, selectedStatus]);
   
-
   return (
     <div className="flex flex-col">
       <div className="flex-grow">
         <div className="flex flex-col gap-2">
-          {/* BARIS ATAS: JUDUL + TOMBOL TAMBAH */}  
+        {/* BARIS ATAS: JUDUL + TOMBOL TAMBAH */}
         <div className="flex flex-wrap items-center justify-between gap-2">
           {/* Kiri: Icon Back + Judul */}
           <div className="flex items-center space-x-3">
