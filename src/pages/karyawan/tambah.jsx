@@ -37,7 +37,7 @@ const TambahKaryawan = () => {
   }, [apiUrl]);
 
   const handleAdd = async () => {
-    if (!currentUser.nik || !currentUser.nip || !currentUser.npwp || !currentUser.nama || !currentUser.no_rek || !currentUser.status_nikah || !currentUser.jml_anak || !currentUser.username || !currentUser.password || !currentUser.id_perusahaan || !currentUser.id_role || !currentUser.id_shift) {
+    if (!currentUser.nik || !currentUser.nip || !currentUser.npwp || !currentUser.nama || !currentUser.no_rek || !currentUser.status_nikah || !currentUser.username || !currentUser.password || !currentUser.id_perusahaan || !currentUser.id_role || !currentUser.id_shift) {
       return Swal.fire("Peringatan", "Kolom nama, username, password, perusahaan, role, dan shift harus diisi.", "warning");
     }
     try {
