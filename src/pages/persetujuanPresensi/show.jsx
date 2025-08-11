@@ -398,10 +398,17 @@ const DetailAbsensi = () => {
               </div>
 
               {/* Tombol Persetujuan */}
-              {(user.id_role === 1 || user.id_role === 4 ) && (
+              {(user.id_role === 1 || user.id_role === 4) && (
                 <div className="flex justify-end pt-4">
-                  {!statusApproval[selectedItem?.id_absen] ? (
-                    <button onClick={() => handleStatusUpdate(selectedItem.id_absen)} disabled={isLoading} className={`px-6 py-2 rounded-md text-white transition font-medium ${isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"}`}> {isLoading ? "Mengupdate..." : "Setujui"}
+                  {selectedItem?.status !== 1 ? (
+                    <button
+                      onClick={() => handleStatusUpdate(selectedItem.id_absen)}
+                      disabled={isLoading}
+                      className={`px-6 py-2 rounded-md text-white transition font-medium ${
+                        isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"
+                      }`}
+                    >
+                      {isLoading ? "Mengupdate..." : "Setujui"}
                     </button>
                   ) : (
                     <button className="px-6 py-2 rounded-md bg-gray-300 text-white cursor-not-allowed">
