@@ -8,6 +8,7 @@ import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 const EditKaryawan = () => {
     const navigate = useNavigate();
     const { id } = useParams();
+    const [userRole, setUserRole] = useState(null);
     const [divisiList, setDivisiList] = useState([]);
     const [shiftList, setShiftList] = useState([]);
     const [perusahaanList, setPerusahaanList] = useState([]);
@@ -15,6 +16,16 @@ const EditKaryawan = () => {
     const [currentUser, setCurrentUser] = useState({});
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const [managedCompanies, setManagedCompanies] = useState([]);
+
+        useEffect(() => {
+        const user = getUserFromToken();
+        if (user && user.id_role) {
+            setUserRole(String(user.id_role));
+        }
+        }, []);
+    
+      // Kondisi untuk sembunyikan beberapa input jika id_role 4 atau 6
+        const hideFields = userRole === "4" || userRole === "6";
 
     useEffect(() => {
         const fetchData = async () => {
@@ -119,7 +130,6 @@ const EditKaryawan = () => {
 
             <form onSubmit={handleSubmit} className="flex-grow pb-5 px-3 w-full mx-auto space-y-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
                     {/* === Biodata Karyawan === */}
                     <div className="col-span-full flex items-center gap-4 my-3">
                     <div className="flex-grow h-px bg-gradient-to-r from-transparent via-green-600 to-transparent" />
@@ -130,11 +140,13 @@ const EditKaryawan = () => {
                     </div>
 
                     {/* NIK */}
+                    {!hideFields && (
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">NIK</label>
                         <p className="text-xs text-gray-500 mb-2 -mt-1.5">Masukkan Nomor Induk Kependudukan (NIK).</p>
                         <input type="text" name="nip" value={currentUser.nik} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     </div>
+                    )}
 
                     {/* NIP */}
                     <div>
@@ -144,11 +156,13 @@ const EditKaryawan = () => {
                     </div>
 
                     {/* NPWP */}
+                    {!hideFields && (
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">NPWP</label>
                         <p className="text-xs text-gray-500 mb-2 -mt-1.5">Masukkan Nomor Pokok Wajib Pajak (NPWP).</p>
                         <input type="text" name="nip" value={currentUser.npwp} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     </div>
+                    )}
 
                     {/* Nama */}
                     <div>
@@ -165,13 +179,16 @@ const EditKaryawan = () => {
                     </div>
 
                     {/* No Rekening */}
+                    {!hideFields && (
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">Nomor Rekening</label>
                         <p className="text-xs text-gray-500 mb-2 -mt-1.5">Masukkan Nomor Rekening Karyawan.</p>
                         <input type="text" name="ne_rek" value={currentUser.no_rek} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     </div>
+                    )}
 
                     {/* STATUS NIKAH */}
+                    {!hideFields && (
                     <div>
                     <label className="block mb-1 font-medium text-gray-700">Status Nikah</label>
                     <p className="text-xs text-gray-500 mb-2 -mt-1.5">Pilih status pernikahan karyawan.</p>
@@ -182,9 +199,10 @@ const EditKaryawan = () => {
                         <option value="Cerai">Cerai</option>
                     </select>
                     </div>
+                    )}
 
                     {/* JUMLAH ANAK - Tampilkan jika Sudah Menikah */}
-                    {currentUser.status_nikah === "Sudah_Menikah" && (
+                    {!hideFields && currentUser.status_nikah === "Sudah_Menikah" && (
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">Jumlah Anak</label>
                         <p className="text-xs text-gray-500 mb-2 -mt-1.5">Masukkan jumlah anak (jika ada). Jika belum mempunyai anak maka isi 0 saja</p>
