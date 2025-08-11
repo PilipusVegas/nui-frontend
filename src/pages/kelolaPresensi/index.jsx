@@ -102,7 +102,7 @@ const AbsensiKantor = () => {
   
     const now = new Date();
     const timestamp = now.toISOString().slice(0, 19).replace(/[-T:]/g, "");
-    saveAs(blob, `Rekap_Absensi_Sederhana_${timestamp}.xlsx`);
+    saveAs(blob, `REKAP_ADMIN${timestamp}.xlsx`);
   };
 
   const handleRekapData = async () => {
@@ -140,31 +140,32 @@ const AbsensiKantor = () => {
     worksheet.getCell(5, offsetCol).alignment = { vertical: "middle", horizontal: "left" };
 
     // 🔵 Header
-    const headerRow1 = ["Pegawai", "", "Jumlah"];
-    const headerRow2 = ["NIP", "Nama", "Kehadiran"];
+    const headerRow1 = ["Pegawai", "", "Jumlah", "", ""]; 
+    const headerRow2 = ["NIP", "Nama", "Kehadiran", "Keterlambatan", "Lemburan"];
+
     tanggalArray.forEach((tgl) => {
       const formattedDate = formatTanggal(tgl);
       headerRow1.push(formattedDate, "", "", "");
-      headerRow2.push("IN", "LATE", "OUT", "OVERTIME");
+      headerRow2.push("IN", "LATE", "OUT", "T");
     });
-  
-    headerRow1.push("Jumlah", "");
-    headerRow2.push("Keterlambatan", "Lemburan");
+
     worksheet.getRow(offsetRow + 1).values = Array(offsetCol - 1).fill(null).concat(headerRow1);
     worksheet.getRow(offsetRow + 2).values = Array(offsetCol - 1).fill(null).concat(headerRow2);
+
     // Merge header cells
     worksheet.mergeCells(offsetRow + 1, offsetCol, offsetRow + 1, offsetCol + 1); // Pegawai
-    worksheet.mergeCells(offsetRow + 1, offsetCol + 2, offsetRow + 1, offsetCol + 2); // Jumlah
+    worksheet.mergeCells(offsetRow + 1, offsetCol + 2, offsetRow + 1, offsetCol + 4); // Jumlah
     tanggalArray.forEach((_, i) => {
-      const start = offsetCol + 3 + i * 4;
+      const start = offsetCol + 5 + i * 4;
       worksheet.mergeCells(offsetRow + 1, start, offsetRow + 1, start + 3);
     });
-    worksheet.mergeCells(offsetRow + 1, offsetCol + 3 + tanggalColSpan, offsetRow + 1, offsetCol + 4 + tanggalColSpan); // Keterlambatan & Lembur
-  
+
     // 🔴 Pewarnaan kolom hari Minggu dari header hingga baris terakhir karyawan
     tanggalArray.forEach((tgl, index) => {
       if (!isSunday(tgl)) return;
-      const startCol = offsetCol + 3 + index * 4; // Kolom pertama untuk tanggal ini
+
+      // posisi kolom tanggal pertama sekarang ada di offsetCol + 5
+      const startCol = offsetCol + 5 + index * 4;
       const endCol = startCol + 3; // IN, LATE, OUT, OVERTIME
       const startRow = offsetRow + 1; // Header (baris pertama tanggal)
       const endRow = offsetRow + 3 + jumlahKaryawan - 1; // Baris terakhir data karyawan
@@ -191,77 +192,75 @@ const AbsensiKantor = () => {
       const baseRow = [
         item.nip ?? "-",
         item.nama,
-        item.total_days,
+        item.total_days ?? "-",
+        item.total_late ?? "-",
+        formatOvertimeJamBulat(item.total_overtime) ?? "-"
       ];
+
       const excelRow = worksheet.getRow(currentRowIndex);
       excelRow.values = Array(offsetCol - 1).fill(null).concat(baseRow);
-      let colIndex = offsetCol + 3;
+      let colIndex = offsetCol + 5;
       const isEmptyValue = (val) => val === null || val === undefined || val === "" || val === 0;
       tanggalArray.forEach((tgl) => {
-        const att = item.attendance?.[tgl] || {};
-        const overtimeRaw = att.overtime ?? item.overtimes?.[tgl]?.durasi;
-        const overtimeFormatted = formatOvertimeJamBulat(overtimeRaw);
-        const isMinggu = isSunday(tgl);
-        const lateValue = parseInt(att.late ?? 0);
-        const isLate = lateValue >= 1;
-      
-        const cellStyles = {
-          minggu: {
-            fill: { type: "pattern", pattern: "solid", fgColor: { argb: "FFDC2626" } },
-            font: { color: { argb: "FFFFFFFF" }, bold: true },
-          },
-          late: {
-            fill: { type: "pattern", pattern: "solid", fgColor: { argb: "FFB91C1C" } },
-            font: { color: { argb: "FFFFFFFF" }, bold: true },
-          },
-        };
-      
-        const cellValues = [
-          isEmptyValue(att.in) ? "-" : att.in,
-          (lateValue === 0 || isNaN(lateValue)) ? "-" : lateValue.toString(),
-          isEmptyValue(att.out) ? "-" : att.out,
-          overtimeFormatted,
-        ];
-      
-        for (let i = 0; i < 4; i++) {
-          const cell = worksheet.getCell(currentRowIndex, colIndex + i);
-          cell.value = cellValues[i];
-      
-          if (cell.value === "-") {
-            cell.font = { color: { argb: "FF9CA3AF" }, italic: true };
+          const att = item.attendance?.[tgl] || {};
+          const overtimeRaw = att.overtime ?? item.overtimes?.[tgl]?.durasi;
+          const overtimeFormatted = formatOvertimeJamBulat(overtimeRaw);
+          const isMinggu = isSunday(tgl);
+          const lateValue = parseInt(att.late ?? 0);
+          const isLate = lateValue >= 1;
+
+          const cellStyles = {
+            minggu: {
+              fill: { type: "pattern", pattern: "solid", fgColor: { argb: "FFDC2626" } },
+              font: { color: { argb: "FFFFFFFF" }, bold: true },
+            },
+            late: {
+              fill: { type: "pattern", pattern: "solid", fgColor: { argb: "FFB91C1C" } },
+              font: { color: { argb: "FFFFFFFF" }, bold: true },
+            },
+          };
+
+          const cellValues = [
+            isEmptyValue(att.in) ? "-" : att.in,
+            (lateValue === 0 || isNaN(lateValue)) ? "-" : lateValue.toString(),
+            isEmptyValue(att.out) ? "-" : att.out,
+            overtimeFormatted,
+          ];
+
+          for (let i = 0; i < 4; i++) {
+            const cell = worksheet.getCell(currentRowIndex, colIndex + i);
+            cell.value = cellValues[i];
+
+            if (cell.value === "-") {
+              cell.font = { color: { argb: "FF9CA3AF" }, italic: true };
+            }
+
+            if (i === 1 && cell.value === "-" && isMinggu) {
+              cell.font = { color: { argb: "FFFFFFFF" }, bold: true };
+            }
+
+            if (isMinggu) {
+              Object.assign(cell, cellStyles.minggu);
+            }
+
+            if (i === 1 && isLate) {
+              Object.assign(cell, cellStyles.late);
+            }
           }
-      
-          if (i === 1 && cell.value === "-" && isMinggu) {
-            cell.font = { color: { argb: "FFFFFFFF" }, bold: true };
-          }
-      
-          if (isMinggu) {
-            Object.assign(cell, cellStyles.minggu);
-          }
-      
-          if (i === 1 && isLate) {
-            Object.assign(cell, cellStyles.late);
-          }
-        }
-        colIndex += 4;
-      });
-    
-      // ⬇ Tambahkan nilai jumlah keterlambatan dan lemburan di kolom paling akhir
-      const lastLateCol = offsetCol + 3 + tanggalArray.length * 4;
-      worksheet.getCell(currentRowIndex, lastLateCol).value = item.total_late ?? "-";
-      worksheet.getCell(currentRowIndex, lastLateCol + 1).value = formatOvertimeJamBulat(item.total_overtime) ?? "-";
+          colIndex += 4;
+        });
     });
 
     // Lebar kolom
     worksheet.columns = Array(offsetCol - 1).fill({ width: 4 }).concat([
-      { width: 14 }, // NIP
-      { width: 20 }, // Nama
-      { width: 14 }, // Kehadiran
+      { width: 10 }, // NIP
+      { width: 28 }, // Nama
+      { width: 10 }, // Kehadiran
+      { width: 14 }, // Keterlambatan
+      { width: 10 }, // Lemburan
       ...tanggalArray.flatMap(() => [
-        { width: 6 }, { width: 6 }, { width: 6 }, { width: 10 }
-      ]),
-      { width: 14 }, // Total Late
-      { width: 14 }, // Total Overtime
+        { width: 6 }, { width: 6 }, { width: 6 }, { width: 6 }
+      ])
     ]);
   
     // Border

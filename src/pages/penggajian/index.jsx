@@ -67,7 +67,7 @@ const DataPenggajian = () => {
     const judulUtama = "REKAPITULASI PENGGAJIAN KARYAWAN";
     const periodeText = `Periode: ${formatTanggal(startDate)} s.d. ${formatTanggal(endDate)}`;
     const infoJumlahKaryawan = `Total Karyawan: ${jumlahKaryawan} orang`;
-    const keterangan = "Keterangan: IN = Jam Masuk | OUT = Jam Pulang | LATE = Menit Keterlambatan | OVERTIME = Jam Lembur";
+    const keterangan = "Keterangan: IN = Jam Masuk | OUT = Jam Pulang | LATE = Menit Keterlambatan | T = Jam Lembur";
     
     // Baris 1: Judul utama (ditebalkan dan dibesarkan)
     worksheet.mergeCells(2, offsetCol, 2, offsetCol + totalCols - 1);
@@ -94,52 +94,46 @@ const DataPenggajian = () => {
     worksheet.getCell(5, offsetCol).alignment = { vertical: "middle", horizontal: "left" };
     
     // 🔵 Header
-    const headerRow1 = ["Pegawai", "", "Jumlah"];
-    const headerRow2 = ["NIP", "Nama", "Kehadiran"];
-  
+    const headerRow1 = ["Pegawai", "", "Jumlah", "", ""];
+    const headerRow2 = ["NIP", "Nama", "Kehadiran", "Keterlambatan", "Lemburan"];
+
     tanggalArray.forEach((tgl) => {
       const formattedDate = formatTanggal(tgl);
       headerRow1.push(formattedDate, "", "", "");
-      headerRow2.push("IN", "LATE", "OUT", "OVERTIME");
+      headerRow2.push("IN", "LATE", "OUT", "T");
     });
-    headerRow1.push("Jumlah", "");
-    headerRow2.push("Keterlambatan", "Lemburan");
+
     worksheet.getRow(offsetRow + 1).values = Array(offsetCol - 1).fill(null).concat(headerRow1);
     worksheet.getRow(offsetRow + 2).values = Array(offsetCol - 1).fill(null).concat(headerRow2);
+
     // Merge header cells
     worksheet.mergeCells(offsetRow + 1, offsetCol, offsetRow + 1, offsetCol + 1); // Pegawai
-    worksheet.mergeCells(offsetRow + 1, offsetCol + 2, offsetRow + 1, offsetCol + 2); // Jumlah
+    worksheet.mergeCells(offsetRow + 1, offsetCol + 2, offsetRow + 1, offsetCol + 4); // Jumlah
     tanggalArray.forEach((_, i) => {
-      const start = offsetCol + 3 + i * 4;
+      const start = offsetCol + 5 + i * 4;
       worksheet.mergeCells(offsetRow + 1, start, offsetRow + 1, start + 3);
     });
-    worksheet.mergeCells(offsetRow + 1, offsetCol + 3 + tanggalColSpan, offsetRow + 1, offsetCol + 4 + tanggalColSpan); // Keterlambatan & Lembur
-  
-    // 🔴 Pewarnaan kolom hari Minggu dari header hingga baris terakhir karyawan
+
+    // 🔴 Pewarnaan header jika Minggu
     tanggalArray.forEach((tgl, index) => {
-      if (!isSunday(tgl)) return;
+      if (isSunday(tgl)) {
+        const startCol = offsetCol + 5 + index * 4; // Kolom awal tanggal ini
+        const endCol = startCol + 3; // Kolom akhir (T)
 
-      const startCol = offsetCol + 3 + index * 4; // Kolom pertama untuk tanggal ini
-      const endCol = startCol + 3; // IN, LATE, OUT, OVERTIME
+        for (let col = startCol; col <= endCol; col++) {
+          // Baris tanggal (headerRow1)
+          const cellTanggal = worksheet.getCell(offsetRow + 1, col);
+          cellTanggal.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFDC2626" } };
+          cellTanggal.font = { color: { argb: "FFFFFFFF" }, bold: true };
 
-      const startRow = offsetRow + 1; // Header (baris pertama tanggal)
-      const endRow = offsetRow + 3 + jumlahKaryawan - 1; // Baris terakhir data karyawan
-
-      for (let col = startCol; col <= endCol; col++) {
-        for (let row = startRow; row <= endRow; row++) {
-          const cell = worksheet.getCell(row, col);
-          cell.fill = {
-            type: "pattern",
-            pattern: "solid",
-            fgColor: { argb: "FFDC2626" }, // Merah solid
-          };
-          cell.font = {
-            color: { argb: "FFFFFFFF" },
-            bold: true,
-          };
+          // Baris subheader (IN, LATE, OUT, T)
+          const cellSub = worksheet.getCell(offsetRow + 2, col);
+          cellSub.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFDC2626" } };
+          cellSub.font = { color: { argb: "FFFFFFFF" }, bold: true };
         }
       }
     });
+
 
     // 🟣 Data Pegawai
     filteredAbsenData.forEach((item, index) => {
@@ -147,22 +141,21 @@ const DataPenggajian = () => {
       const baseRow = [
         item.nip ?? "-",
         item.nama,
-        item.total_days,
+        item.total_days ?? 0,
+        item.total_late ?? 0,
+        formatOvertimeJamBulat(item.total_overtime) ?? 0,
       ];
-    
+
       const excelRow = worksheet.getRow(currentRowIndex);
       excelRow.values = Array(offsetCol - 1).fill(null).concat(baseRow);
-    
-      let colIndex = offsetCol + 3;
-    
+      let colIndex = offsetCol + 5;
+
       tanggalArray.forEach((tgl) => {
         const att = item.attendance?.[tgl] || {};
         const overtimeRaw = att.overtime ?? item.overtimes?.[tgl]?.durasi;
         const overtimeFormatted = formatOvertimeJamBulat(overtimeRaw);
-    
         const isMinggu = isSunday(tgl);
         const isLate = parseInt(att.late ?? 0) > 0;
-    
         const cellStyles = {
           minggu: {
             fill: { type: "pattern", pattern: "solid", fgColor: { argb: "FFDC2626" } },
@@ -173,14 +166,14 @@ const DataPenggajian = () => {
             font: { color: { argb: "FFFFFFFF" }, bold: true },
           },
         };
-    
+
         const cellValues = [
           att.in ?? "-",
           att.late ?? "-",
           att.out ?? "-",
           overtimeFormatted,
         ];
-    
+
         for (let i = 0; i < 4; i++) {
           const cell = worksheet.getCell(currentRowIndex, colIndex + i);
           cell.value = cellValues[i];
@@ -197,22 +190,18 @@ const DataPenggajian = () => {
         colIndex += 4;
       });
     
-      // ⬇ Tambahkan nilai jumlah keterlambatan dan lemburan di kolom paling akhir
-      const lastLateCol = offsetCol + 3 + tanggalArray.length * 4;
-      worksheet.getCell(currentRowIndex, lastLateCol).value = item.total_late ?? "-";
-      worksheet.getCell(currentRowIndex, lastLateCol + 1).value = formatOvertimeJamBulat(item.total_overtime) ?? "-";
     });
 
     // Lebar kolom
     worksheet.columns = Array(offsetCol - 1).fill({ width: 4 }).concat([
-      { width: 14 }, // NIP
-      { width: 20 }, // Nama
-      { width: 14 }, // Kehadiran
+      { width: 10 }, // NIP
+      { width: 28 }, // Nama
+      { width: 10 }, // Kehadiran
+      { width: 14 }, // Keterlambatan
+      { width: 10 }, // Lemburan
       ...tanggalArray.flatMap(() => [
-        { width: 6 }, { width: 6 }, { width: 6 }, { width: 10 }
+        { width: 6 }, { width: 6 }, { width: 6 }, { width: 6 }
       ]),
-      { width: 14 }, // Total Late
-      { width: 14 }, // Total Overtime
     ]);
   
     // Border
