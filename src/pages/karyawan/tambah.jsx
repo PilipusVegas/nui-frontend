@@ -404,7 +404,7 @@ const TambahKaryawan = () => {
             {/* Info Box */}
             <div className="mt-2 text-sm text-gray-700 bg-green-50 border border-green-200 rounded-md p-4 leading-relaxed tracking-wide">
             <p className="font-semibold text-gray-800 mb-2">Panduan Penggunaan Absensi</p>
-            <ul className="list-disc list-inside ml-2 space-y-1 text-xs text-gray-600">
+            <ul className="list-disc list-inside ml-2 space-y-1 text-sm text-gray-600">
                 <li>
                 <strong className="text-green-700">Karyawan Lapangan</strong> 
                 <span> wajib menggunakan </span> 
@@ -416,11 +416,11 @@ const TambahKaryawan = () => {
                 <strong>Absensi Face Recognition</strong> di perangkat kantor.
                 </li>
             </ul>
-            <p className="mt-2 text-xs text-gray-600">
+            <p className="mt-2 text-sm text-gray-600">
                 Sistem <strong className="text-red-600">tidak memperbolehkan penggunaan silang</strong>. 
                 Data dari absensi lapangan dan kantor diproses secara <strong>terpisah</strong>.
             </p>
-            <p className="mt-3 text-xs text-gray-700">
+            <p className="mt-3 text-sm text-gray-700">
                 <strong>Status Aktif</strong> diperlukan agar karyawan bisa login dan melakukan absensi sesuai penugasannya.
                 Jika status <span className="font-semibold text-red-600">Nonaktif</span>, maka akses absensi akan <strong>dinonaktifkan sepenuhnya</strong>.
             </p>
