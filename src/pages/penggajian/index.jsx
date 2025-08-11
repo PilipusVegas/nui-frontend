@@ -23,7 +23,18 @@ const DataPenggajian = () => {
   const roleId = user?.id_role ?? 0;
   const canDownload = allowedRoles.includes(roleId);
   const handleBackClick = () => { navigate("/home");};
-  
+  const [companyList, setCompanyList] = useState([]);
+  const [selectedCompany, setSelectedCompany] = useState("");
+
+  useEffect(() => {
+  if (dataAbsen.length > 0) {
+    const uniqueCompanies = Array.from(
+      new Set(dataAbsen.map(item => item.perusahaan))
+    );
+    setCompanyList(uniqueCompanies);
+  }
+}, [dataAbsen]);
+
   const fetchPenggajianData = async () => {
     if (!startDate || !endDate) return;
     setLoading(true);
@@ -52,8 +63,10 @@ const DataPenggajian = () => {
     nama: typeof item.nama === "string" ? item.nama : "-",
   }))
   .filter((item) =>
-    item.nama.toLowerCase().includes(searchName.toLowerCase())
+    item.nama.toLowerCase().includes(searchName.toLowerCase()) &&
+    (selectedCompany === "" || item.perusahaan === selectedCompany)
   );
+
 
   const handleRekapData = async () => {
     if (!filteredAbsenData.length) return;
@@ -67,8 +80,9 @@ const DataPenggajian = () => {
     const judulUtama = "REKAPITULASI PENGGAJIAN KARYAWAN";
     const periodeText = `Periode: ${formatTanggal(startDate)} s.d. ${formatTanggal(endDate)}`;
     const infoJumlahKaryawan = `Total Karyawan: ${jumlahKaryawan} orang`;
+    const perusahaan = selectedCompany ? `Perusahaan : ${selectedCompany}` : "Semua Perusahaan";
     const keterangan = "Keterangan: IN = Jam Masuk | OUT = Jam Pulang | LATE = Menit Keterlambatan | T = Jam Lembur";
-    
+
     // Baris 1: Judul utama (ditebalkan dan dibesarkan)
     worksheet.mergeCells(2, offsetCol, 2, offsetCol + totalCols - 1);
     worksheet.getCell(2, offsetCol).value = judulUtama;
@@ -87,11 +101,17 @@ const DataPenggajian = () => {
     worksheet.getCell(4, offsetCol).font = { italic: true, size: 12 };
     worksheet.getCell(4, offsetCol).alignment = { vertical: "middle", horizontal: "left" };
     
-    // Baris 4: Keterangan
+    // Baris 4: perusahaan
     worksheet.mergeCells(5, offsetCol, 5, offsetCol + totalCols - 1);
-    worksheet.getCell(5, offsetCol).value = keterangan;
-    worksheet.getCell(5, offsetCol).font = { size: 11, color: { argb: "FF6B7280" }, italic: true };
+    worksheet.getCell(5, offsetCol).value = perusahaan;
+    worksheet.getCell(5, offsetCol).font = { italic: true, size: 12 };
     worksheet.getCell(5, offsetCol).alignment = { vertical: "middle", horizontal: "left" };
+
+    // Baris 5: keterangan
+    worksheet.mergeCells(6, offsetCol, 6, offsetCol + totalCols - 1);
+    worksheet.getCell(6, offsetCol).value = keterangan;
+    worksheet.getCell(6, offsetCol).font = { size: 11, color: { argb: "FF6B7280" }, italic: true };
+    worksheet.getCell(6, offsetCol).alignment = { vertical: "middle", horizontal: "left" };
     
     // 🔵 Header
     const headerRow1 = ["Pegawai", "", "Jumlah", "", ""];
@@ -291,12 +311,7 @@ const DataPenggajian = () => {
 
               {/* Tombol Unduh Excel untuk Desktop */}
               {canDownload && (
-                <button onClick={handleRekapData} disabled={filteredAbsenData.length === 0 || loading} className={`hidden sm:flex items-center justify-center gap-2 h-10 px-4 sm:mt-5 rounded-md shadow transition whitespace-nowrap ${filteredAbsenData.length === 0 || loading
-                      ? "bg-gray-400 text-white cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700 text-white"
-                    }`}
-                  title="Unduh Excel"
-                >
+                <button onClick={handleRekapData} disabled={filteredAbsenData.length === 0 || loading} className={`hidden sm:flex items-center justify-center gap-2 h-10 px-4 sm:mt-5 rounded-md shadow transition whitespace-nowrap ${filteredAbsenData.length === 0 || loading ? "bg-gray-400 text-white cursor-not-allowed" : "bg-green-600 hover:bg-green-700 text-white" }`} title="Unduh Excel">
                   <FontAwesomeIcon icon={faDownload} />
                   <span className="hidden sm:inline text-sm">Unduh Excel</span>
                 </button>
@@ -304,6 +319,7 @@ const DataPenggajian = () => {
             </div>
           )}
         </div>
+
         {isDateSelected && (
         <div className="w-full flex items-center gap-2 ">
           {/* Search Bar */}
@@ -314,9 +330,24 @@ const DataPenggajian = () => {
             </span>
           </div>
 
+         {/* Filter Perusahaan */}
+          <div className="w-64 mb-5">
+            <label htmlFor="filterPerusahaan" className="block text-xs font-medium text-gray-600 mb-1">
+              Filter Perusahaan
+            </label>
+            <select id="filterPerusahaan" className="w-full border border-green-600 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400" value={selectedCompany} onChange={(e) => setSelectedCompany(e.target.value)}>
+              <option value="">Semua Perusahaan</option>
+              {companyList.map((comp, idx) => (
+                <option key={idx} value={comp}>
+                  {comp}
+                </option>
+              ))}
+            </select>
+          </div>
+          
           {/* Tombol Unduh Excel - Mobile Only */}
           {canDownload && (
-            <button onClick={handleRekapData} disabled={filteredAbsenData.length === 0 || loading} className={`flex items-center justify-center h-10 w-10 rounded-md transition sm:hidden ${filteredAbsenData.length === 0 || loading ? "bg-gray-300 text-white cursor-not-allowed" : "bg-green-600 hover:bg-green-700 text-white" }`} title="Unduh Excel">
+            <button onClick={handleRekapData} disabled={filteredAbsenData.length === 0 || loading} className={`flex items-center justify-center h-10 w-10 rounded-md transition sm:hidden ${ filteredAbsenData.length === 0 || loading ? "bg-gray-300 text-white cursor-not-allowed" : "bg-green-600 hover:bg-green-700 text-white" }`} title="Unduh Excel">
               <FontAwesomeIcon icon={faDownload} />
             </button>
           )}
