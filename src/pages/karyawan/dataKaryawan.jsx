@@ -16,8 +16,8 @@ const DataKaryawan = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [shiftList, setShiftList] = useState([]);
   const [selectedShift, setSelectedShift] = useState("");
+  const [selectedPerusahaan, setSelectedPerusahaan] = useState("");
   const [selectedStatus, setSelectedStatus] = useState(""); // "1" untuk aktif, "0" untuk nonaktif
   const itemsPerPage = 12;
   const handleBackClick = () => navigate("/home");
@@ -59,7 +59,6 @@ const DataKaryawan = () => {
   }, [apiUrl, editable]);
   
   
-  
   const filteredUsers = users.filter((user) => {
     const query = searchQuery.toLowerCase();
     const matchSearch =
@@ -69,9 +68,9 @@ const DataKaryawan = () => {
       user?.role?.toLowerCase().includes(query) ||
       (user?.shift || "").toLowerCase().includes(query) ||
       (user?.status === 1 ? "aktif" : "nonaktif").includes(query));
-    const matchShift = !selectedShift || user.shift?.toLowerCase() === selectedShift.toLowerCase();
+    const matchPerusahaan = !selectedPerusahaan || user.perusahaan?.toLowerCase() === selectedPerusahaan.toLowerCase();
     const matchStatus = selectedStatus === "" || user.status?.toString() === selectedStatus;
-    return matchSearch && matchShift && matchStatus;
+    return matchSearch && matchPerusahaan && matchStatus;
   });
     const currentUsers = filteredUsers.slice(
       (currentPage - 1) * itemsPerPage,
@@ -106,9 +105,10 @@ const DataKaryawan = () => {
     });
   };
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, selectedShift, selectedStatus]);
+useEffect(() => {
+  setCurrentPage(1);
+}, [searchQuery, selectedPerusahaan, selectedStatus]);
+
   
   return (
     <div className="flex flex-col">
@@ -141,20 +141,21 @@ const DataKaryawan = () => {
 
           {/* Filter Controls */}
           <div className="order-1 sm:order-2 grid grid-cols-2 gap-2 sm:gap-3 w-full sm:max-w-sm">
-            {/* Filter Shift */}
+            {/* Filter Perusahaan */}
             <div>
-              <label htmlFor="filter-shift" className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5 block">
-                Jadwal Shift
+              <label htmlFor="filter-perusahaan" className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5 block">
+                Perusahaan
               </label>
-              <select id="filter-shift" value={selectedShift} onChange={(e) => setSelectedShift(e.target.value)} className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 px-2 py-1.5 rounded-md text-xs sm:text-sm w-full">
+              <select id="filter-perusahaan" value={selectedPerusahaan} onChange={(e) => setSelectedPerusahaan(e.target.value)} className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 px-2 py-1.5 rounded-md text-xs sm:text-sm w-full">
                 <option value="">Semua</option>
-                {[...new Set(users.map((u) => u.shift).filter(Boolean))].map((shiftName, i) => (
-                  <option key={i} value={shiftName}>
-                    {shiftName}
+                {[...new Set(users.map((u) => u.perusahaan).filter(Boolean))].map((perusahaanName, i) => (
+                  <option key={i} value={perusahaanName}>
+                    {perusahaanName}
                   </option>
                 ))}
               </select>
             </div>
+
 
             {/* Filter Status */}
             <div>
