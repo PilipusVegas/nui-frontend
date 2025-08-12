@@ -196,7 +196,7 @@ const HomeDesktop = () => {
 
         {/* GIF Kucing di kanan bawah */}
         <div className="absolute bottom-2 right-4 w-20 sm:w-32 opacity-60 group-hover:opacity-80 transition-opacity duration-300 pointer-events-none z-0">
-          <img src="https://i.pinimg.com/originals/5f/93/49/5f934966a1d20bae1909c9ef2278bd4c.gif" alt="Kucing lucu" className="w-full h-auto object-contain"/>
+          <img src="https://i.pinimg.com/originals/df/3e/a1/df3ea18e7186b1b6ff6872ebf67724de.gif" alt="Kucing lucu" className="w-full h-auto object-contain"/>
         </div>
 
         {/* Konten */}
