@@ -67,7 +67,6 @@ const DataPenggajian = () => {
     (selectedCompany === "" || item.perusahaan === selectedCompany)
   );
 
-
   const handleRekapData = async () => {
     if (!filteredAbsenData.length) return;
     const workbook = new ExcelJS.Workbook();
@@ -188,16 +187,16 @@ const DataPenggajian = () => {
         };
 
         const cellValues = [
-          att.in ?? "-",
-          att.late ?? "-",
-          att.out ?? "-",
+          att.in ?? "",
+          att.late ?? "",
+          att.out ?? "",
           overtimeFormatted,
         ];
 
         for (let i = 0; i < 4; i++) {
           const cell = worksheet.getCell(currentRowIndex, colIndex + i);
           cell.value = cellValues[i];
-          if (cell.value === "-") {
+          if (cell.value === "") {
             cell.font = { color: { argb: "FF9CA3AF" }, italic: true };
           }
           if (isMinggu) {
@@ -257,7 +256,7 @@ const DataPenggajian = () => {
 
   const formatOvertimeJamBulat = (totalMenit) => {
     const menit = parseInt(totalMenit, 10);
-    if (isNaN(menit) || menit < 60) return "-"; // hanya jika >= 60 menit baru dihitung jam
+    if (isNaN(menit) || menit < 60) return ""; // hanya jika >= 60 menit baru dihitung jam
     const jam = Math.floor(menit / 60);
     return `${jam.toString().padStart(2, '0')}:00`;
   };

@@ -131,11 +131,11 @@
         const row = sheet.addRow([
           i + 1,
           tanggal,
-          record?.shift || "-",
-          record?.in || "-",
-          record?.late || "-",
-          record?.out || "-",
-          record?.overtime? `${String(Math.floor(record.overtime / 60)).padStart(2, "0")}:${String(record.overtime % 60).padStart(2, "0")}`: "-"
+          record?.shift || " ",
+          record?.in || " ",
+          record?.late || " ",
+          record?.out || " ",
+          record?.overtime? `${String(Math.floor(record.overtime / 60)).padStart(2, "0")}:${String(record.overtime % 60).padStart(2, "0")}`: " "
         ]);
       
         row.eachCell((cell) => {

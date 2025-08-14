@@ -24,6 +24,8 @@ const AbsensiKantor = () => {
   const [isDateSelected, setIsDateSelected] = useState(false);
   const [tipeKaryawan, setTipeKaryawan] = useState(canChangeTipe ? "kantor" : "lapangan");
   const handleBackClick = () => { navigate("/home");};
+  const [companies, setCompanies] = useState([]);
+  const [selectedCompany, setSelectedCompany] = useState("");
   
   const fetchAbsenData = async () => {
     if (!startDate || !endDate) return;
@@ -190,11 +192,11 @@ const AbsensiKantor = () => {
     filteredAbsenData.forEach((item, index) => {
       const currentRowIndex = offsetRow + 3 + index;
       const baseRow = [
-        item.nip ?? "-",
+        item.nip ?? "",
         item.nama,
-        item.total_days ?? "-",
-        item.total_late ?? "-",
-        formatOvertimeJamBulat(item.total_overtime) ?? "-"
+        item.total_days ?? "",
+        item.total_late ?? "",
+        formatOvertimeJamBulat(item.total_overtime) ?? ""
       ];
 
       const excelRow = worksheet.getRow(currentRowIndex);
@@ -221,28 +223,18 @@ const AbsensiKantor = () => {
           };
 
           const cellValues = [
-            isEmptyValue(att.in) ? "-" : att.in,
-            (lateValue === 0 || isNaN(lateValue)) ? "-" : lateValue.toString(),
-            isEmptyValue(att.out) ? "-" : att.out,
+            isEmptyValue(att.in) ? "" : att.in,
+            (lateValue === 0 || isNaN(lateValue)) ? "" : lateValue.toString(),
+            isEmptyValue(att.out) ? "" : att.out,
             overtimeFormatted,
           ];
 
           for (let i = 0; i < 4; i++) {
             const cell = worksheet.getCell(currentRowIndex, colIndex + i);
             cell.value = cellValues[i];
-
-            if (cell.value === "-") {
-              cell.font = { color: { argb: "FF9CA3AF" }, italic: true };
-            }
-
-            if (i === 1 && cell.value === "-" && isMinggu) {
-              cell.font = { color: { argb: "FFFFFFFF" }, bold: true };
-            }
-
-            if (isMinggu) {
-              Object.assign(cell, cellStyles.minggu);
-            }
-
+            if (cell.value === "") { cell.font = { color: { argb: "FF9CA3AF" }, italic: true };}
+            if (i === 1 && cell.value === "" && isMinggu) { cell.font = { color: { argb: "FFFFFFFF" }, bold: true };}
+            if (isMinggu) {Object.assign(cell, cellStyles.minggu);}
             if (i === 1 && isLate) {
               Object.assign(cell, cellStyles.late);
             }
@@ -306,7 +298,7 @@ const AbsensiKantor = () => {
   
   const formatOvertimeJamBulat = (totalMenit) => {
     const menit = parseInt(totalMenit, 10);
-    if (isNaN(menit) || menit < 60) return "-";
+    if (isNaN(menit) || menit < 60) return "";
     const jam = Math.floor(menit / 60);
     return `${jam.toString().padStart(2, '0')}:00`;
   };
