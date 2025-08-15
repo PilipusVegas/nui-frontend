@@ -20,6 +20,7 @@ import DetailPersetujuanPresensi from "./pages/persetujuanPresensi/show";
 import DataKaryawan from "./pages/karyawan/dataKaryawan";
 import TambahKaryawan from "./pages/karyawan/tambah";
 import EditKaryawan from "./pages/karyawan/edit";
+import ShowKaryawan from "./pages/karyawan/show";
 import Shift from "./pages/shift/shift";
 import TambahShift from "./pages/shift/tambah";
 import EditShift from "./pages/shift/edit";
@@ -27,7 +28,7 @@ import PersetujuanLembur from "./pages/persetujuanLembur/index";
 import DataPenggajian from "./pages/penggajian";
 import DetailPenggajian from "./pages/penggajian/show";
 import RiwayatPenggajian from "./pages/riwayatPenggajian/index";
-import RiwayatAbsensi from "./pages/riwayat/riwayatAbsensi";
+import RiwayatKehadiran from "./pages/riwayat/index";
 import SuratDinas from "./pages/form/dataSuratDinas";
 import FormDinas from "./pages/form/formDinas";
 import DetailSuratDinas from "./pages/form/detailSuratDinas";
@@ -38,13 +39,13 @@ import TambahPerusahaan from "./pages/perusahaan/tambah";
 import EditPerusahaan from "./pages/perusahaan/edit";
 import MenuSidebar from "./layouts/menuSidebar";
 import Header from "./layouts/header";
+import DetailLembur from "./pages/penggajian/detailLembur";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(!!getUserFromToken());
   const user = isAuthenticated ? getUserFromToken() : null;
   const isLoggedIn = !!user;
   const roleId = String(user?.id_role || "");
-
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -188,11 +189,10 @@ const App = () => {
     );
   };
   
-
   const routes = [
     // MOBILE
     {  path: "/notification",  component: <Notification />,  roles: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"]},
-    { path: "/riwayat-absensi", component: <RiwayatAbsensi />, roles: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
+    { path: "/riwayat-absensi", component: <RiwayatKehadiran />, roles: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
     { path: "/profile", component: <Profile />, roles: ["1","2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
     { path: "profile/edit/:id", component: <EditProfile />, roles: ["1","2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
     { path: "/menu", component: <Menu />, roles: ["1","2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
@@ -210,8 +210,10 @@ const App = () => {
     { path: "/karyawan", component: <DataKaryawan />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
     { path: "/karyawan/tambah", component: <TambahKaryawan />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
     { path: "/karyawan/edit/:id", component: <EditKaryawan />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
+    { path: "/karyawan/show/:id", component: <ShowKaryawan />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
     { path: "/penggajian", component: <DataPenggajian />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
     { path: "/penggajian/:id_user", component: <DetailPenggajian />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
+    { path: "/penggajian/detail-lembur/:id", component: <DetailLembur />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
     { path: "/riwayat-penggajian", component: <RiwayatPenggajian />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
     { path: "/surat-dinas", component: <SuratDinas />, roles: ["1","4","5","6","13"],layout: SidebarLayout  },
     { path: "/surat-dinas/:id", component: <DetailSuratDinas />, roles: ["1","4","5","6","13"],layout: SidebarLayout  },
