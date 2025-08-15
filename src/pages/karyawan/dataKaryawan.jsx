@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faArrowRight, faEdit, faTrash, faSearch, faPlus, faTriangleExclamation} from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faArrowRight, faEdit, faTrash, faSearch, faPlus, faTriangleExclamation, faEye } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 
 const DataKaryawan = () => {
-  const editable = getUserFromToken();
+  const [editable] = useState(() => getUserFromToken());
   const navigate = useNavigate();
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const [users, setUsers] = useState([]);
@@ -46,7 +46,7 @@ const DataKaryawan = () => {
         ]);
         const filteredUsers = editable?.id_role === 1 
           ? users 
-          : users.filter((user) => user.id_role !== 4); // misal: selain Manajer HRD
+          : users.filter((user) => user.id_role !== 4);
         setUsers(filteredUsers);
         setDivisiList(divisi);
       } catch (err) {
@@ -56,7 +56,8 @@ const DataKaryawan = () => {
       }
     };
     fetchAll();
-  }, [apiUrl, editable]);
+  }, [apiUrl, editable?.id_role]); // cukup id_role saja
+
   
   
   const filteredUsers = users.filter((user) => {
@@ -176,7 +177,7 @@ useEffect(() => {
               <table className="min-w-full table-auto bg-white border-collapse shadow-md rounded-lg">
                 <thead>
                   <tr className="bg-green-600 text-white py-2 text-sm px-4">
-                    {["No.", "Perusahaan", "NIP", "Nama Karyawan", "Jadwal Shift", "Status", "Menu"].map(
+                    {["No.", "NIP", "Nama Karyawan", "Perusahaan", "Jadwal Shift", "Status", "Menu"].map(
                       (header, index) => (
                         <th key={index} className={`px-4 py-2 font-semibold text-center ${ index === 0 ? "first:rounded-tl-lg " : "last:rounded-tr-lg" }`}>
                           {header}
@@ -193,18 +194,26 @@ useEffect(() => {
                         {indexOfFirstUser + index + 1}
                         </td>
                         <td className=" px-4 border-b border-gray-200 tracking-wide text-center">
-                          <span className={user.perusahaan ? "" : "text-gray-400 italic text-xs"}>
-                            {user.perusahaan || "N/A"}
-                          </span>
-                        </td>
-                        <td className=" px-4 border-b border-gray-200 tracking-wide text-center">
                           <span className={user.nip ? "" : "text-gray-400 italic text-xs"}>
                             {user.nip || "N/A"}
                           </span>
                         </td>
-                        <td className=" px-4 border-b border-gray-200 tracking-wide">
-                          <div className="font-semibold text-sm capitalize">{user.nama || "Unknown Name"}</div>
+                        <td className="px-4 border-b border-gray-200 tracking-wide cursor-pointer group" onClick={() => navigate(`/karyawan/show/${user.id}`)}>
+                          <div className="flex items-center space-x-2">
+                            {/* Nama */}
+                            <span className="font-semibold text-sm capitalize transition-all duration-200 group-hover:underline group-hover:underline-offset-4 group-hover:text-green-600 group-hover:decoration-green-600">
+                              {user.nama || "Unknown Name"}
+                            </span>
+                            {/* Icon Mata */}
+                            <FontAwesomeIcon icon={faEye} className="text-green-600 text-sm opacity-0 transition-opacity duration-200 group-hover:opacity-100"/>
+                          </div>
+                          {/* Role */}
                           <div className="text-xs text-gray-500">{user.role || "Unknown Role"}</div>
+                        </td>
+                        <td className=" px-4 border-b border-gray-200 tracking-wide text-center">
+                          <span className={user.perusahaan ? "" : "text-gray-400 italic text-xs"}>
+                            {user.perusahaan || "N/A"}
+                          </span>
                         </td>
                         <td className=" px-4 border-b border-gray-200 tracking-wide text-center">
                           <span className={user.shift ? "" : "text-gray-400 italic text-xs"}>
