@@ -20,7 +20,7 @@ import DetailPersetujuanPresensi from "./pages/persetujuanPresensi/show";
 import DataKaryawan from "./pages/karyawan/dataKaryawan";
 import TambahKaryawan from "./pages/karyawan/tambah";
 import EditKaryawan from "./pages/karyawan/edit";
-import ShowKaryawan from "./pages/karyawan/show";
+// import ShowKaryawan from "./pages/karyawan/show";
 import Shift from "./pages/shift/shift";
 import TambahShift from "./pages/shift/tambah";
 import EditShift from "./pages/shift/edit";
@@ -210,7 +210,7 @@ const App = () => {
     { path: "/karyawan", component: <DataKaryawan />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
     { path: "/karyawan/tambah", component: <TambahKaryawan />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
     { path: "/karyawan/edit/:id", component: <EditKaryawan />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
-    { path: "/karyawan/show/:id", component: <ShowKaryawan />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
+    // { path: "/karyawan/show/:id", component: <ShowKaryawan />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
     { path: "/penggajian", component: <DataPenggajian />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
     { path: "/penggajian/:id_user", component: <DetailPenggajian />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
     { path: "/penggajian/detail-lembur/:id", component: <DetailLembur />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
