@@ -47,7 +47,7 @@ const SuratDinas = () => {
 
   useEffect(() => {
     const filtered = data.filter((item) =>
-      item.nama.toLowerCase().includes(searchTerm.toLowerCase())
+      (item.nama || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredData(filtered);
   }, [searchTerm, data]);
