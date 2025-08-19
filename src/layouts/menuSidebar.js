@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignOutAlt, faCheckSquare, faBook, faArrowRight, faLocationArrow, faPeopleGroup, faPenFancy, faUsersCog, faHome, faAngleDown, faBuilding, faUserCheck,} from "@fortawesome/free-solid-svg-icons";
+import { menuConfig } from "../data/menuConfig";
 
 const IconButton = ({ icon, label, onClick, isActive }) => (
   <button onClick={onClick} aria-label={label} className={`flex items-center transition-all duration-300 w-full rounded-lg gap-3 p-3 my-1 text-sm tracking-wider ${isActive ? "bg-green-800/90 text-white shadow-inner font-semibold tracking-wide" : "hover:bg-white/10 hover:scale-[1.02]"}`}>
@@ -33,82 +34,68 @@ const MenuSidebar = ({ handleLogout, perusahaanId, roleId, isOpen, toggleSidebar
     });
   };
 
-  const menuGroups = [
-    {
-      // sectionTitle: "Menu Utama",
-      items: [
-        { label: "Dashboard", icon: faHome, path: "/home", roles: [1, 2, 3, 4, 5, 6, 13, 20] },
-      ],
-    },
-    {
-      sectionTitle: "Manajemen Karyawan",
-      items: [
-        { label: "Kelola Karyawan", icon: faPeopleGroup, path: "/karyawan", roles: [1, 4, 6] },
-        { label: "Kelola Struktur Divisi", icon: faUsersCog, path: "/divisi", roles: [1, 4, 6] },
-      ],
-    },
-    {
-      sectionTitle: "Manajemen Presensi",
-      items: [
-        { label: "Persetujuan Presensi", icon: faCheckSquare, path: "/persetujuan-presensi", roles: [1, 4, 5, 6, 13, 20], perusahaan: [1, 4]},
-        {
-          label: "Presensi Karyawan", icon: faUserCheck, roles: [1, 4, 5, 6],
-          submenu: [
-            { label: "Kelola Presensi", path: "/kelola-presensi", roles: [1, 4, 5, 6] },
-            { label: "Kelola Jam Kerja", path: "/shift", roles: [1, 4, 6] },
-          ],
-        },
-        { label: "Kelola Penggajian", icon: faBook, path: "/penggajian", roles: [1, 4, 6] },
-      ],
-    },
-    {
-      sectionTitle: "E-Form",
-      items: [
-        { label: "Dinas Keluar Kantor", icon: faPenFancy, path: "/surat-dinas", roles: [1, 4, 5, 6] },
-      ],
-    },
-    {
-      sectionTitle: "Lainnya",
-      items: [
-        { label: "Persetujuan Lembur", icon: faCheckSquare, path: "/persetujuan-lembur", roles: [1, 4, 5, 6, 20], perusahaan: [1, 4]},
-        { label: "Titik Lokasi Absensi", icon: faLocationArrow, path: "/lokasi-presensi", roles: [1, 5] },
-        { label: "Kelola Perusahaan", icon: faBuilding, path: "/perusahaan", roles: [1, 4, 6] },
-      ],
-    },
-    {
-      sectionTitle: "Logout",
-      items: [
-        { label: "Logout", icon: faSignOutAlt, onClick: confirmLogout, isAction: true, roles: [1, 2, 3, 4, 5, 6, 13, 20] },
-      ],
-    },
-  ];
+  // const menuGroups = [
+  //   {
+  //     // sectionTitle: "Menu Utama",
+  //     items: [
+  //       { label: "Dashboard", icon: faHome, path: "/home", roles: [1, 2, 3, 4, 5, 6, 13, 20] },
+  //     ],
+  //   },
+  //   {
+  //     sectionTitle: "Manajemen Karyawan",
+  //     items: [
+  //       { label: "Kelola Karyawan", icon: faPeopleGroup, path: "/karyawan", roles: [1, 4, 6] },
+  //       { label: "Kelola Struktur Divisi", icon: faUsersCog, path: "/divisi", roles: [1, 4, 6] },
+  //     ],
+  //   },
+  //   {
+  //     sectionTitle: "Manajemen Presensi",
+  //     items: [
+  //       { label: "Persetujuan Presensi", icon: faCheckSquare, path: "/persetujuan-presensi", roles: [1, 4, 5, 6, 13, 20], perusahaan: [1, 4]},
+  //       {
+  //         label: "Presensi Karyawan", icon: faUserCheck, roles: [1, 4, 5, 6],
+  //         submenu: [
+  //           { label: "Kelola Presensi", path: "/kelola-presensi", roles: [1, 4, 5, 6] },
+  //           { label: "Kelola Jam Kerja", path: "/shift", roles: [1, 4, 6] },
+  //         ],
+  //       },
+  //       { label: "Kelola Penggajian", icon: faBook, path: "/penggajian", roles: [1, 4, 6] },
+  //     ],
+  //   },
+  //   {
+  //     sectionTitle: "E-Form",
+  //     items: [
+  //       { label: "Dinas Keluar Kantor", icon: faPenFancy, path: "/surat-dinas", roles: [1, 4, 5, 6] },
+  //     ],
+  //   },
+  //   {
+  //     sectionTitle: "Lainnya",
+  //     items: [
+  //       { label: "Persetujuan Lembur", icon: faCheckSquare, path: "/persetujuan-lembur", roles: [1, 4, 5, 6, 20], perusahaan: [1, 4]},
+  //       { label: "Titik Lokasi Absensi", icon: faLocationArrow, path: "/lokasi-presensi", roles: [1, 5] },
+  //       { label: "Kelola Perusahaan", icon: faBuilding, path: "/perusahaan", roles: [1, 4, 6] },
+  //     ],
+  //   },
+  //   {
+  //     sectionTitle: "Logout",
+  //     items: [
+  //       { label: "Logout", icon: faSignOutAlt, onClick: confirmLogout, isAction: true, roles: [1, 2, 3, 4, 5, 6, 13, 20] },
+  //     ],
+  //   },
+  // ];
 
-  const filteredMenuGroups = menuGroups.map(group => {
-    const filteredItems = group.items
-      .map(item => {
-        if (item.submenu) {
-          const filteredSubmenu = item.submenu.filter(sub =>
-            sub.roles.includes(roleId) &&
-            (!sub.perusahaan || sub.perusahaan.includes(perusahaanId))
-          );
-          return filteredSubmenu.length > 0 ? { ...item, submenu: filteredSubmenu } : null;
-        }
-  
-        return item.roles.includes(roleId) &&
-          (!item.perusahaan || item.perusahaan.includes(perusahaanId))
-          ? item
-          : null;
-      })
-      .filter(Boolean);
-      
-    return filteredItems.length ? { ...group, items: filteredItems } : null;
-  }).filter(Boolean);
+const filteredMenuGroups = menuConfig.map(group => {
+  const filteredItems = group.items.filter(item =>
+    item.roles.includes(roleId) &&
+    (!item.perusahaan || item.perusahaan.includes(perusahaanId))
+  );
+  return filteredItems.length ? { ...group, items: filteredItems } : null;
+}).filter(Boolean);
   
 
-  
   return (
     <>
-    <div className={`${isMobile ? `fixed top-0 left-0 h-full max-w-[80%] w-full bg-white/10 backdrop-blur-lg border-r border-white/20 text-white shadow-md z-50 pt-5 transition-transform duration-700 ${isOpen ? "translate-x-0" : "-translate-x-full"}` : `flex flex-col h-full left-0 py-2 px-0 bg-gradient-to-b from-green-600 to-green-700 text-white shadow-md transition-all duration-700`}`}>
+    <div className={`${isMobile ? `fixed top-0 left-0 h-full max-w-[80%] w-full bg-white/10 backdrop-blur-lg border-r border-white/20 text-white shadow-md z-50 pt-5 transition-transform duration-700 ${isOpen ? "translate-x-0" : "-translate-x-full"}` : `flex flex-col h-full left-0 py-6 px-0 bg-gradient-to-b from-green-600 to-green-700 text-white shadow-md transition-all duration-700`}`}>
         {/* Tombol Close (Mobile Only) */}
         {/* {isMobile && isOpen && (
           <button onClick={toggleSidebar} className="absolute top-4 right-4 z-50 bg-white hover:bg-green-800 text-green-700 hover:text-white hover:border hover:border-white p-1 px-2.5 rounded-full shadow-lg">
