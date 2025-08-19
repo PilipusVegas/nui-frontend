@@ -55,7 +55,7 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
           {/* Tombol Toggle Sidebar - Timeless, tanpa warna tapi timbul */}
           <FontAwesomeIcon icon={isSidebarOpen ? faBars : faBarsStaggered} className="text-white text-xl p-2 rounded-xl border border-white/30 shadow-md hover:shadow-lg hover:scale-105 cursor-pointer transition-all duration-200 active:scale-95 backdrop-blur-sm" onClick={toggleSidebar} />
           {/* Brand */}
-          <h1 className="text-lg sm:text-xl font-semibold tracking-wide whitespace-nowrap text-white drop-shadow-md">
+          <h1 className="text-sm sm:text-xl font-semibold tracking-wide whitespace-nowrap text-white drop-shadow-md">
             {user.perusahaan}
           </h1>
         </div>
@@ -75,7 +75,7 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
 
           {/* Dropdown Menu */}
           {isProfileOpen && (
-            <div ref={profileMenuRef} className="absolute right-0 top-14 w-56 bg-white text-gray-800 text-sm rounded-xl shadow-xl ring-1 ring-black/10 animate-fade-in-up overflow-hidden">
+            <div ref={profileMenuRef} className="absolute right-0 top-14 w-60 bg-white text-gray-800 text-sm rounded-xl shadow-xl ring-1 ring-black/10 animate-fade-in-up overflow-hidden">
               <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 border-b border-gray-200">
                 <FontAwesomeIcon icon={faUser} className="text-green-600 text-lg" />
                 <div className="flex flex-col">
