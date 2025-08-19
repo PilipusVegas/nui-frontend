@@ -9,7 +9,7 @@ const Home = ({ onLogout }) => {
   const [user, setUser] = useState(null);
   useEffect(() => {
     const userData = getUserFromToken();
-    if (!userData) {
+    if (!userData) {  
       onLogout();
       navigate("/logout");
     } else {
@@ -24,7 +24,7 @@ const Home = ({ onLogout }) => {
 
   if (!user) return <div>Memuat...</div>;
 
-  return [1, 4, 5, 6, 13, 20].includes(user.roleId) ? (
+  return [1, 4, 5, 6, 13, 20, 27, 28].includes(user.roleId) ? (
     <HomeDesktop username={user.username} roleId={user.roleId} handleLogout={onLogout}/>
   ) : (
     <HomeMobile username={user.username} roleId={user.roleId} handleLogout={onLogout}/>
