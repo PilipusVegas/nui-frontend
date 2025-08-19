@@ -14,17 +14,17 @@ const TambahKaryawan = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [currentUser, setCurrentUser] = useState({ nip: "", nik: "", npwp: "", no_rek: "", nama: "", no_rek: "", status_nikah: "", jml_anak: "", id_perusahaan: "", id_role: "", id_shift: "", telp: "", username: "", password: "", status: 1, perusahaan_hrd: [] });
   const [managedCompanies, setManagedCompanies] = useState([]);
-  const [userRole, setUserRole] = useState(null);
+  const [userCompanyId, setUserCompanyId] = useState(null);
 
     useEffect(() => {
-      const user = getUserFromToken();
-      if (user && user.id_role) {
-        setUserRole(String(user.id_role));
-      }
+    const user = getUserFromToken();
+    if (user && user.id_perusahaan) {
+        setUserCompanyId(String(user.id_perusahaan));
+    }
     }, []);
 
   // Kondisi untuk sembunyikan beberapa input jika id_role 4 atau 6
-  const hideFields = userRole === "4" || userRole === "6";
+    const hideFields = userCompanyId === "1" || userCompanyId === "4";
 
   useEffect(() => {
     const fetchData = async () => {

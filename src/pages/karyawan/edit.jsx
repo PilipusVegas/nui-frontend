@@ -8,7 +8,7 @@ import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 const EditKaryawan = () => {
     const navigate = useNavigate();
     const { id } = useParams();
-    const [userRole, setUserRole] = useState(null);
+    const [userCompanyId, setUserCompanyId] = useState(null);
     const [divisiList, setDivisiList] = useState([]);
     const [shiftList, setShiftList] = useState([]);
     const [perusahaanList, setPerusahaanList] = useState([]);
@@ -17,15 +17,15 @@ const EditKaryawan = () => {
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const [managedCompanies, setManagedCompanies] = useState([]);
 
-        useEffect(() => {
-        const user = getUserFromToken();
-        if (user && user.id_role) {
-            setUserRole(String(user.id_role));
-        }
-        }, []);
+    useEffect(() => {
+    const user = getUserFromToken();
+    if (user && user.id_perusahaan) {
+        setUserCompanyId(String(user.id_perusahaan));
+    }
+    }, []);
     
-      // Kondisi untuk sembunyikan beberapa input jika id_role 4 atau 6
-        const hideFields = userRole === "4" || userRole === "6";
+    // Kondisi untuk sembunyikan beberapa input jika id_role 4 atau 6
+    const hideFields = userCompanyId === "1" || userCompanyId === "4";
 
     useEffect(() => {
         const fetchData = async () => {
