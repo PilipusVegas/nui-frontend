@@ -177,7 +177,7 @@ import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
               <p className="text-[10px] tracking-wide text-gray-500 mb-2">
                 {key === "jamMulai"
                   ? "Pilih jam dimulainya lembur sesuai dengan jadwal atau kebutuhan lapangan."
-                  : "Sistem hanya menerima jam bulat. Jika selesai di 07:30, pilih jam di atasnya seperti 08:00."}
+                  : "Sistem hanya menerima jam bulat. Jika selesai di 07:30, pilih jam di dibawahnya seperti 07:00."}
               </p>
               <select value={lemburData[key] || ""} onChange={(e) => setLemburData((d) => ({ ...d, [key]: e.target.value })) } className="w-full p-2 text-sm font-reguler border-2 rounded-md">
                 <option value="">Pilih Jam</option>
