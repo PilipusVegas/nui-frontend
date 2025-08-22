@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash, faUser, faLock } from "@fortawesome/free-solid-svg-icons";
-import Swal from "sweetalert2";
+import toast from "react-hot-toast";
 import { getUserFromToken } from "../utils/jwtHelper";
 
 const Login = ({ onLoginSuccess }) => {
@@ -12,94 +12,39 @@ const Login = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!username.trim()) {
-      await Swal.fire({
-        icon: "warning",
-        title: "Username Kosong",
-        text: "Silakan masukkan username Anda terlebih dahulu.",
-        confirmButtonColor: "#326058",
-        timer: 2200,
-        timerProgressBar: true,
-      });
-      return;
-    }
-  
-    if (!password.trim()) {
-      await Swal.fire({
-        icon: "warning",
-        title: "Password Kosong",
-        text: "Silakan masukkan password Anda terlebih dahulu.",
-        confirmButtonColor: "#326058",
-        timer: 2200,
-        timerProgressBar: true,
-      });
-      return;
-    }
-  
+    setLoading(true);
     try {
       const response = await fetch(`${apiUrl}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
-  
       const data = await response.json();
-  
       if (!response.ok || !data.token) {
-        await Swal.fire({
-          icon: "error",
-          title: "Login Gagal",
-          text: "Username atau password salah. Silakan periksa kembali.",
-          confirmButtonColor: "#d33",
-          timer: 2500,
-          timerProgressBar: true,
-        });
+        toast.error(data?.message || "Username atau password salah.");
+        setLoading(false);
         return;
       }
       localStorage.setItem("token", data.token);
       const user = getUserFromToken();
       if (!user) {
-        await Swal.fire({
-          icon: "error",
-          title: "Token Tidak Valid",
-          text: "Sesi tidak valid. Silakan login ulang.",
-          confirmButtonColor: "#d33",
-          timer: 2500,
-          timerProgressBar: true,
-        });
+        toast.error("Sesi tidak valid. Silakan login ulang.");
+        setLoading(false);
         return;
       }
-  
-      await Swal.fire({
-        icon: "success",
-        title: "Login Berhasil",
-        text: "Selamat datang! Semangat Bekerja!.",
-        confirmButtonColor: "#326058",
-        timer: 3000,
-        timerProgressBar: true,
-      });
+      toast.success("Login berhasil! Selamat Bekerja");
       onLoginSuccess();
       navigate("/home");
-  
     } catch (error) {
       console.error("Login error:", error);
-      await Swal.fire({
-        icon: "error",
-        title: "Kesalahan Sistem",
-        text: "Gagal menghubungi server. Silakan coba beberapa saat lagi.",
-        confirmButtonColor: "#d33",
-      });
-    }
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault(); 
-      handleLogin(e);
+      toast.error("Gagal menghubungi server. Silakan coba beberapa saat lagi.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -110,13 +55,14 @@ const Login = ({ onLoginSuccess }) => {
         <h5 className="text-xl font-bold tracking-wider text-[#326058] text-center mb-6">
           PT Nico Urban Indonesia
         </h5>
+
         <form onSubmit={handleLogin} className="space-y-5">
           {/* Username */}
           <div className="relative">
             <label className="block text-sm font-semibold text-gray-700 mb-1">Username</label>
             <div className="relative">
               <FontAwesomeIcon icon={faUser} className="absolute left-4 top-3.5 text-green-700 text-sm"/>
-              <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} onKeyDown={handleKeyPress} placeholder="Masukkan Username" className="w-full pl-10 pr-4 py-2.5 text-sm rounded-lg border border-green-600 focus:outline-none focus:ring-2 focus:ring-green-700 placeholder:text-gray-500 placeholder:font-semibold transition duration-200 shadow-sm focus:shadow-md" />
+              <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Masukkan Username" required className="w-full pl-10 pr-4 py-2.5 text-sm rounded-lg border border-green-600  focus:outline-none focus:ring-2 focus:ring-green-700  placeholder:text-gray-500 placeholder:font-semibold  transition duration-200 shadow-sm focus:shadow-md"/>
             </div>
           </div>
 
@@ -125,14 +71,14 @@ const Login = ({ onLoginSuccess }) => {
             <label className="block text-sm font-semibold text-gray-700 mb-1">Password</label>
             <div className="relative">
               <FontAwesomeIcon icon={faLock} className="absolute left-4 top-3.5 text-green-700 text-sm"/>
-              <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={handleKeyPress} placeholder="Masukkan Password" className="w-full pl-10 pr-10 py-2.5 text-sm rounded-lg border border-green-600 focus:outline-none focus:ring-2 focus:ring-green-700 placeholder:text-gray-500 placeholder:font-semibold transition duration-200 shadow-sm focus:shadow-md"/>
+              <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Masukkan Password" required className="w-full pl-10 pr-10 py-2.5 text-sm rounded-lg border border-green-600  focus:outline-none focus:ring-2 focus:ring-green-700  placeholder:text-gray-500 placeholder:font-semibold  transition duration-200 shadow-sm focus:shadow-md"/>
               <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} onClick={togglePasswordVisibility} className="absolute right-3 top-3.5 text-green-700 text-md cursor-pointer hover:scale-110 transition-transform"/>
             </div>
           </div>
 
           {/* Submit */}
-          <button type="submit" className="w-full mt-6 py-2.5 font-bold text-white bg-gradient-to-r from-[#326058] to-green-700 rounded-lg shadow-md hover:brightness-110 transition-all duration-300">
-            Login
+          <button type="submit" disabled={loading} className={`w-full mt-6 py-2.5 font-bold text-white rounded-lg shadow-md  transition-all duration-300  ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-gradient-to-r from-[#326058] to-green-700 hover:brightness-110" }`}>
+            {loading ? "Loading..." : "Login"}
           </button>
         </form>
 
