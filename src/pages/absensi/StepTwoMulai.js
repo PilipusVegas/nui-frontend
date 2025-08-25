@@ -1,8 +1,8 @@
     import { useState, useRef, useEffect } from "react";
     import MobileLayout from "../../layouts/mobileLayout";
     import Swal from "sweetalert2";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRotateBack } from "@fortawesome/free-solid-svg-icons";
+    import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+    import { faArrowRotateBack } from "@fortawesome/free-solid-svg-icons";
 
     const StepTwoMulai = ({ handleNextStepData }) => {
       const videoRef = useRef(null);

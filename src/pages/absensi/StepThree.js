@@ -12,27 +12,7 @@ const StepThree = ({ formData = {} }) => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const {
-    userId = "",
-    username = "",
-    id_lokasi = "",
-    lokasi = "",
-    tugas = "",
-    deskripsi = "",
-    jamMulai = null,
-    tanggalMulai = "",
-    koordinatMulai = "",
-    fotoMulai = "",
-    id_absen = "",
-    fotoSelesai = "",
-    tanggalSelesai = "",
-    jamSelesai = "",
-    koordinatSelesai = "",
-    id_shift = "",
-    nama = "",
-    shift = null,
-  } = formData;
-
+  const { userId = "", username = "", id_lokasi = "", lokasi = "", tugas = "", deskripsi = "", jamMulai = null, tanggalMulai = "", koordinatMulai = "", fotoMulai = "", id_absen = "", fotoSelesai = "", tanggalSelesai = "", jamSelesai = "", koordinatSelesai = "", id_shift = "", nama = "", shift = null,} = formData;
   const summaryItems = [
     { label: "Nama", value: username },
     { label: "Shift", value: shift || nama || "-" },
@@ -70,14 +50,12 @@ const StepThree = ({ formData = {} }) => {
         endpoint = "/absen/selesai";
         notificationTitle = "Absen Selesai Berhasil!";
         formDataToSend.append("id_absen", id_absen);
-  
         if (fotoSelesai?.startsWith?.("blob:")) {
           const file = await blobUrlToFile(fotoSelesai, "fotoSelesai.jpg");
           formDataToSend.append("foto", file);
         } else if (fotoSelesai instanceof File) {
           formDataToSend.append("foto", fotoSelesai);
         }
-  
         if (userId) formDataToSend.append("id_user", userId.toString());
   
         const titikSelesai = parseCoordinates(koordinatSelesai);
@@ -115,14 +93,14 @@ const StepThree = ({ formData = {} }) => {
       });
   
       if (!response.ok) {
-        let errorMessage = "Gagal mengirim data";
+        let errorData = { message: "Gagal mengirim data" };
         try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorMessage;
-        } catch (_) {
-          // Kosongkan, fallback ke default message
-        }
-        throw new Error(errorMessage);
+          errorData = await response.json();
+        } catch (_) {}
+      
+        const error = new Error(errorData.message || "Gagal mengirim data");
+        error.code = errorData.code || errorData.reason || null;
+        throw error;
       }
   
       setIsSuccess(true);
@@ -142,13 +120,35 @@ const StepThree = ({ formData = {} }) => {
       });
   
     } catch (error) {
-      console.error("Error:", error);
-      Swal.fire({
-        title: "Gagal Menyimpan Data",
-        text: error.message || "Terjadi kesalahan. Coba lagi.",
-        icon: "error",
-        confirmButtonText: "Coba lagi",
-      });
+      const message = error.message || "Terjadi kesalahan";
+      const code = error.code;
+    
+      if (code === "TASK_NOT_COMPLETED") {
+        Swal.fire({
+          icon: "warning",
+          title: "Belum Bisa Absen Pulang",
+          text: message,
+        });
+      } else if (code === "SUNDAY_BLOCK") {
+        Swal.fire({
+          icon: "info",
+          title: "Absen Tidak Diizinkan",
+          text: message,
+          showCancelButton: true,
+          confirmButtonText: "Ajukan Lembur",
+          cancelButtonText: "Batal",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            navigate("/lembur");
+          }
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Kesalahan",
+          text: message,
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -172,25 +172,17 @@ const StepThree = ({ formData = {} }) => {
       <div className="flex flex-col items-center">
         <form onSubmit={handleSubmit} className="w-full max-w-md bg-white p-3 rounded-xl shadow border space-y-4">
           {fotoMulai && (
-            <img
-              src={fotoMulai instanceof File ? URL.createObjectURL(fotoMulai) : fotoMulai}
-              alt="Foto Mulai"
-              className="w-full aspect-5/5 object-cover rounded-lg border -scale-x-100"
-            />
+            <img src={fotoMulai instanceof File ? URL.createObjectURL(fotoMulai) : fotoMulai} alt="Foto Mulai" className="w-full aspect-5/5 object-cover rounded-lg border -scale-x-100"/>
           )}
           {fotoSelesai && (
-            <img
-              src={fotoSelesai instanceof File ? URL.createObjectURL(fotoSelesai) : fotoSelesai}
-              alt="Foto Selesai"
-              className="w-full aspect-5/5 object-cover rounded-lg border -scale-x-100"
-            />
+            <img src={fotoSelesai instanceof File ? URL.createObjectURL(fotoSelesai) : fotoSelesai} alt="Foto Selesai" className="w-full aspect-5/5 object-cover rounded-lg border -scale-x-100"/>
           )}
 
           <div className="border rounded-lg px-3 py-2">
             <h3 className="text-sm font-semibold text-gray-700 mb-2">Detail Absensi</h3>
             <div className="divide-y text-xs text-gray-800">
               {summaryItems.map((item, idx) => (
-                <div key={idx} className="flex justify-between py-1 my-1">
+                <div key={idx} className="flex justify-between py-2 my-1">
                   <span className="text-gray-600">{item.label}</span>
                   <span className="font-medium text-right max-w-[55%] break-words">{item.value}</span>
                 </div>
@@ -198,15 +190,7 @@ const StepThree = ({ formData = {} }) => {
             </div>
           </div>
 
-          <button
-            type="submit"
-            className={`w-full py-2.5 text-sm font-semibold rounded-md transition-all ${
-              isLoading
-                ? "bg-green-300 text-white cursor-not-allowed"
-                : "bg-green-500 text-white hover:bg-green-600"
-            }`}
-            disabled={isLoading}
-          >
+          <button type="submit" className={`w-full py-2.5 text-sm font-semibold rounded-md transition-all ${isLoading ? "bg-green-300 text-white cursor-not-allowed" : "bg-green-500 text-white hover:bg-green-600"}`} disabled={isLoading}>
             {isLoading ? (
               <span className="flex justify-center items-center">
                 <FontAwesomeIcon icon={faSpinner} className="animate-spin mr-2" />

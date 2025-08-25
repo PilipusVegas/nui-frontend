@@ -67,7 +67,6 @@ const SuratDinas = () => {
       setLoading(false);
     }
   };
-  
     useEffect(() => {
     setStartDate("");
     setEndDate("");
@@ -98,10 +97,8 @@ const SuratDinas = () => {
 
   useEffect(() => {
     if (!startDate || !endDate) return;
-  
     const start = new Date(startDate);
     const end = new Date(endDate);
-  
     const filtered = data.filter((item) => {
       const itemDate = new Date(item.tgl);
       return itemDate >= start && itemDate <= end;
@@ -113,8 +110,6 @@ const SuratDinas = () => {
       )
     );
   }, [startDate, endDate, data]);
-  
-
   
   return (
     <div className="w-full mx-auto">

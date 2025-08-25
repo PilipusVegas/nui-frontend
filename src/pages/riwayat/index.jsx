@@ -185,9 +185,9 @@ const Riwayat = () => {
               </h2>
               <p className="text-sm text-gray-600">
                 {absensi.length > 0
-                  ? absensi[0].role
+                  ? absensi[0].divisi
                   : lembur.length > 0
-                  ? lembur[0].role
+                  ? lembur[0].divisi
                   : "Tidak Ada Role"}
               </p>
               <p className="text-xs text-gray-500 mt-2">
@@ -307,7 +307,6 @@ const Riwayat = () => {
                           </div>
                         </>
                       )}
-
                       <div className="border-t border-green-900 mt-4 "></div>
                     </div>
                   ))}
