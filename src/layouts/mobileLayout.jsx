@@ -1,25 +1,36 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
 const MobileLayout = ({ title, children }) => {
   const navigate = useNavigate();
 
   const handleBack = () => {
-    navigate(-1) ? navigate(-1) : navigate('/home');
+    navigate(-1) ? navigate(-1) : navigate("/home");
   };
 
   return (
-    <div className="h-screen flex flex-col bg-white">
-      <header className="flex items-center justify-between p-3 bg-green-700 text-white shadow-md">
-        <button onClick={handleBack} className="text-white">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-          </svg>
+    <div className="h-screen flex flex-col bg-gradient-to-b from-white to-gray-100">
+      {/* Header */}
+      <header className="flex items-center justify-between px-4 py-3 bg-green-700 text-white shadow-md rounded-b-2xl">
+        <button
+          onClick={handleBack}
+          className="p-2 rounded-full hover:bg-green-600 transition"
+        >
+          <FontAwesomeIcon icon={faArrowLeft} className="h-5 w-5" />
         </button>
-        <h1 className="text-lg font-semibold">{title}</h1>
-        <div className="w-6"></div>
+
+        <h1 className="text-lg sm:text-xl font-semibold tracking-wide">
+          {title}
+        </h1>
+
+        {/* Spacer biar seimbang */}
+        <div className="w-9"></div>
       </header>
-      <main className="flex-grow p-3 overflow-auto">
+
+      {/* Main content */}
+      <main className="flex-grow px-4 py-3 overflow-auto rounded-t-3xl bg-white shadow-inner">
         {children}
       </main>
     </div>
