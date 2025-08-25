@@ -20,7 +20,7 @@ import DetailPersetujuanPresensi from "./pages/persetujuanPresensi/show";
 import DataKaryawan from "./pages/karyawan/";
 import TambahKaryawan from "./pages/karyawan/tambah";
 import EditKaryawan from "./pages/karyawan/edit";
-import ShowKaryawan from "./pages/karyawan/show";
+// import ShowKaryawan from "./pages/karyawan/show";
 import Shift from "./pages/shift/shift";
 import TambahShift from "./pages/shift/tambah";
 import EditShift from "./pages/shift/edit";
