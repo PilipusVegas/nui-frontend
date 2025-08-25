@@ -1,15 +1,15 @@
-import { useState, useEffect } from "react";
 import React from "react";
-import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { getUserFromToken } from "./utils/jwtHelper";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import Menu from "./pages/menu";
 import Login from "./pages/login";
 import Absen from "./pages/absensi";
 import Lembur from "./pages/lembur";
 import Form from "./pages/form";
-import Profile from "./pages/profile";
-import EditProfile from "./pages/profile/edit";
+import Profile from "./pages/user-profile";
+import EditProfile from "./pages/user-profile/edit";
 import HomeRedirect from "./pages/HomeRedirect";
 import Notification from "./pages/notification";
 import LokasiPresensi from "./pages/lokasi/index";
@@ -17,10 +17,10 @@ import TambahLokasi from "./pages/lokasi/tambah";
 import EditLokasi from "./pages/lokasi/edit";
 import PersetujuanPresensi from "./pages/persetujuanPresensi/index";
 import DetailPersetujuanPresensi from "./pages/persetujuanPresensi/show";
-import DataKaryawan from "./pages/karyawan/dataKaryawan";
+import DataKaryawan from "./pages/karyawan/";
 import TambahKaryawan from "./pages/karyawan/tambah";
 import EditKaryawan from "./pages/karyawan/edit";
-// import ShowKaryawan from "./pages/karyawan/show";
+import ShowKaryawan from "./pages/karyawan/show";
 import Shift from "./pages/shift/shift";
 import TambahShift from "./pages/shift/tambah";
 import EditShift from "./pages/shift/edit";
@@ -40,6 +40,8 @@ import EditPerusahaan from "./pages/perusahaan/edit";
 import MenuSidebar from "./layouts/menuSidebar";
 import Header from "./layouts/header";
 import DetailLembur from "./pages/penggajian/detailLembur";
+import ManajemenMenu from "./pages/menu-management";
+import PerangkatAbsensi from "./pages/perangkat-absensi";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(!!getUserFromToken());
@@ -226,6 +228,9 @@ const App = () => {
     { path: "/perusahaan/edit/:id", component: <EditPerusahaan />, roles: ["1","4","6"],layout: SidebarLayout  },
     { path: "/form", component: <Form />, roles: [] },
     { path: "/form-dinas", component: <FormDinas />, roles: [] },
+    { path: "/manajemen-menu", component: <ManajemenMenu />, roles: ["1"], layout: SidebarLayout },
+    { path: "/perangkat-absensi", component: <PerangkatAbsensi />, roles: ["1"], layout: SidebarLayout },
+
   ];
 
   return (
