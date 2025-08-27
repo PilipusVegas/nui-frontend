@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faPlus, faTimes,faEdit, faClock, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faPlus, faTimes, faEdit, faClock, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import { fetchWithJwt } from "../../utils/jwtHelper";
+import {SectionHeader} from "../../components";
 
 const ShiftTable = () => {
   const [shiftList, setShiftList] = useState([]);
@@ -15,15 +16,15 @@ const ShiftTable = () => {
   };
 
   const fetchShift = async () => {
-  try {
-    const res = await fetchWithJwt(`${apiUrl}/shift`);
-    const data = await res.json();
-    const result = Array.isArray(data) ? data : data.data ?? [];
-    setShiftList(result);
-  } catch (err) {
-    console.error("Gagal memuat data shift:", err);
-  }
-};
+    try {
+      const res = await fetchWithJwt(`${apiUrl}/shift`);
+      const data = await res.json();
+      const result = Array.isArray(data) ? data : data.data ?? [];
+      setShiftList(result);
+    } catch (err) {
+      console.error("Gagal memuat data shift:", err);
+    }
+  };
 
   useEffect(() => {
     fetchShift();
@@ -35,17 +36,15 @@ const ShiftTable = () => {
 
   return (
     <div className="w-full mx-auto">
-      <div className="flex items-center justify-between mb-6 w-full">
-        <div className="flex items-center space-x-2 w-full sm:w-auto">
-          <FontAwesomeIcon icon={faArrowLeft} className="cursor-pointer text-white bg-green-600 hover:bg-green-700 rounded-full p-2 sm:p-3 shadow-lg" onClick={handleBackClick} title="Kembali"/>
-          <h1 className="text-xl sm:text-3xl font-bold text-gray-800 pb-1">Kelola Jam Kerja</h1>
-        </div>
-        <button onClick={() => navigate("/shift/tambah")} className="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-1.5 sm:py-2.5 rounded shadow transition flex items-center gap-2">
-          <FontAwesomeIcon icon={faPlus} />
-          <span className="inline sm:hidden text-sm">Tambah</span>
-          <span className="hidden sm:inline">Tambah Shift</span>
-        </button>
-      </div>
+      <SectionHeader title="Jam Kerja / Shift" subtitle="Kelola jadwal shift karyawan dengan mudah." onBack={() => navigate(-1)}
+        actions={
+          <button onClick={() => navigate("/shift/tambah")} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
+            <FontAwesomeIcon icon={faPlus} />
+            <span className="inline sm:hidden text-sm">Tambah</span>
+            <span className="hidden sm:inline">Tambah Shift</span>
+          </button>
+        }
+      />
 
       <div className="overflow-x-auto bg-white shadow-md rounded-lg border border-gray-200">
         <table className="w-full text-sm text-left">
@@ -56,17 +55,17 @@ const ShiftTable = () => {
             </tr>
           </thead>
           <tbody>
-          {shiftList.length === 0 ? (
-            <tr>
-              <td colSpan="3">
-                <div className="flex flex-col items-center justify-center py-10 text-gray-500">
-                  <FontAwesomeIcon icon={faClock} className="text-6xl text-gray-400 mb-4" />
-                  <span className="text-lg font-medium text-center">
-                    Belum ada data shift yang tersedia. Coba tambahkan terlebih dahulu, ya!
-                  </span>
-                </div>
-              </td>
-            </tr>
+            {shiftList.length === 0 ? (
+              <tr>
+                <td colSpan="3">
+                  <div className="flex flex-col items-center justify-center py-10 text-gray-500">
+                    <FontAwesomeIcon icon={faClock} className="text-6xl text-gray-400 mb-4" />
+                    <span className="text-lg font-medium text-center">
+                      Belum ada data shift yang tersedia. Coba tambahkan terlebih dahulu, ya!
+                    </span>
+                  </div>
+                </td>
+              </tr>
             ) : shiftList.map((item) => (
               <React.Fragment key={item.id}>
                 <tr className="border-t hover:bg-gray-50 transition text-sm">
@@ -77,16 +76,12 @@ const ShiftTable = () => {
                   </td>
                   <td className="px-4 py-3 text-left sm:text-center w-full sm:w-auto">
                     <div className="flex flex-col sm:flex-row gap-2 sm:justify-center">
-                      {/* <button onClick={() => navigate(`/shift/edit/${item.id}`)} className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs shadow flex items-center justify-center">
-                        <FontAwesomeIcon icon={faEdit} className="mr-1" />
-                        <span>Edit</span>
-                      </button> */}
                       <button onClick={() => toggleDetail(item.id)} className={`${expandedShiftId === item.id ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"} text-white px-3 py-1 rounded text-xs shadow flex items-center justify-center`}>
                         <FontAwesomeIcon icon={expandedShiftId === item.id ? faEyeSlash : faEye} className="mr-1" />
-                        <span>{expandedShiftId === item.id ? "Tutup" : "Lihat Detail"}</span>
+                        <span>{expandedShiftId === item.id ? "Tutup" : "Detail"}</span>
                       </button>
                     </div>
-                  </td> 
+                  </td>
                 </tr>
                 {/* Detail Baris */}
                 {expandedShiftId === item.id && (

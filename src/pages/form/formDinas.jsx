@@ -9,7 +9,6 @@ const FormDinas = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
   const [loading, setLoading] = useState(false);
-
   const [form, setForm] = useState({ id_user: "", id_role: null,  nama: "", tanggal: "", jadwalTugas: "", jamBerangkat: "", setuju: false, kadiv: "",});
 
   // FETCH PROFIL NAMA

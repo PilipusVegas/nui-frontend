@@ -4,7 +4,7 @@ export const getDefaultPeriod = () => {
     const month = today.getMonth();
     const date = today.getDate();
     let start, end;
-    if (date >= 22) {
+    if (date >= 25) {
       start = new Date(year, month, 22);
       end = new Date(year, month + 1, 21);
     } else {

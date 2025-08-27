@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { faArrowLeft, faSearch, faFolderOpen, faDownload, faEye   } from "@fortawesome/free-solid-svg-icons";
+import { faSearch, faFolderOpen, faDownload, faEye, faSync } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { getDefaultPeriod } from "../../utils/getDefaultPeriod";
+import { SectionHeader } from "../../components";
 
 const DataPenggajian = () => {
   const allowedRoles = [1, 4, 6];
@@ -22,24 +23,24 @@ const DataPenggajian = () => {
   const user = getUserFromToken();
   const roleId = user?.id_role ?? 0;
   const canDownload = allowedRoles.includes(roleId);
-  const handleBackClick = () => { navigate("/home");};
+  const handleBackClick = () => { navigate("/home"); };
   const [companyList, setCompanyList] = useState([]);
   const [selectedCompany, setSelectedCompany] = useState("");
 
   useEffect(() => {
-  if (dataAbsen.length > 0) {
-    const uniqueCompanies = Array.from(
-      new Set(dataAbsen.map(item => item.perusahaan))
-    );
-    setCompanyList(uniqueCompanies);
-  }
-}, [dataAbsen]);
+    if (dataAbsen.length > 0) {
+      const uniqueCompanies = Array.from(
+        new Set(dataAbsen.map(item => item.perusahaan))
+      );
+      setCompanyList(uniqueCompanies);
+    }
+  }, [dataAbsen]);
 
   const fetchPenggajianData = async () => {
     if (!startDate || !endDate) return;
     setLoading(true);
     try {
-      const endpoint = `${apiUrl}/payroll/rekap?startDate=${startDate}&endDate=${endDate}`;
+      const endpoint = `${apiUrl}/penggajian?startDate=${startDate}&endDate=${endDate}`;
       const response = await fetchWithJwt(endpoint);
       if (!response.ok) throw new Error("Gagal mengambil data absensi.");
       const result = await response.json();
@@ -56,16 +57,16 @@ const DataPenggajian = () => {
       setLoading(false);
     }
   };
-  
+
   const filteredAbsenData = dataAbsen
-  .map((item) => ({
-    ...item,
-    nama: typeof item.nama === "string" ? item.nama : "-",
-  }))
-  .filter((item) =>
-    item.nama.toLowerCase().includes(searchName.toLowerCase()) &&
-    (selectedCompany === "" || item.perusahaan === selectedCompany)
-  );
+    .map((item) => ({
+      ...item,
+      nama: typeof item.nama === "string" ? item.nama : "-",
+    }))
+    .filter((item) =>
+      item.nama.toLowerCase().includes(searchName.toLowerCase()) &&
+      (selectedCompany === "" || item.perusahaan === selectedCompany)
+    );
 
   const handleRekapData = async () => {
     if (!filteredAbsenData.length) return;
@@ -87,19 +88,19 @@ const DataPenggajian = () => {
     worksheet.getCell(2, offsetCol).value = judulUtama;
     worksheet.getCell(2, offsetCol).font = { size: 16, bold: true };
     worksheet.getCell(2, offsetCol).alignment = { vertical: "middle", horizontal: "left" };
-    
+
     // Baris 2: Periode
     worksheet.mergeCells(3, offsetCol, 3, offsetCol + totalCols - 1);
     worksheet.getCell(3, offsetCol).value = periodeText;
     worksheet.getCell(3, offsetCol).font = { italic: true, size: 12 };
     worksheet.getCell(3, offsetCol).alignment = { vertical: "middle", horizontal: "left" };
-    
+
     // Baris 3: Total karyawan
     worksheet.mergeCells(4, offsetCol, 4, offsetCol + totalCols - 1);
     worksheet.getCell(4, offsetCol).value = infoJumlahKaryawan;
     worksheet.getCell(4, offsetCol).font = { italic: true, size: 12 };
     worksheet.getCell(4, offsetCol).alignment = { vertical: "middle", horizontal: "left" };
-    
+
     // Baris 4: perusahaan
     worksheet.mergeCells(5, offsetCol, 5, offsetCol + totalCols - 1);
     worksheet.getCell(5, offsetCol).value = perusahaan;
@@ -111,7 +112,7 @@ const DataPenggajian = () => {
     worksheet.getCell(6, offsetCol).value = keterangan;
     worksheet.getCell(6, offsetCol).font = { size: 11, color: { argb: "FF6B7280" }, italic: true };
     worksheet.getCell(6, offsetCol).alignment = { vertical: "middle", horizontal: "left" };
-    
+
     // 🔵 Header
     const headerRow1 = ["Pegawai", "", "Jumlah", "", ""];
     const headerRow2 = ["NIP", "Nama", "Kehadiran", "Keterlambatan", "Lemburan"];
@@ -160,8 +161,8 @@ const DataPenggajian = () => {
       const baseRow = [
         item.nip ?? "-",
         item.nama,
-        item.total_days ?? 0,
-        item.total_late ?? 0,
+        item.total_hari ?? 0,
+        item.total_terlambat ?? 0,
         formatOvertimeJamBulat(item.total_overtime) ?? 0,
       ];
 
@@ -208,7 +209,7 @@ const DataPenggajian = () => {
         }
         colIndex += 4;
       });
-    
+
     });
 
     // Lebar kolom
@@ -222,7 +223,7 @@ const DataPenggajian = () => {
         { width: 6 }, { width: 6 }, { width: 6 }, { width: 6 }
       ]),
     ]);
-  
+
     // Border
     worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
       if (rowNumber < offsetRow) return;
@@ -235,7 +236,7 @@ const DataPenggajian = () => {
         };
       });
     });
-  
+
     // 💾 Simpan file
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], {
@@ -243,7 +244,7 @@ const DataPenggajian = () => {
     });
     saveAs(blob, `Rekap_Penggajian_${formatTanggal(startDate)}_${formatTanggal(endDate)}.xlsx`);
   };
-  
+
   const formatTanggal = (tanggalString) => {
     const bulanSingkat = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
     const tanggal = new Date(tanggalString);
@@ -252,7 +253,6 @@ const DataPenggajian = () => {
     const thn = tanggal.getFullYear();
     return `${tgl}-${bln}-${thn}`;
   };
-  
 
   const formatOvertimeJamBulat = (totalMenit) => {
     const menit = parseInt(totalMenit, 10);
@@ -260,7 +260,7 @@ const DataPenggajian = () => {
     const jam = Math.floor(menit / 60);
     return `${jam.toString().padStart(2, '0')}:00`;
   };
-  
+
 
   useEffect(() => {
     if (!startDate && !endDate) {
@@ -269,7 +269,7 @@ const DataPenggajian = () => {
       setEndDate(end);
     }
   }, []);
-  
+
   useEffect(() => {
     if (startDate && endDate) {
       setIsDateSelected(true);
@@ -283,195 +283,220 @@ const DataPenggajian = () => {
     return date.getDay() === 0; // 0 = Minggu
   };
 
+  const handleSyncPayroll = async () => {
+    setLoading(true);
+    try {
+      const endpoint = `${apiUrl}/penggajian/sinkron`;
+      //post
+      const response = await fetchWithJwt(endpoint, {
+        method: "POST",
+      });
+
+      if (!response.ok) throw new Error("Gagal sinkronisasi data penggajian.");
+
+      // jika API return JSON, kita parse (optional, tergantung API Anda)
+      const result = await response.json();
+      console.log("Sinkronisasi berhasil:", result);
+
+      // 🔄 panggil ulang fetchPenggajianData supaya tabel auto update
+      await fetchPenggajianData();
+
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col justify-start">
-      <div className="flex flex-col gap-4 mb-4">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          {/* Kiri: Tombol Kembali + Judul */}
-          <div className="flex items-center gap-3 flex-wrap shrink-0">
-            <FontAwesomeIcon icon={faArrowLeft} title="Back to Home" onClick={handleBackClick} className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out rounded-full p-3 shadow-lg"/>
-            <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800">
-              Kelola Penggajian Karyawan
-            </h2>
-          </div>
-
-          {/* Kanan: Rentang Tanggal */}
-          {isDateSelected && (
+      <div className="flex flex-col">
+        <SectionHeader title="Kelola Penggajian" subtitle="Pantau, kelola, dan ekspor data penggajian dengan cepat dan akurat." onBack={handleBackClick}
+          actions={isDateSelected && (
             <div className="flex flex-col sm:flex-row sm:items-end lg:items-center gap-2 w-full lg:w-auto">
               <div className="flex flex-col w-full max-w-md">
                 <label className="text-xs font-medium text-gray-600 mb-1">
                   Periode Tanggal: {startDate} s/d {endDate}
                 </label>
                 <div className="flex flex-nowrap gap-2">
-                  <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border border-gray-300 rounded-md px-4 py-2 text-sm w-full"/>
-                  <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="border border-gray-300 rounded-md px-4 py-2 text-sm w-full"/>
+                  <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border border-gray-300 rounded-md px-4 py-2 text-sm w-full" />
+                  <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="border border-gray-300 rounded-md px-4 py-2 text-sm w-full" />
                 </div>
               </div>
 
-              {/* Tombol Unduh Excel untuk Desktop */}
               {canDownload && (
-                <button onClick={handleRekapData} disabled={filteredAbsenData.length === 0 || loading} className={`hidden sm:flex items-center justify-center gap-2 h-10 px-4 sm:mt-5 rounded-md shadow transition whitespace-nowrap ${filteredAbsenData.length === 0 || loading ? "bg-gray-400 text-white cursor-not-allowed" : "bg-green-600 hover:bg-green-700 text-white" }`} title="Unduh Excel">
+                <button onClick={handleRekapData} disabled={filteredAbsenData.length === 0 || loading} className={`hidden sm:flex items-center justify-center gap-2 h-10 px-4 sm:mt-5 rounded-md shadow transition whitespace-nowrap ${filteredAbsenData.length === 0 || loading ? "bg-gray-400 text-white cursor-not-allowed" : "bg-green-600 hover:bg-green-700 text-white"}`} title="Unduh Excel">
                   <FontAwesomeIcon icon={faDownload} />
                   <span className="hidden sm:inline text-sm">Unduh Excel</span>
                 </button>
               )}
             </div>
-          )}
-        </div>
+          )
+          }
+        />
 
         {isDateSelected && (
-        <div className="w-full flex items-center gap-2 ">
-          {/* Search Bar */}
-          <div className="relative flex-1">
-            <input type="text" placeholder="Cari Nama Karyawan..." value={searchName} onChange={(e) => setSearchName(e.target.value)} className="w-full h-10 border border-green-600 rounded-lg pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"/>
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-600">
-              <FontAwesomeIcon icon={faSearch} />
-            </span>
-          </div>
+          <div className="w-full flex items-center gap-2">
+            {/* Search Bar */}
+            <div className="relative flex-1">
+              <input type="text" placeholder="Cari Nama Karyawan..." value={searchName} onChange={(e) => setSearchName(e.target.value)} className="w-full h-10 border border-green-600 rounded-lg pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-green-400" />
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-600">
+                <FontAwesomeIcon icon={faSearch} />
+              </span>
+            </div>
 
-         {/* Filter Perusahaan */}
-          <div className="w-64 mb-5">
-            <label htmlFor="filterPerusahaan" className="block text-xs font-medium text-gray-600 mb-1">
-              Filter Perusahaan
-            </label>
-            <select id="filterPerusahaan" className="w-full border border-green-600 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400" value={selectedCompany} onChange={(e) => setSelectedCompany(e.target.value)}>
-              <option value="">Semua Perusahaan</option>
-              {companyList.map((comp, idx) => (
-                <option key={idx} value={comp}>
-                  {comp}
-                </option>
-              ))}
-            </select>
-          </div>
-          
-          {/* Tombol Unduh Excel - Mobile Only */}
-          {canDownload && (
-            <button onClick={handleRekapData} disabled={filteredAbsenData.length === 0 || loading} className={`flex items-center justify-center h-10 w-10 rounded-md transition sm:hidden ${ filteredAbsenData.length === 0 || loading ? "bg-gray-300 text-white cursor-not-allowed" : "bg-green-600 hover:bg-green-700 text-white" }`} title="Unduh Excel">
-              <FontAwesomeIcon icon={faDownload} />
+            {/* Filter Perusahaan */}
+            <div className="w-64 mb-5">
+              <label htmlFor="filterPerusahaan" className="block text-xs font-medium text-gray-600 mb-1">
+                Filter Perusahaan
+              </label>
+              <select id="filterPerusahaan" className="w-full border border-green-600 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400" value={selectedCompany} onChange={(e) => setSelectedCompany(e.target.value)}>
+                <option value="">Semua Perusahaan</option>
+                {companyList.map((comp, idx) => (
+                  <option key={idx} value={comp}>
+                    {comp}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Tombol Sinkron */}
+            <button onClick={handleSyncPayroll} disabled={loading} className={`flex items-center justify-center gap-2 h-10 px-4 rounded-md shadow text-white transition ${loading ? "bg-green-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"}`}>
+              <FontAwesomeIcon icon={faSync} className={loading ? "animate-spin" : ""}/>
+              <span className="text-sm font-medium">
+                {loading ? "Menyinkronkan..." : "Sinkronkan"}
+              </span>
             </button>
-          )}
-        </div>
+
+            {/* Tombol Unduh Excel - Mobile Only */}
+            {canDownload && (
+              <button onClick={handleRekapData} disabled={filteredAbsenData.length === 0 || loading} className={`flex items-center justify-center h-10 w-10 rounded-md transition sm:hidden ${filteredAbsenData.length === 0 || loading ? "bg-gray-300 text-white cursor-not-allowed" : "bg-green-600 hover:bg-green-700 text-white"}`} title="Unduh Excel">
+                <FontAwesomeIcon icon={faDownload} />
+              </button>
+            )}
+          </div>
         )}
       </div>
 
       {/* Data Table */}
       {isDateSelected && !error && dataAbsen.length > 0 && (
         <div className="w-full overflow-x-auto rounded-lg shadow-md border border-gray-300 bg-white">
-        <div className="min-w-full max-w-[30vw]">
-          <div className="flex w-full">
-          {/* LEFT TABLE: Pegawai + Jumlah Kehadiran */}
-          <div className="flex flex-col border-r bg-white shrink-0" style={{ borderRight: "1px solid #ccc" }}>
-            <table className="border-collapse w-full">
-              <thead>
-                <tr>
-                  <th colSpan={2} className="sticky top-0 z-10 bg-green-600 text-white border border-green-700 px-3 py-1 text-sm text-center min-w-[150px]">Pegawai</th>
-                  <th colSpan={3} className="sticky top-0 z-10 bg-green-600 text-white border border-green-700 px-3 py-1 text-sm text-center min-w-[80px]">Jumlah</th>
-                </tr>
-                <tr>
-                  <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-3 py-1 text-xs text-center min-w-[100px]">NIP</th>
-                  <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-3 py-1 text-xs text-center min-w-[150px]">Nama</th>
-                  <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-1 text-xs text-center min-w-[70px]">Kehadiran</th>
-                  <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-1 text-xs text-center min-w-[70px]">Keterlambatan</th>
-                  <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-1 text-xs text-center min-w-[70px]">Lemburan</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAbsenData.map((item, idx) => (
-                  <tr key={idx} className="hover:bg-gray-200">
-                    <td className="border border-gray-300 px-3 py-1 text-xs text-center break-words">{item.nip}</td>
-                    <td onClick={() => navigate(`/penggajian/${item.id_user}`)} className="relative group border border-gray-300 pl-2 pr-8 py-1 text-xs break-words font-semibold tracking-wider cursor-pointer  hover:bg-gray-200">
-                      {/* Nama dengan efek hover */}
-                      <span className="group-hover:text-green-600 group-hover:underline transition duration-200">
-                        {item.nama}
-                      </span>
-                      {/* Ikon Mata */}
-                      <div onClick={(e) => { e.stopPropagation(); navigate(`/penggajian/${item.id_user}`); }} className="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 group-hover:text-green-600 hidden group-hover:block transition duration-200" >
-                        <FontAwesomeIcon icon={faEye} />
-                      </div>
-                    </td>
-                    <td className="border border-gray-300 px-3 py-1 text-center text-xs">{item.total_days}</td>
-                    <td className="border border-gray-300 px-3 py-1 text-center text-xs">{item.total_late}</td>
-                    <td className="border border-gray-300 px-3 py-1 text-center text-xs">{formatOvertimeJamBulat(item.total_overtime)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <div className="min-w-full max-w-[30vw]">
+            <div className="flex w-full">
+              {/* LEFT TABLE: Pegawai + Jumlah Kehadiran */}
+              <div className="flex flex-col border-r bg-white shrink-0" style={{ borderRight: "1px solid #ccc" }}>
+                <table className="border-collapse w-full">
+                  <thead>
+                    <tr>
+                      <th colSpan={2} className="sticky top-0 z-10 bg-green-600 text-white border border-green-700 px-3 py-1 text-sm text-center min-w-[150px]">Pegawai</th>
+                      <th colSpan={3} className="sticky top-0 z-10 bg-green-600 text-white border border-green-700 px-3 py-1 text-sm text-center min-w-[80px]">Jumlah</th>
+                    </tr>
+                    <tr>
+                      <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-3 py-1 text-xs text-center min-w-[85px]">NIP</th>
+                      <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-3 py-1 text-xs text-center min-w-[150px]">Nama</th>
+                      <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-1 text-xs text-center min-w-[60px]">Hadir</th>
+                      <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-1 text-xs text-center min-w-[60px]">Terlambat</th>
+                      <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-1 text-xs text-center min-w-[60px]">Lembur</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredAbsenData.map((item, idx) => (
+                      <tr key={idx} className="hover:bg-gray-200">
+                        <td className="border border-gray-300 px-3 py-1 text-xs text-center break-words">{item.nip}</td>
+                        <td onClick={() => navigate(`/penggajian/${item.id_user}`)} className="relative group border border-gray-300 pl-2 pr-8 py-1 text-xs break-words font-semibold tracking-wider cursor-pointer  hover:bg-gray-200">
+                          {/* Nama dengan efek hover */}
+                          <span className="group-hover:text-green-600 group-hover:underline transition duration-200">
+                            {item.nama}
+                          </span>
+                          {/* Ikon Mata */}
+                          <div onClick={(e) => { e.stopPropagation(); navigate(`/penggajian/${item.id_user}`); }} className="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 group-hover:text-green-600 hidden group-hover:block transition duration-200" >
+                            <FontAwesomeIcon icon={faEye} />
+                          </div>
+                        </td>
+                        <td className="border border-gray-300 px-3 py-1 text-center text-xs">{item.total_hari || 0}</td>
+                        <td className="border border-gray-300 px-3 py-1 text-center text-xs">{item.total_terlambat || " "}</td>
+                        <td className="border border-gray-300 px-3 py-1 text-center text-xs">{formatOvertimeJamBulat(item.total_overtime || 0)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-          <div className="overflow-x-auto" style={{ flexGrow: 1 }}>
-            <table className="border-collapse w-full min-w-max bg-white">
-              <thead>
-                <tr>
-                  {tanggalArray.map((tanggal) => {
-                    const isMinggu = isSunday(tanggal);
-                    const headerClass = isMinggu ? "bg-red-600 text-white border border-red-800" : "bg-green-600 text-white";
-                    return (
-                      <th key={tanggal} colSpan={4} className={`sticky top-0 z-10 border border-green-800 px-2 py-1 text-center text-sm min-w-[120px] ${headerClass}`}>
-                        {formatTanggal(tanggal)}
-                      </th>
-                    );
-                  })}
-                </tr>
-                <tr>
-                  {tanggalArray.map((tanggal) => {
-                    const isMinggu = isSunday(tanggal);
-                    const headerClass = isMinggu ? "bg-red-600 text-white border border-red-800" : "bg-green-500 text-white";
-                    return (
-                      <React.Fragment key={`inout-${tanggal}`}>
-                        <th className={`sticky top-[20px] z-10 border border-green-600 px-2 py-1 text-xs text-center min-w-[60px] ${headerClass}`}>IN</th>
-                        <th className={`sticky top-[20px] z-10 border border-green-600 px-2 py-1 text-xs text-center min-w-[60px] ${headerClass}`}>LATE</th>
-                        <th className={`sticky top-[20px] z-10 border border-green-600 px-2 py-1 text-xs text-center min-w-[60px] ${headerClass}`}>OUT</th>
-                        <th className={`sticky top-[20px] z-10 border border-green-600 px-2 py-1 text-xs text-center min-w-[60px] ${headerClass}`}>OVERTIME</th>
-                      </React.Fragment>
-                    );
-                  })}
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAbsenData.map((item, idx) => (
-                  <tr key={idx} className="hover:bg-gray-200">
-                    {tanggalArray.map((tanggal) => {
-                      const isMinggu = isSunday(tanggal);
-                      const bgColor = isMinggu ? "bg-red-600 text-white font-bold" : "";
-                      const inTime = item.attendance[tanggal]?.in || "-";
-                      const outTime = item.attendance[tanggal]?.out || "-";
-                      const lateMinutes = item.attendance[tanggal]?.late;
-                      const LateTime = lateMinutes ? lateMinutes : "-";
-                      const isLate = lateMinutes > 0;
-                      const overtimeRaw = item.attendance[tanggal]?.overtime;
-                      const Overtime = overtimeRaw !== null && overtimeRaw !== undefined && overtimeRaw !== "" && overtimeRaw !== "0" && overtimeRaw !== 0 ? formatOvertimeJamBulat(overtimeRaw) : "-";
-                      return (
-                        <React.Fragment key={`time-${tanggal}-${idx}`}>
-                          <td className={`border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px] ${bgColor}`}>
-                            <span className={inTime === "-" ? "text-gray-300" : ""}>
-                              {inTime}
-                            </span>
-                          </td>
-                          <td className={`border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px] ${bgColor} ${isLate ? "bg-red-700 text-white font-semibold" : "text-black"}`}>
-                            <span className={LateTime === "-" ? "text-gray-300" : ""}>
-                              {LateTime}
-                            </span>
-                          </td>
-                          <td className={`border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px] ${bgColor}`}>
-                            <span className={outTime === "-" ? "text-gray-300" : ""}>
-                              {outTime}
-                            </span>
-                          </td>
-                          <td className={`border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px] ${bgColor}`}>
-                            <span className={Overtime === "-" ? "text-gray-300" : ""}>
-                              {Overtime}
-                            </span>
-                          </td>
-                        </React.Fragment>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              <div className="overflow-x-auto" style={{ flexGrow: 1 }}>
+                <table className="border-collapse w-full min-w-max bg-white">
+                  <thead>
+                    <tr>
+                      {tanggalArray.map((tanggal) => {
+                        const isMinggu = isSunday(tanggal);
+                        const headerClass = isMinggu ? "bg-red-600 text-white border border-red-800" : "bg-green-600 text-white";
+                        return (
+                          <th key={tanggal} colSpan={4} className={`sticky top-0 z-10 border border-green-800 px-2 py-1 text-center text-sm min-w-[120px] ${headerClass}`}>
+                            {formatTanggal(tanggal)}
+                          </th>
+                        );
+                      })}
+                    </tr>
+                    <tr>
+                      {tanggalArray.map((tanggal) => {
+                        const isMinggu = isSunday(tanggal);
+                        const headerClass = isMinggu ? "bg-red-600 text-white border border-red-800" : "bg-green-500 text-white";
+                        return (
+                          <React.Fragment key={`inout-${tanggal}`}>
+                            <th className={`sticky top-[20px] z-10 border border-green-600 px-2 py-1 text-xs text-center min-w-[60px] ${headerClass}`}>IN</th>
+                            <th className={`sticky top-[20px] z-10 border border-green-600 px-2 py-1 text-xs text-center min-w-[60px] ${headerClass}`}>LATE</th>
+                            <th className={`sticky top-[20px] z-10 border border-green-600 px-2 py-1 text-xs text-center min-w-[60px] ${headerClass}`}>OUT</th>
+                            <th className={`sticky top-[20px] z-10 border border-green-600 px-2 py-1 text-xs text-center min-w-[60px] ${headerClass}`}>OVERTIME</th>
+                          </React.Fragment>
+                        );
+                      })}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredAbsenData.map((item, idx) => (
+                      <tr key={idx} className="hover:bg-gray-200">
+                        {tanggalArray.map((tanggal) => {
+                          const isMinggu = isSunday(tanggal);
+                          const bgColor = isMinggu ? "bg-red-600 text-white font-bold" : "";
+                          const inTime = item.attendance[tanggal]?.in || "-";
+                          const outTime = item.attendance[tanggal]?.out || "-";
+                          const lateMinutes = item.attendance[tanggal]?.late;
+                          const LateTime = lateMinutes ? lateMinutes : "-";
+                          const isLate = lateMinutes > 0;
+                          const overtimeRaw = item.attendance[tanggal]?.overtime;
+                          const Overtime = overtimeRaw !== null && overtimeRaw !== undefined && overtimeRaw !== "" && overtimeRaw !== "0" && overtimeRaw !== 0 ? formatOvertimeJamBulat(overtimeRaw) : "-";
+                          return (
+                            <React.Fragment key={`time-${tanggal}-${idx}`}>
+                              <td className={`border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px] ${bgColor}`}>
+                                <span className={inTime === "-" ? "text-gray-300" : ""}>
+                                  {inTime}
+                                </span>
+                              </td>
+                              <td className={`border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px] ${bgColor} ${isLate ? "bg-red-700 text-white font-semibold" : "text-black"}`}>
+                                <span className={LateTime === "-" ? "text-gray-300" : ""}>
+                                  {LateTime}
+                                </span>
+                              </td>
+                              <td className={`border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px] ${bgColor}`}>
+                                <span className={outTime === "-" ? "text-gray-300" : ""}>
+                                  {outTime}
+                                </span>
+                              </td>
+                              <td className={`border border-gray-300 px-2 py-1 text-center text-xs min-w-[60px] ${bgColor}`}>
+                                <span className={Overtime === "-" ? "text-gray-300" : ""}>
+                                  {Overtime}
+                                </span>
+                              </td>
+                            </React.Fragment>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-        </div>
-        </div>
         </div>
       )}
 

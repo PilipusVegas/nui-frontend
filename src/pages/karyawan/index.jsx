@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faArrowRight, faEdit, faTrash, faSearch, faPlus, faTriangleExclamation, faEye } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
-import SectionHeader from "../../components/dekstop/SectionHeader";
+import SectionHeader from "../../components/desktop/SectionHeader";
 
 const DataKaryawan = () => {
   const [editable] = useState(() => getUserFromToken());
@@ -22,20 +22,20 @@ const DataKaryawan = () => {
   const handleBackClick = () => navigate("/home");
   const indexOfFirstUser = (currentPage - 1) * itemsPerPage;
 
-const canEditOrDelete = (user) => {
-  // Admin Utama full akses
-  if (editable?.id_role === 1) return true;
+  const canEditOrDelete = (user) => {
+    // Admin Utama full akses
+    if (editable?.id_role === 1) return true;
 
-  // HRD full akses semua perusahaan
-  if (editable?.id_role === 4) return true;
+    // HRD full akses semua perusahaan
+    if (editable?.id_role === 4) return true;
 
-  // HRD khusus (id_role 6) hanya perusahaan 5–9
-  if (editable?.id_role === 6 && [5, 6, 7, 8, 9].includes(user.id_perusahaan)) {
-    return true;
-  }
+    // HRD khusus (id_role 6) hanya perusahaan 5–9
+    if (editable?.id_role === 6 && [5, 6, 7, 8, 9].includes(user.id_perusahaan)) {
+      return true;
+    }
 
-  return false;
-};
+    return false;
+  };
 
 
   const fetchData = async (endpoint) => {
@@ -124,7 +124,7 @@ const canEditOrDelete = (user) => {
       <div className="flex-grow">
         <SectionHeader title="Kelola Karyawan" subtitle="Menampilkan seluruh karyawan dari perusahaan yang Anda kelola" onBack={handleBackClick}
           actions={
-            <button onClick={() => navigate("/karyawan/tambah")} className="bg-green-600 flex items-center justify-center text-white px-3 py-1.5 sm:px-4 sm:py-3 font-semibold sm:font-bold rounded-md hover:bg-green-700 transition whitespace-nowrap text-xs sm:text-sm">
+            <button onClick={() => navigate("/karyawan/tambah")} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
               <FontAwesomeIcon icon={faPlus} className="mr-2 text-sm sm:text-base" />
               <span className="inline sm:hidden pb-0.5">Tambah</span>
               <span className="hidden sm:inline">Tambah Karyawan</span>
@@ -235,11 +235,11 @@ const canEditOrDelete = (user) => {
                     {/* Menu Aksi */}
                     <td className="px-4 py-1.5 text-center border-b border-gray-200">
                       <div className="flex justify-center gap-2">
-                        <button onClick={() => navigate(`/karyawan/edit/${user.id}`)} className={`px-3.5 py-1.5 font-medium rounded text-white text-sm flex items-center justify-center ${canEditOrDelete(user) ? "bg-yellow-500 hover:bg-yellow-600" : "bg-gray-400 cursor-not-allowed"}`}  disabled={!canEditOrDelete(user)} title="Edit">
+                        <button onClick={() => navigate(`/karyawan/edit/${user.id}`)} className={`px-3.5 py-1.5 font-medium rounded text-white text-sm flex items-center justify-center ${canEditOrDelete(user) ? "bg-yellow-500 hover:bg-yellow-600" : "bg-gray-400 cursor-not-allowed"}`} disabled={!canEditOrDelete(user)} title="Edit">
                           <FontAwesomeIcon icon={faEdit} className="mr-1.5" />
                           Edit
                         </button>
-                        <button onClick={() => handleDelete(user.id)} className={`px-3.5 py-1.5 font-medium rounded text-white text-sm flex items-center justify-center ${canEditOrDelete(user) ? "bg-red-600 hover:bg-red-700" : "bg-gray-400 cursor-not-allowed" }`} disabled={!canEditOrDelete(user)} title="Hapus">
+                        <button onClick={() => handleDelete(user.id)} className={`px-3.5 py-1.5 font-medium rounded text-white text-sm flex items-center justify-center ${canEditOrDelete(user) ? "bg-red-600 hover:bg-red-700" : "bg-gray-400 cursor-not-allowed"}`} disabled={!canEditOrDelete(user)} title="Hapus">
                           <FontAwesomeIcon icon={faTrash} className="mr-1.5" />
                           Hapus
                         </button>
@@ -266,69 +266,76 @@ const canEditOrDelete = (user) => {
         <div className="md:hidden">
           {Array.isArray(currentUsers) && currentUsers.length > 0 ? (
             currentUsers.map((user) => (
-              <div key={user.id} className="bg-white border border-gray-200 rounded-lg shadow-sm text-xs text-gray-700 mb-3 overflow-hidden">
-                {/* Section 1: Header (Nama, NIP, Role, Status) */}
-                <div className="px-3 py-2 border-b">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="text-sm font-semibold text-gray-800 capitalize leading-snug">
+              <div key={user.id} className="bg-white border border-gray-200 rounded-xl shadow-sm text-xs text-gray-700 mb-3 overflow-hidden transition-transform hover:scale-[1.02] hover:shadow-md">
+                {/* Header + Info Ringkas (modern & compact) */}
+                <div className="px-4 py-3">
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="flex-1 min-w-0">
+                      {/* Nama */}
+                      <div className="text-sm font-medium text-gray-800 truncate capitalize leading-snug">
                         {user.nama || "Unknown Name"}
                       </div>
-                      <div className="text-[11px] text-gray-500 leading-tight">
-                        NIP:{" "}
-                        <span className={user.nip ? "" : "italic text-gray-400"}>
-                          {user.nip || "N/A"}
+
+                      {/* NIP dan Role */}
+                      <div className="flex flex-wrap gap-2 mt-1 text-[11px] text-gray-500">
+                        <span>
+                          NIP: <span className={user.nip ? "N/A" : "italic text-gray-400"}>{user.nip || "N/A"}</span>
                         </span>
+                        <span>{user.role || "N/A"}</span>
                       </div>
-                      <div className="text-[11px] text-gray-500 leading-tight">
-                        {user.role || "Unknown Role"}
+
+                      {/* Perusahaan & Shift */}
+                      <div className="mt-2 grid grid-cols-2 gap-x-2 text-[11px] text-gray-600">
+                        <div className={user.perusahaan ? "" : "italic text-gray-400"}>{user.perusahaan || "N/A"}</div>
+                        <div className={`text-right ${user.shift ? "" : "italic text-gray-400"}`}>{user.shift || "N/A"}</div>
                       </div>
                     </div>
-                    <div>
-                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${user.status === 1 ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-500"}`}>
+
+                    {/* Status */}
+                    <div className="flex-shrink-0">
+                      <span
+                        className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${user.status === 1 ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-500"
+                          }`}
+                      >
                         {user.status === 1 ? "Aktif" : "Nonaktif"}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Section 2: Info Ringkas */}
-                <div className="px-3 py-2 border-b grid grid-cols-2 gap-x-2">
-                  <div>
-                    <div className="text-[11px] text-gray-400 mb-0.5">Perusahaan</div>
-                    <div className={user.perusahaan ? "" : "italic text-gray-300"}>
-                      {user.perusahaan || "N/A"}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[11px] text-gray-400 mb-0.5">Shift</div>
-                    <div className={user.shift ? "" : "italic text-gray-300"}>
-                      {user.shift || "N/A"}
-                    </div>
-                  </div>
-                </div>
 
-                {/* Section 3: Aksi */}
-                <div className="px-3 py-2 flex justify-end gap-2 bg-gray-50">
-                  <>
-                    <button onClick={() => navigate(`/karyawan/edit/${user.id}`)} title="Edit" className={`text-white text-[11px] px-2 py-0.5 rounded flex items-center justify-center ${[1, 4].includes(editable?.id_role) ? "bg-yellow-400 hover:bg-yellow-500" : "bg-gray-400 cursor-not-allowed"}`} disabled={!([1, 4].includes(editable?.id_role))}>
-                      <FontAwesomeIcon icon={faEdit} className="mr-1" />
-                      Edit
-                    </button>
-                    <button onClick={() => handleDelete(user.id)} title="Hapus" className={`text-white text-[11px] px-2 py-0.5 rounded flex items-center justify-center ${[1, 4].includes(editable?.id_role) ? "bg-red-500 hover:bg-red-600" : "bg-gray-400 cursor-not-allowed"}`} disabled={!([1, 4].includes(editable?.id_role))}>
-                      <FontAwesomeIcon icon={faTrash} className="mr-1" />
-                      Hapus
-                    </button>
-                  </>
+                {/* Section Tombol Aksi (dipisahkan dengan border-top) */}
+                <div className="flex border-t border-gray-200 text-[11px] cursor-pointer select-none">
+                  {/* Hapus */}
+                  <div onClick={() => [1, 4].includes(editable?.id_role) && handleDelete(user.id)} className={`flex-1 py-2 flex items-center justify-center gap-1 text-red-600 hover:bg-red-50 transition-colors ${![1, 4].includes(editable?.id_role) && "text-gray-400 cursor-not-allowed hover:bg-white"}`}>
+                    <FontAwesomeIcon icon={faTrash} />
+                    Hapus
+                  </div>
+
+                  {/* Divider */}
+                  <div className="w-px bg-gray-200"></div>
+
+                  {/* Edit */}
+                  <div onClick={() => [1, 4].includes(editable?.id_role) && navigate(`/karyawan/edit/${user.id}`)} className={`flex-1 py-2 flex items-center justify-center gap-1 text-yellow-600 hover:bg-yellow-50 transition-colors ${![1, 4].includes(editable?.id_role) && "text-gray-400 cursor-not-allowed hover:bg-white"}`}>
+                    <FontAwesomeIcon icon={faEdit} />
+                    Edit
+                  </div>
                 </div>
               </div>
             ))
           ) : (
-            <div className="text-center text-gray-500 mt-10">
+            <div className="text-center text-gray-400 mt-10 italic">
               Tidak ada karyawan ditemukan
             </div>
           )}
         </div>
+
+
+
+
+
+
+
 
         {/* Pagination - Versi Estetik dan Ramping */}
         <div className="relative w-full flex justify-center items-center mt-10 text-gray-700">

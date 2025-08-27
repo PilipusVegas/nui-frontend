@@ -3,6 +3,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faEdit, faExclamationCircle, faPlus, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import { fetchWithJwt } from "../../utils/jwtHelper";
+import { SectionHeader } from "../../components";
+
 
 const KelolaPerusahaan = () => {
   const [perusahaan, setPerusahaan] = useState([]);
@@ -28,25 +30,22 @@ const KelolaPerusahaan = () => {
 
   return (
     <div className="w-full mx-auto">
-      <div className="flex items-center justify-between mb-6 w-full">
-        <div className="flex items-center space-x-2">
-          <FontAwesomeIcon icon={faArrowLeft} className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition rounded-full p-3 shadow-lg" onClick={handleBackClick}/>
-          <h1 className="text-lg sm:text-3xl font-bold text-gray-800 mb-1">Kelola Perusahaan</h1>
-        </div>
-
-        <button onClick={() => navigate("/perusahaan/tambah")} className="bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2 sm:py-3 rounded-md shadow flex items-center gap-2">
-          <FontAwesomeIcon icon={faPlus} />
-          <span className="text-sm block sm:hidden">Tambah</span>
-          <span className="text-sm hidden sm:block">Tambah Perusahaan</span>
-        </button>
-      </div>
+      <SectionHeader title="Kelola Perusahaan" subtitle={`Saat ini terdapat ${perusahaan.length} perusahaan yang terdaftar`} onBack={handleBackClick}
+        actions={
+          <button onClick={() => navigate("/perusahaan/tambah")} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
+            <FontAwesomeIcon icon={faPlus} />
+            <span className="text-sm block sm:hidden">Tambah</span>
+            <span className="text-sm hidden sm:block">Tambah Perusahaan</span>
+          </button>
+        }
+      />
 
       {/* Mode Desktop - Table */}
       <div className="hidden sm:block overflow-x-auto bg-white shadow-md rounded-xl border border-gray-200">
         <table className="w-full text-sm text-left text-gray-700">
           <thead className="bg-green-600 text-white text-sm uppercase">
             <tr>
-              <th className="py-2 px-8 w-16 font-semibold">No.</th>
+              <th className="py-2 px-4 font-semibold text-center">No.</th>
               <th className="py-2 px-4 font-semibold">Nama Perusahaan</th>
               <th className="py-2 px-4 font-semibold">Alamat Perusahaan</th>
               <th className="py-2 px-4 font-semibold text-center w-32">Menu</th>
@@ -65,7 +64,7 @@ const KelolaPerusahaan = () => {
             ) : (
               perusahaan.map((item, index) => (
                 <tr key={item.id} className="border-t hover:bg-gray-50 transition-all duration-150">
-                  <td className="px-8 py-2">{index + 1}</td>
+                  <td className="px-4 py-2 text-center">{index + 1}</td>
                   <td className="px-4 py-2 font-semibold uppercase">{item.nama}</td>
                   <td className="px-4 py-2">{item.alamat}</td>
                   <td className="px-4 py-2 text-center">

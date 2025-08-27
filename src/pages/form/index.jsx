@@ -18,12 +18,7 @@ const ListItem = ({ title, link, description }) => {
     </div>
 
     <div className="pt-6 flex justify-end">
-      <button onClick={(e) => {
-          e.stopPropagation();
-          navigate(link);
-        }}
-        className="px-4 py-2 bg-[#2e4d46] text-white text-sm font-medium rounded-md shadow-md hover:bg-green-700 hover:shadow-lg transition duration-300"
-      >
+      <button onClick={(e) => { e.stopPropagation(); navigate(link);}} className="px-4 py-2 bg-[#2e4d46] text-white text-sm font-medium rounded-md shadow-md hover:bg-green-700 hover:shadow-lg transition duration-300">
         Isi Formulir
       </button>
     </div>

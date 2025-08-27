@@ -4,8 +4,8 @@ import { faEdit, faExclamationTriangle, faPlus } from "@fortawesome/free-solid-s
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { fetchWithJwt } from "../../utils/jwtHelper";
-import SectionHeader from "../../components/dekstop/SectionHeader";
-import Modal from "../../components/dekstop/Modal";
+import SectionHeader from "../../components/desktop/SectionHeader";
+import Modal from "../../components/desktop/Modal";
 
 const ManajemenMenu = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);

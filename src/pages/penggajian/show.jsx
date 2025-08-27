@@ -36,8 +36,8 @@ const DetailPenggajian = () => {
       const result = await response.json();
       setDataUser(result.data);
       setAttendance(result.data.attendance || {});
-      setTotalKehadiran(result.data.total_days + " Hari" || 0);
-      setTotalKeterlambatan(result.data.total_late + " Menit" || "-");
+      setTotalKehadiran(result.data.total_hari + " Hari" || 0);
+      setTotalKeterlambatan(result.data.total_terlambat + " Menit" || "-");
       setTotalLembur(`${Math.floor((result.data.total_overtime || 0) / 60)} Jam`);
       setPeriod(`${startDate} s/d ${endDate}`);
     } catch (error) {
@@ -55,15 +55,15 @@ const DetailPenggajian = () => {
     setError(null);
     try {
       const response = await fetchWithJwt(
-        `${apiUrl}/payroll/rekap/${id_user}?startDate=${startDate}&endDate=${endDate}`
+        `${apiUrl}/penggajian/${id_user}?startDate=${startDate}&endDate=${endDate}`
       );
       if (!response.ok) throw new Error("Gagal mengambil data penggajian.");
       const result = await response.json();
 
       setDataUser(result.data);
       setAttendance(result.data.attendance || {});
-      setTotalKehadiran(result.data.total_days + " Hari" || 0);
-      setTotalKeterlambatan(result.data.total_late + " Menit" || "-");
+      setTotalKehadiran(result.data.total_hari + " Hari" || 0);
+      setTotalKeterlambatan(result.data.total_terlambat + " Menit" || "-");
       setTotalLembur(`${Math.floor((result.data.total_overtime || 0) / 60)} Jam`);
       setPeriod(`${formatTanggalIndonesia(startDate)} s/d ${formatTanggalIndonesia(endDate)}`);
     } catch (error) {
@@ -108,8 +108,8 @@ const DetailPenggajian = () => {
     addInfoRow(["Divisi", dataUser?.role || "-"]);
     addInfoRow(["Perusahaan", dataUser?.perusahaan || "-"]);
     addInfoRow(["Periode", period || "-"]);
-    addInfoRow(["Total Kehadiran", dataUser?.total_days + " Hari" || "0"]);
-    addInfoRow(["Total Keterlambatan", dataUser?.total_late + " Menit" || "0"]);
+    addInfoRow(["Total Kehadiran", dataUser?.total_hari + " Hari" || "0"]);
+    addInfoRow(["Total Keterlambatan", dataUser?.total_terlambat + " Menit" || "0"]);
     addInfoRow([
       "Total Lemburan",
       dataUser?.total_overtime
@@ -194,8 +194,8 @@ const DetailPenggajian = () => {
       const result = await response.json();
       setDataUser(result.data);
       setAttendance(result.data.attendance || {});
-      setTotalKehadiran(result.data.total_days + " Hari" || 0);
-      setTotalKeterlambatan(result.data.total_late + " Menit" || "-");
+      setTotalKehadiran(result.data.total_hari + " Hari" || 0);
+      setTotalKeterlambatan(result.data.total_terlambat + " Menit" || "-");
       setTotalLembur(`${Math.floor((result.data.total_overtime || 0) / 60)} Jam`);
       setPeriod(`${customStartDate} s/d ${customEndDate}`);
     } catch (error) {
@@ -291,7 +291,6 @@ const DetailPenggajian = () => {
             {/* Info User */}
             <div className="text-sm text-gray-700 space-y-2 border-b-2 border-dashed border-green-200 pb-4 mb-4">
               <div><strong className="inline-block w-24">NIP</strong>: {dataUser?.nip || "-"}</div>
-              <div><strong className="inline-block w-24">Tipe</strong>: Karyawan {dataUser?.tipe || "-"}</div>
               <div><strong className="inline-block w-24">Divisi</strong>: {dataUser?.role || "-"}</div>
               <div><strong className="inline-block w-24">Perusahaan</strong>: {dataUser?.perusahaan || "-"}</div>
             </div>

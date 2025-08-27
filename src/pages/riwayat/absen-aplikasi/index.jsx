@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import MobileLayout from "../../layouts/mobileLayout";
+import MobileLayout from "../../../layouts/mobileLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faCalendarCheck, faClock, faExclamationTriangle, faSpinner,} from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
-import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
+import { fetchWithJwt, getUserFromToken } from "../../../utils/jwtHelper";
 
 const Riwayat = () => {
   const [activeTab, setActiveTab] = useState("absensi");

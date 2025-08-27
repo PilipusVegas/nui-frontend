@@ -82,7 +82,7 @@ const EditLokasi = () => {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
-      <div className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-sm border-b">
+      <div className="w-full flex items-center justify-between pb-4 sm:px-6 sm:py-4 bg-white shadow-sm border-b">
         <div className="flex items-center space-x-2">
           <button onClick={handleBack} className="bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded-full">
             <FontAwesomeIcon icon={faArrowLeft} />
@@ -92,7 +92,7 @@ const EditLokasi = () => {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="flex-grow p-10 w-full mx-auto space-y-6">
+      <form onSubmit={handleSubmit} className="flex-grow py-3 sm:p-10 w-full mx-auto space-y-6">
         <div>
           <label className="block mb-1 font-medium text-gray-700">Nama Lokasi</label>
           <p className="text-xs text-gray-500 mb-2">Perbarui nama lokasi jika diperlukan.</p>

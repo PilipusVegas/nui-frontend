@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faEdit, faTrash, faArrowLeft, faArrowRight, faSearch, faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt } from "../../utils/jwtHelper";
+import { SectionHeader } from "../../components/";
 
 const DataLokasi = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -106,52 +107,73 @@ const DataLokasi = () => {
       </tr>
     ));
 
-    const renderBodyMobile = (items) =>
+  const renderBodyMobile = (items) =>
     items.map((lokasi) => (
-      <div key={lokasi.id} className="bg-white border border-gray-200 rounded-xl shadow-sm mb-3 p-4 space-y-2">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-800 truncate">
-            {lokasi.nama}
-          </h3>
+      <div
+        key={lokasi.id}
+        className="bg-white border border-gray-200 rounded-xl shadow-sm mb-3 overflow-hidden"
+      >
+        {/* Isi utama */}
+        <div className="p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-gray-800 truncate">
+              {lokasi.nama}
+            </h3>
+          </div>
+
+          <div className="flex items-center text-sm text-gray-600 gap-2">
+            <FontAwesomeIcon icon={faMapMarkerAlt} className="text-green-500" />
+            <span className="truncate">{lokasi.koordinat}</span>
+          </div>
         </div>
-        <div className="flex items-center text-sm text-gray-600 gap-2">
-          <FontAwesomeIcon icon={faMapMarkerAlt} className="text-green-500" />
-          <span className="truncate">{lokasi.koordinat}</span>
-        </div>
+
+        {/* Divider */}
         <hr className="border-gray-200" />
-        <div className="flex justify-end gap-2 pt-1">
-          <button onClick={() => navigate(`/lokasi-presensi/edit/${lokasi.id}`)} className="flex items-center gap-1 bg-yellow-400 hover:bg-yellow-500 text-white rounded px-3 py-1 text-xs shadow-sm">
-            <FontAwesomeIcon icon={faEdit} />
-            <span>Edit</span>
-          </button>
-          <button onClick={() => handleDelete(lokasi.id)} className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white rounded px-3 py-1 text-xs shadow-sm">
+
+        {/* Action list */}
+        <div className="flex divide-x divide-gray-200">
+          <div
+            onClick={() => handleDelete(lokasi.id)}
+            className="w-1/2 flex items-center justify-center gap-2 py-2 text-red-500 hover:bg-red-50 text-sm font-medium cursor-pointer transition"
+          >
             <FontAwesomeIcon icon={faTrash} />
             <span>Hapus</span>
-          </button>
+          </div>
+          <div
+            onClick={() => navigate(`/lokasi-presensi/edit/${lokasi.id}`)}
+            className="w-1/2 flex items-center justify-center gap-2 py-2 text-yellow-600 hover:bg-yellow-50 text-sm font-medium cursor-pointer transition"
+          >
+            <FontAwesomeIcon icon={faEdit} />
+            <span>Edit</span>
+          </div>
         </div>
       </div>
     ));
-  
 
   return (
     <div className="flex flex-col bg-white">
-      <div className="flex items-center justify-between mb-6 flex-wrap">
-        <div className="flex items-center space-x-2 w-full sm:w-auto mb-4 sm:mb-0">
-          <FontAwesomeIcon icon={faArrowLeft} className="cursor-pointer text-white bg-green-600 hover:bg-green-700 p-3 rounded-full shadow-lg" onClick={() => navigate("/home")} />
-          <h1 className="text-xl sm:text-3xl font-bold text-gray-800">Kelola Lokasi Presensi</h1>
-        </div>
-        <div className="flex items-center space-x-4 w-full sm:w-auto">
-          <div className="relative w-full sm:w-64">
-            <input type="text" placeholder="Cari Lokasi..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow focus:ring-2 focus:ring-green-100 text-sm" />
-            <FontAwesomeIcon icon={faSearch} className="absolute top-2.5 right-3 text-gray-500" />
-          </div>
-          <button onClick={() => navigate("/lokasi-presensi/tambah")} className="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 flex items-center gap-2">
+      {/* Header dengan Back + Title + Subtitle + Button */}
+      <SectionHeader title="Kelola Lokasi Presensi" subtitle={`Kelola ${lokasiData.length} lokasi presensi karyawan lapangan.`} onBack={() => navigate("/home")}
+        actions={
+          <button onClick={() => navigate("/lokasi-presensi/tambah")} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
             <FontAwesomeIcon icon={faPlus} />
             <span className="inline sm:hidden">Tambah</span>
             <span className="hidden sm:inline">Tambah Lokasi</span>
           </button>
+        }
+      />
+
+      {/* Search Box Full Width di bawah header */}
+      <div className="mb-4 w-full">
+        <div className="relative w-full">
+          {/* Icon di kiri */}
+          <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">
+            <FontAwesomeIcon icon={faSearch} />
+          </span>
+          <input type="text" placeholder="Cari Lokasi..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-300 focus:border-green-300 text-sm transition"/>
         </div>
       </div>
+
 
       <div className="rounded-lg shadow-md overflow-hidden hidden md:block">
         <table className="table-auto w-full border-collapse text-sm">
@@ -170,11 +192,10 @@ const DataLokasi = () => {
       <div className="flex justify-between items-center mt-6">
         {/* Tombol kiri */}
         <button onClick={() => setCurrentPageDesktop((prev) => Math.max(prev - 1, 1))} disabled={currentPageDesktop === 1}
-          className={`rounded-full p-2 px-3 transition-all duration-200 ${
-            currentPageDesktop === 1
-              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-              : "bg-green-500 text-white hover:bg-green-600"
-          }`}
+          className={`rounded-full p-2 px-3 transition-all duration-200 ${currentPageDesktop === 1
+            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+            : "bg-green-500 text-white hover:bg-green-600"
+            }`}
         >
           <FontAwesomeIcon icon={faArrowLeft} />
         </button>
@@ -189,11 +210,10 @@ const DataLokasi = () => {
           disabled={
             currentPageDesktop === Math.ceil(filteredLokasiData.length / itemsPerPageDesktop)
           }
-          className={`rounded-full p-2 px-3 transition-all duration-200 ${
-            currentPageDesktop === Math.ceil(filteredLokasiData.length / itemsPerPageDesktop)
-              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-              : "bg-green-500 text-white hover:bg-green-600"
-          }`}
+          className={`rounded-full p-2 px-3 transition-all duration-200 ${currentPageDesktop === Math.ceil(filteredLokasiData.length / itemsPerPageDesktop)
+            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+            : "bg-green-500 text-white hover:bg-green-600"
+            }`}
         >
           <FontAwesomeIcon icon={faArrowRight} />
         </button>
