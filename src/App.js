@@ -1,8 +1,8 @@
 import React from "react";
+import Swal from "sweetalert2";
 import { useState, useEffect } from "react";
 import { getUserFromToken } from "./utils/jwtHelper";
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
-import Swal from "sweetalert2";
 import Menu from "./pages/menu";
 import Login from "./pages/login";
 import Absen from "./pages/absensi";
@@ -12,10 +12,10 @@ import Profile from "./pages/user-profile";
 import EditProfile from "./pages/user-profile/edit";
 import HomeRedirect from "./pages/HomeRedirect";
 import Notification from "./pages/notification";
-import LokasiPresensi from "./pages/lokasi/index";
+import LokasiPresensi from "./pages/lokasi";
 import TambahLokasi from "./pages/lokasi/tambah";
 import EditLokasi from "./pages/lokasi/edit";
-import PersetujuanPresensi from "./pages/persetujuanPresensi/index";
+import PersetujuanPresensi from "./pages/persetujuanPresensi";
 import DetailPersetujuanPresensi from "./pages/persetujuanPresensi/show";
 import DataKaryawan from "./pages/karyawan/";
 import TambahKaryawan from "./pages/karyawan/tambah";
@@ -24,16 +24,18 @@ import EditKaryawan from "./pages/karyawan/edit";
 import Shift from "./pages/shift/shift";
 import TambahShift from "./pages/shift/tambah";
 import EditShift from "./pages/shift/edit";
-import PersetujuanLembur from "./pages/persetujuanLembur/index";
+import PersetujuanLembur from "./pages/persetujuanLembur";
+import RiwayatLembur from "./pages/riwayat-lembur";
 import DataPenggajian from "./pages/penggajian";
 import DetailPenggajian from "./pages/penggajian/show";
-import RiwayatPenggajian from "./pages/riwayatPenggajian/index";
-import RiwayatKehadiran from "./pages/riwayat/index";
+import RiwayatPenggajian from "./pages/riwayatPenggajian";
+import RiwayatAbsensiAplikasi from "./pages/riwayat/absen-aplikasi";
+import RiwayatFace from "./pages/riwayat/absen-face";
 import SuratDinas from "./pages/form/dataSuratDinas";
 import FormDinas from "./pages/form/formDinas";
 import DetailSuratDinas from "./pages/form/detailSuratDinas";
-import Divisi from "./pages/divisi/index";
-import AbsenKantor from "./pages/kelolaPresensi/index";
+import Divisi from "./pages/divisi";
+import AbsenKantor from "./pages/kelolaPresensi";
 import KelolaPerusahaan from "./pages/perusahaan";
 import TambahPerusahaan from "./pages/perusahaan/tambah";
 import EditPerusahaan from "./pages/perusahaan/edit";
@@ -150,7 +152,7 @@ const App = () => {
           <div className="flex flex-1 overflow-hidden bg-green-900 gap-3 pt-2">
             {/* Sidebar - Desktop */}
             {!isMobile && isSidebarDesktopOpen && (
-              <div className="w-64 bg-white rounded-2xl shadow-lg border border-green-400 overflow-hidden">
+              <div className="min-w-64 bg-white rounded-2xl shadow-lg border border-green-400 overflow-hidden">
                 <div className="h-full overflow-y-auto scrollbar-green">
                   <MenuSidebar handleLogout={handleLogout} perusahaanId={user?.id_perusahaan || ""} roleId={user?.id_role || ""} isOpen={isSidebarDesktopOpen} toggleSidebar={toggleSidebar} isMobile={false}/>
                 </div>
@@ -193,8 +195,9 @@ const App = () => {
   
   const routes = [
     // MOBILE
-    {  path: "/notification",  component: <Notification />,  roles: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"]},
-    { path: "/riwayat-absensi", component: <RiwayatKehadiran />, roles: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
+    { path: "/notification",  component: <Notification />,  roles: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"]},
+    { path: "/riwayat-absensi", component: <RiwayatAbsensiAplikasi />, roles: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
+    { path: "/riwayat-face", component: <RiwayatFace />, roles: [] },
     { path: "/profile", component: <Profile />, roles: ["1","2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
     { path: "profile/edit/:id", component: <EditProfile />, roles: ["1","2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
     { path: "/menu", component: <Menu />, roles: ["1","2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
@@ -205,6 +208,7 @@ const App = () => {
     { path: "/persetujuan-presensi", component: <PersetujuanPresensi />, roles: ["1", "4", "5", "6","13", "20"], allowedCompanies: ["1","4"], layout: SidebarLayout },
     { path: "/persetujuan-presensi/:id_user", component: <DetailPersetujuanPresensi />, roles: ["1", "4", "5", "6", "13", "20"], allowedCompanies: ["1","4"], layout: SidebarLayout },
     { path: "/persetujuan-lembur", component: <PersetujuanLembur />, roles: ["1", "4", "5", "6", "20"],  allowedCompanies: ["1","4"],  layout: SidebarLayout },
+    { path: "/riwayat-lembur", component: <RiwayatLembur />, roles: ["1", "4", "5", "6", "20"],  allowedCompanies: ["1","4"],  layout: SidebarLayout },
     { path: "/lokasi-presensi", component: <LokasiPresensi />, roles: ["1", "5"], layout: SidebarLayout },
     { path: "/lokasi-presensi/edit/:id", component: <EditLokasi />, roles: ["1", "5"], layout: SidebarLayout },
     { path: "/lokasi-presensi/tambah", component: <TambahLokasi />, roles: ["1", "5"], layout: SidebarLayout },
@@ -230,7 +234,6 @@ const App = () => {
     { path: "/form-dinas", component: <FormDinas />, roles: [] },
     { path: "/manajemen-menu", component: <ManajemenMenu />, roles: ["1"], layout: SidebarLayout },
     { path: "/perangkat-absensi", component: <PerangkatAbsensi />, roles: ["1"], layout: SidebarLayout },
-
   ];
 
   return (
