@@ -40,9 +40,8 @@ export const menuConfig = [
         sectionTitle: "Pengajuan & Persetujuan",
         items: [
             { label: "Dinas Keluar Kantor", icon: faPenFancy, path: "/surat-dinas", roles: [1,4,5,6] },
-            { label: "Persetujuan Lembur", icon: faCheckCircle, path: "/persetujuan-lembur", roles: [1,4,5,6,20], perusahaan: [1,4] },
+            { label: "Pengajuan Lembur", icon: faCheckCircle, path: "/persetujuan-lembur", roles: [1,4,5,6,20], perusahaan: [1,4] },
             { label: "Riwayat Lembur", icon: faClockRotateLeft, path: "/riwayat-lembur", roles: [1,4,5,6,20], perusahaan: [1,4] },
-
         ],
     },
 
