@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { getUserFromToken } from "../utils/jwtHelper";
-import DashboardCard from "../components/DashboardCard";
+import DashboardCard from "../components/desktop/DashboardCard";
 import cardInfo from "../data/cardInfo";
 import { cardConfig } from "../data/menuConfig";
 

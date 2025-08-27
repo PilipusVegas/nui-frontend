@@ -6,13 +6,16 @@ import { faArrowRight, faAngleDown, } from "@fortawesome/free-solid-svg-icons";
 import { menuConfig } from "../data/menuConfig";
 
 const IconButton = ({ icon, label, onClick, isActive }) => (
-  <button onClick={onClick} aria-label={label} className={`flex items-center w-full px-3 py-2.5 my-1 rounded-lg text-sm font-medium tracking-wide ${isActive ? "bg-green-800/90 text-white shadow-inner font-semibold" : "text-white/90 hover:bg-white/10"} transition-colors duration-300 overflow-hidden `}>
+  <button onClick={onClick} aria-label={label} className={`flex items-center w-full px-3 py-2.5 my-0.5 rounded-lg text-sm font-medium tracking-wide ${isActive ? "bg-green-800/90 text-white shadow-inner font-semibold" : "text-white/90 hover:bg-white/10"}  transition-colors duration-300 overflow-hidden `}>
     <div className="flex items-center gap-3 transition-transform duration-200 hover:translate-x-2">
-      <FontAwesomeIcon icon={icon} className={`text-xl ${isActive ? "text-white" : "text-white/90"}`} />
+      <div className="w-6 h-6 flex items-center justify-center">
+        <FontAwesomeIcon icon={icon} className={`${isActive ? "text-white" : "text-white/90" } text-xl`}/>
+      </div>
       <span className="truncate">{label}</span>
     </div>
   </button>
 );
+
 
 const MenuSidebar = ({ handleLogout, perusahaanId, roleId, isOpen, toggleSidebar, isMobile }) => {
   const navigate = useNavigate();
@@ -53,18 +56,18 @@ const MenuSidebar = ({ handleLogout, perusahaanId, roleId, isOpen, toggleSidebar
           {filteredMenuGroups.map((group, groupIndex) => (
             <div key={groupIndex} className="gap-4 mb-4">
 
-           {/* Section Title */}
-            {group.sectionTitle && (
-              <div className="mb-3 select-none">
-                <div className="flex items-center">
-                  {/* Accent bar hijau gradient */}
-                  <div className="w-1 h-4 bg-gradient-to-b from-green-400 via-green-300 to-white/60 rounded-xl mr-2 shadow-sm"></div>
-                  <p className="text-xs text-white/95 tracking-widest font-bold uppercase drop-shadow-sm">
-                    {group.sectionTitle}
-                  </p>
+              {/* Section Title */}
+              {group.sectionTitle && (
+                <div className="mb-3 select-none">
+                  <div className="flex items-center">
+                    {/* Accent bar hijau gradient */}
+                    <div className="w-1 h-4 bg-gradient-to-b from-green-400 via-green-300 to-white/60 rounded-xl mr-2 shadow-sm"></div>
+                    <p className="text-xs text-white/95 tracking-widest font-bold uppercase drop-shadow-sm">
+                      {group.sectionTitle}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
               {group.items.map((menu, index) => {
                 const isActive = location.pathname === menu.path;
@@ -80,7 +83,9 @@ const MenuSidebar = ({ handleLogout, perusahaanId, roleId, isOpen, toggleSidebar
                         {/* Menu Induk */}
                         <button onClick={() => setOpenSubmenu(isSubmenuOpen ? null : submenuKey)} className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white/10 transition-all duration-300">
                           <div className="flex items-center gap-2">
-                            <FontAwesomeIcon icon={menu.icon} className="text-xl text-white/90" />
+                            <div className="w-6 h-6 flex items-center justify-center">
+                              <FontAwesomeIcon icon={menu.icon} className="text-xl text-white/90" />
+                            </div>
                             <span className="text-sm font-bold text-white transition-transform duration-200 hover:translate-x-2">
                               {menu.label}
                             </span>

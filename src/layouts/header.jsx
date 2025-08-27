@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars, faUser, faSignOutAlt, faBarsStaggered, faPowerOff } from "@fortawesome/free-solid-svg-icons";
+import { faBars, faUser, faBarsStaggered, faPowerOff } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { getUserFromToken } from "../utils/jwtHelper";
@@ -35,7 +35,6 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
     });
   };
 
-
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
@@ -53,25 +52,13 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
         {/* Sidebar & Brand */}
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Tombol Toggle Sidebar */}
-          <FontAwesomeIcon
-            icon={isSidebarOpen ? faBars : faBarsStaggered}
-            className="text-white text-lg sm:text-xl p-2 rounded-2xl border border-white/20 shadow-md 
-               hover:shadow-lg hover:scale-105 cursor-pointer transition-all duration-200 
-               active:scale-95 backdrop-blur-sm bg-white/5"
-            onClick={toggleSidebar}
-          />
+          <FontAwesomeIcon icon={isSidebarOpen ? faBarsStaggered : faBars} className="text-white text-lg sm:text-xl p-2 rounded-2xl border border-white/20 shadow-md  hover:shadow-lg hover:scale-105 cursor-pointer transition-all duration-200  active:scale-95 backdrop-blur-sm bg-white/5" onClick={toggleSidebar}/>
 
           {/* Brand */}
-          <h1
-            className="max-w-[150px] sm:max-w-[250px] md:max-w-none truncate 
-               text-base sm:text-lg md:text-xl font-semibold tracking-wide 
-               text-white/90 drop-shadow-sm hover:text-white transition-colors duration-200"
-          >
+          <h1 className="text-xs sm:text-lg md:text-xl font-semibold tracking-wide text-white/90 drop-shadow-sm hover:text-white transition-colors duration-200">
             {user.perusahaan}
           </h1>
         </div>
-
-
         <div className="relative flex items-center gap-2.5">
           {/* Info User */}
           <div className="hidden sm:flex flex-col items-end text-sm text-white leading-tight">
