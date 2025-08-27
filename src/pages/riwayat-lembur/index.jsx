@@ -107,27 +107,28 @@ const RiwayatLembur = () => {
                         return (
                             <div key={userGroup.user} className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden transition hover:shadow-lg">
                                 {/* Header User */}
-                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 px-4 py-3.5 border-b border-green-200 bg-gradient-to-l from-green-500 to-white">
+                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3  px-4 py-3.5 border-b border-green-200  bg-gradient-to-r from-green-50 via-white to-green-50">
                                     <div className="flex flex-wrap items-center gap-2 text-sm">
                                         <span className="font-semibold text-green-700 capitalize tracking-wider">{userGroup.user}</span>
                                         <span className="text-gray-400">|</span>
                                         {countData > 0 && (
-                                            <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-xs font-medium border border-gray-200">
-                                                Total : {countData}
+                                            <span className="bg-gray-50 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold border border-gray-200 shadow-sm">
+                                                Total: {countData}
                                             </span>
                                         )}
 
                                         {countApproved > 0 && (
-                                            <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-md text-xs font-medium border border-green-200">
+                                            <span className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-semibold border border-green-200 shadow-sm">
                                                 Disetujui: {countApproved}
                                             </span>
                                         )}
 
                                         {countRejected > 0 && (
-                                            <span className="bg-red-100 text-red-600 px-2 py-0.5 rounded-md text-xs font-medium border border-red-200">
+                                            <span className="bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-semibold border border-red-200 shadow-sm">
                                                 Ditolak: {countRejected}
                                             </span>
                                         )}
+
                                     </div>
 
                                     <button onClick={() => toggleUserExpand(userGroup.user)} className="flex items-center gap-2 px-4 py-1.5 rounded-lg border border-green-200 bg-green-50 text-green-700 text-xs font-semibold hover:bg-green-100 transition-all">
