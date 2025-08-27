@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faCalendarAlt, faDownload } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faCalendarAlt, faClock, faDownload, faExclamationTriangle, faUserCheck } from "@fortawesome/free-solid-svg-icons";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { getDefaultPeriod } from "../../utils/getDefaultPeriod";
@@ -90,7 +90,7 @@ const DetailPenggajian = () => {
           bottom: { style: "thin" },
           right: { style: "thin" },
         };
-        cell.alignment = { horizontal: "left" }; // rata kiri
+        cell.alignment = { horizontal: "left" };
         if (style.font) cell.font = style.font;
       });
     };
@@ -295,23 +295,23 @@ const DetailPenggajian = () => {
               <div><strong className="inline-block w-24">Perusahaan</strong>: {dataUser?.perusahaan || "-"}</div>
             </div>
 
-            {/* Statistik */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 text-center">
+            {/* Statistik - Horizontal Summary Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {[
-                { heading: "Total", label: "Kehadiran", value: totalKehadiran || 0 },
-                { heading: "Total", label: "Lemburan", value: totalLembur || 0, highlight: true, link: `/penggajian/detail-lembur/${id_user}`},
-                { heading: "Total", label: "Keterlambatan", value: totalKeterlambatan || 0 },
+                { label: "Kehadiran", value: totalKehadiran || 0, color: "green", icon: faUserCheck },
+                { label: "Lemburan", value: totalLembur || 0, color: "yellow", icon: faClock },
+                { label: "Keterlambatan", value: totalKeterlambatan || 0, color: "red", icon: faExclamationTriangle },
               ].map((item, index) => (
-                <div key={index} className={` bg-green-50 border border-green-200 rounded-lg px-2 py-2 sm:py-4 shadow-sm ${item.highlight ? 'cursor-pointer transition-all duration-300 hover:bg-green-100 hover:shadow-lg' : ''}`} onClick={() => item.link && (window.location.href = item.link)}>
-                  <p className="text-[10px] sm:text-xs text-green-800 font-medium mb-0.5 tracking-tight">
-                    {item.heading}
-                  </p>
-                  <p className={`text-xs sm:text-lg font-bold tracking-wide ${item.highlight ? 'text-green-700' : 'text-green-700'}`}>
-                    {item.value}
-                  </p>
-                  <p className="text-[10px] sm:text-xs text-green-800 font-medium mt-0.5 tracking-tight">
-                    {item.label}
-                  </p>
+                <div key={index} className="flex items-center bg-white rounded-xl shadow-md border border-gray-100 p-4 hover:shadow-lg transition-all duration-200">
+                  <div className={`w-12 h-12 flex items-center justify-center rounded-full text-${item.color}-600 shadow-sm bg-${item.color}-100`}>
+                    <FontAwesomeIcon icon={item.icon} className="text-lg" />
+                  </div>
+                  <div className="ml-4 flex flex-col">
+                    <span className="text-xs text-gray-500 font-medium">{item.label}</span>
+                    <span className={`text-xl font-bold text-${item.color}-700`}>
+                      {item.value}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
