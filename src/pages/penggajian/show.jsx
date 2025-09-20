@@ -344,7 +344,11 @@ const DetailPenggajian = () => {
                       </td>
 
                       <td className="px-4 py-0.5">{record?.out ? formatTime(record.out) : "-"}</td>
-                      <td className="px-4 py-0.5">{record?.overtime ? formatOvertimeJamBulat(record.overtime) : "-"}</td>
+                      <td className="px-4 py-0.5">
+                        {record?.overtime ?
+                          (record.overtime < 10 ? `0${record.overtime}:00` : `${record.overtime}:00`) : '-'
+                        }
+                      </td>
 
                     </tr>
                   );

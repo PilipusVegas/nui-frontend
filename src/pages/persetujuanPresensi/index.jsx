@@ -64,7 +64,6 @@ const DataAbsensi = () => {
     const searchTerm = searchName.toLowerCase();
     const nama = absen.nama?.toLowerCase() || "";    // gunakan 'nama' sesuai data
     const role = absen.role?.toLowerCase() || "";
-
     return nama.includes(searchTerm) || role.includes(searchTerm);
   });
 
