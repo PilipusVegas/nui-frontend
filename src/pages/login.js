@@ -77,7 +77,7 @@ const Login = ({ onLoginSuccess }) => {
           </div>
 
           {/* Submit */}
-          <button type="submit" disabled={loading} className={`w-full mt-6 py-2.5 font-bold text-white rounded-lg shadow-md  transition-all duration-300  ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-gradient-to-r from-[#326058] to-green-700 hover:brightness-110" }`}>
+          <button type="submit" disabled={loading} className={`w-full mt-6 py-2.5 font-bold text-white rounded-lg shadow-md transition-all duration-300  ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-gradient-to-r from-[#326058] to-green-700 hover:brightness-110" }`}>
             {loading ? "Loading..." : "Login"}
           </button>
         </form>

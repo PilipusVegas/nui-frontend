@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faArrowRight, faEdit, faTrash, faSearch, faPlus, faTriangleExclamation, faEye } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import SectionHeader from "../../components/desktop/SectionHeader";
+import { LoadingSpinner, EmptyState, ErrorState } from "../../components/";
 
 const DataKaryawan = () => {
   const [editable] = useState(() => getUserFromToken());
@@ -33,7 +34,6 @@ const DataKaryawan = () => {
     if (editable?.id_role === 6 && [5, 6, 7, 8, 9].includes(user.id_perusahaan)) {
       return true;
     }
-
     return false;
   };
 
@@ -52,21 +52,24 @@ const DataKaryawan = () => {
     }
   };
 
+  const fetchKaryawan = async () => {
+    try {
+      setIsLoading(true);
+      setErrorMessage("");
+      const users = await fetchData("/profil");
+      const filteredUsers = editable?.id_role === 1
+        ? users
+        : users.filter((user) => user.id_role !== 4);
+      setUsers(filteredUsers);
+    } catch (err) {
+      setErrorMessage(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        const users = await fetchData("/profil");
-        const filteredUsers = editable?.id_role === 1
-          ? users
-          : users.filter((user) => user.id_role !== 4);
-        setUsers(filteredUsers);
-      } catch (err) {
-        setErrorMessage(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchAll();
+    fetchKaryawan();
   }, [apiUrl, editable?.id_role]);
 
   const filteredUsers = users.filter((user) => {
@@ -134,15 +137,10 @@ const DataKaryawan = () => {
 
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 sm:gap-4 mb-4">
           <div className="order-2 sm:order-1 relative w-full sm:flex-1">
-            {/* Icon Search */}
             <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-green-400 text-sm pointer-events-none font-extrabold">
               <FontAwesomeIcon icon={faSearch} className="font-extrabold" />
             </span>
-
-            {/* Input */}
-            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Cari karyawan berdasarkan nama, role, atau perusahaan..." aria-label="Search Karyawan"
-              className="pl-10 pr-4 py-2.5 w-full rounded-lg border border-gray-300 text-gray-700 text-sm sm:text-sm placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
-            />
+            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Cari karyawan berdasarkan nama, role, atau perusahaan..." aria-label="Search Karyawan" className="pl-10 pr-4 py-2.5 w-full rounded-lg border border-gray-300 text-gray-700 text-sm sm:text-sm placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200" />
           </div>
 
           <div className="order-1 sm:order-2 grid grid-cols-2 gap-2 sm:gap-3 w-full sm:max-w-sm">
@@ -174,167 +172,181 @@ const DataKaryawan = () => {
           </div>
         </div>
 
-        <div className="relative hidden md:block">
-          <table className="min-w-full table-auto bg-white border-collapse shadow-md rounded-lg">
-            <thead>
-              <tr className="bg-green-600 text-white py-2 text-sm px-4">
-                {["No.", "NIP", "Nama Karyawan", "Shift", "Status", "Menu"].map(
-                  (header, index) => (
-                    <th key={index} className={`px-4 py-2 font-semibold text-center ${index === 0 ? "first:rounded-tl-lg " : "last:rounded-tr-lg"}`}>
-                      {header}
-                    </th>
-                  )
-                )}
-              </tr>
-            </thead>
-            <tbody className="text-gray-800 text-sm">
-              {Array.isArray(currentUsers) && currentUsers.length > 0 ? (
-                currentUsers.map((user, index) => (
-                  <tr key={user.id} className="hover:bg-gray-50 transition duration-150">
-                    {/* No */}
-                    <td className="px-4 py-1.5 text-center border-b border-gray-200">
-                      {indexOfFirstUser + index + 1}
-                    </td>
-
-                    {/* NIP */}
-                    <td className="px-4 py-1.5 text-center border-b border-gray-200">
-                      <span className={user.nip ? "" : "text-gray-400 italic text-xs"}>
-                        {user.nip || "N/A"}
-                      </span>
-                    </td>
-
-                    {/* Nama + Role + Perusahaan */}
-                    <td className="px-4 py-1.5 border-b border-gray-200 tracking-wide cursor-pointer group" onClick={() => navigate(`/karyawan/show/${user.id}`)}>
-                      <div className="flex items-center space-x-2">
-                        <span className="font-semibold text-sm capitalize transition-all duration-200 group-hover:underline group-hover:underline-offset-4 group-hover:text-green-600 group-hover:decoration-green-600">
-                          {user.nama || "Unknown Name"}
-                        </span>
-                        <span className="px-2 rounded-full text-[10px] font-medium bg-green-100 text-green-600 border border-green-500">
-                          {user.role || "N/A"}
-                        </span>
-                        <FontAwesomeIcon icon={faEye} className="text-green-600 text-sm opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-                      </div>
-                      <div className="text-xs text-gray-500 font-medium mt-0.5">
-                        {user.perusahaan || "N/A"}
-                      </div>
-                    </td>
-
-                    <td className="px-4 py-1.5 text-center border-b border-gray-200">
-                      <span className={user.shift ? "" : "text-gray-400 italic text-xs"}>
-                        {user.shift || "N/A"}
-                      </span>
-                    </td>
-
-                    {/* Status */}
-                    <td className="px-4 py-1.5 text-center border-b border-gray-200">
-                      <span className={`px-3 py-0.5 text-xs font-semibold rounded-full ${user.status === 1 ? "bg-emerald-500 text-white" : "bg-gray-500 text-white"}`}>
-                        {user.status === 1 ? "Aktif" : "Nonaktif"}
-                      </span>
-                    </td>
-
-                    {/* Menu Aksi */}
-                    <td className="px-4 py-1.5 text-center border-b border-gray-200">
-                      <div className="flex justify-center gap-2">
-                        <button onClick={() => navigate(`/karyawan/edit/${user.id}`)} className={`px-3.5 py-1.5 font-medium rounded text-white text-sm flex items-center justify-center ${canEditOrDelete(user) ? "bg-yellow-500 hover:bg-yellow-600" : "bg-gray-400 cursor-not-allowed"}`} disabled={!canEditOrDelete(user)} title="Edit">
-                          <FontAwesomeIcon icon={faEdit} className="mr-1.5" />
-                          Edit
-                        </button>
-                        <button onClick={() => handleDelete(user.id)} className={`px-3.5 py-1.5 font-medium rounded text-white text-sm flex items-center justify-center ${canEditOrDelete(user) ? "bg-red-600 hover:bg-red-700" : "bg-gray-400 cursor-not-allowed"}`} disabled={!canEditOrDelete(user)} title="Hapus">
-                          <FontAwesomeIcon icon={faTrash} className="mr-1.5" />
-                          Hapus
-                        </button>
-                      </div>
-                    </td>
+        {/* Kondisi Utama */}
+        {isLoading ? (
+          // Loading
+          <div className="flex justify-center py-20">
+            <LoadingSpinner size="lg" />
+          </div>
+        ) : errorMessage ? (
+          // Error State
+          <ErrorState message={"Terjadi kesalahan saat memuat data karyawan."} onRetry={fetchKaryawan} retryText="Coba Muat Ulang" />
+        ) : users.length === 0 ? (
+          // Empty State
+          <EmptyState title="Belum Ada Data Karyawan" description="Tambahkan karyawan baru atau cek kembali filter pencarian." actionLabel="Tambah Karyawan" onAction={() => navigate("/karyawan/tambah")} />
+        ) : (
+          // === Tabel & Konten Asli ===
+          <>
+            <div className="relative hidden md:block">
+              {/* Spinner area tabel bila hanya aksi (misal delete) */}
+              {loadingAction && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/60 z-10">
+                  <LoadingSpinner size="lg" />
+                </div>
+              )}
+              <table className="min-w-full table-auto bg-white border-collapse shadow-md rounded-lg">
+                <thead>
+                  <tr className="bg-green-600 text-white py-2 text-sm px-4">
+                    {["No.", "NIP", "Nama Karyawan", "Shift", "Status", "Menu"].map(
+                      (header, index) => (
+                        <th key={index} className={`px-4 py-2 font-semibold text-center ${index === 0 ? "first:rounded-tl-lg " : "last:rounded-tr-lg"}`}>
+                          {header}
+                        </th>
+                      )
+                    )}
                   </tr>
+                </thead>
+                <tbody className="text-gray-800 text-sm">
+                  {Array.isArray(currentUsers) && currentUsers.length > 0 ? (
+                    currentUsers.map((user, index) => (
+                      <tr key={user.id} className="hover:bg-gray-50 transition duration-150">
+                        {/* No */}
+                        <td className="px-4 py-1.5 text-center border-b border-gray-200">
+                          {indexOfFirstUser + index + 1}
+                        </td>
+
+                        {/* NIP */}
+                        <td className="px-4 py-1.5 text-center border-b border-gray-200">
+                          <span className={user.nip ? "" : "text-gray-400 italic text-xs"}>
+                            {user.nip || "N/A"}
+                          </span>
+                        </td>
+
+                        {/* Nama + Role + Perusahaan */}
+                        <td className="px-4 py-1.5 border-b border-gray-200 tracking-wide cursor-pointer group" onClick={() => navigate(`/karyawan/show/${user.id}`)}>
+                          <div className="flex items-center space-x-2">
+                            <span className="font-semibold text-sm capitalize transition-all duration-200 group-hover:underline group-hover:underline-offset-4 group-hover:text-green-600 group-hover:decoration-green-600">
+                              {user.nama || "Unknown Name"}
+                            </span>
+                            <span className="px-2 rounded-full text-[10px] font-medium bg-green-100 text-green-600 border border-green-500">
+                              {user.role || "N/A"}
+                            </span>
+                            <FontAwesomeIcon icon={faEye} className="text-green-600 text-sm opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+                          </div>
+                          <div className="text-xs text-gray-500 font-medium mt-0.5">
+                            {user.perusahaan || "N/A"}
+                          </div>
+                        </td>
+
+                        <td className="px-4 py-1.5 text-center border-b border-gray-200">
+                          <span className={user.shift ? "" : "text-gray-400 italic text-xs"}>
+                            {user.shift || "N/A"}
+                          </span>
+                        </td>
+
+                        {/* Status */}
+                        <td className="px-4 py-1.5 text-center border-b border-gray-200">
+                          <span className={`px-3 py-0.5 text-xs font-semibold rounded-full ${user.status === 1 ? "bg-emerald-500 text-white" : "bg-gray-500 text-white"}`}>
+                            {user.status === 1 ? "Aktif" : "Nonaktif"}
+                          </span>
+                        </td>
+
+                        {/* Menu Aksi */}
+                        <td className="px-4 py-1.5 text-center border-b border-gray-200">
+                          <div className="flex justify-center gap-2">
+                            <button onClick={() => navigate(`/karyawan/edit/${user.id}`)} className={`px-3.5 py-1.5 font-medium rounded text-white text-sm flex items-center justify-center ${canEditOrDelete(user) ? "bg-yellow-500 hover:bg-yellow-600" : "bg-gray-400 cursor-not-allowed"}`} disabled={!canEditOrDelete(user)} title="Edit">
+                              <FontAwesomeIcon icon={faEdit} className="mr-1.5" />
+                              Edit
+                            </button>
+                            <button onClick={() => handleDelete(user.id)} className={`px-3.5 py-1.5 font-medium rounded text-white text-sm flex items-center justify-center ${canEditOrDelete(user) ? "bg-red-600 hover:bg-red-700" : "bg-gray-400 cursor-not-allowed"}`} disabled={!canEditOrDelete(user)} title="Hapus">
+                              <FontAwesomeIcon icon={faTrash} className="mr-1.5" />
+                              Hapus
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="7" className="py-10 px-4 text-center text-gray-500 border-b border-gray-200">
+                        <div className="flex flex-col items-center justify-center">
+                          <FontAwesomeIcon icon={faTriangleExclamation} className="text-6xl text-gray-400 mb-3" />
+                          <p className="text-base font-medium text-gray-600">
+                            Oops! Data karyawan gagal dimuat. Coba cek koneksi kamu dulu, ya
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Versi mobile tetap sama */}
+            <div className="md:hidden">
+              {Array.isArray(currentUsers) && currentUsers.length > 0 ? (
+                currentUsers.map((user) => (
+                  <div key={user.id} className="bg-white border border-gray-200 rounded-xl shadow-sm text-xs text-gray-700 mb-3 overflow-hidden transition-transform hover:scale-[1.02] hover:shadow-md">
+                    {/* Header + Info Ringkas (modern & compact) */}
+                    <div className="px-4 py-3">
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="flex-1 min-w-0">
+                          {/* Nama */}
+                          <div className="text-sm font-medium text-gray-800 truncate capitalize leading-snug">
+                            {user.nama || "Unknown Name"}
+                          </div>
+
+                          {/* NIP dan Role */}
+                          <div className="flex flex-wrap gap-2 mt-1 text-[11px] text-gray-500">
+                            <span>
+                              NIP: <span className={user.nip ? "N/A" : "italic text-gray-400"}>{user.nip || "N/A"}</span>
+                            </span>
+                            <span>{user.role || "N/A"}</span>
+                          </div>
+
+                          {/* Perusahaan & Shift */}
+                          <div className="mt-2 grid grid-cols-2 gap-x-2 text-[11px] text-gray-600">
+                            <div className={user.perusahaan ? "" : "italic text-gray-400"}>{user.perusahaan || "N/A"}</div>
+                            <div className={`text-right ${user.shift ? "" : "italic text-gray-400"}`}>{user.shift || "N/A"}</div>
+                          </div>
+                        </div>
+
+                        {/* Status */}
+                        <div className="flex-shrink-0">
+                          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${user.status === 1 ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-500" }`}>
+                            {user.status === 1 ? "Aktif" : "Nonaktif"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Section Tombol Aksi (dipisahkan dengan border-top) */}
+                    <div className="flex border-t border-gray-200 text-[11px] cursor-pointer select-none">
+                      {/* Hapus */}
+                      <div onClick={() => [1, 4].includes(editable?.id_role) && handleDelete(user.id)} className={`flex-1 py-2 flex items-center justify-center gap-1 text-red-600 hover:bg-red-50 transition-colors ${![1, 4].includes(editable?.id_role) && "text-gray-400 cursor-not-allowed hover:bg-white"}`}>
+                        <FontAwesomeIcon icon={faTrash} />
+                        Hapus
+                      </div>
+
+                      {/* Divider */}
+                      <div className="w-px bg-gray-200"></div>
+
+                      {/* Edit */}
+                      <div onClick={() => [1, 4].includes(editable?.id_role) && navigate(`/karyawan/edit/${user.id}`)} className={`flex-1 py-2 flex items-center justify-center gap-1 text-yellow-600 hover:bg-yellow-50 transition-colors ${![1, 4].includes(editable?.id_role) && "text-gray-400 cursor-not-allowed hover:bg-white"}`}>
+                        <FontAwesomeIcon icon={faEdit} />
+                        Edit
+                      </div>
+                    </div>
+                  </div>
                 ))
               ) : (
-                <tr>
-                  <td colSpan="7" className="py-10 px-4 text-center text-gray-500 border-b border-gray-200">
-                    <div className="flex flex-col items-center justify-center">
-                      <FontAwesomeIcon icon={faTriangleExclamation} className="text-6xl text-gray-400 mb-3" />
-                      <p className="text-base font-medium text-gray-600">
-                        Oops! Data karyawan gagal dimuat. Coba cek koneksi kamu dulu, ya
-                      </p>
-                    </div>
-                  </td>
-                </tr>
+                <div className="text-center text-gray-400 mt-10 italic">
+                  Tidak ada karyawan ditemukan
+                </div>
               )}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="md:hidden">
-          {Array.isArray(currentUsers) && currentUsers.length > 0 ? (
-            currentUsers.map((user) => (
-              <div key={user.id} className="bg-white border border-gray-200 rounded-xl shadow-sm text-xs text-gray-700 mb-3 overflow-hidden transition-transform hover:scale-[1.02] hover:shadow-md">
-                {/* Header + Info Ringkas (modern & compact) */}
-                <div className="px-4 py-3">
-                  <div className="flex justify-between items-start gap-2">
-                    <div className="flex-1 min-w-0">
-                      {/* Nama */}
-                      <div className="text-sm font-medium text-gray-800 truncate capitalize leading-snug">
-                        {user.nama || "Unknown Name"}
-                      </div>
-
-                      {/* NIP dan Role */}
-                      <div className="flex flex-wrap gap-2 mt-1 text-[11px] text-gray-500">
-                        <span>
-                          NIP: <span className={user.nip ? "N/A" : "italic text-gray-400"}>{user.nip || "N/A"}</span>
-                        </span>
-                        <span>{user.role || "N/A"}</span>
-                      </div>
-
-                      {/* Perusahaan & Shift */}
-                      <div className="mt-2 grid grid-cols-2 gap-x-2 text-[11px] text-gray-600">
-                        <div className={user.perusahaan ? "" : "italic text-gray-400"}>{user.perusahaan || "N/A"}</div>
-                        <div className={`text-right ${user.shift ? "" : "italic text-gray-400"}`}>{user.shift || "N/A"}</div>
-                      </div>
-                    </div>
-
-                    {/* Status */}
-                    <div className="flex-shrink-0">
-                      <span
-                        className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${user.status === 1 ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-500"
-                          }`}
-                      >
-                        {user.status === 1 ? "Aktif" : "Nonaktif"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-
-                {/* Section Tombol Aksi (dipisahkan dengan border-top) */}
-                <div className="flex border-t border-gray-200 text-[11px] cursor-pointer select-none">
-                  {/* Hapus */}
-                  <div onClick={() => [1, 4].includes(editable?.id_role) && handleDelete(user.id)} className={`flex-1 py-2 flex items-center justify-center gap-1 text-red-600 hover:bg-red-50 transition-colors ${![1, 4].includes(editable?.id_role) && "text-gray-400 cursor-not-allowed hover:bg-white"}`}>
-                    <FontAwesomeIcon icon={faTrash} />
-                    Hapus
-                  </div>
-
-                  {/* Divider */}
-                  <div className="w-px bg-gray-200"></div>
-
-                  {/* Edit */}
-                  <div onClick={() => [1, 4].includes(editable?.id_role) && navigate(`/karyawan/edit/${user.id}`)} className={`flex-1 py-2 flex items-center justify-center gap-1 text-yellow-600 hover:bg-yellow-50 transition-colors ${![1, 4].includes(editable?.id_role) && "text-gray-400 cursor-not-allowed hover:bg-white"}`}>
-                    <FontAwesomeIcon icon={faEdit} />
-                    Edit
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="text-center text-gray-400 mt-10 italic">
-              Tidak ada karyawan ditemukan
             </div>
-          )}
-        </div>
-
-
-
-
-
-
+          </>
+        )}
 
 
         {/* Pagination - Versi Estetik dan Ramping */}

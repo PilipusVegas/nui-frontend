@@ -309,6 +309,12 @@ const DataPenggajian = () => {
     }
   };
 
+  const getNamaHari = (tanggal) => {
+    const hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+    return hari[new Date(tanggal).getDay()];
+  };
+
+
   return (
     <div className="flex flex-col justify-start">
       <div className="flex flex-col">
@@ -363,7 +369,7 @@ const DataPenggajian = () => {
 
             {/* Tombol Sinkron */}
             <button onClick={handleSyncPayroll} disabled={loading} className={`flex items-center justify-center gap-2 h-10 px-4 rounded-md shadow text-white transition ${loading ? "bg-green-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"}`}>
-              <FontAwesomeIcon icon={faSync} className={loading ? "animate-spin" : ""}/>
+              <FontAwesomeIcon icon={faSync} className={loading ? "animate-spin" : ""} />
               <span className="text-sm font-medium">
                 {loading ? "Menyinkronkan..." : "Sinkronkan"}
               </span>
@@ -389,8 +395,8 @@ const DataPenggajian = () => {
                 <table className="border-collapse w-full">
                   <thead>
                     <tr>
-                      <th colSpan={2} className="sticky top-0 z-10 bg-green-600 text-white border border-green-700 px-3 py-1 text-sm text-center min-w-[150px]">Pegawai</th>
-                      <th colSpan={3} className="sticky top-0 z-10 bg-green-600 text-white border border-green-700 px-3 py-1 text-sm text-center min-w-[80px]">Jumlah</th>
+                      <th colSpan={2} className="sticky top-0 z-10 bg-green-600 text-white border border-green-700 px-3 py-2.5 text-sm text-center min-w-[150px]">Pegawai</th>
+                      <th colSpan={3} className="sticky top-0 z-10 bg-green-600 text-white border border-green-700 px-3 py-2.5 text-sm text-center min-w-[80px]">Jumlah</th>
                     </tr>
                     <tr>
                       <th className="sticky top-[20px] z-10 bg-green-500 text-white border border-green-600 px-3 py-1 text-xs text-center min-w-[85px]">NIP</th>
@@ -426,32 +432,49 @@ const DataPenggajian = () => {
               <div className="overflow-x-auto" style={{ flexGrow: 1 }}>
                 <table className="border-collapse w-full min-w-max bg-white">
                   <thead>
+                    {/* Baris Tanggal */}
                     <tr>
                       {tanggalArray.map((tanggal) => {
                         const isMinggu = isSunday(tanggal);
                         const headerClass = isMinggu ? "bg-red-600 text-white border border-red-800" : "bg-green-600 text-white";
                         return (
-                          <th key={tanggal} colSpan={4} className={`sticky top-0 z-10 border border-green-800 px-2 py-1 text-center text-sm min-w-[120px] ${headerClass}`}>
+                          <th key={tanggal} colSpan={4} className={`sticky top-0 z-10 border border-green-800 px-2 py-1 text-center text-xs min-w-[120px] ${headerClass}`}>
                             {formatTanggal(tanggal)}
                           </th>
                         );
                       })}
                     </tr>
+
+                    {/* 🔵 BARIS NAMA HARI BARU */}
+                    <tr>
+                      {tanggalArray.map((tanggal) => {
+                        const isMinggu = isSunday(tanggal);
+                        const headerClass = isMinggu ? "bg-red-600 text-white border border-red-700" : "bg-green-600 text-white";
+                        return (
+                          <th key={`hari-${tanggal}`} colSpan={4} className={`sticky top-[20px] z-10 border border-green-600 px-2 py-0.5 text-xs text-center min-w-[120px] ${headerClass}`}>
+                            {getNamaHari(tanggal)}
+                          </th>
+                        );
+                      })}
+                    </tr>
+
+                    {/* Baris IN / LATE / OUT / OVERTIME */}
                     <tr>
                       {tanggalArray.map((tanggal) => {
                         const isMinggu = isSunday(tanggal);
                         const headerClass = isMinggu ? "bg-red-600 text-white border border-red-800" : "bg-green-500 text-white";
                         return (
                           <React.Fragment key={`inout-${tanggal}`}>
-                            <th className={`sticky top-[20px] z-10 border border-green-600 px-2 py-1 text-xs text-center min-w-[60px] ${headerClass}`}>IN</th>
-                            <th className={`sticky top-[20px] z-10 border border-green-600 px-2 py-1 text-xs text-center min-w-[60px] ${headerClass}`}>LATE</th>
-                            <th className={`sticky top-[20px] z-10 border border-green-600 px-2 py-1 text-xs text-center min-w-[60px] ${headerClass}`}>OUT</th>
-                            <th className={`sticky top-[20px] z-10 border border-green-600 px-2 py-1 text-xs text-center min-w-[60px] ${headerClass}`}>OVERTIME</th>
+                            <th className={`sticky top-[40px] z-10 border border-green-600 px-2 py-0.5 text-xs text-center min-w-[60px] ${headerClass}`}>IN</th>
+                            <th className={`sticky top-[40px] z-10 border border-green-600 px-2 py-0.5 text-xs text-center min-w-[60px] ${headerClass}`}>LATE</th>
+                            <th className={`sticky top-[40px] z-10 border border-green-600 px-2 py-0.5 text-xs text-center min-w-[60px] ${headerClass}`}>OUT</th>
+                            <th className={`sticky top-[40px] z-10 border border-green-600 px-2 py-0.5 text-xs text-center min-w-[60px] ${headerClass}`}>OVERTIME</th>
                           </React.Fragment>
                         );
                       })}
                     </tr>
                   </thead>
+
                   <tbody>
                     {filteredAbsenData.map((item, idx) => (
                       <tr key={idx} className="hover:bg-gray-200">

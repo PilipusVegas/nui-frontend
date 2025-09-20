@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import SectionHeader from "../../components/desktop/SectionHeader";
+import { LoadingSpinner, ErrorState, } from "../../components/";
 
 const DataAbsensi = () => {
   const navigate = useNavigate();
@@ -11,7 +12,6 @@ const DataAbsensi = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchName, setSearchName] = useState("");
-  const [searchDivisi, setSearchDivisi] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -57,16 +57,17 @@ const DataAbsensi = () => {
   }, []);
 
   const handleDetailClick = (id) => {
-    navigate(`/persetujuan-presensi/${id}`);
+    navigate(`/persetujuan-absensi/${id}`);
   };
 
   const filteredAbsenData = absenData.filter((absen) => {
     const searchTerm = searchName.toLowerCase();
-    return (
-      absen.nama_user.toLowerCase().includes(searchTerm) ||
-      absen.role.toLowerCase().includes(searchTerm)
-    );
+    const nama = absen.nama?.toLowerCase() || "";    // gunakan 'nama' sesuai data
+    const role = absen.role?.toLowerCase() || "";
+
+    return nama.includes(searchTerm) || role.includes(searchTerm);
   });
+
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -78,7 +79,7 @@ const DataAbsensi = () => {
       <SectionHeader title="Persetujuan Presensi Lapangan" subtitle="Monitoring kehadiran karyawan lapangan secara real-time setiap hari." onBack={handleBackClick}
         actions={
           <div className="relative w-full md:w-96">
-            <input type="text" placeholder="Cari nama dan divisi..." value={searchName} onChange={(e) => setSearchName(e.target.value)} className="border border-gray-300 rounded-lg p-2 pl-10 pr-4 w-full focus:outline-none focus:ring-2 focus:ring-green-600 text-sm sm:text-base"/>
+            <input type="text" placeholder="Cari nama dan divisi..." value={searchName} onChange={(e) => setSearchName(e.target.value)} className="border border-gray-300 rounded-lg p-2 pl-10 pr-4 w-full focus:outline-none focus:ring-2 focus:ring-green-600 text-sm sm:text-base" />
             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
               <FontAwesomeIcon icon={faSearch} />
             </span>
@@ -106,7 +107,7 @@ const DataAbsensi = () => {
                 <tr key={absen.id_user} className="border-t hover:bg-gray-50 transition-colors duration-150">
                   <td className="text-center px-4 py-0.5 text-sm">{indexOfFirstItem + index + 1}</td>
                   <td className="px-4 py-0.5 tracking-wide text-left">
-                    <div className="font-semibold text-xs">{absen.nama_user || "Unknown User"}</div>
+                    <div className="font-semibold text-xs">{absen.nama || "Unknown User"}</div>
                     <div className="text-xs text-gray-500">{absen.role || "Unknown Role"}</div>
                   </td>
                   <td className="text-center px-4 py-0.5 text-sm">{absen.total_absen} Hari</td>

@@ -3,17 +3,46 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Swal from "sweetalert2";
-import { faCalendarCheck, faClock, faBell, faHistory, faThList, faHome, faUser, faSignOutAlt, faQuestionCircle, faMapMarkerAlt, faArrowRight, faPenFancy, faPeopleGroup, faPowerOff, faSign, faSignOut, } from "@fortawesome/free-solid-svg-icons";
+import { faCalendarCheck, faBell, faHistory, faThList, faHome, faUser, faSignOutAlt, faQuestionCircle, faMapMarkerAlt, faArrowRight, faPenFancy, faPeopleGroup, faClipboardList, faClockFour, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../utils/jwtHelper";
+import { FooterMainBar, LoadingSpinner, EmptyState, ErrorState } from "../components";
 
 const HomeMobile = ({ handleLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [attendanceData, setAttendanceData] = useState([]);
+  const [reminder, setReminder] = useState(null);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const user = getUserFromToken();
   const [loading, setLoading] = useState(true);
   const [hasNewNotifications, setHasNewNotifications] = useState(false);
+
+  // === FETCH REMINDER (Cek Absen) ===
+  useEffect(() => {
+    const user = getUserFromToken();
+    const idUser = user?.id_user;
+
+    const fetchReminder = async () => {
+      try {
+        const response = await fetchWithJwt(`${apiUrl}/absen/cek/${idUser}`);
+        if (response.ok) {
+          const data = await response.json();
+
+          // Kalau kosong array => belum absen
+          if (Array.isArray(data) && data.length === 0) {
+            setReminder("Anda belum melakukan absensi hari ini.");
+          } else {
+            setReminder(null); // clear kalau sudah ada absen
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching reminder:", error);
+      }
+    };
+
+    if (idUser) fetchReminder();
+  }, [apiUrl]);
+
 
   useEffect(() => {
     const user = getUserFromToken();
@@ -89,21 +118,6 @@ const HomeMobile = ({ handleLogout }) => {
     </button>
   );
 
-  const FooterMenuButton = ({ icon, label, onClick, isActive }) => (
-    <button onClick={onClick} className="group relative flex flex-col items-center justify-center text-white transition-all duration-300 px-3">
-      {/* Background putih */}
-      <div className={`absolute w-9 h-9 rounded-full transition-all duration-300 ease-in-out z-0 ${isActive ? "bg-white scale-125 -translate-y-8 border-2 border-green-700/90" : "scale-0"}`}></div>
-      {/* Icon */}
-      <div className={`relative z-10 flex items-center justify-center w-8 h-8 text-lg transition-all duration-300 ease-in-out ${isActive ? "text-green-600 -translate-y-5 group-hover:text-green-800" : "text-[9px] text-white/80 group-hover:text-white"}`}>
-        <FontAwesomeIcon icon={icon} />
-      </div>
-      {/* Label selalu muncul */}
-      <span className={`relative z-10 text-[10px] font-medium mt-2 tracking-widest transition-all duration-300 ${isActive ? "-translate-y-5 text-white" : "-translate-y-2 text-white/80 group-hover:text-white text-[9px]"}`}>
-        {label}
-      </span>
-    </button>
-  );
-
   const calculateTotalHours = (startTime, endTime) => {
     const start = new Date(startTime);
     const end = new Date(endTime);
@@ -137,13 +151,13 @@ const HomeMobile = ({ handleLogout }) => {
   return (
     <div className="flex flex-col font-sans bg-gray-50 min-h-screen">
       {/* Header Hero */}
-      <div className="bg-gradient-to-br from-green-500 to-green-800 rounded-b-6xl px-8 pb-12 pt-4 relative shadow-xl z-10">
-        <button onClick={confirmLogout} title="Logout" className="absolute top-3 right-3 text-xl text-red-500 hover:bg-white hover:text-red-700 transition-colors px-2 py-1 rounded-full">
+      <div className="bg-gradient-to-br from-green-500 to-green-700 rounded-b-6xl px-8 pb-12 pt-4 relative shadow-xl z-10">
+        <button onClick={confirmLogout} title="Logout" className="absolute top-3 right-3 text-xl text-red-500 hover:bg-white hover:text-red-600 transition-colors px-2 py-1 rounded-md bg-white/70">
           <FontAwesomeIcon icon={faSignOutAlt} />
         </button>
         <div className="flex flex-col py-5">
           <h2 className="text-sm font-medium text-white/90 tracking-wide">Selamat Bekerja,</h2>
-          <div className="text-3xl font-bold text-white drop-shadow-sm mb-2">
+          <div className="text-2xl font-bold text-white drop-shadow-sm mb-2">
             {user?.nama_user || "User"}
           </div>
           <div className="text-sm text-white font-semibold inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-lg w-fit shadow-sm">
@@ -153,54 +167,55 @@ const HomeMobile = ({ handleLogout }) => {
         </div>
       </div>
 
-      {/* === Absen Terbaru (floating center) === */}
+      {/* === Absen Terbaru (Minimalis & Stylish) === */}
       {attendanceData.length > 0 && (
-        <div className="relative z-20 scale-90">
+        <div className="relative z-20 scale-95">
           <div className="px-4 -mt-14">
-            <div onClick={() => navigate("/riwayat-absensi")} className="bg-gradient-to-br from-[#e8fdf2] via-white to-[#dcfce7] shadow-lg rounded-2xl p-2 border border-gray-200 cursor-pointer hover:shadow-xl hover:ring-1 hover:ring-green-400 active:scale-[0.98] transition-all duration-300">
-              <div className="flex items-center justify-between">
-                {/* === Kartu Tanggal === */}
-                <div className="flex flex-col items-center bg-gradient-to-br from-green-400 to-green-600 py-3 px-4 rounded-xl shadow-md text-white min-w-[72px]">
-                  <span className="text-[11px] font-medium opacity-90 tracking-wider">
-                    {new Date(attendanceData[0].jam_mulai).toLocaleDateString("id-ID", {
-                      weekday: "long",
-                    })}
-                  </span>
-                  <span className="text-3xl font-extrabold leading-none drop-shadow-md">
-                    {new Date(attendanceData[0].jam_mulai).getDate()}
-                  </span>
-                  <span className="text-[11px] font-medium opacity-90 tracking-wide">
-                    {new Date(attendanceData[0].jam_mulai).toLocaleDateString("id-ID", {
-                      month: "long",
-                    })}
-                  </span>
-                </div>
-
-                {/* === Informasi Waktu & Lokasi === */}
-                <div className="flex-1 grid gap-4">
-                  <div className="grid grid-cols-3 text-center text-sm">
-                    <div className="border-r border-gray-300">
-                      <div className="text-base font-semibold text-gray-800">{formatTime(attendanceData[0].jam_mulai)}</div>
-                      <div className="text-[10px] text-gray-500">Absen Masuk</div>
+            <div onClick={() => navigate("/riwayat-absensi")} className="bg-white shadow-md rounded-2xl p-2 border border-gray-200 cursor-pointer hover:shadow-lg hover:ring-1 hover:ring-green-400 active:scale-[0.98] transition-all duration-300">
+              <div className="flex items-start">
+                {/* Tanggal */}
+                <div className="flex flex-col items-center min-w-[72px]">
+                  <div className="bg-green-500 text-white rounded-xl py-2 px-3 text-center w-full">
+                    <div className="text-[11px] font-medium opacity-90 tracking-wider">
+                      {new Date(attendanceData[0].jam_mulai).toLocaleDateString("id-ID", { weekday: "long" })}
                     </div>
-                    <div className="border-r border-gray-300">
-                      <div className="text-base font-semibold text-gray-800">
-                        {attendanceData[0].jam_selesai ? formatTime(attendanceData[0].jam_selesai) : "-"}
-                      </div>
-                      <div className="text-[10px] text-gray-500">Absen Pulang</div>
+                    <div className="text-2xl font-extrabold leading-none">
+                      {new Date(attendanceData[0].jam_mulai).getDate()}
                     </div>
-                    <div>
-                      <div className="text-base font-bold text-green-700">
-                        {attendanceData[0].jam_selesai ? calculateTotalHours(attendanceData[0].jam_mulai, attendanceData[0].jam_selesai) : "-"}
-                      </div>
-                      <div className="text-[11px] text-gray-500">Total Jam</div>
+                    <div className="text-[11px] font-medium opacity-90 tracking-wide">
+                      {new Date(attendanceData[0].jam_mulai).toLocaleDateString("id-ID", { month: "long" })}
                     </div>
                   </div>
+                </div>
 
-                  {/* === Lokasi === */}
-                  <div className="text-[11px] text-gray-600 text-center tracking-wide font-medium">
-                    <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1 text-green-600" />
-                    {attendanceData[0].lokasi_absen || "No location provided"}
+                {/* Detail Absen */}
+                <div className="flex-1 grid gap-2">
+                  <div className="grid grid-cols-2 text-center text-sm overflow-hidden">
+                    {/* Jam Masuk */}
+                    <div className="border-r border-gray-300 flex flex-col items-center">
+                      <div className="text-[10px] text-gray-600 mb-1">Absen Masuk</div>
+                      <div className="text-base font-semibold text-gray-800">{formatTime(attendanceData[0].jam_mulai)}</div>
+                      {attendanceData[0].lokasi_absen_mulai && (
+                        <div className="flex items-center justify-center gap-1 mt-1 text-[8px] text-gray-700 font-medium text-center break-words whitespace-normal w-full px-2">
+                          <FontAwesomeIcon icon={faMapMarkerAlt} className="text-green-600 text-[10px] shrink-0"/>
+                          <span className="break-words">{attendanceData[0].lokasi_absen_mulai}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Jam Pulang */}
+                    <div className="flex flex-col items-center">
+                      <div className="text-[10px] text-gray-600 mb-1">Absen Pulang</div>
+                      <div className={`text-base font-semibold ${attendanceData[0].jam_selesai ? "text-gray-800" : "text-gray-400"}`}>
+                        {attendanceData[0].jam_selesai ? formatTime(attendanceData[0].jam_selesai) : "-"}
+                      </div>
+                      {attendanceData[0].lokasi_absen_selesai && (
+                        <div className="flex items-center justify-center gap-1 mt-1 text-[8px] text-gray-700 font-medium text-center break-words whitespace-normal w-full px-2">
+                          <FontAwesomeIcon icon={faMapMarkerAlt} className="text-green-600 text-[10px] shrink-0"/>
+                          <span className="break-words">{attendanceData[0].lokasi_absen_selesai}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -213,83 +228,19 @@ const HomeMobile = ({ handleLogout }) => {
       <div className="flex flex-row items-center p-1 mt-3">
         <span className="text-sm font-semibold pl-3">Menu Utama</span>
       </div>
-      <div className="grid grid-cols-4 gap-2 px-4">
-        <MainMenuButton icon={faCalendarCheck} label="Absen" onClick={() => navigate("/absensi")} color="p-4 rounded-lg bg-green-100 text-xl text-emerald-500" />
-        <MainMenuButton icon={faClock} label="Lembur" onClick={() => navigate("/lembur")} color="p-4 rounded-lg bg-green-100 text-xl text-teal-500" />
-        <MainMenuButton icon={faPenFancy} label="e-Form" onClick={() => navigate("/form")} color="p-4 rounded-lg bg-green-100 text-xl text-blue-500" />
-        <MainMenuButton icon={faBell} label="Notifikasi" onClick={handleNotificationClick} hasNotification={hasNewNotifications} color="p-4 rounded-lg bg-green-100 text-xl text-amber-600" />
-        <MainMenuButton icon={faHistory} label="Riwayat" onClick={() => navigate("/riwayat-absensi")} color="p-4 rounded-lg bg-green-100 text-xl text-indigo-600" />
-        <MainMenuButton icon={faThList} label="Lainnya" onClick={() => navigate("/menu")} color="p-4 rounded-lg bg-green-100 text-xl text-teal-600" />
-        <MainMenuButton image="/NOS.png" label="NOS" onClick={() => window.open("https://nos.nicourbanindonesia.com/mypanel/maintenance", "_blank")} color="bg-green-100" />
+      <div className="grid grid-cols-4 gap-2 px-3">
+        <MainMenuButton icon={faCalendarCheck} label="Absen" onClick={() => navigate("/absensi")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-emerald-600 hover:scale-105 transition" />
+        <MainMenuButton icon={faClockFour} label="Lembur" onClick={() => navigate("/lembur")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-teal-600 hover:scale-105 transition" />
+        {/* <MainMenuButton icon={faClipboardList} label="Cuti" onClick={() => navigate("/cuti")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-indigo-600 hover:scale-105 transition" /> */}
+        <MainMenuButton icon={faPenFancy} label="Dinas" onClick={() => window.open("/form-dinas", "_blank")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-blue-600 hover:scale-105 transition" />
+        <MainMenuButton icon={faBell} label="Notifikasi" onClick={handleNotificationClick} hasNotification={hasNewNotifications} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-amber-600 hover:scale-105 transition" />
+        <MainMenuButton icon={faHistory} label="Riwayat" onClick={() => navigate("/riwayat-absensi")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-indigo-600 hover:scale-105 transition" />
+        <MainMenuButton image="/NOS.png" label="NOS" onClick={() => window.open("https://nos.nicourbanindonesia.com/mypanel/maintenance", "_blank")} color="rounded-xl bg-gradient-to-br from-green-50 to-green-200 hover:scale-105 transition" />
+        <MainMenuButton icon={faThList} label="Lainnya" onClick={() => navigate("/menu")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-teal-600 hover:scale-105 transition" />
       </div>
-      {/* MENU UTAMA */}
-
-      {/* === RIWAYAT ABSENSI === */}
-      {attendanceData.length > 1 && (
-        <div className="px-4 mt-2">
-          <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center space-x-3">
-              <h2 className="text-sm font-semibold">Riwayat Absensi</h2>
-            </div>
-            <button onClick={() => navigate("/riwayat-absensi")} className="text-sm text-green-600 hover:text-green-800 hover:underline transition">
-              See more <FontAwesomeIcon icon={faArrowRight} />
-            </button>
-          </div>
-
-          <div className="grid gap-3">
-            {attendanceData.slice(1, 4).map((item) => (
-              <div key={item.id_absen} className="bg-gradient-to-br from-[#e8fdf2] via-white to-[#dcfce7] shadow-lg rounded-2xl p-2 border border-gray-200 cursor-pointer hover:shadow-xl hover:ring-1 hover:ring-green-400 active:scale-[0.98] transition-all duration-300">
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-col items-center bg-gradient-to-br from-green-400 to-green-600 py-3 px-4 rounded-xl shadow-md text-white min-w-[72px]">
-                  <span className="text-[11px] font-medium opacity-90 tracking-wider">
-                    {new Date(item.jam_mulai).toLocaleDateString("id-ID", {
-                      weekday: "long",
-                    })}
-                  </span>
-                  <span className="text-3xl font-extrabold leading-none drop-shadow-md">
-                    {new Date(item.jam_mulai).getDate()}
-                  </span>
-                  <span className="text-[11px] font-medium opacity-90 tracking-wide">
-                    {new Date(item.jam_mulai).toLocaleDateString("id-ID", {
-                      month: "long",
-                    })}
-                  </span>
-                </div>
-                  <div className="flex-1 ml-4 grid gap-2">
-                    <div className="grid grid-cols-3 text-center">
-                      <div className="border-r">
-                        <div className="text-md font-semibold text-gray-800">
-                          {formatTime(item.jam_mulai)}
-                        </div>
-                        <div className="text-[10px] text-gray-500">Absen Masuk</div>
-                      </div>
-                      <div className="border-r">
-                        <div className="text-md font-semibold text-gray-800">
-                          {item.jam_selesai ? formatTime(item.jam_selesai) : "-"}
-                        </div>
-                        <div className="text-[10px] text-gray-500">Absen Pulang</div>
-                      </div>
-                      <div>
-                        <div className="text-md font-semibold text-green-700">
-                          {item.jam_selesai ? calculateTotalHours(item.jam_mulai, item.jam_selesai) : "-"}
-                        </div>
-                        <div className="text-xs text-gray-500">Total Jam</div>
-                      </div>
-                    </div>
-                    <div className="text-xs text-gray-600 text-center">
-                      <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1 text-green-600" />
-                      {item.lokasi_absen || "No location provided"}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* === MENU BANTUAN === */}
-      <div className="px-4 pt-4 pb-40">
+      <div className="px-4 pt-4">
         <div className="flex items-center gap-2 mb-3">
           <span className="text-sm font-semibold">Bantuan</span>
           <FontAwesomeIcon icon={faQuestionCircle} className="text-green-600 text-base" />
@@ -306,27 +257,88 @@ const HomeMobile = ({ handleLogout }) => {
             </div>
           </div>
 
-          <div className="group flex items-center gap-4 bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-green-500 hover:scale-[1.01] transition-all duration-300 cursor-pointer" onClick={() => window.open("https://wa.me/6287819999599", "_blank")}>
+          <div className="group flex items-center gap-4 bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-green-500 hover:scale-[1.01] transition-all duration-300 cursor-pointer" onClick={() => window.open("https://wa.me/6282181525235 ", "_blank")}>
             <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-full">
               <FontAwesomeIcon icon={faWhatsapp} className="text-green-600 text-2xl group-hover:animate-pulse" />
             </div>
             <div className="flex flex-col">
               <span className="text-sm text-gray-500">Hubungi</span>
-              <span className="font-semibold text-gray-800">Team Leader</span>
+              <span className="font-semibold text-gray-800">HRD Office</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* MENU FOOTER */}
-      <div className="fixed bottom-3 left-1/2 -translate-x-1/2 w-[92%] max-w-md bg-green-700/90 backdrop-blur-lg border border-white/10 shadow-lg flex justify-around items-center px-4 py-1 rounded-full z-50">
-        <FooterMenuButton icon={faHome} label="Beranda" isActive={location.pathname === "/home"} onClick={() => navigate("/home")} />
-        <FooterMenuButton icon={faHistory} label="Riwayat" isActive={location.pathname === "/riwayat-absensi"} onClick={() => navigate("/riwayat-absensi")} />
-        <FooterMenuButton icon={faBell} label="Notifikasi" isActive={location.pathname === "/notification"} onClick={() => navigate("/notification")} />
-        <FooterMenuButton icon={faUser} label="Profil" isActive={location.pathname === "/profile"} onClick={() => navigate("/profile")} />
-      </div>
+      {attendanceData.length > 1 && (
+        <div className="px-4 mt-2 pb-40">
+          <div className="flex justify-between items-center my-4">
+            <div className="flex items-center space-x-3">
+              <h2 className="text-sm font-semibold">Riwayat Absensi</h2>
+            </div>
+            <button onClick={() => navigate("/riwayat-absensi")} className="text-sm text-green-600 hover:text-green-800 hover:underline transition">
+              Lihat Selengkapnya <FontAwesomeIcon icon={faArrowRight} />
+            </button>
+          </div>
+
+          {/* === Riwayat Absen === */}
+          <div className="grid gap-3 mt-2">
+            {attendanceData.slice(1, 4).map((item) => (
+              <div key={item.id_absen} className="bg-white shadow-md rounded-2xl p-3 border border-gray-200 cursor-pointer hover:shadow-lg hover:ring-1 hover:ring-green-400 active:scale-[0.98] transition-all duration-300">
+                <div className="flex items-start gap-3">
+                  {/* Tanggal */}
+                  <div className="flex flex-col items-center min-w-[72px]">
+                    <div className="bg-green-500 text-white rounded-xl py-2 px-3 text-center w-full">
+                      <div className="text-[11px] font-medium opacity-90 tracking-wider">
+                        {new Date(item.jam_mulai).toLocaleDateString("id-ID", { weekday: "long" })}
+                      </div>
+                      <div className="text-2xl font-extrabold leading-none">
+                        {new Date(item.jam_mulai).getDate()}
+                      </div>
+                      <div className="text-[11px] font-medium opacity-90 tracking-wide">
+                        {new Date(item.jam_mulai).toLocaleDateString("id-ID", { month: "long" })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Detail Absen */}
+                  <div className="flex-1 grid gap-2">
+                    <div className="grid grid-cols-2 text-center text-sm overflow-hidden">
+                      {/* Jam Masuk */}
+                      <div className="border-r border-gray-300 flex flex-col items-center justify-center">
+                        <div className="text-[10px] text-gray-600 mb-1">Absen Masuk</div>
+                        <div className="text-base font-semibold text-gray-800">{formatTime(item.jam_mulai)}</div>
+                        {item.lokasi_absen_mulai && (
+                          <div className="flex items-center justify-center gap-1 text-[9px] text-gray-700 font-medium mt-1 break-words text-center">
+                            <FontAwesomeIcon icon={faMapMarkerAlt} className="text-green-600 text-[10px]" />
+                            {item.lokasi_absen_mulai}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Jam Pulang */}
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="text-[10px] text-gray-600 mb-1">Absen Pulang</div>
+                        <div className={`text-base font-semibold ${item.jam_selesai ? "text-gray-800" : "text-gray-400"}`}>
+                          {item.jam_selesai ? formatTime(item.jam_selesai) : "-"}
+                        </div>
+                        {item.lokasi_absen_selesai && (
+                          <div className="flex items-center justify-center gap-1 text-[9px] text-gray-700 font-medium mt-1 break-words text-center">
+                            <FontAwesomeIcon icon={faMapMarkerAlt} className="text-green-600 text-[10px]" />
+                            {item.lokasi_absen_selesai}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* MENU FOOTER */}
+      <FooterMainBar />
     </div>
   );
 };

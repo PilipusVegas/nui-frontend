@@ -1,13 +1,12 @@
-import React from "react";
-import Swal from "sweetalert2";
 import { useState, useEffect } from "react";
 import { getUserFromToken } from "./utils/jwtHelper";
-import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom"
+import React from "react";
+import Swal from "sweetalert2";
 import Menu from "./pages/menu";
 import Login from "./pages/login";
 import Absen from "./pages/absensi";
 import Lembur from "./pages/lembur";
-import Form from "./pages/form";
 import Profile from "./pages/user-profile";
 import EditProfile from "./pages/user-profile/edit";
 import HomeRedirect from "./pages/HomeRedirect";
@@ -20,7 +19,7 @@ import DetailPersetujuanPresensi from "./pages/persetujuanPresensi/show";
 import DataKaryawan from "./pages/karyawan/";
 import TambahKaryawan from "./pages/karyawan/tambah";
 import EditKaryawan from "./pages/karyawan/edit";
-// import ShowKaryawan from "./pages/karyawan/show";
+import ShowKaryawan from "./pages/karyawan/show";
 import Shift from "./pages/shift/shift";
 import TambahShift from "./pages/shift/tambah";
 import EditShift from "./pages/shift/edit";
@@ -31,9 +30,9 @@ import DetailPenggajian from "./pages/penggajian/show";
 import RiwayatPenggajian from "./pages/riwayatPenggajian";
 import RiwayatAbsensiAplikasi from "./pages/riwayat/absen-aplikasi";
 import RiwayatFace from "./pages/riwayat/absen-face";
-import SuratDinas from "./pages/form/dataSuratDinas";
+import SuratDinas from "./pages/surat-dinas/dataSuratDinas";
 import FormDinas from "./pages/form/formDinas";
-import DetailSuratDinas from "./pages/form/detailSuratDinas";
+import DetailSuratDinas from "./pages/surat-dinas/detailSuratDinas";
 import Divisi from "./pages/divisi";
 import AbsenKantor from "./pages/kelolaPresensi";
 import KelolaPerusahaan from "./pages/perusahaan";
@@ -41,9 +40,12 @@ import TambahPerusahaan from "./pages/perusahaan/tambah";
 import EditPerusahaan from "./pages/perusahaan/edit";
 import MenuSidebar from "./layouts/menuSidebar";
 import Header from "./layouts/header";
-import DetailLembur from "./pages/penggajian/detailLembur";
 import ManajemenMenu from "./pages/menu-management";
 import PerangkatAbsensi from "./pages/perangkat-absensi";
+import ManajemenHariLibur from "./pages/manajemen-libur";
+import Cuti from "./pages/cuti";
+import FormulirCuti from "./pages/cuti/formCuti";
+import RemarkAbsensi from "./pages/kelolaPresensi/remarkAbsensi";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(!!getUserFromToken());
@@ -56,18 +58,17 @@ const App = () => {
       const user = getUserFromToken();
       setIsAuthenticated(!!user);
     }, 1000); // Cek setiap detik
-  
+
     return () => clearInterval(interval);
   }, []);
-  
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsAuthenticated(false); // Update state
     window.location.href = "/login";
   };
-  
-  const checkRolePermission = (allowedRoles) => allowedRoles.includes(roleId);
 
+  const checkRolePermission = (allowedRoles) => allowedRoles.includes(roleId);
   const PrivateRoute = ({ children, allowedRoles, allowedCompanies }) => {
     if (!isLoggedIn) {
       Swal.fire({
@@ -82,7 +83,7 @@ const App = () => {
       });
       return null;
     }
-  
+
     if (!checkRolePermission(allowedRoles)) {
       Swal.fire({
         icon: "error",
@@ -94,7 +95,7 @@ const App = () => {
       });
       return null;
     }
-  
+
     if (allowedCompanies && !allowedCompanies.includes(String(user?.id_perusahaan))) {
       Swal.fire({
         icon: "error",
@@ -108,12 +109,12 @@ const App = () => {
     }
     return children;
   };
-  
+
   const SidebarLayout = ({ children, handleLogout, user }) => {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [isSidebarMobileOpen, setIsSidebarMobileOpen] = useState(false);
     const [isSidebarDesktopOpen, setIsSidebarDesktopOpen] = useState(true);
-  
+
     const toggleSidebar = () => {
       if (isMobile) {
         setIsSidebarMobileOpen((prev) => !prev);
@@ -121,12 +122,12 @@ const App = () => {
         setIsSidebarDesktopOpen((prev) => !prev);
       }
     };
-  
+
     useEffect(() => {
       const handleResize = () => {
         const mobile = window.innerWidth <= 768;
         setIsMobile(mobile);
-  
+
         if (!mobile) {
           setIsSidebarDesktopOpen(true);
           setIsSidebarMobileOpen(false);
@@ -134,41 +135,41 @@ const App = () => {
           setIsSidebarMobileOpen(false);
         }
       };
-  
+
       handleResize();
       window.addEventListener("resize", handleResize);
       return () => window.removeEventListener("resize", handleResize);
     }, []);
-  
+
     return (
       <div className="min-h-screen bg-green-900 p-1 gap-2 overflow-x-clip">
         <div className="bg-transparent rounded-2xl flex flex-col h-[calc(100vh-0.7rem)] overflow-hidden">
           {/* Header */}
           <div className="h-14 bg-green-900 z-50">
-          <Header toggleSidebar={toggleSidebar} isSidebarOpen={isMobile ? isSidebarMobileOpen : isSidebarDesktopOpen}/>
+            <Header toggleSidebar={toggleSidebar} isSidebarOpen={isMobile ? isSidebarMobileOpen : isSidebarDesktopOpen} />
           </div>
-  
+
           {/* Body */}
           <div className="flex flex-1 overflow-hidden bg-green-900 gap-3 pt-2">
             {/* Sidebar - Desktop */}
             {!isMobile && isSidebarDesktopOpen && (
               <div className="min-w-64 bg-white rounded-2xl shadow-lg border border-green-400 overflow-hidden">
                 <div className="h-full overflow-y-auto scrollbar-green">
-                  <MenuSidebar handleLogout={handleLogout} perusahaanId={user?.id_perusahaan || ""} roleId={user?.id_role || ""} isOpen={isSidebarDesktopOpen} toggleSidebar={toggleSidebar} isMobile={false}/>
+                  <MenuSidebar handleLogout={handleLogout} perusahaanId={user?.id_perusahaan || ""} roleId={user?.id_role || ""} isOpen={isSidebarDesktopOpen} toggleSidebar={toggleSidebar} isMobile={false} />
                 </div>
               </div>
             )}
-  
+
             {/* Sidebar - Mobile Overlay */}
             {isMobile && isSidebarMobileOpen && (
               <div className="fixed inset-0 z-50 flex">
-                <div className="fixed inset-0 bg-black opacity-50" onClick={() => setIsSidebarMobileOpen(false)}/>
-                  <div className="h-full overflow-y-auto scrollbar-green">
-                    <MenuSidebar handleLogout={handleLogout} perusahaanId={user?.id_perusahaan || ""} roleId={user?.id_role || ""} isOpen={isSidebarMobileOpen} toggleSidebar={toggleSidebar} isMobile={true}/>
-                  </div>
+                <div className="fixed inset-0 bg-black opacity-50" onClick={() => setIsSidebarMobileOpen(false)} />
+                <div className="h-full overflow-y-auto scrollbar-green">
+                  <MenuSidebar handleLogout={handleLogout} perusahaanId={user?.id_perusahaan || ""} roleId={user?.id_role || ""} isOpen={isSidebarMobileOpen} toggleSidebar={toggleSidebar} isMobile={true} />
+                </div>
               </div>
             )}
-  
+
             {/* Main Content */}
             <main className="flex-grow h-full overflow-hidden">
               <div className="h-full overflow-y-auto scrollbar-none">
@@ -192,60 +193,65 @@ const App = () => {
       </div>
     );
   };
-  
+
   const routes = [
-    // MOBILE
-    { path: "/notification",  component: <Notification />,  roles: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"]},
-    { path: "/riwayat-absensi", component: <RiwayatAbsensiAplikasi />, roles: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
+    // ALL ROUNDER
     { path: "/riwayat-face", component: <RiwayatFace />, roles: [] },
-    { path: "/profile", component: <Profile />, roles: ["1","2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
-    { path: "profile/edit/:id", component: <EditProfile />, roles: ["1","2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
-    { path: "/menu", component: <Menu />, roles: ["1","2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
-    { path: "/absensi", component: <Absen />, roles: ["1","2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
-    { path: "/lembur", component: <Lembur />, roles: ["1","2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
-    
+    { path: "/form-dinas", component: <FormDinas />, roles: [] },
+
+    // MOBILE
+    { path: "/notification", component: <Notification />, roles: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
+    { path: "/riwayat-absensi", component: <RiwayatAbsensiAplikasi />, roles: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
+    { path: "/profile", component: <Profile />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
+    { path: "profile/edit/:id", component: <EditProfile />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
+    { path: "/menu", component: <Menu />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
+    { path: "/absensi", component: <Absen />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
+    { path: "/lembur", component: <Lembur />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
+    { path: "/cuti", component: <Cuti />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
+    { path: "/formulir-cuti", component: <FormulirCuti />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
+
     // DESKTOP
-    { path: "/persetujuan-presensi", component: <PersetujuanPresensi />, roles: ["1", "4", "5", "6","13", "20"], allowedCompanies: ["1","4"], layout: SidebarLayout },
-    { path: "/persetujuan-presensi/:id_user", component: <DetailPersetujuanPresensi />, roles: ["1", "4", "5", "6", "13", "20"], allowedCompanies: ["1","4"], layout: SidebarLayout },
-    { path: "/persetujuan-lembur", component: <PersetujuanLembur />, roles: ["1", "4", "5", "6", "20"],  allowedCompanies: ["1","4"],  layout: SidebarLayout },
-    { path: "/riwayat-lembur", component: <RiwayatLembur />, roles: ["1", "4", "5", "6", "20"],  allowedCompanies: ["1","4"],  layout: SidebarLayout },
+    { path: "/persetujuan-absensi", component: <PersetujuanPresensi />, roles: ["1", "4", "5", "6", "13", "20"], allowedCompanies: ["1", "4"], layout: SidebarLayout },
+    { path: "/persetujuan-absensi/:id_user", component: <DetailPersetujuanPresensi />, roles: ["1", "4", "5", "6", "13", "20"], allowedCompanies: ["1", "4"], layout: SidebarLayout },
+    { path: "/persetujuan-lembur", component: <PersetujuanLembur />, roles: ["1", "4", "5", "6", "20"], allowedCompanies: ["1", "4"], layout: SidebarLayout },
+    { path: "/riwayat-lembur", component: <RiwayatLembur />, roles: ["1", "4", "5", "6", "20"], allowedCompanies: ["1", "4"], layout: SidebarLayout },
     { path: "/lokasi-presensi", component: <LokasiPresensi />, roles: ["1", "5"], layout: SidebarLayout },
     { path: "/lokasi-presensi/edit/:id", component: <EditLokasi />, roles: ["1", "5"], layout: SidebarLayout },
     { path: "/lokasi-presensi/tambah", component: <TambahLokasi />, roles: ["1", "5"], layout: SidebarLayout },
     { path: "/kelola-presensi", component: <AbsenKantor />, roles: ["1", "4", "5", "6"], layout: SidebarLayout },
-    { path: "/karyawan", component: <DataKaryawan />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
-    { path: "/karyawan/tambah", component: <TambahKaryawan />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
-    { path: "/karyawan/edit/:id", component: <EditKaryawan />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
-    // { path: "/karyawan/show/:id", component: <ShowKaryawan />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
-    { path: "/penggajian", component: <DataPenggajian />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
-    { path: "/penggajian/:id_user", component: <DetailPenggajian />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
-    { path: "/penggajian/detail-lembur/:id", component: <DetailLembur />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
-    { path: "/riwayat-penggajian", component: <RiwayatPenggajian />, roles: ["1", "4", "6", "13"], layout: SidebarLayout },
-    { path: "/surat-dinas", component: <SuratDinas />, roles: ["1","4","5","6","13"],layout: SidebarLayout  },
-    { path: "/surat-dinas/:id", component: <DetailSuratDinas />, roles: ["1","4","5","6","13"],layout: SidebarLayout  },
-    { path: "/divisi/", component: <Divisi />, roles: ["1","4","6"],layout: SidebarLayout  },
-    { path: "/shift/", component: <Shift />, roles: ["1","4","6"],layout: SidebarLayout  },
-    { path: "/shift/tambah", component: <TambahShift />, roles: ["1","4","6"],layout: SidebarLayout  },
-    { path: "/shift/edit/:id", component: <EditShift />, roles: ["1","4","6"],layout: SidebarLayout  },
-    { path: "/perusahaan/", component: <KelolaPerusahaan />, roles: ["1","4","6"],layout: SidebarLayout  },
-    { path: "/perusahaan/tambah", component: <TambahPerusahaan />, roles: ["1","4","6"],layout: SidebarLayout  },
-    { path: "/perusahaan/edit/:id", component: <EditPerusahaan />, roles: ["1","4","6"],layout: SidebarLayout  },
-    { path: "/form", component: <Form />, roles: [] },
-    { path: "/form-dinas", component: <FormDinas />, roles: [] },
+    { path: "/remark-absensi", component: <RemarkAbsensi />, roles: ["1", "4", "5", "6"], layout: SidebarLayout },
+    { path: "/karyawan", component: <DataKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/karyawan/tambah", component: <TambahKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/karyawan/edit/:id", component: <EditKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/karyawan/show/:id", component: <ShowKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/penggajian", component: <DataPenggajian />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/penggajian/:id_user", component: <DetailPenggajian />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    // { path: "/penggajian/detail-lembur/:id", component: <DetailLembur />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/riwayat-penggajian", component: <RiwayatPenggajian />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/surat-dinas", component: <SuratDinas />, roles: ["1", "4", "5", "6"], layout: SidebarLayout },
+    { path: "/surat-dinas/:id", component: <DetailSuratDinas />, roles: ["1", "4", "5", "6"], layout: SidebarLayout },
+    { path: "/divisi/", component: <Divisi />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/shift/", component: <Shift />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/shift/tambah", component: <TambahShift />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/shift/edit/:id", component: <EditShift />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/perusahaan/", component: <KelolaPerusahaan />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/perusahaan/tambah", component: <TambahPerusahaan />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/perusahaan/edit/:id", component: <EditPerusahaan />, roles: ["1", "4", "6"], layout: SidebarLayout },
     { path: "/manajemen-menu", component: <ManajemenMenu />, roles: ["1"], layout: SidebarLayout },
     { path: "/perangkat-absensi", component: <PerangkatAbsensi />, roles: ["1"], layout: SidebarLayout },
+    { path: "/manajemen-hari-libur", component: <ManajemenHariLibur />, roles: ["1", "4", "6"], layout: SidebarLayout },
   ];
 
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={isLoggedIn ? <Navigate to="/home" /> : <Login onLoginSuccess={() => setIsAuthenticated(true)} />}/>
+        <Route path="/login" element={isLoggedIn ? <Navigate to="/home" /> : <Login onLoginSuccess={() => setIsAuthenticated(true)} />} />
         <Route path="/home" element={
           <PrivateRoute allowedRoles={["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"]}>
             {[1, 4, 5, 6, 13, 20].includes(user?.id_role) ? (
-            <SidebarLayout user={user} handleLogout={handleLogout}>
-              <HomeRedirect onLogout={handleLogout} />
-            </SidebarLayout>
+              <SidebarLayout user={user} handleLogout={handleLogout}>
+                <HomeRedirect onLogout={handleLogout} />
+              </SidebarLayout>
             ) : (
               <HomeRedirect onLogout={handleLogout} />
             )}

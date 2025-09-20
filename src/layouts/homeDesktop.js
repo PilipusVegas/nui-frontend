@@ -51,7 +51,7 @@ const HomeDesktop = () => {
   return (
     <div className="flex bg-gray-100">
       <div className="flex-1 bg-white rounded-lg transition-all duration-300 ease-in-out">
-        <div className="relative overflow-hidden p-4 sm:p-10 rounded-2xl shadow-xl border border-white/20 bg-gradient-to-br from-green-600 to-green-500 text-white duration-300 hover:shadow-xl group">
+        <div className="relative overflow-hidden p-4 sm:p-10 rounded-2xl shadow-xl border border-white/20 bg-gradient-to-br from-green-500 to-green-400 text-white duration-300 hover:shadow-xl group">
           {/* Glow Ambient */}
           <div className="absolute -top-16 -left-16 w-48 h-48 bg-white/10 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl animate-pulse" />

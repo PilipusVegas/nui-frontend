@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faCalendarAlt, faClock, faDownload, faExclamationTriangle, faUserCheck } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faClock, faDownload, faExclamationTriangle, faUserCheck } from "@fortawesome/free-solid-svg-icons";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { getDefaultPeriod } from "../../utils/getDefaultPeriod";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import { formatFullDate, formatTime, formatOvertimeJamBulat, formatDateForFilename } from "../../utils/dateUtils";
 
 const DetailPenggajian = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -38,8 +39,8 @@ const DetailPenggajian = () => {
       setAttendance(result.data.attendance || {});
       setTotalKehadiran(result.data.total_hari + " Hari" || 0);
       setTotalKeterlambatan(result.data.total_terlambat + " Menit" || "-");
-      setTotalLembur(`${Math.floor((result.data.total_overtime || 0) / 60)} Jam`);
-      setPeriod(`${startDate} s/d ${endDate}`);
+      setTotalLembur(result.data.total_overtime + "Jam");
+      setPeriod(`${formatFullDate(startDate)} s/d ${formatFullDate(endDate)}`);
     } catch (error) {
       setError(error.message);
     } finally {
@@ -64,8 +65,8 @@ const DetailPenggajian = () => {
       setAttendance(result.data.attendance || {});
       setTotalKehadiran(result.data.total_hari + " Hari" || 0);
       setTotalKeterlambatan(result.data.total_terlambat + " Menit" || "-");
-      setTotalLembur(`${Math.floor((result.data.total_overtime || 0) / 60)} Jam`);
-      setPeriod(`${formatTanggalIndonesia(startDate)} s/d ${formatTanggalIndonesia(endDate)}`);
+      setTotalLembur(result.data.total_overtime + " Jam");
+      setPeriod(`${formatFullDate(startDate)} s/d ${formatFullDate(endDate)}`);
     } catch (error) {
       setError(error.message);
     } finally {
@@ -110,12 +111,7 @@ const DetailPenggajian = () => {
     addInfoRow(["Periode", period || "-"]);
     addInfoRow(["Total Kehadiran", dataUser?.total_hari + " Hari" || "0"]);
     addInfoRow(["Total Keterlambatan", dataUser?.total_terlambat + " Menit" || "0"]);
-    addInfoRow([
-      "Total Lemburan",
-      dataUser?.total_overtime
-        ? `${String(Math.floor(dataUser.total_overtime / 60)).padStart(2, "0")}:${String(dataUser.total_overtime % 60).padStart(2, "0")} Jam`
-        : "00:00 Jam",
-    ]);
+    addInfoRow(["Total Lemburan", dataUser?.total_overtime ? `${String(Math.floor(dataUser.total_overtime / 60)).padStart(2, "0")}:${String(dataUser.total_overtime % 60).padStart(2, "0")} Jam` : "00:00 Jam",]);
     sheet.addRow([]);
 
     addRowWithBorder(
@@ -132,9 +128,9 @@ const DetailPenggajian = () => {
         i + 1,
         tanggal,
         record?.shift || " ",
-        record?.in || " ",
+        formatTime(record?.in || " "),
         record?.late || " ",
-        record?.out || " ",
+        formatTime(record?.out || " "),
         record?.overtime ? `${String(Math.floor(record.overtime / 60)).padStart(2, "0")}:${String(record.overtime % 60).padStart(2, "0")}` : " "
       ]);
 
@@ -173,8 +169,8 @@ const DetailPenggajian = () => {
     const query = new URLSearchParams(location.search);
     const start = query.get("start") || getDefaultPeriod().start;
     const end = query.get("end") || getDefaultPeriod().end;
-    const startFormatted = formatTanggalForFilename(start);
-    const endFormatted = formatTanggalForFilename(end);
+    const startFormatted = formatDateForFilename(start);
+    const endFormatted = formatDateForFilename(end);
     const fileName = `Rekap_${dataUser?.nip || "NIP"}_${startFormatted}_${endFormatted}.xlsx`;
     saveAs(new Blob([buffer]), fileName);
   };
@@ -221,24 +217,6 @@ const DetailPenggajian = () => {
       fetchPayrollDetail();
     }
   }, [location.search]);
-
-
-  const formatTanggalIndonesia = (tanggalString) => {
-    const tanggal = new Date(tanggalString);
-    const day = String(tanggal.getDate()).padStart(2, "0");
-    const month = String(tanggal.getMonth() + 1).padStart(2, "0");
-    const year = tanggal.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
-
-  const formatTanggalForFilename = (tanggalString) => {
-    const bulan = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-    const tanggal = new Date(tanggalString);
-    const tgl = String(tanggal.getDate()).padStart(2, "0");
-    const bln = bulan[tanggal.getMonth()];
-    const thn = tanggal.getFullYear();
-    return `${tgl}-${bln}-${thn}`;
-  };
 
   return (
     <div className="flex flex-col">
@@ -358,18 +336,16 @@ const DetailPenggajian = () => {
                   return (
                     <tr key={i} className={`text-center hover:bg-gray-200 text-sm ${isSunday ? "bg-red-600 text-white font-semibold hover:bg-red-700" : "text-gray-700"}`}>
                       <td className="px-4 py-0.5">{i + 1}</td>
-                      <td className="px-4 py-0.5">{formatTanggalIndonesia(tanggal)}</td>
+                      <td className="px-4 py-0.5">{formatFullDate(tanggal)}</td>
                       <td className="px-4 py-0.5">{record?.shift || "-"}</td>
-                      <td className="px-4 py-0.5">{record?.in || "-"}</td>
+                      <td className="px-4 py-0.5">{record?.in ? formatTime(record.in) : "-"}</td>
                       <td className={`px-4 py-0.5 text-sm ${typeof record?.late === "number" ? record.late >= 1 ? "text-red-600 font-semibold" : "text-gray-800" : "text-gray-300 font-bold"}`}>
-                        {typeof record?.late === "number" ? record.late === 0 ? 0 : `${record.late} Menit` : "-"}
+                        {typeof record?.late === "number" && record.late >= 1 ? `${record.late} Menit` : "-"}
                       </td>
-                      <td className="px-4 py-0.5">{record?.out || "-"}</td>
-                      <td className="px-4 py-0.5">
-                        {typeof record?.overtime === "number"
-                          ? `${String(Math.floor(record.overtime / 60)).padStart(2, "0")}:00`
-                          : "-"}
-                      </td>
+
+                      <td className="px-4 py-0.5">{record?.out ? formatTime(record.out) : "-"}</td>
+                      <td className="px-4 py-0.5">{record?.overtime ? formatOvertimeJamBulat(record.overtime) : "-"}</td>
+
                     </tr>
                   );
                 })}

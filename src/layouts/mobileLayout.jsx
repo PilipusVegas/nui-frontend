@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeftLong } from "@fortawesome/free-solid-svg-icons";
 
 const MobileLayout = ({ title, children }) => {
   const navigate = useNavigate();
@@ -11,26 +11,25 @@ const MobileLayout = ({ title, children }) => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-b from-white to-gray-100">
+    <div className="h-screen flex flex-col bg-gradient-to-b from-gray-50 to-gray-100">
       {/* Header */}
-      <header className="flex items-center justify-between px-4 py-3 bg-green-700 text-white shadow-md rounded-b-2xl">
-        <button
-          onClick={handleBack}
-          className="p-2 rounded-full hover:bg-green-600 transition"
-        >
-          <FontAwesomeIcon icon={faArrowLeft} className="h-5 w-5" />
+      <header className="relative flex items-center justify-between px-4 py-2 bg-green-500 text-white shadow-sm">
+        <button onClick={handleBack} className="px-2 py-1 rounded-full hover:bg-white/50 transition-all">
+          <FontAwesomeIcon icon={faArrowLeftLong} className="h-4 w-4" />
         </button>
 
-        <h1 className="text-lg sm:text-xl font-semibold tracking-wide">
+        {/* Title selalu center */}
+        <h1 className="absolute left-1/2 -translate-x-1/2 text-base font-medium tracking-wider text-center">
           {title}
         </h1>
 
-        {/* Spacer biar seimbang */}
-        <div className="w-9"></div>
+        {/* Spacer biar tombol kiri ga ganggu justify-between */}
+        <div className="w-7"></div>
       </header>
 
+
       {/* Main content */}
-      <main className="flex-grow px-4 py-3 overflow-auto rounded-t-3xl bg-white shadow-inner">
+      <main className="flex-grow px-3 py-2 overflow-auto rounded-t-xl bg-white shadow-inner">
         {children}
       </main>
     </div>

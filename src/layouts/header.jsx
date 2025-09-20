@@ -4,6 +4,8 @@ import { faBars, faUser, faBarsStaggered, faPowerOff } from "@fortawesome/free-s
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { getUserFromToken } from "../utils/jwtHelper";
+import { getDefaultPeriod } from "../utils/getDefaultPeriod";
+import { formatDate, PATTERNS } from "../utils/dateUtils";
 
 const Header = ({ toggleSidebar, isSidebarOpen }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -11,6 +13,7 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
   const navigate = useNavigate();
   const user = getUserFromToken();
   const toggleProfile = () => setIsProfileOpen((prev) => !prev);
+  const period = getDefaultPeriod();
 
   const handleLogout = () => {
     Swal.fire({
@@ -47,17 +50,23 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
   }, []);
 
   return (
-    <header className="bg-green-600 text-white px-3 sm:px-6 py-2 sticky top-0 backdrop-blur-md shadow-md">
+    <header className="bg-green-500 text-white px-3 sm:px-6 py-2.5 sticky top-0 backdrop-blur-md shadow-md">
       <div className="flex items-center justify-between">
         {/* Sidebar & Brand */}
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Tombol Toggle Sidebar */}
-          <FontAwesomeIcon icon={isSidebarOpen ? faBarsStaggered : faBars} className="text-white text-lg sm:text-xl p-2 rounded-2xl border border-white/20 shadow-md  hover:shadow-lg hover:scale-105 cursor-pointer transition-all duration-200  active:scale-95 backdrop-blur-sm bg-white/5" onClick={toggleSidebar}/>
+          <FontAwesomeIcon icon={isSidebarOpen ? faBarsStaggered : faBars} className="text-white text-lg sm:text-xl p-2 rounded-2xl border border-white/20 shadow-md hover:shadow-lg hover:scale-105 cursor-pointer transition-all duration-200 active:scale-95 backdrop-blur-sm bg-white/5" onClick={toggleSidebar} />
 
           {/* Brand */}
-          <h1 className="text-xs sm:text-lg md:text-xl font-semibold tracking-wide text-white/90 drop-shadow-sm hover:text-white transition-colors duration-200">
-            {user.perusahaan}
-          </h1>
+          <div className="flex flex-col">
+            <span className="text-md font-semibold tracking-wide text-white/90 drop-shadow-sm hover:text-white transition-colors duration-200">
+              {user.perusahaan}
+            </span>
+            <span className="text-[10px] md:text-xs font-medium text-white/70 -mt-1 tracking-wide">
+              Periode : {formatDate(period.start, PATTERNS.FULL)} s/d {formatDate(period.end, PATTERNS.FULL)}
+            </span>
+          </div>
+
         </div>
         <div className="relative flex items-center gap-2.5">
           {/* Info User */}
@@ -67,7 +76,7 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
           </div>
 
           {/* Tombol Profil */}
-          <button onClick={toggleProfile} className="relative w-11 h-11 rounded-full bg-white/15 hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-300 flex items-center justify-center group border-double border-white/80 border-2" aria-label="Buka Profil">
+          <button onClick={toggleProfile} className="relative w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-300 flex items-center justify-center group border-double border-white/80 border-2" aria-label="Buka Profil">
             <FontAwesomeIcon icon={faUser} className="text-white text-base" />
             <div className="absolute inset-0 rounded-full border border-white/40 group-hover:border-white/80 transition-all duration-300 pointer-events-none" />
           </button>

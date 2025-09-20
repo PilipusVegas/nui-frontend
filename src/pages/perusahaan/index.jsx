@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faEdit, faExclamationCircle, faPlus, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faEdit, faExclamationCircle, faInfo, faInfoCircle, faPlus, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { SectionHeader } from "../../components";
@@ -46,8 +46,7 @@ const KelolaPerusahaan = () => {
           <thead className="bg-green-600 text-white text-sm uppercase">
             <tr>
               <th className="py-2 px-4 font-semibold text-center">No.</th>
-              <th className="py-2 px-4 font-semibold">Nama Perusahaan</th>
-              <th className="py-2 px-4 font-semibold">Alamat Perusahaan</th>
+              <th className="py-2 px-4 font-semibold">Perusahaan</th>
               <th className="py-2 px-4 font-semibold text-center w-32">Menu</th>
             </tr>
           </thead>
@@ -65,13 +64,24 @@ const KelolaPerusahaan = () => {
               perusahaan.map((item, index) => (
                 <tr key={item.id} className="border-t hover:bg-gray-50 transition-all duration-150">
                   <td className="px-4 py-2 text-center">{index + 1}</td>
-                  <td className="px-4 py-2 font-semibold uppercase">{item.nama}</td>
-                  <td className="px-4 py-2">{item.alamat}</td>
+                  <td className="px-4 py-2">
+                    <div className="flex flex-col">
+                      <span className="font-semibold uppercase">{item.nama}</span>
+                      <span className="text-gray-600">{item.alamat}</span>
+                    </div>
+                  </td>
+
                   <td className="px-4 py-2 text-center">
-                    <button onClick={() => navigate(`/perusahaan/edit/${item.id}`)} className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1.5 text-xs font-medium rounded transition">
-                      <FontAwesomeIcon icon={faEdit} className="mr-1" />
-                      Edit
-                    </button>
+                    <div className="flex justify-center gap-2">
+                      <button onClick={() => navigate(`/perusahaan/edit/${item.id}`)} className="flex items-center bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 text-xs font-medium rounded-md transition">
+                        <FontAwesomeIcon icon={faEdit} className="mr-2" />
+                        Edit
+                      </button>
+                      <button onClick={() => navigate(`/perusahaan/detail/${item.id}`)} className="flex items-center bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 text-xs font-medium rounded-md transition">
+                        <FontAwesomeIcon icon={faInfoCircle} className="mr-2" />
+                        Detail
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -79,7 +89,6 @@ const KelolaPerusahaan = () => {
           </tbody>
         </table>
       </div>
-
 
       {/* Mode Mobile - Card */}
       <div className="sm:hidden space-y-3">

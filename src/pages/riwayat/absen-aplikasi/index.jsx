@@ -1,323 +1,62 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import MobileLayout from "../../../layouts/mobileLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch, faCalendarCheck, faClock, faExclamationTriangle, faSpinner,} from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from "react-router-dom";
-import { fetchWithJwt, getUserFromToken } from "../../../utils/jwtHelper";
+import { faCalendarCheck, faClock, faClipboardList, faBriefcase} from "@fortawesome/free-solid-svg-icons";
+import Absensi from "./Absensi";
+import Lembur from "./Lembur";
+// import Cuti from "./Cuti";
+import Dinas from "./Dinas";
 
-const Riwayat = () => {
+// ✅ import komponen footer
+import FooterMainBar from "../../../components/mobile/FooterMainBar";
+
+export default function RiwayatIndex() {
   const [activeTab, setActiveTab] = useState("absensi");
-  const [absensi, setAbsensi] = useState([]);
-  const [lembur, setLembur] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [groupedData, setGroupedData] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const apiUrl = process.env.REACT_APP_API_BASE_URL;
-  const navigate = useNavigate();
-  const user = getUserFromToken();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [absensiRes, lemburRes] = await Promise.all([
-          fetchWithJwt(`${apiUrl}/absen/riwayat/${user.id_user}`),
-          fetchWithJwt(`${apiUrl}/lembur/riwayat/${user.id_user}`),
-        ]);
-  
-        if (!absensiRes.ok && !lemburRes.ok) throw new Error("Gagal memuat data.");
-  
-        const absensiData = absensiRes.ok ? await absensiRes.json() : [];
-        const lemburData = lemburRes.ok ? await lemburRes.json() : [];
-  
-        if (absensiData.length > 0) {
-          const sortedAbsensi = absensiData.sort(
-            (a, b) => new Date(b.jam_mulai) - new Date(a.jam_mulai)
-          );
-          setAbsensi(sortedAbsensi);
-          setGroupedData(groupDataByTag(sortedAbsensi, "jam_mulai"));
-        } else {
-          setAbsensi([]); 
-        }
-  
-        if (lemburData.length > 0) {
-          const sortedLembur = lemburData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-          setLembur(sortedLembur);
-        } else {
-          setLembur([]); 
-        }
-  
-        if (absensiData.length === 0 && lemburData.length === 0) {
-          setError("Data absensi dan lembur tidak ditemukan.");
-        }
-      } catch (err) {
-        console.error(err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    fetchData();
-  }, [apiUrl, user.id_user]);
-  
-
-  const groupDataByTag = (data, dateField) => {
-    const now = new Date();
-    const tags = { "Hari ini": [], Kemarin: [], Lusa: [], "Sudah Lama": [] };
-
-    data.forEach((item) => {
-      const dateValue = item[dateField];
-      if (!dateValue) return; 
-      const date = new Date(dateValue);
-      if (isNaN(date.getTime())) return;
-
-      const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
-      if (diffDays === 0) tags["Hari ini"].push(item);
-      else if (diffDays === 1) tags["Kemarin"].push(item);
-      else if (diffDays === 2) tags["Lusa"].push(item);
-      else tags["Sudah Lama"].push(item);
-    });
-
-    return Object.fromEntries(Object.entries(tags).filter(([, items]) => items.length > 0));
-  };
-
-  const handleSearch = (e) => {
-    const query = e.target.value.toLowerCase();
-    setSearchQuery(query);
-
-    const currentData = activeTab === "absensi" ? absensi : lembur;
-
-    const filtered = currentData.filter((item) => {
-      if (activeTab === "absensi") {
-        const nameMatch = item.nama_user?.toLowerCase().includes(query);
-        const locationMatch = item.lokasi_absen?.toLowerCase().includes(query);
-        const dateMatch = formatDateTime(item.jam_mulai || "")
-          .toLowerCase()
-          .includes(query);
-        return nameMatch || locationMatch || dateMatch;
-      } else {
-        const nameMatch = item.nama_user?.toLowerCase().includes(query);
-        const locationMatch = item.lokasi?.toLowerCase().includes(query);
-        const dateMatch = formatDateTime(item.tanggal || "")
-          .toLowerCase()
-          .includes(query);
-        return nameMatch || locationMatch || dateMatch;
-      }
-    });
-
-    setGroupedData(groupDataByTag(filtered, activeTab === "absensi" ? "jam_mulai" : "created_at"));
-  };
-
-  const formatDateTime = (dateTime) => {
-    if (!dateTime || isNaN(new Date(dateTime).getTime())) {
-      return "Tanggal tidak valid"; 
-    }
-    const options = {
-      weekday: "long",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-    };
-    const date = new Date(dateTime);
-    return date.toLocaleString("id-ID", options);
-  };
-
-  const formatTime = (time) => {
-    if (!time) return "Jam tidak valid";
-    const [hour, minute, second] = time.split(":"); 
-    const date = new Date(); 
-    date.setHours(parseInt(hour), parseInt(minute), parseInt(second));
-    return date.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
-  };
+  const TABS = [
+    { key: "absensi", label: "Absensi", icon: faCalendarCheck },
+    { key: "lembur", label: "Lembur", icon: faClock },
+    // { key: "cuti", label: "Cuti", icon: faClipboardList },
+    { key: "dinas", label: "Dinas", icon: faBriefcase },
+  ];
 
   return (
-    <MobileLayout title="Riwayat" onClick={() => navigate("/home")} className="p-6 bg-gray-100">
-      <div className="container mx-auto py-2">
-        {/* Tabs */}
-        <div className="flex justify-around border-b border-gray-300 mb-4">
-          <button
-            className={`flex-1 py-2 text-center ${
-              activeTab === "absensi"
-                ? "border-b-2 border-green-500 text-green-700"
-                : "text-gray-600"
-            }`}
-            onClick={() => {
-              setActiveTab("absensi");
-              setGroupedData(groupDataByTag(absensi, "jam_mulai"));
-            }}
-          >
-            <FontAwesomeIcon icon={faCalendarCheck} className="mr-2" />
-            Absensi
-          </button>
-          <button
-            className={`flex-1 py-2 text-center ${
-              activeTab === "lembur"
-                ? "border-b-2 border-green-500 text-green-700"
-                : "text-gray-600"
-            }`}
-            onClick={() => {
-              setActiveTab("lembur");
-              setGroupedData(groupDataByTag(lembur, "created_at"));
-            }}
-          >
-            <FontAwesomeIcon icon={faClock} className="mr-2" />
-            Lembur
-          </button>
-        </div>
-
-        {/* Card Utama */}
-        <div className="bg-white px-5 py-5 rounded-lg shadow-lg">
-          {/* Header */}
-          {(absensi.length > 0 || lembur.length > 0) && (
-            <div className="text-center mb-4">
-              <h2 className="text-xl font-semibold text-green-900">
-                {absensi.length > 0
-                  ? absensi[0].nama_user
-                  : lembur.length > 0
-                  ? lembur[0].nama_user
-                  : "Tidak Ada Data"}
-              </h2>
-              <p className="text-sm text-gray-600">
-                {absensi.length > 0
-                  ? absensi[0].divisi
-                  : lembur.length > 0
-                  ? lembur[0].divisi
-                  : "Tidak Ada Role"}
-              </p>
-              <p className="text-xs text-gray-500 mt-2">
-                Total Riwayat {activeTab === "absensi" ? "Absen" : "Lembur"}:{" "}
-                {(activeTab === "absensi" ? absensi : lembur).length}
-              </p>
-            </div>
-          )}
-
-          {/* Input Pencarian */}
-          <div className="my-4 relative">
-            <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-              <FontAwesomeIcon icon={faSearch} className="text-gray-500" />
-            </div>
-            <input type="text" value={searchQuery} onChange={handleSearch} className="w-full pl-10 px-2 py-1 border border-green-300 rounded-lg" placeholder={`Cari Riwayat ${activeTab === "absensi" ? "Absensi" : "Lembur"}...`}/>
-          </div>
-
-          {/* Data Riwayat */}
-          <div className="max-h-[430px] overflow-y-auto pt-2">
-            {loading ? (
-              <div className="text-center py-4 animate-pulse">
-                <div className="spinner-border text-green-500" role="status">
-                  <span className="sr-only">Loading...</span>
-                </div>
-                <FontAwesomeIcon color="gray" icon={faSpinner} className="text-5xl mb-2 animate-spin"/>
-                <p className="text-sm text-gray-600">
-                  Sabar, ini bukan error tetapi sedang loading
-                </p>
-              </div>
-            ) : error ? (
-              <div className="text-center py-4 text-gray-500">
-                <FontAwesomeIcon icon={faExclamationTriangle} className="text-5xl mb-2" />
-                <p>{"Data riwayat tidak ditemukan coba cek jaringan anda" || { error }}</p>
-              </div>
-            ) : Object.keys(groupedData).length === 0 ? (
-              <div className="text-center py-4 text-gray-500">
-                <FontAwesomeIcon icon={faSearch} className="text-4xl mb-4" />
-                <p>Data yang Anda cari tidak ditemukan</p>
-              </div>
-            ) : (
-              Object.keys(groupedData).map((tag) => (
-                <div key={tag} className="mb-6">
-                  {/* Tag Header */}
-                  <div className="sticky top-[-10px] bg-gray-100 py-1 text-center z-10 bg-green-100 rounded-md">
-                    <div className="text-sm text-green-700 font-semibold">
-                      <FontAwesomeIcon icon={faCalendarCheck} className="text-green-700 mr-2" />
-                      {tag}
-                    </div>
-                  </div>
-                  {/* Data Content */}
-                  {groupedData[tag].map((item) => (
-                    <div key={item.id || item.id_absen} className="rounded-lg text-xs my-4">
-                      {/* Lokasi */}
-                      <div className="flex justify-between mb-2">
-                        <span className="font-semibold">Lokasi:</span>
-                        <span>{activeTab === "absensi" ? item.lokasi_absen : item.lokasi}</span>
-                      </div>
-                      {/* Tanggal atau Absen Masuk */}
-                      <div className="flex justify-between mb-2">
-                        <span className="font-semibold">
-                          {activeTab === "absensi" ? "Absen Masuk:" : "Tanggal:"}
-                        </span>
-                        <span>
-                          {activeTab === "absensi"
-                            ? formatDateTime(item.jam_mulai)
-                            : new Intl.DateTimeFormat("id-ID", {
-                                weekday: "long",
-                                day: "numeric",
-                                month: "long",
-                                year: "numeric",
-                              }).format(new Date(item.tanggal))}
-                        </span>
-                      </div>
-                      {/* Absen Keluar atau Jam Mulai */}
-                      <div className="flex justify-between mb-2">
-                        <span className="font-semibold">
-                          {activeTab === "absensi" ? "Absen Keluar:" : "Jam Mulai:"}
-                        </span>
-                        <span>
-                          {activeTab === "absensi"
-                            ? item.jam_selesai
-                              ? formatDateTime(item.jam_selesai)
-                              : "Belum Selesai"
-                            : item.jam_mulai
-                            ? formatTime(item.jam_mulai)
-                            : "Tanggal tidak valid"}
-                        </span>
-                      </div>
-                      {/* Jam Selesai (Lembur) */}
-                      {activeTab === "lembur" && (
-                        <>
-                          <div className="flex justify-between mb-2">
-                            <span className="font-semibold">Jam Selesai:</span>
-                            <span>{formatTime(item.jam_selesai) || "Belum Selesai"}</span>
-                          </div>
-                          <div className="flex justify-between mb-2">
-                            <span className="font-semibold">Status:</span>
-                            <span
-                              className={`px-2  rounded-full text-white font-semibold text-sm ${
-                                item.status === 0
-                                  ? "bg-yellow-500"
-                                  : item.status === 1
-                                  ? "bg-green-500"
-                                  : item.status === 2
-                                  ? "bg-red-500"
-                                  : "bg-gray-400"
-                              }`}
-                            >
-                              {item.status === 0
-                                ? "Pending"
-                                : item.status === 1
-                                ? "Disetujui"
-                                : item.status === 2
-                                ? "Ditolak"
-                                : "Belum Selesai"}
-                            </span>
-                          </div>
-                        </>
-                      )}
-                      <div className="border-t border-green-900 mt-4 "></div>
-                    </div>
-                  ))}
-                </div>
-              ))
-            )}
-          </div>
+    <MobileLayout title="Riwayat">
+      {/* ---- Konten Tab ---- */}
+      <div className="relative flex w-full overflow-x-auto no-scrollbar my-2 pb-3">
+        <div className="flex flex-1 bg-gray-100 rounded-full p-1 shadow-inner gap-1">
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex-1 min-w-[80px] flex flex-col items-center justify-center py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${isActive
+                    ? "bg-green-500 text-white shadow-sm"
+                    : "text-gray-600 hover:bg-white hover:text-green-600"
+                  }`}
+              >
+                <FontAwesomeIcon
+                  icon={tab.icon}
+                  className={`text-xs mb-1 ${isActive ? "text-white" : ""}`}
+                />
+                <span className="leading-tight text-[9px]">{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
+
+      {/* ---- Isi Tab ---- */}
+      <div className="mt-2 pb-24"> {/* pb-24 agar konten tidak ketutupan footer */}
+        {activeTab === "absensi" && <Absensi />}
+        {activeTab === "lembur" && <Lembur />}
+        {/* {activeTab === "cuti"   && <Cuti />} */}
+        {activeTab === "dinas"  && <Dinas />}
+      </div>
+
+      {/* ---- Footer Tetap ---- */}
+      <FooterMainBar />
     </MobileLayout>
   );
-};
-
-export default Riwayat;
+}

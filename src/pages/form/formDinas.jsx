@@ -1,252 +1,278 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
+import Select from "react-select";
+import toast from "react-hot-toast";
 import Swal from "sweetalert2";
+import { fetchWithJwt } from "../../utils/jwtHelper";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSuitcaseRolling } from "@fortawesome/free-solid-svg-icons";
 
-const FormDinas = () => {
+export default function SuratDinasPage() {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
-  const [listNama, setListNama] = useState([]);
-  const [query, setQuery] = useState("");
-  const [filteredNama, setFilteredNama] = useState([]);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownRef = useRef(null);
-  const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ id_user: "", id_role: null,  nama: "", tanggal: "", jadwalTugas: "", jamBerangkat: "", setuju: false, kadiv: "",});
+  const [namaOptions, setNamaOptions] = useState([]);
+  const [kadivOptions, setKadivOptions] = useState([]);
+  const [profilLoading, setProfilLoading] = useState(true);
 
-  // FETCH PROFIL NAMA
-  const fetchNama = async () => {
-    try {
-      const res = await fetch(`${apiUrl}/surat-dinas/profil`);
-      const data = await res.json();
-      const arr = Array.isArray(data?.data) ? data.data : [];
-      setListNama(arr);
-      setFilteredNama(arr);
-    } catch (err) {
-      console.error("Gagal mengambil data nama:", err);
-    }
-  };
+  const [form, setForm] = useState({
+    id_user: null,
+    nama: "",
+    kategori: null,
+    keterangan: "",
+    tgl_berangkat: "",
+    tgl_pulang: "",
+    waktu: "",
+    id_kadiv: null,
+  });
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [confirm, setConfirm] = useState(false);
 
   useEffect(() => {
-    fetchNama();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const loadProfil = async () => {
+      try {
+        const res = await fetchWithJwt(`${apiUrl}/surat-dinas/profil`);
+        if (!res.ok) throw new Error();
+        const result = await res.json();
 
-  // FILTER NAMA KETIKA KETIK
-  useEffect(() => {
-    if (!query) {
-      setFilteredNama(listNama);
-    } else {
-      const q = query.toLowerCase();
-      setFilteredNama(
-        listNama.filter((item) => (item?.nama || "").toLowerCase().includes(q))
-      );
-    }
-  }, [query, listNama]);
+        const allEmployees = result.data.map((u) => ({
+          value: u.id,
+          label: u.nama,
+          id_role: u.id_role,
+        }));
+        setNamaOptions(allEmployees);
 
-  // CLOSE DROPDOWN KETIKA KLIK DI LUAR
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowDropdown(false);
+        const kadivFiltered = allEmployees
+          .filter((u) => [4, 5, 20].includes(u.id_role))
+          .map((u) => ({ value: u.value, label: u.label }));
+        setKadivOptions(kadivFiltered);
+      } catch {
+        toast.error("Gagal memuat data profil");
+      } finally {
+        setProfilLoading(false);
       }
     };
+    loadProfil();
+  }, [apiUrl]);
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const handleChange = (field, value) =>
+    setForm((prev) => ({ ...prev, [field]: value }));
 
-  // PILIH NAMA DARI DROPDOWN
-  const handleSelect = (nama) => {
-    const selected = listNama.find((item) => item.nama === nama);
-    if (selected) {
-      setForm((prev) => ({
-        ...prev,
-        id_user: selected.id,
-        id_role: selected.id_role,
-        nama: selected.nama,
-      }));
-      setQuery(selected.nama);
-      setShowDropdown(false);
-    }
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name === "setuju") {
-      setForm((prev) => ({ ...prev, setuju: e.target.checked }));
-    } else if (name === "kadiv") {
-      setForm((prev) => ({ ...prev, kadiv: value ? parseInt(value, 10) : "" }));
-    } else {
-      setForm((prev) => ({ ...prev, [name]: value }));
-    }
-  };
-
+  /** ✅ Submit dengan konfirmasi Swal */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // VALIDASI
-    if (!form.setuju) {
-      Swal.fire("Oops!", "Anda harus menyetujui perjanjian terlebih dahulu.", "warning");
+    // --- Validasi awal ---
+    if (!confirm) {
+      toast.error("Anda harus menyetujui pernyataan kebenaran data.");
       return;
     }
-    if (!form.id_user || form.id_role == null) {
-      Swal.fire("Peringatan", "Silakan pilih Nama dari daftar.", "warning");
+    if (
+      !form.id_user ||
+      !form.kategori ||
+      !form.tgl_berangkat ||
+      !form.waktu ||
+      !form.id_kadiv
+    ) {
+      toast.error("Lengkapi seluruh data wajib.");
+      return;
+    }
+    if (form.kategori.value === 2 && !form.tgl_pulang) {
+      toast.error("Tanggal pulang wajib diisi untuk dinas luar kota.");
       return;
     }
 
-    const lastSubmit = localStorage.getItem("lastSubmit");
-    if (lastSubmit && Date.now() - parseInt(lastSubmit, 10) < 60 * 1000) {
-      Swal.fire(
-        "Tunggu Sebentar",
-        "Anda hanya dapat mengirim form ini satu kali setiap 1 menit.",
-        "info"
-      );
-      return;
-    }
+    // --- Rangkai teks konfirmasi ---
+    const tanggalInfo =
+      form.kategori.value === 2
+        ? `dari ${form.tgl_berangkat} sampai ${form.tgl_pulang}`
+        : `pada ${form.tgl_berangkat}`;
+    const jamInfo = `pukul ${form.waktu}`;
+    const kadivNama = form.id_kadiv?.label || "—";
 
+    const textKonfirmasi = `
+      Apakah Anda benar-benar melakukan perjalanan dinas 
+      ${tanggalInfo} ${jamInfo}
+      dengan Kepala Divisi penanggung jawab: <b>${kadivNama}</b> ?
+    `;
+
+    // --- Tampilkan dialog konfirmasi ---
+    const result = await Swal.fire({
+      title: "Konfirmasi Perjalanan Dinas",
+      html: textKonfirmasi,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Ya, Kirim",
+      cancelButtonText: "Batal",
+      confirmButtonColor: "#059669", // hijau tegas
+      cancelButtonColor: "#d33",
+      focusCancel: true,
+    });
+
+    if (!result.isConfirmed) return;
+
+    // --- Kirim ke server bila disetujui ---
+    setSubmitLoading(true);
     try {
-      setLoading(true);
-
-      // CATATAN: jika backend Anda sudah menerima key `id_role`,
-      // ganti `bagian` menjadi `id_role` di payload.
-      const payload = {
-        id_user: form.id_user,
-        nama: form.nama,
-        tgl: form.tanggal,
-        bagian: form.id_role, // ← ambil dari profil (id_role)
-        // id_role: form.id_role, // ← gunakan baris ini bila endpoint pakai id_role
-        jadwal: form.jadwalTugas,
-        waktu: form.jamBerangkat,
-        kadiv: form.kadiv,
-      };
-
-      const response = await fetch(`${apiUrl}/surat-dinas`, {
+      const res = await fetchWithJwt(`${apiUrl}/surat-dinas`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          id_user: form.id_user.value,
+          nama: form.nama,
+          kategori: form.kategori.value,
+          keterangan: form.keterangan,
+          tgl_berangkat: form.tgl_berangkat,
+          tgl_pulang: form.kategori.value === 2 ? form.tgl_pulang : null,
+          waktu: form.waktu,
+          id_kadiv: form.id_kadiv.value,
+        }),
       });
-
-      if (!response.ok) throw new Error("Gagal mengirim data");
-
-      localStorage.setItem("lastSubmit", Date.now().toString());
-      await response.json();
-
-      Swal.fire(
-        "Berhasil terkirim!",
-        "Mohon tunggu konfirmasi dari Kepala Divisi nya melalui whatsapp ya!",
-        "success"
-      );
-
-      // RESET FORM
+      if (!res.ok) throw new Error();
+      toast.success("Form berhasil dikirim");
+      // Reset form
       setForm({
-        id_user: "",
-        id_role: null,
+        id_user: null,
         nama: "",
-        tanggal: "",
-        jadwalTugas: "",
-        jamBerangkat: "",
-        setuju: false,
-        kadiv: "",
+        kategori: null,
+        keterangan: "",
+        tgl_berangkat: "",
+        tgl_pulang: "",
+        waktu: "",
+        id_kadiv: null,
       });
-      setQuery("");
-      setShowDropdown(false);
-    } catch (error) {
-      Swal.fire("Gagal", error.message || "Terjadi kesalahan saat mengirim data.", "error");
+      setConfirm(false);
+    } catch {
+      toast.error("Terjadi kesalahan pengiriman");
     } finally {
-      setLoading(false);
+      setSubmitLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center p-4"
-      style={{ backgroundImage: "url('/wall.png')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", backgroundAttachment: "fixed", backgroundBlendMode: "overlay", backgroundColor: "rgba(0, 0, 0, 0.25)",}}
-    >
-      <form onSubmit={handleSubmit} className="w-full max-w-xl bg-white shadow-xl rounded-2xl p-6 sm:p-8 space-y-2 sm:space-y-3">
-        <h2 className="text-lg sm:text-2xl font-bold text-center text-[#326058]">
-          Formulir Dinas keluar kantor <br /> PT Nico Urban Indonesia
-        </h2>
+  if (profilLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        Memuat data profil…
+      </div>
+    );
+  }
 
-        {/* Nama */}
-        <div className="relative" ref={dropdownRef}>
-          <label className="block text-gray-700 font-medium mb-1 text-sm">Nama</label>
-          <input type="text" value={query} onChange={(e) => { setQuery(e.target.value); setShowDropdown(true);}} onFocus={() => setShowDropdown(true)} required className="w-full rounded-xl border border-gray-300 px-3 py-2 sm:px-3 sm:py-3 focus:outline-none focus:ring-2 focus:ring-green-400 transition" placeholder="Ketik atau pilih nama"/>
-          {showDropdown && (
-            <ul className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-md max-h-60 overflow-y-auto">
-              {filteredNama.length > 0 ? (
-                filteredNama.map((item) => (
-                  <li key={item.id} className="px-4 py-2 cursor-pointer hover:bg-green-100 text-sm" onClick={() => handleSelect(item.nama)}>
-                    {item.nama}
-                  </li>
-                ))
-              ) : (
-                <li className="px-4 py-2 text-gray-500 text-sm">Tidak ditemukan</li>
-              )}
-            </ul>
-          )}
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-green-50">
+      <form onSubmit={handleSubmit} className="w-full max-w-xl bg-white shadow-md rounded-xl p-5 pb-12 space-y-3 border border-green-100">
+        {/* Header */}
+        <div className="mb-1 border-b border-gray-300 pb-2">
+          <h1 className="text-xl font-extrabold text-emerald-700 tracking-tight">
+            <FontAwesomeIcon icon={faSuitcaseRolling} className="text-emerald-700 mr-2" />
+            Formulir Resmi Perjalanan Dinas
+          </h1>
+          <p className="text-xs text-gray-800 mt-1 font-medium">
+            Globalindo Group · Pengajuan Resmi Perjalanan Dinas
+          </p>
+        </div>
+
+        {/* Nama Karyawan */}
+        <div>
+          <label className="block text-xs font-medium text-gray-800">
+            Nama Karyawan<span className="text-red-600">*</span>
+          </label>
+          <p className="text-[10px] text-gray-600 mb-1">
+            Pilih karyawan yang akan melaksanakan perjalanan dinas.
+          </p>
+          <Select options={namaOptions} value={form.id_user} onChange={(v) => handleChange("id_user", v) || handleChange("nama", v?.label || "") } placeholder="Pilih Nama Karyawan"/>
+        </div>
+
+        {/* Kategori Dinas */}
+        <div>
+          <label className="block text-xs font-medium text-gray-800">
+            Kategori Perjalanan<span className="text-red-600">*</span>
+          </label>
+          <p className="text-[10px] text-gray-600 mb-1">
+            <strong>Dalam Kota</strong>: hanya memerlukan tanggal berangkat.
+            <strong> Luar Kota</strong>: wajib mengisi tanggal pulang.
+          </p>
+          <Select options={[
+              { value: 1, label: "Dalam Kota" },
+              { value: 2, label: "Luar Kota" },
+            ]}
+            value={form.kategori}
+            onChange={(v) => handleChange("kategori", v)}
+            placeholder="Pilih Kategori Perjalanan"
+          />
         </div>
 
         {/* Tanggal */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div>
+            <label className="block text-xs font-medium text-gray-800">
+              Tanggal Berangkat<span className="text-red-600">*</span>
+            </label>
+            <p className="text-[10px] text-gray-600 mb-1">
+              Isi tanggal dimulainya perjalanan dinas.
+            </p>
+            <input type="date" className="w-full border rounded-md p-2 text-sm focus:ring-1 focus:ring-green-400" value={form.tgl_berangkat} onChange={(e) => handleChange("tgl_berangkat", e.target.value)}/>
+          </div>
+          {form.kategori?.value === 2 && (
+            <div>
+              <label className="block text-xs font-medium text-gray-800">
+                Tanggal Pulang<span className="text-red-600">*</span>
+              </label>
+              <p className="text-[10px] text-gray-600 mb-1">
+                Wajib diisi untuk perjalanan dinas luar kota.
+              </p>
+              <input type="date" className="w-full border rounded-md p-2 text-sm focus:ring-1 focus:ring-green-400" value={form.tgl_pulang} onChange={(e) => handleChange("tgl_pulang", e.target.value)}/>
+            </div>
+          )}
+        </div>
+
+        {/* Jam */}
         <div>
-          <label className="block text-gray-700 font-medium mb-1 text-sm">Tanggal</label>
-          <input type="date" name="tanggal" value={form.tanggal} onChange={handleChange} required className="w-full rounded-xl border border-gray-300 px-3 py-2 sm:p-3 focus:outline-none focus:ring-2 focus:ring-green-400 transition"/>
+          <label className="block text-xs font-medium text-gray-800">
+            Jam Berangkat<span className="text-red-600">*</span>
+          </label>
+          <p className="text-[10px] text-gray-600 mb-1">
+            Cantumkan jam keberangkatan sesuai rencana.
+          </p>
+          <input type="time" className="w-full border rounded-md p-2 text-sm focus:ring-1 focus:ring-green-400" value={form.waktu} onChange={(e) => handleChange("waktu", e.target.value)}/>
         </div>
 
         {/* Kepala Divisi */}
         <div>
-          <label className="block text-gray-700 font-medium mb-1 text-sm">Kepala Divisi</label>
-          <select name="kadiv" value={form.kadiv} onChange={handleChange} className="w-full rounded-xl border border-gray-300 px-3 py-2 sm:p-3 focus:outline-none focus:ring-2 focus:ring-green-400 transition">
-            <option value="">Pilih Kadiv</option>
-            {listNama
-              .filter((profil) => profil.id_role === 5 || profil.id_role === 20)
-              .map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.nama}
-                </option>
-              ))}
-          </select>
+          <label className="block text-xs font-medium text-gray-800">
+            Kepala Divisi Penanggung Jawab<span className="text-red-600">*</span>
+          </label>
+          <p className="text-[10px] text-gray-600 mb-1">
+            Pilih kepala divisi penanggung jawab.
+          </p>
+          <Select options={kadivOptions} value={form.id_kadiv} onChange={(v) => handleChange("id_kadiv", v)} placeholder="Pilih Kepala Divisi"/>
         </div>
 
-        {/* Jadwal Tugas */}
+        {/* Keterangan */}
         <div>
-          <label className="block text-gray-700 font-medium mb-1 text-sm">Jadwal Tugas Ke</label>
-          <textarea name="jadwalTugas" value={form.jadwalTugas} onChange={handleChange} rows="2" required className="w-full rounded-xl border border-gray-300 px-3 py-2 sm:p-3 focus:outline-none focus:ring-2 focus:ring-green-400 transition" placeholder="Deskripsikan tujuan tugas dinas"/>
+          <label className="block text-xs font-medium text-gray-800">
+            Keterangan Tugas<span className="text-red-600">*</span>
+          </label>
+          <p className="text-[10px] text-gray-600 mb-1">
+            Tuliskan tujuan atau deskripsi singkat tugas perjalanan dinas.
+          </p>
+          <textarea className="w-full border rounded-md p-2 text-sm focus:ring-1 focus:ring-green-400" rows="2" value={form.keterangan} onChange={(e) => handleChange("keterangan", e.target.value)} placeholder="Tuliskan tujuan/deskripsi tugas"/>
         </div>
 
-        {/* Jam Berangkat */}
-        <div>
-          <label className="block text-gray-700 font-medium mb-1 text-sm">Berangkat Jam</label>
-          <input type="time" name="jamBerangkat" value={form.jamBerangkat} onChange={handleChange} required className="w-full rounded-xl border border-gray-300 px-3 py-2 sm:p-3 focus:outline-none focus:ring-2 focus:ring-green-400 transition"/>
-        </div>
-
-        {/* Persetujuan */}
-        <div>
-          <label className="flex items-start space-x-2 text-xs text-justify sm:text-xs text-red-600 font-medium">
-            <input type="checkbox" name="setuju" checked={form.setuju} onChange={handleChange} className="h-3 w-5 mt-1 text-red-600 rounded focus:ring-2 focus:ring-red-500"/>
-            <span>
-              Saya menyatakan bahwa seluruh data yang saya isikan adalah benar. Saya memahami bahwa
-              <b> setiap bentuk kebohongan, manipulasi, atau penyalahgunaan data </b> akan dikenakan sanksi sesuai aturan
-              perusahaan, termasuk namun tidak terbatas pada:<b> penurunan jabatan, pemotongan gaji, atau pemutusan hubungan kerja secara sepihak. </b>
-            </span>
+        {/* Konfirmasi */}
+        <div className="flex items-start space-x-2 border-t p-3">
+          <input type="checkbox" id="confirm" checked={confirm} onChange={(e) => setConfirm(e.target.checked)} className="mt-1"/>
+          <label htmlFor="confirm" className="text-[10px] text-gray-700 leading-snug">
+            Dengan ini saya menyatakan bahwa seluruh data yang saya isi adalah
+            <strong> benar, sah, dan dapat dipertanggungjawabkan</strong>.
+            Saya memahami bahwa setiap penyalahgunaan atau pemberian data palsu
+            dapat berakibat <strong>sanksi tegas</strong> sesuai kebijakan
+            perusahaan.
           </label>
         </div>
 
-        {/* Tombol Submit */}
-        <button type="submit" disabled={loading} className={`w-full ${loading ? "bg-gray-400" : "bg-[#326058] hover:bg-[#326058]"} text-white font-semibold py-3 rounded-xl transition duration-300 shadow-md`}>
-          {loading ? "Mengirim..." : "Kirim Form"}
+        {/* Submit */}
+        <button type="submit" disabled={submitLoading} className="w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 transition disabled:opacity-50 text-sm font-semibold">
+          {submitLoading ? "Mengirim..." : "Kirim Pengajuan Dinas"}
         </button>
-
-        {/* Tombol Kembali */}
-        <button type="button" onClick={() => window.history.back()} className="w-full mt-3 border-2 border-[#326058] text-[#326058] py-3 rounded-xl font-semibold hover:bg-green-50 transition duration-300">
-          Kembali
-        </button>
-
-        {/* Link Login */}
-        <div className="pt-4 text-center text-sm">
-          <a href="/login" className="text-gray-700 hover:underline">
-            Sudah punya akun? <span className="text-[#326058] font-semibold">Login</span>
-          </a>
-        </div>
       </form>
     </div>
   );
-};
 
-export default FormDinas;
+}

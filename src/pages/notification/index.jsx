@@ -4,6 +4,7 @@ import { faBell } from "@fortawesome/free-solid-svg-icons";
 import MobileLayout from "../../layouts/mobileLayout";
 import NotificationDetail from "./notificationDetail";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
+import { FooterMainBar } from "../../components";
 
 const Notification = () => {
   const [notifications, setNotifications] = useState([]);
@@ -109,43 +110,47 @@ const Notification = () => {
 
   return (
     <MobileLayout title="Notification" className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
-      {showDetail ? (
-        <NotificationDetail notification={selectedNotification} onBack={() => setShowDetail(false)} />
-      ) : loading ? (
-         // Card Skeleton Loader
-        <>
-        <div className="p-4 rounded-lg mb-2 border border-gray-300 shadow-sm animate-pulse bg-gray-200">
-          <div className="h-4 bg-gray-400 rounded w-1/3 mb-2"></div>
-          <div className="h-3 bg-gray-400 rounded w-2/3 mb-1"></div>
-          <div className="h-3 bg-gray-400 rounded w-1/2"></div>
-        </div>
-        </>
-      ) : notifications.length > 0 ? (
-        notifications.map((notification, index) => (
-          <div key={notification.id} onClick={() => handleNotificationClick(notification.id)} className={`p-4 rounded-lg mb-2 border border-gray-300 shadow-sm cursor-pointer ${ notification.is_read || clickedNotifications.includes(notification.id)
-                ? "bg-gray-300"
-                : "bg-white border-green-800"
-            }`}
-          >
-            <div className="flex items-center space-x-1 mb-0 pb-0">
-              <FontAwesomeIcon icon={faBell} className="transition-colors duration-300 pb-1 text-xs text-green-800" />
-              <p className="text-xs text-gray-500 font-semibold mb-1">Notifikasi</p>
-              <p className="pb-1 text-gray-500">•</p>
-              <p className="pb-1 text-xs text-gray-500">{timeAgo[index] || "Beberapa saat yang lalu"}</p>
-              <p className="pb-1 text-gray-500">•</p>
-              <p className="pb-1 text-xs text-gray-500">{notification.is_read ? "Sudah dibaca" : "Belum dibaca"}</p>
+
+      <div className="mb-20">
+        {showDetail ? (
+          <NotificationDetail notification={selectedNotification} onBack={() => setShowDetail(false)} />
+        ) : loading ? (
+          // Card Skeleton Loader
+          <>
+            <div className="p-4 rounded-lg mb-2 border border-gray-300 shadow-sm animate-pulse bg-gray-200">
+              <div className="h-4 bg-gray-400 rounded w-1/3 mb-2"></div>
+              <div className="h-3 bg-gray-400 rounded w-2/3 mb-1"></div>
+              <div className="h-3 bg-gray-400 rounded w-1/2"></div>
             </div>
-            <h6 className="text-l font-semibold mb-1 text-balance text-wrap text-justify break-words overflow-hidden">
-              {notification.type.length > 35 ? `${notification.type.slice(0, 35)}...` : notification.type}
-            </h6>
-            <p className="text-l text-gray-500">
-              {notification.message.length > 30 ? `${notification.message.slice(0, 30)}...` : notification.message}
-            </p>
-          </div>
-        ))
-      ) : (
-        <h1 className="text-center text-gray-500">No notifications</h1>
-      )}
+          </>
+        ) : notifications.length > 0 ? (
+          notifications.map((notification, index) => (
+            <div key={notification.id} onClick={() => handleNotificationClick(notification.id)} className={`p-4 rounded-lg mb-2 border border-gray-300 shadow-sm cursor-pointer ${notification.is_read || clickedNotifications.includes(notification.id)
+              ? "bg-gray-300"
+              : "bg-white border-green-800"
+              }`}
+            >
+              <div className="flex items-center space-x-1 mb-0 pb-0">
+                <FontAwesomeIcon icon={faBell} className="transition-colors duration-300 pb-1 text-xs text-green-800" />
+                <p className="text-xs text-gray-500 font-semibold mb-1">Notifikasi</p>
+                <p className="pb-1 text-gray-500">•</p>
+                <p className="pb-1 text-xs text-gray-500">{timeAgo[index] || "Beberapa saat yang lalu"}</p>
+                <p className="pb-1 text-gray-500">•</p>
+                <p className="pb-1 text-xs text-gray-500">{notification.is_read ? "Sudah dibaca" : "Belum dibaca"}</p>
+              </div>
+              <h6 className="text-l font-semibold mb-1 text-balance text-wrap text-justify break-words overflow-hidden">
+                {notification.type.length > 35 ? `${notification.type.slice(0, 35)}...` : notification.type}
+              </h6>
+              <p className="text-l text-gray-500">
+                {notification.message.length > 30 ? `${notification.message.slice(0, 30)}...` : notification.message}
+              </p>
+            </div>
+          ))
+        ) : (
+          <h1 className="text-center text-gray-500">No notifications</h1>
+        )}
+      </div>
+      <FooterMainBar />
     </MobileLayout>
   );
 };

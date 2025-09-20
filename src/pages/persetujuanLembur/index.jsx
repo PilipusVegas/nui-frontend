@@ -6,6 +6,8 @@ import { faCheck, faArrowLeft, faClock, faUser, faInfoCircle, faMapMarkerAlt, fa
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { SectionHeader, Modal } from "../../components";
+import { formatFullDate } from "../../utils/dateUtils";
+import toast from "react-hot-toast";
 
 const PersetujuanLembur = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -20,7 +22,7 @@ const PersetujuanLembur = () => {
   const [modalDescription, setModalDescription] = useState("");
   const handleBackClick = () => navigate("/home");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
+  const itemsPerPage = 10;
   const canApprove = (user.id_role === 5 || user.id_role === 20) && user.id_user !== 104;
 
   const paginatedData = (() => {
@@ -69,7 +71,6 @@ const PersetujuanLembur = () => {
       .includes(searchQuery.toLowerCase());
     return matchesSearch && approval.status_lembur === 0;
   });
-
 
   const handleApprove = async (id) => {
     Swal.fire({
@@ -151,71 +152,103 @@ const PersetujuanLembur = () => {
 
   return (
     <div className="flex flex-col">
-      <SectionHeader title="Pengajuan Lembur" subtitle="Daftar pengajuan lembur yang perlu diproses" onBack={handleBackClick} actions={
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full">
-          {/* Search */}
-          <div className="relative flex items-center w-full">
-            <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
-            <input type="text" value={searchQuery} placeholder="Cari Nama Karyawan..." className="border border-gray-300 p-2 pl-10 rounded-lg w-full sm:max-w-md" onChange={(e) => setSearchQuery(e.target.value)} />
+      <SectionHeader title="Pengajuan Lembur" subtitle="Daftar pengajuan lembur yang perlu diproses" onBack={handleBackClick}
+        actions={
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full">
+            {/* Pencarian */}
+            <div className="relative flex-1">
+              <FontAwesomeIcon icon={faSearch} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Cari Nama Karyawan..." className="w-full border border-gray-300 rounded-lg py-2 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+            </div>
+
+            {/* Tombol Riwayat */}
+            <button onClick={() => navigate('/riwayat-lembur')} className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm sm:text-base">
+              <FontAwesomeIcon icon={faClock} className="mr-2" />
+              Lihat Riwayat
+            </button>
           </div>
-        </div>
-      }
+        }
       />
 
       <div className="hidden md:block">
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+        <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
           <table className="min-w-full table-auto text-sm">
             <thead>
-              <tr className="bg-green-600 text-white text-xs md:text-sm uppercase tracking-wide">
-                {["No.", "Tanggal", "Nama Karyawan", "Lokasi Tugas", "Deskripsi", "Waktu Lembur"].map((header) => (
-                  <th key={header} className="py-2 px-4 text-center font-semibold">
+              <tr className="bg-green-600 text-white text-xs md:text-sm uppercase tracking-wider">
+                {["No.", "Tanggal & Lokasi", "Nama", "Waktu Lembur & Total", "Menu"].map((header) => (
+                  <th key={header} className="py-3 px-5 text-center font-semibold whitespace-nowrap">
                     {header}
                   </th>
                 ))}
                 {canApprove && (
-                  <th className="py-2 px-4 text-center font-semibold">Aksi</th>
+                  <th className="py-3 px-5 text-center font-semibold whitespace-nowrap">Approve</th>
                 )}
               </tr>
             </thead>
 
-            <tbody className="text-gray-700 divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 text-gray-700">
               {filteredApproval.length > 0 ? (
-                paginatedData.data.map((approval, index) => (
-                  <tr key={approval.id_lembur} className="hover:bg-gray-50 transition">
-                    <td className="py-1.5 px-4 text-center">{index + 1}</td>
-                    <td className="py-1.5 px-4 text-center">
-                      {new Date(approval.tanggal).toLocaleDateString("id-ID")}
-                    </td>
-                    <td className="py-1.5 px-4 text-left font-medium">{approval.nama_user}</td>
-                    <td className="py-1.5 px-4 text-center">{approval.lokasi}</td>
-                    <td className="py-1.5 px-4 text-center">
-                      <button onClick={() => openModalWithDescription(approval.deskripsi)} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium bg-blue-500 text-white hover:bg-blue-600 transition">
-                        <FontAwesomeIcon icon={faInfoCircle} /> Detail
-                      </button>
-                    </td>
-                    <td className="py-1.5 px-4 text-center font-medium">
-                      {approval.jam_mulai} - {approval.jam_selesai}
-                    </td>
+                paginatedData.data.map((approval, index) => {
+                  const start = new Date(`1970-01-01T${approval.jam_mulai}`);
+                  const end = new Date(`1970-01-01T${approval.jam_selesai}`);
+                  const duration = ((end - start) / 1000 / 60).toFixed(0);
+                  const hours = Math.floor(duration / 60);
+                  const globalIndex = (currentPage - 1) * itemsPerPage + index + 1;
 
-                    {canApprove && (
-                      <td className="py-1.5 px-4 text-center">
-                        <div className="flex gap-2 justify-center">
-                          <button onClick={() => handleApprove(approval.id_lembur)} className="flex items-center gap-1 px-3 py-1 rounded-md text-xs bg-green-500 text-white hover:bg-green-600 transition">
-                            <FontAwesomeIcon icon={faCheck} /> Setujui
-                          </button>
-                          <button onClick={() => handleReject(approval.id_lembur)} className="flex items-center gap-1 px-3 py-1 rounded-md text-xs bg-red-500 text-white hover:bg-red-600 transition">
-                            <FontAwesomeIcon icon={faTimes} /> Tolak
-                          </button>
+                  return (
+                    <tr key={approval.id_lembur} className="hover:bg-gray-50 transition-colors duration-200">
+                      {/* No */}
+                      <td className="py-2.5 px-5 text-center font-medium">
+                        {globalIndex}
+                      </td>
+
+                      {/* Tanggal & Lokasi */}
+                      <td className="py-2.5 px-5">
+                        <div className="font-medium">{formatFullDate(approval.tanggal)}</div>
+                        <div className="text-gray-500 text-xs mt-0.5">{approval.lokasi}</div>
+                      </td>
+
+                      {/* Nama */}
+                      <td className="py-2.5 px-5 font-medium">{approval.nama_user}</td>
+
+                      {/* Waktu Lembur & Total */}
+                      <td className="py-2.5 px-5 text-center font-medium">
+                        <div>{approval.jam_mulai} – {approval.jam_selesai}</div>
+                        <div className="text-gray-500 text-xs mt-0.5">
+                          Total Lembur : {hours} jam
                         </div>
                       </td>
-                    )}
-                  </tr>
-                ))
+
+                      {/* Menu (Detail) */}
+                      <td className="py-2.5 px-5 text-center">
+                        <button onClick={() => openModalWithDescription(approval.deskripsi)} className="inline-flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors">
+                          <FontAwesomeIcon icon={faInfoCircle} /> Detail
+                        </button>
+                      </td>
+
+                      {/* Approve / Tolak */}
+                      {canApprove && (
+                        <td className="px-5 text-center">
+                          <div className="flex gap-2 justify-center">
+                            <button onClick={() => handleApprove(approval.id_lembur)} className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs bg-green-500 text-white hover:bg-green-600 transition-colors">
+                              <FontAwesomeIcon icon={faCheck} /> Setujui
+                            </button>
+                            <button onClick={() => handleReject(approval.id_lembur)} className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs bg-red-500 text-white hover:bg-red-600 transition-colors">
+                              <FontAwesomeIcon icon={faTimes} /> Tolak
+                            </button>
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
-                  <td colSpan={canApprove ? 7 : 6} className="py-16 text-gray-500 text-center">
+                  <td colSpan={canApprove ? 6 : 5} className="py-16 text-gray-500 text-center">
                     <FontAwesomeIcon icon={faTriangleExclamation} className="text-4xl text-gray-400 mb-2" />
-                    <p className="text-base font-medium">Tidak ada pengajuan lembur.</p>
+                    <p className="text-base font-medium">
+                      Tidak ada pengajuan lembur.
+                    </p>
                   </td>
                 </tr>
               )}
@@ -223,7 +256,6 @@ const PersetujuanLembur = () => {
           </table>
         </div>
       </div>
-
 
       {/* Tabel untuk Mobile */}
       <div className="md:hidden space-y-4">
@@ -300,12 +332,11 @@ const PersetujuanLembur = () => {
           </span>
 
           {/* Panah kanan */}
-          <button
-            onClick={() =>
-              setCurrentPage((prev) =>
-                Math.min(prev + 1, Math.ceil(paginatedData.total / itemsPerPage))
-              )
-            }
+          <button onClick={() =>
+            setCurrentPage((prev) =>
+              Math.min(prev + 1, Math.ceil(paginatedData.total / itemsPerPage))
+            )
+          }
             disabled={currentPage === Math.ceil(paginatedData.total / itemsPerPage)}
             className={`absolute right-0 px-3 py-2 rounded-full border shadow-sm transition-all duration-200
                 ${currentPage === Math.ceil(paginatedData.total / itemsPerPage)

@@ -7,7 +7,7 @@ const SectionHeader = ({ title, subtitle, onBack, actions }) => {
             {/* Kiri: Back di tengah, Text (title+subtitle) */}
             <div className="flex items-center space-x-3">
                 {onBack && (
-                    <FontAwesomeIcon icon={faArrowLeft} className="cursor-pointer text-white bg-green-600 hover:bg-green-700 transition rounded-full p-3.5 sm:p-4 shadow-lg self-center" onClick={onBack} title="Kembali"/>
+                    <FontAwesomeIcon icon={faArrowLeft} className="cursor-pointer text-white bg-green-500 hover:bg-green-600 transition rounded-full p-3.5 sm:p-4 shadow-lg self-center" onClick={onBack} title="Kembali"/>
                 )}
                 <div className="flex flex-col justify-center">
                     <h1 className="text-lg sm:text-xl font-bold text-gray-800 leading-tight">
