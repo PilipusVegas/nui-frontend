@@ -349,7 +349,6 @@ const DetailPenggajian = () => {
                           (record.overtime < 10 ? `0${record.overtime}:00` : `${record.overtime}:00`) : '-'
                         }
                       </td>
-
                     </tr>
                   );
                 })}
