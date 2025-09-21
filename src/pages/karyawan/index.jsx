@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faArrowRight, faEdit, faTrash, faSearch, faPlus, faTriangleExclamation, faEye } from "@fortawesome/free-solid-svg-icons";
+import { faEdit, faTrash, faSearch, faPlus, faTriangleExclamation, faEye } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import SectionHeader from "../../components/desktop/SectionHeader";
-import { LoadingSpinner, EmptyState, ErrorState } from "../../components/";
+import { LoadingSpinner, EmptyState, ErrorState, Pagination } from "../../components/";
+import Select from "react-select";
 
 const DataKaryawan = () => {
   const [editable] = useState(() => getUserFromToken());
-  const navigate = useNavigate();
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingAction, setLoadingAction] = useState(false);
@@ -18,25 +19,19 @@ const DataKaryawan = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPerusahaan, setSelectedPerusahaan] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState(""); // "1" untuk aktif, "0" untuk nonaktif
-  const itemsPerPage = 10;
-  const handleBackClick = () => navigate("/home");
-  const indexOfFirstUser = (currentPage - 1) * itemsPerPage;
+  const [selectedStatus, setSelectedStatus] = useState("");
 
   const canEditOrDelete = (user) => {
     // Admin Utama full akses
     if (editable?.id_role === 1) return true;
-
     // HRD full akses semua perusahaan
     if (editable?.id_role === 4) return true;
-
     // HRD khusus (id_role 6) hanya perusahaan 5–9
     if (editable?.id_role === 6 && [5, 6, 7, 8, 9].includes(user.id_perusahaan)) {
       return true;
     }
     return false;
   };
-
 
   const fetchData = async (endpoint) => {
     try {
@@ -85,10 +80,12 @@ const DataKaryawan = () => {
     const matchStatus = selectedStatus === "" || user.status?.toString() === selectedStatus;
     return matchSearch && matchPerusahaan && matchStatus;
   });
-  const currentUsers = filteredUsers.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+
+  const totalItems = filteredUsers.length;
+  const itemsPerPage = 10;
+  const indexOfFirstUser = (currentPage - 1) * itemsPerPage;
+  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfFirstUser + itemsPerPage);
+
 
   const handleDelete = (id) => {
     Swal.fire({
@@ -125,7 +122,7 @@ const DataKaryawan = () => {
   return (
     <div className="flex flex-col">
       <div className="flex-grow">
-        <SectionHeader title="Kelola Karyawan" subtitle="Menampilkan seluruh karyawan dari perusahaan yang Anda kelola" onBack={handleBackClick}
+        <SectionHeader title="Kelola Karyawan" subtitle="Menampilkan seluruh karyawan dari perusahaan yang Anda kelola" onBack={() => navigate("/home")}
           actions={
             <button onClick={() => navigate("/karyawan/tambah")} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
               <FontAwesomeIcon icon={faPlus} className="mr-2 text-sm sm:text-base" />
@@ -144,30 +141,53 @@ const DataKaryawan = () => {
           </div>
 
           <div className="order-1 sm:order-2 grid grid-cols-2 gap-2 sm:gap-3 w-full sm:max-w-sm">
+            {/* Filter Perusahaan */}
             <div>
               <label htmlFor="filter-perusahaan" className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5 block">
                 Perusahaan
               </label>
-              <select id="filter-perusahaan" value={selectedPerusahaan} onChange={(e) => setSelectedPerusahaan(e.target.value)} className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 px-2 py-2.5 rounded-md text-xs sm:text-sm w-full">
-                <option value="">Semua</option>
-                {[...new Set(users.map((u) => u.perusahaan).filter(Boolean))].map(
-                  (perusahaanName, i) => (
-                    <option key={i} value={perusahaanName}>
-                      {perusahaanName}
-                    </option>
-                  )
-                )}
-              </select>
+              <Select inputId="filter-perusahaan" className="text-xs sm:text-sm"
+                options={[
+                  { value: "", label: "Semua" },
+                  ...[...new Set(users.map((u) => u.perusahaan).filter(Boolean))].map((p) => ({
+                    value: p,
+                    label: p,
+                  })),
+                ]}
+                value={
+                  selectedPerusahaan
+                    ? { value: selectedPerusahaan, label: selectedPerusahaan }
+                    : { value: "", label: "Semua" }
+                }
+                onChange={(opt) => setSelectedPerusahaan(opt?.value ?? "")}
+                isClearable
+                placeholder="Pilih perusahaan…"
+              />
             </div>
+
+            {/* Filter Status */}
             <div>
               <label htmlFor="filter-status" className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5 block">
                 Status
               </label>
-              <select id="filter-status" value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)} className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 px-2 py-2.5 rounded-md text-xs sm:text-sm w-full">
-                <option value="">Semua</option>
-                <option value="1">Aktif</option>
-                <option value="0">Nonaktif</option>
-              </select>
+              <Select inputId="filter-status" className="text-xs sm:text-sm"
+                options={[
+                  { value: "", label: "Semua" },
+                  { value: "1", label: "Aktif" },
+                  { value: "0", label: "Nonaktif" },
+                ]}
+                value={
+                  selectedStatus
+                    ? {
+                      value: selectedStatus,
+                      label: selectedStatus === "1" ? "Aktif" : "Nonaktif",
+                    }
+                    : { value: "", label: "Semua" }
+                }
+                onChange={(opt) => setSelectedStatus(opt?.value ?? "")}
+                isClearable
+                placeholder="Pilih status…"
+              />
             </div>
           </div>
         </div>
@@ -250,8 +270,6 @@ const DataKaryawan = () => {
                             {user.status === 1 ? "Aktif" : "Nonaktif"}
                           </span>
                         </td>
-
-                        {/* Menu Aksi */}
                         <td className="px-4 py-1.5 text-center border-b border-gray-200">
                           <div className="flex justify-center gap-2">
                             <button onClick={() => navigate(`/karyawan/edit/${user.id}`)} className={`px-3.5 py-1.5 font-medium rounded text-white text-sm flex items-center justify-center ${canEditOrDelete(user) ? "bg-yellow-500 hover:bg-yellow-600" : "bg-gray-400 cursor-not-allowed"}`} disabled={!canEditOrDelete(user)} title="Edit">
@@ -313,7 +331,7 @@ const DataKaryawan = () => {
 
                         {/* Status */}
                         <div className="flex-shrink-0">
-                          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${user.status === 1 ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-500" }`}>
+                          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${user.status === 1 ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-500"}`}>
                             {user.status === 1 ? "Aktif" : "Nonaktif"}
                           </span>
                         </div>
@@ -350,23 +368,13 @@ const DataKaryawan = () => {
 
 
         {/* Pagination - Versi Estetik dan Ramping */}
-        <div className="relative w-full flex justify-center items-center mt-10 text-gray-700">
-          <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1} className={`absolute left-0 flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200
-                ${currentPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600 text-white shadow-md"}`} title="Halaman Sebelumnya"
-          >
-            <FontAwesomeIcon icon={faArrowLeft} className="text-base" />
-          </button>
-          <span className="text-sm font-medium px-6 py-2 rounded-full border border-gray-200 bg-white shadow-sm tracking-wide">
-            Halaman {currentPage} <span className="text-gray-400">/</span> {Math.ceil(filteredUsers.length / itemsPerPage)}
-          </span>
-          <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(filteredUsers.length / itemsPerPage)))}
-            disabled={currentPage === Math.ceil(filteredUsers.length / itemsPerPage)}
-            className={`absolute right-0 flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200
-                ${currentPage === Math.ceil(filteredUsers.length / itemsPerPage) ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700 text-white shadow-md"}`} title="Halaman Berikutnya"
-          >
-            <FontAwesomeIcon icon={faArrowRight} className="text-base" />
-          </button>
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          className="mt-10"
+        />
       </div>
     </div>
   );
