@@ -1,4 +1,4 @@
-// src/components/common/Pagination.jsx
+// src/components/Pagination.jsx
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
@@ -12,39 +12,40 @@ const Pagination = ({
 }) => {
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
 
-  const prevDisabled = currentPage <= 1;
-  const nextDisabled = currentPage >= totalPages;
+  const goPrev = () => currentPage > 1 && onPageChange(currentPage - 1);
+  const goNext = () => currentPage < totalPages && onPageChange(currentPage + 1);
 
   return (
-    <div className={`relative flex justify-center items-center ${className}`}>
+    <div
+      className={`relative w-full flex justify-center items-center mt-8 text-gray-700 ${className}`}
+    >
+      {/* Tombol Sebelumnya */}
       <button
-        onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
-        disabled={prevDisabled}
+        onClick={goPrev}
+        disabled={currentPage === 1}
+        className={`absolute left-0 flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200
+        ${currentPage === 1
+            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+            : "bg-green-500 hover:bg-green-600 text-white shadow-md"}`}
         title="Halaman Sebelumnya"
-        className={`absolute left-0 w-10 h-10 flex items-center justify-center rounded-full transition
-          ${
-            prevDisabled
-              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-              : "bg-green-500 hover:bg-green-600 text-white shadow-md"
-          }`}
       >
         <FontAwesomeIcon icon={faArrowLeft} />
       </button>
 
-      <span className="px-6 py-2 text-sm font-medium rounded-full border border-gray-200 bg-white shadow-sm">
+      {/* Info Halaman */}
+      <span className="text-sm font-medium px-6 py-2 rounded-full border border-gray-200 bg-white shadow-sm tracking-wide">
         Halaman {currentPage} <span className="text-gray-400">/</span> {totalPages}
       </span>
 
+      {/* Tombol Berikutnya */}
       <button
-        onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
-        disabled={nextDisabled}
+        onClick={goNext}
+        disabled={currentPage === totalPages}
+        className={`absolute right-0 flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200
+        ${currentPage === totalPages
+            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+            : "bg-green-600 hover:bg-green-700 text-white shadow-md"}`}
         title="Halaman Berikutnya"
-        className={`absolute right-0 w-10 h-10 flex items-center justify-center rounded-full transition
-          ${
-            nextDisabled
-              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-              : "bg-green-600 hover:bg-green-700 text-white shadow-md"
-          }`}
       >
         <FontAwesomeIcon icon={faArrowRight} />
       </button>
