@@ -40,26 +40,31 @@ const RiwayatLembur = () => {
         fetchApprovalData();
     }, [apiUrl]);
 
-    // Filter data berdasarkan search, status (1 & 2), dan rentang tanggal jika ada
-    const filteredGroupedData = useMemo(() => {
-        if (!startDate || !endDate) return []; // tidak ada data jika belum pilih tanggal
+const filteredGroupedData = useMemo(() => {
+  if (!startDate || !endDate) return [];
+  const start = new Date(startDate + "T00:00:00");  // awal hari lokal
+  const end   = new Date(endDate   + "T23:59:59");  // akhir hari lokal
 
-        return Object.values(
-            approvalData
-                .filter(
-                    (a) =>
-                        (a.status_lembur === 1 || a.status_lembur === 2) &&
-                        a.nama_user.toLowerCase().includes(searchQuery.toLowerCase()) &&
-                        a.tanggal >= startDate &&
-                        a.tanggal <= endDate
-                )
-                .reduce((acc, cur) => {
-                    if (!acc[cur.nama_user]) acc[cur.nama_user] = { user: cur.nama_user, data: [] };
-                    acc[cur.nama_user].data.push(cur);
-                    return acc;
-                }, {})
+  return Object.values(
+    approvalData
+      .filter(a => {
+        const t = new Date(a.tanggal);   // biarkan JS konversi ke lokal
+        return (
+          (a.status_lembur === 1 || a.status_lembur === 2) &&
+          a.nama_user.toLowerCase().includes(searchQuery.toLowerCase()) &&
+          t >= start && t <= end         // inklusif “sama dengan”
         );
-    }, [approvalData, searchQuery, startDate, endDate]);
+      })
+      .reduce((acc, cur) => {
+        if (!acc[cur.nama_user]) acc[cur.nama_user] = { user: cur.nama_user, data: [] };
+        acc[cur.nama_user].data.push(cur);
+        return acc;
+      }, {})
+  );
+}, [approvalData, searchQuery, startDate, endDate]);
+
+
+
 
 
     const paginatedData = (() => {
@@ -249,7 +254,7 @@ const RiwayatLembur = () => {
                     </div>
                 )}
             </div>
-            
+
             {paginatedData.total > itemsPerPage && (
                 <div className="relative flex justify-center items-center mt-6 text-sm sm:text-base">
                     {/* Panah kiri */}
