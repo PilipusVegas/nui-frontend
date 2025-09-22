@@ -40,31 +40,28 @@ const RiwayatLembur = () => {
         fetchApprovalData();
     }, [apiUrl]);
 
-const filteredGroupedData = useMemo(() => {
-  if (!startDate || !endDate) return [];
-  const start = new Date(startDate + "T00:00:00");  // awal hari lokal
-  const end   = new Date(endDate   + "T23:59:59");  // akhir hari lokal
+    const filteredGroupedData = useMemo(() => {
+        if (!startDate || !endDate) return [];
+        const start = new Date(startDate + "T00:00:00");  // awal hari lokal
+        const end = new Date(endDate + "T23:59:59");  // akhir hari lokal
 
-  return Object.values(
-    approvalData
-      .filter(a => {
-        const t = new Date(a.tanggal);   // biarkan JS konversi ke lokal
-        return (
-          (a.status_lembur === 1 || a.status_lembur === 2) &&
-          a.nama_user.toLowerCase().includes(searchQuery.toLowerCase()) &&
-          t >= start && t <= end         // inklusif “sama dengan”
+        return Object.values(
+            approvalData
+                .filter(a => {
+                    const t = new Date(a.tanggal);   // biarkan JS konversi ke lokal
+                    return (
+                        (a.status_lembur === 1 || a.status_lembur === 2) &&
+                        a.nama_user.toLowerCase().includes(searchQuery.toLowerCase()) &&
+                        t >= start && t <= end         // inklusif “sama dengan”
+                    );
+                })
+                .reduce((acc, cur) => {
+                    if (!acc[cur.nama_user]) acc[cur.nama_user] = { user: cur.nama_user, data: [] };
+                    acc[cur.nama_user].data.push(cur);
+                    return acc;
+                }, {})
         );
-      })
-      .reduce((acc, cur) => {
-        if (!acc[cur.nama_user]) acc[cur.nama_user] = { user: cur.nama_user, data: [] };
-        acc[cur.nama_user].data.push(cur);
-        return acc;
-      }, {})
-  );
-}, [approvalData, searchQuery, startDate, endDate]);
-
-
-
+    }, [approvalData, searchQuery, startDate, endDate]);
 
 
     const paginatedData = (() => {
@@ -136,7 +133,12 @@ const filteredGroupedData = useMemo(() => {
                         const countApproved = userGroup.data.filter((a) => a.status_lembur === 1).length;
                         const countRejected = userGroup.data.filter((a) => a.status_lembur === 2).length;
                         const countData = userGroup.data.length;
-                        const totalJam = userGroup.data.reduce((sum, a) => sum + calculateHours(a.jam_mulai, a.jam_selesai), 0);
+                        const totalJam = userGroup.data
+                            .filter(a => a.status_lembur === 1) // hanya yang disetujui
+                            .reduce(
+                                (sum, a) => sum + calculateHours(a.jam_mulai, a.jam_selesai),
+                                0
+                            );
 
                         return (
                             <div key={userGroup.user} className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden transition hover:shadow-lg">
