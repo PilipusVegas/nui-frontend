@@ -48,11 +48,11 @@ const RiwayatLembur = () => {
         return Object.values(
             approvalData
                 .filter(a => {
-                    const t = new Date(a.tanggal);   // biarkan JS konversi ke lokal
+                    const t = new Date(a.tanggal);
                     return (
-                        (a.status_lembur === 1 || a.status_lembur === 2) &&
+                        a.status_lembur === 1 &&
                         a.nama_user.toLowerCase().includes(searchQuery.toLowerCase()) &&
-                        t >= start && t <= end         // inklusif “sama dengan”
+                        t >= start && t <= end
                     );
                 })
                 .reduce((acc, cur) => {
