@@ -3,15 +3,12 @@ import Select from "react-select";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { fetchWithJwt } from "../../utils/jwtHelper";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSuitcaseRolling } from "@fortawesome/free-solid-svg-icons";
 
 export default function SuratDinasPage() {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const [namaOptions, setNamaOptions] = useState([]);
   const [kadivOptions, setKadivOptions] = useState([]);
   const [profilLoading, setProfilLoading] = useState(true);
-
   const [form, setForm] = useState({
     id_user: null,
     nama: "",
@@ -59,7 +56,6 @@ export default function SuratDinasPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // --- Validasi awal ---
     if (!confirm) {
       toast.error("Anda harus menyetujui pernyataan kebenaran data.");
       return;
@@ -76,6 +72,15 @@ export default function SuratDinasPage() {
     }
     if (form.kategori.value === 2 && !form.tgl_pulang) {
       toast.error("Tanggal pulang wajib diisi untuk dinas luar kota.");
+      return;
+    }
+
+    // ✅ Validasi tanggal pulang ≥ tanggal berangkat
+    if (
+      form.kategori.value === 2 &&
+      new Date(form.tgl_pulang) < new Date(form.tgl_berangkat)
+    ) {
+      toast.error("Tanggal pulang tidak boleh lebih awal dari tanggal berangkat.");
       return;
     }
 
@@ -155,40 +160,63 @@ export default function SuratDinasPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-green-50">
-      <form onSubmit={handleSubmit} className="w-full max-w-xl bg-white shadow-md rounded-xl p-5 pb-12 space-y-3 border border-green-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-emerald-50 p-3">
+      <form onSubmit={handleSubmit} className="w-full max-w-lg bg-white/90 backdrop-blur border border-emerald-100 rounded-3xl shadow-2xl p-6 pb-8 space-y-4">
         {/* Header */}
-        <div className="mb-1 border-b border-gray-300 pb-2">
-          <h1 className="text-xl font-extrabold text-emerald-700 tracking-tight">
-            <FontAwesomeIcon icon={faSuitcaseRolling} className="text-emerald-700 mr-2" />
-            Formulir Resmi Perjalanan Dinas
+        <header className="text-center border-b border-emerald-200 pb-4">
+          <h1 className="text-xl font-bold tracking-wide text-emerald-800">
+            Formulir Perjalanan Dinas
           </h1>
-          <p className="text-xs text-gray-800 mt-1 font-medium">
-            Globalindo Group · Pengajuan Resmi Perjalanan Dinas
+          <p className="text-sm text-gray-500 font-medium mt-1">
+            Globalindo Group
           </p>
-        </div>
+        </header>
 
         {/* Nama Karyawan */}
-        <div>
-          <label className="block text-xs font-medium text-gray-800">
+        <section>
+          <label className="block text-sm font-semibold tracking-wide text-gray-900">
             Nama Karyawan<span className="text-red-600">*</span>
           </label>
-          <p className="text-[10px] text-gray-600 mb-1">
+          <p className="text-xs text-gray-500 mt-1 mb-2">
             Pilih karyawan yang akan melaksanakan perjalanan dinas.
           </p>
-          <Select options={namaOptions} value={form.id_user} onChange={(v) => handleChange("id_user", v) || handleChange("nama", v?.label || "") } placeholder="Pilih Nama Karyawan"/>
-        </div>
+          <Select classNamePrefix="react-select"
+            styles={{
+              control: (base) => ({
+                ...base,
+                borderColor: "#d1d5db",
+                boxShadow: "none",
+                ":hover": { borderColor: "#10b981" },
+              }),
+            }}
+            options={namaOptions}
+            value={form.id_user}
+            onChange={(v) => {
+              handleChange("id_user", v);
+              handleChange("nama", v?.label || "");
+            }}
+            placeholder="Pilih Nama Karyawan"
+          />
+        </section>
 
-        {/* Kategori Dinas */}
-        <div>
-          <label className="block text-xs font-medium text-gray-800">
+        {/* Kategori Perjalanan */}
+        <section>
+          <label className="block text-sm font-semibold tracking-wide text-gray-900">
             Kategori Perjalanan<span className="text-red-600">*</span>
           </label>
-          <p className="text-[10px] text-gray-600 mb-1">
-            <strong>Dalam Kota</strong>: hanya memerlukan tanggal berangkat.
-            <strong> Luar Kota</strong>: wajib mengisi tanggal pulang.
+          <p className="text-[10px] text-gray-700 mt-0.5 mb-2 tracking-wide">
+            <strong>Dalam Kota:</strong> hanya tanggal berangkat. <br />
+            <strong>Luar Kota:</strong> wajib isi tanggal pulang.
           </p>
-          <Select options={[
+          <Select
+            styles={{
+              control: (base) => ({
+                ...base,
+                borderColor: "#d1d5db",
+                ":hover": { borderColor: "#10b981" },
+              }),
+            }}
+            options={[
               { value: 1, label: "Dalam Kota" },
               { value: 2, label: "Luar Kota" },
             ]}
@@ -196,79 +224,73 @@ export default function SuratDinasPage() {
             onChange={(v) => handleChange("kategori", v)}
             placeholder="Pilih Kategori Perjalanan"
           />
-        </div>
+        </section>
 
         {/* Tanggal */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <label className="block text-xs font-medium text-gray-800">
+            <label className="block text-sm font-semibold text-gray-900">
               Tanggal Berangkat<span className="text-red-600">*</span>
             </label>
-            <p className="text-[10px] text-gray-600 mb-1">
-              Isi tanggal dimulainya perjalanan dinas.
-            </p>
-            <input type="date" className="w-full border rounded-md p-2 text-sm focus:ring-1 focus:ring-green-400" value={form.tgl_berangkat} onChange={(e) => handleChange("tgl_berangkat", e.target.value)}/>
+            <input type="date" className="mt-2 w-full border border-gray-300 rounded-lg p-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500" value={form.tgl_berangkat} onChange={(e) => handleChange("tgl_berangkat", e.target.value)}/>
           </div>
           {form.kategori?.value === 2 && (
             <div>
-              <label className="block text-xs font-medium text-gray-800">
+              <label className="block text-sm font-semibold text-gray-900">
                 Tanggal Pulang<span className="text-red-600">*</span>
               </label>
-              <p className="text-[10px] text-gray-600 mb-1">
-                Wajib diisi untuk perjalanan dinas luar kota.
-              </p>
-              <input type="date" className="w-full border rounded-md p-2 text-sm focus:ring-1 focus:ring-green-400" value={form.tgl_pulang} onChange={(e) => handleChange("tgl_pulang", e.target.value)}/>
+              <input type="date" className="mt-2 w-full border border-gray-300 rounded-lg p-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500" value={form.tgl_pulang} onChange={(e) => handleChange("tgl_pulang", e.target.value)}/>
             </div>
           )}
-        </div>
+        </section>
 
         {/* Jam */}
-        <div>
-          <label className="block text-xs font-medium text-gray-800">
+        <section>
+          <label className="block text-sm font-semibold text-gray-900">
             Jam Berangkat<span className="text-red-600">*</span>
           </label>
-          <p className="text-[10px] text-gray-600 mb-1">
-            Cantumkan jam keberangkatan sesuai rencana.
-          </p>
-          <input type="time" className="w-full border rounded-md p-2 text-sm focus:ring-1 focus:ring-green-400" value={form.waktu} onChange={(e) => handleChange("waktu", e.target.value)}/>
-        </div>
+          <input type="time" className="mt-2 w-full border border-gray-300 rounded-lg p-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500" value={form.waktu} onChange={(e) => handleChange("waktu", e.target.value)}/>
+        </section>
 
         {/* Kepala Divisi */}
-        <div>
-          <label className="block text-xs font-medium text-gray-800">
+        <section>
+          <label className="block text-sm font-semibold text-gray-900 mb-1">
             Kepala Divisi Penanggung Jawab<span className="text-red-600">*</span>
           </label>
-          <p className="text-[10px] text-gray-600 mb-1">
-            Pilih kepala divisi penanggung jawab.
-          </p>
-          <Select options={kadivOptions} value={form.id_kadiv} onChange={(v) => handleChange("id_kadiv", v)} placeholder="Pilih Kepala Divisi"/>
-        </div>
+          <Select
+            styles={{
+              control: (base) => ({
+                ...base,
+                borderColor: "#d1d5db",
+                ":hover": { borderColor: "#10b981" },
+              }),
+            }}
+            options={kadivOptions}
+            value={form.id_kadiv}
+            onChange={(v) => handleChange("id_kadiv", v)}
+            placeholder="Pilih Kepala Divisi"
+          />
+        </section>
 
         {/* Keterangan */}
-        <div>
-          <label className="block text-xs font-medium text-gray-800">
+        <section>
+          <label className="block text-sm font-semibold text-gray-900">
             Keterangan Tugas<span className="text-red-600">*</span>
           </label>
-          <p className="text-[10px] text-gray-600 mb-1">
-            Tuliskan tujuan atau deskripsi singkat tugas perjalanan dinas.
-          </p>
-          <textarea className="w-full border rounded-md p-2 text-sm focus:ring-1 focus:ring-green-400" rows="2" value={form.keterangan} onChange={(e) => handleChange("keterangan", e.target.value)} placeholder="Tuliskan tujuan/deskripsi tugas"/>
-        </div>
+          <textarea className="mt-2 w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-emerald-500 focus:ring-emerald-500" rows="3" placeholder="Tuliskan tujuan/deskripsi tugas" value={form.keterangan} onChange={(e) => handleChange("keterangan", e.target.value)}/>
+        </section>
 
         {/* Konfirmasi */}
-        <div className="flex items-start space-x-2 border-t p-3">
-          <input type="checkbox" id="confirm" checked={confirm} onChange={(e) => setConfirm(e.target.checked)} className="mt-1"/>
-          <label htmlFor="confirm" className="text-[10px] text-gray-700 leading-snug">
-            Dengan ini saya menyatakan bahwa seluruh data yang saya isi adalah
+        <section className="bg-emerald-50/80 border border-emerald-300 rounded-xl p-4 flex items-start gap-3">
+          <input type="checkbox" id="confirm" checked={confirm} onChange={(e) => setConfirm(e.target.checked)} className="mt-1 accent-emerald-600"/>
+          <label htmlFor="confirm" className="text-[10px] text-gray-800 leading-snug tracking-wide">
+            Dengan ini saya menyatakan seluruh data yang saya isi
             <strong> benar, sah, dan dapat dipertanggungjawabkan</strong>.
-            Saya memahami bahwa setiap penyalahgunaan atau pemberian data palsu
-            dapat berakibat <strong>sanksi tegas</strong> sesuai kebijakan
-            perusahaan.
           </label>
-        </div>
+        </section>
 
         {/* Submit */}
-        <button type="submit" disabled={submitLoading} className="w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 transition disabled:opacity-50 text-sm font-semibold">
+        <button type="submit" disabled={submitLoading} className=" w-full py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-semibold tracking-wide shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed">
           {submitLoading ? "Mengirim..." : "Kirim Pengajuan Dinas"}
         </button>
       </form>
