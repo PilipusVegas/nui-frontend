@@ -74,10 +74,7 @@ export default function Absensi() {
                         const tglPulang = i.jam_selesai ? formatFullDate(i.jam_selesai) : null;
 
                         return (
-                            <div
-                                key={i.id_absen}
-                                className="rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition"
-                            >
+                            <div key={i.id_absen} className="rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition">
                                 {/* === Header: Tanggal & Shift === */}
                                 <div className="flex justify-between items-center px-4 py-2.5 border-b border-gray-200">
                                     <p className="text-xs font-semibold text-gray-700">{tglMasuk}</p>
@@ -124,7 +121,7 @@ export default function Absensi() {
                                             </p>
                                             <div className="flex items-start gap-2 text-xs text-gray-700">
                                                 <FontAwesomeIcon icon={faMapMarkerAlt} className="text-blue-500 mt-0.5" />
-                                                <span>{i.lokasi_absen_selesai ?? "Belum pulang"}</span>
+                                                <span>{i.lokasi_absen_selesai ?? "Lokasi tidak tercatat"}</span>
                                             </div>
                                         </div>
                                     </div>
