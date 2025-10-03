@@ -12,6 +12,7 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 const Absensi = () => {
+  const [isSunday, setIsSunday] = useState(false);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const [currentStep, setCurrentStep] = useState(null);
   const [isSelesaiFlow, setIsSelesaiFlow] = useState(false);
@@ -22,7 +23,6 @@ const Absensi = () => {
   const [isLoading, setIsLoading] = useState(false);
   const user = getUserFromToken();
   const navigate = useNavigate();
-
 
   useEffect(() => {
     const updatePerm = async () => {
@@ -209,10 +209,32 @@ const Absensi = () => {
   };
 
   const handleMulaiClick = async () => {
+    if (isSunday) {
+      Swal.fire({
+        icon: "info",
+        title: "Absen Masuk Nonaktif",
+        html: `
+        <p>Hari ini adalah <b>Minggu</b>, sehingga <b>Absen Masuk</b> tidak tersedia.</p>
+        <p>Jika Anda sedang lembur, silakan lakukan <b>pengajuan lembur</b>.</p>
+      `,
+        confirmButtonText: "Ajukan Lembur",
+        showCancelButton: true,
+        cancelButtonText: "Tutup",
+        reverseButtons: true,
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/lembur"); // redirect ke lembur
+        }
+      });
+      return; // hentikan eksekusi, jangan lanjut ke absen
+    }
+
     setIsLoading(true);
     try {
       await navigator.mediaDevices.getUserMedia({ video: true });
-      await new Promise((resolve, reject) => navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000 }));
+      await new Promise((resolve, reject) =>
+        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000 })
+      );
       setCurrentStep("AbsenMulai");
     } catch (error) {
       console.error("Izin ditolak:", error);
@@ -221,6 +243,7 @@ const Absensi = () => {
       setIsLoading(false);
     }
   };
+
 
   const handleSelesaiClick = async () => {
     setIsLoading(true);
@@ -235,6 +258,13 @@ const Absensi = () => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    const today = new Date().getDay();
+    const isSundayToday = today === 0; // Minggu = 0
+    setIsSunday(isSundayToday);
+  }, []);
+
 
   const renderStep = () => {
     switch (currentStep) {
@@ -302,7 +332,7 @@ const Absensi = () => {
                     <FontAwesomeIcon icon={faClock} className="w-4 h-4 text-green-600" />
                     Riwayat Terakhir Absensi
                   </h2>
-                  <button onClick={() => navigate("/riwayat-absensi")} className="text-xs font-medium text-green-700 hover:underline flex items-center gap-1">
+                  <button onClick={() => navigate("/riwayat-pengguna")} className="text-xs font-medium text-green-700 hover:underline flex items-center gap-1">
                     Lihat Semua
                     <FontAwesomeIcon icon={faArrowRight} className="w-3 h-3" />
                   </button>
@@ -381,16 +411,14 @@ const Absensi = () => {
                 )}
               </section>
 
-
-
-
               {/* === Tombol Aksi === */}
               <section>
                 {!attendanceData.jam_mulai ? (
-                  <button disabled={isLoading} onClick={handleMulaiClick} className={`w-full py-5 rounded-xl font-semibold flex items-center justify-center gap-2 transition bg-green-600 text-white hover:bg-green-700 shadow-lg ${isLoading && "opacity-60 cursor-not-allowed"}`}>
+                  <button disabled={isLoading} onClick={handleMulaiClick} className={`w-full py-5 rounded-xl font-semibold flex items-center justify-center gap-2 transition shadow-lg ${isSunday ? "bg-gray-400 text-white" : "bg-green-600 text-white hover:bg-green-700"}  ${isLoading && "opacity-60 cursor-not-allowed"}`}>
                     <FontAwesomeIcon icon={faCalendarPlus} className="text-2xl" />
-                    {isLoading ? "Memuat…" : "Absen Masuk"}
+                    {isSunday ? "Absen Masuk Nonaktif (Minggu)" : isLoading ? "Memuat…" : "Absen Masuk"}
                   </button>
+
                 ) : !attendanceData.jam_selesai ? (
                   <button disabled={isLoading} onClick={handleSelesaiClick} className={`w-full py-5 rounded-xl font-semibold flex items-center justify-center gap-2 transition bg-orange-500 text-white hover:bg-orange-600 shadow-lg ${isLoading && "opacity-60 cursor-not-allowed"}`}>
                     <FontAwesomeIcon icon={faSignOutAlt} className="text-2xl" />

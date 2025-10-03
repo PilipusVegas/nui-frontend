@@ -79,19 +79,14 @@ export default function SuratDinas() {
                             item.status === 1 ? "Disetujui" : item.status === 2 ? "Ditolak" : "Pending";
 
                         return (
-                            <div
-                                key={idx}
-                                className="rounded-md border border-gray-200 bg-white p-4 py-2.5 shadow-sm hover:shadow transition-shadow"
-                            >
+                            <div key={idx} className="rounded-md border border-gray-200 bg-white p-4 py-2.5 shadow-sm hover:shadow transition-shadow">
                                 {/* Header: kategori & status */}
                                 <div className="flex items-center justify-between mb-3 border-b border-gray-200 pb-2">
                                     <h2 className="text-xs font-medium text-gray-800">
                                         <span className="text-[9px]">Tanggal Pengajuan : </span> <br />{" "}
                                         {formatFullDate(item.created_at)}
                                     </h2>
-                                    <span
-                                        className={`px-3 py-0.5 text-xs font-medium text-white rounded-full ${statusColor}`}
-                                    >
+                                    <span className={`px-3 py-0.5 text-xs font-medium text-white rounded-full ${statusColor}`}>
                                         {statusText}
                                     </span>
                                 </div>
@@ -133,16 +128,17 @@ export default function SuratDinas() {
 
                                 {/* Approval info */}
                                 {item.approved_at && (
-                                    <div className="mt-3 border-t border-gray-200 pt-2 flex justify-between text-[11px] text-gray-500">
-                                        <span>
-                                            Disetujui oleh:
-                                            <span className="font-medium text-gray-700 pl-1">
+                                    <div className="mt-3 border-t border-gray-200 pt-2 flex justify-between text-[10px] text-gray-500">
+                                        <div>
+                                            <span className="block">Disetujui oleh :</span>
+                                            <span className="block font-medium text-gray-700">
                                                 {item.approved_by || "-"}
                                             </span>
-                                        </span>
+                                        </div>
                                         <span>{formatFullDate(item.approved_at)}</span>
                                     </div>
                                 )}
+
                             </div>
                         );
                     })

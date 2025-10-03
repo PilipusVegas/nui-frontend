@@ -238,7 +238,7 @@ const DetailAbsen = ({ formData = {} }) => {
           htmlContainer: "text-sm text-gray-600 mt-2",
         },
       }).then((result) => {
-        navigate(result.isConfirmed ? "/riwayat-absensi" : "/");
+        navigate(result.isConfirmed ? "/riwayat-pengguna" : "/");
       });
     } catch (error) {
       const message = error.message || "Terjadi kesalahan";
@@ -283,7 +283,7 @@ const DetailAbsen = ({ formData = {} }) => {
                       <img
                         src={fotoMulai instanceof File ? URL.createObjectURL(fotoMulai) : fotoMulai}
                         alt="Absen Mulai"
-                        className="w-full h-full object-cover transition"
+                        className="w-full h-full object-cover transition scale-x-[-1]"
                       />
                     </div>
                   </div>
@@ -319,7 +319,7 @@ const DetailAbsen = ({ formData = {} }) => {
                   </p>
                   <div className="flex justify-center">
                     <div className="w-40 h-52 rounded-xl overflow-hidden border bg-gray-100 shadow group">
-                      <img src={fotoSelesai instanceof File ? URL.createObjectURL(fotoSelesai) : fotoSelesai} alt="Absen Selesai" className="w-full h-full object-cover transition" />
+                      <img src={fotoSelesai instanceof File ? URL.createObjectURL(fotoSelesai) : fotoSelesai} alt="Absen Selesai" className="w-full h-full object-cover transition scale-x-[-1]" />
                     </div>
                   </div>
                 </div>

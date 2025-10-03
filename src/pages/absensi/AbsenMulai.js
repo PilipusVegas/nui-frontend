@@ -132,7 +132,7 @@ const AbsenMulai = ({ handleNextStepData }) => {
             {!fotoMulai ? (
               <div className="flex flex-col items-center">
                 <div className="relative w-full aspect-[3/4] bg-gray-100 rounded-xl overflow-hidden shadow-md">
-                  <Webcam ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode }} className="w-full h-full object-cover" />
+                  <Webcam ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode }} mirrored={false} className="w-full h-full object-cover scale-x-[-1]" />
                 </div>
 
                 <div className="flex gap-3 mt-4 w-full">
@@ -148,7 +148,7 @@ const AbsenMulai = ({ handleNextStepData }) => {
               <div className="text-center">
                 <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden shadow-lg border border-gray-200">
                   {/* Foto Absen */}
-                  <img src={fotoMulai} alt="Foto Mulai" className="w-full h-full object-cover" />
+                  <img src={fotoMulai} alt="Foto Mulai" className="w-full h-full object-cover scale-x-[-1]" />
 
                   {/* Overlay Informasi */}
                   <div className="absolute bottom-0 w-full bg-gradient-to-t from-black/90 via-black/90 to-transparent px-3 py-2 text-white">

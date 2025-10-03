@@ -3,27 +3,28 @@ import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
 const SectionHeader = ({ title, subtitle, onBack, actions }) => {
     return (
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 w-full gap-4">
-            {/* Kiri: Back di tengah, Text (title+subtitle) */}
-            <div className="flex items-center space-x-3">
+        <div className=" w-full mb-4 flex items-center justify-between gap-2 sm:gap-4">
+            {/* Kiri: Back + Title/SubTitle dalam satu grup */}
+            <div className="flex items-center gap-2 sm:gap-3 flex-shrink">
                 {onBack && (
-                    <FontAwesomeIcon icon={faArrowLeft} className="cursor-pointer text-white bg-green-500 hover:bg-green-600 transition rounded-full p-3.5 sm:p-4 shadow-lg self-center" onClick={onBack} title="Kembali"/>
+                    <FontAwesomeIcon icon={faArrowLeft} onClick={onBack} title="Kembali" className="cursor-pointer text-white bg-green-500 hover:bg-green-600 transition rounded-full p-2.5 sm:p-4 shadow-lg" />
                 )}
-                <div className="flex flex-col justify-center">
-                    <h1 className="text-lg sm:text-xl font-bold text-gray-800 leading-tight">
+
+                <div className="flex flex-col leading-tight">
+                    <h1 className="text-sm sm:text-xl font-bold text-gray-800">
                         {title}
                     </h1>
                     {subtitle && (
-                        <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                        <p className="text-[11px] sm:text-sm text-gray-600 tracking-tight">
                             {subtitle}
                         </p>
                     )}
                 </div>
             </div>
 
-            {/* Kanan: Actions */}
+            {/* Kanan: Actions sejajar penuh */}
             {actions && (
-                <div className="flex flex-col md:flex-row md:items-center gap-3 w-full md:w-auto">
+                <div className="flex items-center flex-shrink-0">
                     {actions}
                 </div>
             )}

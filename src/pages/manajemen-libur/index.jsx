@@ -22,7 +22,6 @@ const ManajemenHariLibur = () => {
         try {
             const res = await fetchWithJwt(`${apiUrl}/libur`);
             const data = await res.json();
-
             if (data?.success) {
                 setListLibur(data.data || []);
             } else {
@@ -33,7 +32,6 @@ const ManajemenHariLibur = () => {
             setListLibur([]);
         }
     };
-
 
     // Fetch daftar perusahaan (opsional, kalau multi perusahaan)
     const fetchPerusahaan = async () => {

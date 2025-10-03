@@ -3,23 +3,15 @@ import { faHome, faPeopleGroup, faUsersCog, faCheckSquare, faUserCheck, faBook, 
 
 export const menuConfig = [
     // 1. BERANDA
-    {
-        sectionTitle: "Beranda",
-        items: [
-            { label: "Dashboard", icon: faHome, path: "/home", roles: [1, 2, 3, 4, 5, 6, 13, 20] },
-        ],
-    },
+    { sectionTitle: "Beranda", items: [{ label: "Dashboard", icon: faHome, path: "/home", roles: [1, 2, 3, 4, 5, 6, 13, 20] },],},
 
     // 2. MANAJEMEN ORGANISASI
     {
         sectionTitle: "Manajemen Organisasi",
         items: [
             { label: "Karyawan", icon: faPeopleGroup, path: "/karyawan", roles: [1, 4, 6] },
-            { label: "Struktur Divisi", icon: faUsersCog, path: "/divisi", roles: [1, 4, 6] },
-            {
-                label: "Kelola Perusahaan",
-                icon: faBuilding,
-                roles: [1, 4, 6],
+            { label: "Divisi", icon: faUsersCog, path: "/divisi", roles: [1, 4, 6] },
+            { label: "Kelola Perusahaan", icon: faBuilding, roles: [1, 4, 6],
                 submenu: [
                     { label: "Perusahaan", icon: faBuilding, path: "/perusahaan", roles: [1, 4, 6] },
                     { label: "Manajemen Hari Libur", icon: faCalendarDays, path: "/manajemen-hari-libur", roles: [1] },
@@ -29,17 +21,13 @@ export const menuConfig = [
     },
 
     // 3. ABSENSI & PENGGAJIAN
-    {
-        sectionTitle: "Absensi & Penggajian",
+    { sectionTitle: "Absensi & Penggajian",
         items: [
-            {
-                label: "Kelola Absensi",
-                icon: faUserEdit,
-                roles: [1, 4, 5, 6],
+            { label: "Kelola Absensi", icon: faUserEdit, roles: [1, 4, 5, 6],
                 submenu: [
-                    { label: "Persetujuan Absensi", icon: faCheckSquare, path: "/persetujuan-absensi", roles: [1, 4, 5, 6, 13, 20], perusahaan: [1, 4] },
-                    { label: "Data Absensi Harian", icon: faUserCheck, path: "/kelola-presensi", roles: [1, 4, 5, 6] },
-                    { label: "Remark Absensi", icon: faUserEdit, path: "/remark-absensi", roles: [1], }
+                    { label: "Persetujuan Absensi", icon: faCheckSquare, path: "/pengajuan-absensi", roles: [1, 4, 5, 6, 13, 20], perusahaan: [1, 4] },
+                    { label: "Data Absensi Harian", icon: faUserCheck, path: "/kelola-absensi", roles: [1, 4, 6], target: "_blank" },
+                    { label: "Remark Absensi", icon: faUserEdit, path: "/remark-absensi", roles: [1, 4, 6], }
                 ]
             },
             { label: "Jam Kerja / Shift", icon: faClockRotateLeft, path: "/shift", roles: [1, 4, 6] },
@@ -47,20 +35,17 @@ export const menuConfig = [
         ],
     },
 
-    {
-        sectionTitle: "Pengajuan & Riwayat",
+    { sectionTitle: "Pengajuan & Riwayat",
         items: [
-            {
-                label: "Dinas Keluar Kantor", icon: faPenFancy, roles: [1, 4, 5, 6],
+            { label: "Dinas Keluar Kantor", icon: faPenFancy, roles: [1, 4, 5, 6, 20],
                 submenu: [
-                    { label: "Pengajuan Dinas", path: "/surat-dinas", roles: [1, 4, 5, 6] },
-                    { label: "Riwayat Dinas", path: "/surat-dinas/riwayat", roles: [1, 4, 5, 6] },
+                    { label: "Pengajuan Dinas", path: "/pengajuan-dinas", roles: [1, 4, 5, 6, 20] },
+                    { label: "Riwayat Dinas", path: "/riwayat-surat-dinas", roles: [1, 4, 5, 6, 20] },
                 ]
             },
-            {
-                label: "Lembur", icon: faCheckCircle, roles: [1, 4, 5, 6, 20],
+            { label: "Lembur", icon: faCheckCircle, roles: [1, 4, 5, 6, 20],
                 submenu: [
-                    { label: "Pengajuan Lembur", path: "/persetujuan-lembur", roles: [1, 4, 5, 6, 20] },
+                    { label: "Pengajuan Lembur", path: "/pengajuan-lembur", roles: [1, 5, 20] },
                     { label: "Riwayat Lembur", path: "/riwayat-lembur", roles: [1, 4, 5, 6, 20] },
                 ]
             },
@@ -68,13 +53,11 @@ export const menuConfig = [
     },
 
     // 5. PENGATURAN SISTEM
-    {
-        sectionTitle: "Pengaturan Sistem",
+    { sectionTitle: "Pengaturan Sistem",
         items: [
             { label: "Titik Lokasi Absensi", icon: faLocationArrow, path: "/lokasi-presensi", roles: [1, 5] },
             { label: "Perangkat Absensi", icon: faTabletAlt, path: "/perangkat-absensi", roles: [1] },
             { label: "Manajemen Menu", icon: faKey, path: "/manajemen-menu", roles: [1] },
-            { label: "Manajemen Hari Libur", icon: faBook, path: "/manajemen-hari-libur", roles: [1, 4, 6] },
         ],
     },
 ];

@@ -8,7 +8,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <>
     <App />
-    <Toaster 
+    <Toaster
       position="top-center"
       toastOptions={{
         duration: 2500,

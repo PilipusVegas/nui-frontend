@@ -103,7 +103,7 @@ export default function Absensi() {
 
                                         <div className="flex items-start gap-2 text-xs text-gray-700">
                                             <FontAwesomeIcon icon={faMapMarkerAlt} className="text-green-500 mt-0.5" />
-                                            <span>{i.lokasi_absen_mulai ?? "Lokasi tidak tercatat"}</span>
+                                            <span>{i.lokasi_absen_mulai ?? "N/A"}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -121,7 +121,7 @@ export default function Absensi() {
                                             </p>
                                             <div className="flex items-start gap-2 text-xs text-gray-700">
                                                 <FontAwesomeIcon icon={faMapMarkerAlt} className="text-blue-500 mt-0.5" />
-                                                <span>{i.lokasi_absen_selesai ?? "Lokasi tidak tercatat"}</span>
+                                                <span>{i.lokasi_absen_selesai ?? "N/A"}</span>
                                             </div>
                                         </div>
                                     </div>

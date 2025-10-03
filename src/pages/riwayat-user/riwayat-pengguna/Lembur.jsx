@@ -17,7 +17,7 @@ export default function Lembur() {
     useEffect(() => {
         const load = async () => {
             try {
-                const res = await fetchWithJwt(`${apiUrl}/lembur/riwayat/${user.id_user}`);
+                const res = await fetchWithJwt(`${apiUrl}/lembur/riwayat/user`);
 
                 if (res.status === 404) {
                     // Data tidak ditemukan → tampilkan EmptyState
@@ -27,10 +27,12 @@ export default function Lembur() {
 
                 if (!res.ok) throw new Error("Gagal memuat data lembur");
 
-                const json = await res.json();
-                const sorted = json.sort(
+                const { data: rawData } = await res.json();
+                const sorted = rawData.sort(
                     (a, b) => new Date(b.created_at) - new Date(a.created_at)
                 );
+                setData(sorted);
+
                 setData(sorted);
             } catch (e) {
                 // Hanya error selain 404

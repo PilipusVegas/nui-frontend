@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { SectionHeader } from "../../components";
 
-
 const KelolaPerusahaan = () => {
   const [perusahaan, setPerusahaan] = useState([]);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -77,10 +76,10 @@ const KelolaPerusahaan = () => {
                         <FontAwesomeIcon icon={faEdit} className="mr-2" />
                         Edit
                       </button>
-                      <button onClick={() => navigate(`/perusahaan/detail/${item.id}`)} className="flex items-center bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 text-xs font-medium rounded-md transition">
+                      {/* <button onClick={() => navigate(`/perusahaan/detail/${item.id}`)} className="flex items-center bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 text-xs font-medium rounded-md transition">
                         <FontAwesomeIcon icon={faInfoCircle} className="mr-2" />
                         Detail
-                      </button>
+                      </button> */}
                     </div>
                   </td>
                 </tr>
@@ -112,7 +111,6 @@ const KelolaPerusahaan = () => {
           ))
         )}
       </div>
-
     </div>
   );
 };

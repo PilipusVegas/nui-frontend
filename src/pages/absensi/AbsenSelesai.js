@@ -78,10 +78,11 @@ const AbsenSelesai = ({ handleNextStepData }) => {
   };
 
   const isValid = () =>
-    fotoFile &&
-    selectedLocation &&
-    userCoords.latitude &&
-    userCoords.longitude;
+    fotoFile instanceof File &&
+    selectedLocation !== null &&
+    typeof userCoords.latitude === "number" &&
+    typeof userCoords.longitude === "number";
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -117,7 +118,7 @@ const AbsenSelesai = ({ handleNextStepData }) => {
         {!fotoFile ? (
           <div className="space-y-4">
             <div className="aspect-[3/4] w-full bg-gray-100 rounded-xl overflow-hidden shadow">
-              <Webcam ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode }} className="w-full h-full object-cover" />
+              <Webcam ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode }} className="w-full h-full object-cover scale-x-[-1]" />
             </div>
             {/* Petunjuk singkat */}
             <p className="text-[10px] text-gray-600 text-center leading-snug">
@@ -135,7 +136,7 @@ const AbsenSelesai = ({ handleNextStepData }) => {
         ) : (
           <div className="space-y-5">
             <div className="relative aspect-[3/4] w-full rounded-xl overflow-hidden border shadow">
-              <img src={fotoPreview} alt="Preview" className="w-full h-full object-cover" />
+              <img src={fotoPreview} alt="Preview" className="w-full h-full object-cover scale-x-[-1]" />
               <div className="absolute bottom-0 w-full bg-black/60 text-white p-2 text-center text-xs">
                 {formatFullDate(jamSelesai)} • {formatTime(jamSelesai)}
               </div>
@@ -152,27 +153,27 @@ const AbsenSelesai = ({ handleNextStepData }) => {
                 </span>
               </p>
 
-              <Select options={locations} value={selectedLocation} onChange={setSelectedLocation} placeholder="Pilih lokasi..." isSearchable className="text-xs"/>
+              <Select options={locations} value={selectedLocation} onChange={setSelectedLocation} placeholder="Pilih lokasi..." isSearchable className="text-xs" />
 
               {/* Status lokasi */}
               <div className="flex items-center mt-1 text-[9px]">
                 {loadingLocation ? (
                   <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-100 text-gray-500">
-                    <FontAwesomeIcon icon={faSpinner} className="text-gray-400 text-xs animate-spin"/>
+                    <FontAwesomeIcon icon={faSpinner} className="text-gray-400 text-xs animate-spin" />
                     <span className="font-medium">
                       Mencari titik lokasi GPS anda...
                     </span>
                   </div>
                 ) : userCoords.latitude && userCoords.longitude ? (
                   <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-green-50 text-green-600">
-                    <FontAwesomeIcon icon={faMapMarkerAlt} className="text-green-600 text-xs animate-bounce"/>
+                    <FontAwesomeIcon icon={faMapMarkerAlt} className="text-green-600 text-xs animate-bounce" />
                     <span className="font-semibold">
                       Lokasi GPS berhasil ditemukan
                     </span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-red-50 text-red-500">
-                    <FontAwesomeIcon icon={faTimesCircle} className="text-red-500 text-xs"/>
+                    <FontAwesomeIcon icon={faTimesCircle} className="text-red-500 text-xs" />
                     <span className="font-semibold">
                       Lokasi GPS tidak tersedia. Aktifkan GPS dan coba ulangi.
                     </span>
@@ -190,7 +191,7 @@ const AbsenSelesai = ({ handleNextStepData }) => {
                 <button type="button" onClick={handleUlangi} className="flex-1 border border-red-500 text-red-500 rounded-lg py-3">
                   <FontAwesomeIcon icon={faArrowRotateBack} /> Ulangi
                 </button>
-                <button type="submit" disabled={!isValid()} className={`flex-1 py-3 rounded-lg text-white font-medium ${isValid() ? "bg-green-600 hover:bg-green-700" : "bg-gray-300 cursor-not-allowed" }`}>
+                <button type="submit" disabled={!isValid()} className={`flex-1 py-3 rounded-lg text-white font-medium ${isValid() ? "bg-green-600 hover:bg-green-700" : "bg-gray-300 cursor-not-allowed"}`}>
                   Lanjut
                 </button>
               </div>

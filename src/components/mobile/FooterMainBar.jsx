@@ -41,11 +41,9 @@ const FooterMainButton = ({ icon, label, to, activePath }) => {
 
 export default function FooterMainBar() {
   return (
-    <div className="fixed bottom-3 left-1/2 -translate-x-1/2 w-[92%] max-w-md
-                    bg-green-600/90 backdrop-blur-lg border border-white/10 shadow-lg
-                    flex justify-around items-center px-4 py-1 rounded-full z-50">
+    <div className="fixed bottom-3 left-1/2 -translate-x-1/2 w-[92%] max-w-md bg-green-600/90 backdrop-blur-lg border border-white/10 shadow-lg flex justify-around items-center px-4 py-1 rounded-full z-50">
       <FooterMainButton icon={faHome} label="Beranda" to="/home" activePath="/home" />
-      <FooterMainButton icon={faHistory} label="Riwayat" to="/riwayat-absensi" activePath="/riwayat-absensi" />
+      <FooterMainButton icon={faHistory} label="Riwayat" to="/riwayat-pengguna" activePath="/riwayat-pengguna" />
       <FooterMainButton icon={faBell} label="Notifikasi" to="/notification" activePath="/notification" />
       <FooterMainButton icon={faUser} label="Profil" to="/profile" activePath="/profile" />
     </div>

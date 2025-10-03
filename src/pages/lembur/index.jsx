@@ -50,7 +50,7 @@ const Lembur = () => {
   };
 
   useEffect(() => {
-    if (isSuccess) navigate("/riwayat-absensi");
+    if (isSuccess) navigate("/riwayat-pengguna");
   }, [isSuccess]);
 
   const getLabel = (time) => {
@@ -126,7 +126,7 @@ const Lembur = () => {
           if (res.isConfirmed) {
             navigate("/");
           } else if (res.dismiss === Swal.DismissReason.cancel) {
-            navigate("/riwayat-absensi");
+            navigate("/riwayat-pengguna");
           }
         });
       } else {
@@ -153,18 +153,6 @@ const Lembur = () => {
           </div>
 
           <div className="mb-2">
-            <label className="block text-sm font-semibold">Lokasi Lembur</label>
-            <p className="text-[10px] text-gray-500 mb-2">Pilih lokasi lembur. Anda bisa mencari lokasi dengan mengetik nama.</p>
-            <Select options={locations.map(loc => ({ value: loc.id, label: loc.nama }))} value={locations.find(loc => loc.id === lemburData.nama_lokasi) ? { value: lemburData.nama_lokasi, label: lemburData.lokasi } : null} onChange={(option) => setLemburData(d => ({ ...d, nama_lokasi: option.value, lokasi: option.label }))} placeholder="Pilih lokasi..." isSearchable className="text-sm" />
-          </div>
-
-          <div className="mb-2">
-            <label className="block text-sm font-semibold">Keterangan Lembur</label>
-            <p className="text-[10px] text-gray-500 mb-2">Ringkasan tugas lembur (maks. 250 karakter).</p>
-            <textarea rows="2" value={lemburData.tugas} maxLength={250} onChange={(e) => setLemburData(d => ({ ...d, tugas: e.target.value }))} className="w-full p-2 border-2 rounded-md text-sm resize-vertical" />
-          </div>
-
-          <div className="mb-2">
             <label className="block text-sm font-semibold">Jam Mulai</label>
             <p className="text-[10px] text-gray-500 mb-2">Pilih jam dimulainya lembur.</p>
             <Select options={hourOptions.filter(o => o.value !== lemburData.jamSelesai)} value={hourOptions.find(o => o.value === lemburData.jamMulai)} onChange={(option) => setLemburData(d => ({ ...d, jamMulai: option.value }))} placeholder="Pilih jam mulai..." className="text-sm" />
@@ -177,6 +165,18 @@ const Lembur = () => {
               <strong> Jika lembur selesai pukul 09:30, maka pilihlah jam 09:00 sebagai batas akhir (dibulatkan ke bawah).</strong>
             </p>
             <Select options={hourOptions.filter(o => o.value !== lemburData.jamMulai)} value={hourOptions.find(o => o.value === lemburData.jamSelesai)} onChange={(option) => setLemburData(d => ({ ...d, jamSelesai: option.value }))} placeholder="Pilih jam selesai..." className="text-sm" />
+          </div>
+
+          <div className="mb-2">
+            <label className="block text-sm font-semibold">Lokasi Lembur</label>
+            <p className="text-[10px] text-gray-500 mb-2">Pilih lokasi lembur. Anda bisa mencari lokasi dengan mengetik nama.</p>
+            <Select options={locations.map(loc => ({ value: loc.id, label: loc.nama }))} value={locations.find(loc => loc.id === lemburData.nama_lokasi) ? { value: lemburData.nama_lokasi, label: lemburData.lokasi } : null} onChange={(option) => setLemburData(d => ({ ...d, nama_lokasi: option.value, lokasi: option.label }))} placeholder="Pilih lokasi..." isSearchable className="text-sm" />
+          </div>
+
+          <div className="mb-2">
+            <label className="block text-sm font-semibold">Keterangan Lembur</label>
+            <p className="text-[10px] text-gray-500 mb-2">Ringkasan tugas lembur (maks. 250 karakter).</p>
+            <textarea rows="2" value={lemburData.tugas} maxLength={250} onChange={(e) => setLemburData(d => ({ ...d, tugas: e.target.value }))} className="w-full p-2 border-2 rounded-md text-sm resize-vertical" />
           </div>
         </form>
 

@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { Navigate, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrash, faSearch, faPlus, faTriangleExclamation, faEye } from "@fortawesome/free-solid-svg-icons";
+import { faEdit, faTrash, faPlus, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import SectionHeader from "../../components/desktop/SectionHeader";
-import { LoadingSpinner, EmptyState, ErrorState, Pagination } from "../../components/";
+import { LoadingSpinner, EmptyState, ErrorState, Pagination, SearchBar } from "../../components/";
 import Select from "react-select";
 
 const DataKaryawan = () => {
@@ -27,7 +27,7 @@ const DataKaryawan = () => {
     // HRD full akses semua perusahaan
     if (editable?.id_role === 4) return true;
     // HRD khusus (id_role 6) hanya perusahaan 5–9
-    if (editable?.id_role === 6 && [5, 6, 7, 8, 9].includes(user.id_perusahaan)) {
+    if (editable?.id_role === 6 && [5, 6, 7, 8, 9, 10, 11, 12, 13].includes(user.id_perusahaan)) {
       return true;
     }
     return false;
@@ -122,22 +122,17 @@ const DataKaryawan = () => {
   return (
     <div className="flex flex-col">
       <div className="flex-grow">
-        <SectionHeader title="Kelola Karyawan" subtitle="Menampilkan seluruh karyawan dari perusahaan yang Anda kelola" onBack={() => navigate("/home")}
-          actions={
-            <button onClick={() => navigate("/karyawan/tambah")} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
-              <FontAwesomeIcon icon={faPlus} className="mr-2 text-sm sm:text-base" />
-              <span className="inline sm:hidden pb-0.5">Tambah</span>
-              <span className="hidden sm:inline">Tambah Karyawan</span>
-            </button>
-          }
+        <SectionHeader title="Kelola Karyawan" subtitle="Halaman Untuk Menampilkan Data Karyawan." onBack={() => navigate("/home")} actions={
+          <button onClick={() => navigate("/karyawan/tambah")} className="flex items-center justify-center px-3 py-2 sm:px-5 sm:py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg transition-all duration-200 ease-in-out active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
+            <FontAwesomeIcon icon={faPlus} className="text-base sm:mr-2" />
+            <span className="hidden sm:inline">Tambah Karyawan</span>
+          </button>
+        }
         />
 
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 sm:gap-4 mb-4">
           <div className="order-2 sm:order-1 relative w-full sm:flex-1">
-            <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-green-400 text-sm pointer-events-none font-extrabold">
-              <FontAwesomeIcon icon={faSearch} className="font-extrabold" />
-            </span>
-            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Cari karyawan berdasarkan nama, role, atau perusahaan..." aria-label="Search Karyawan" className="pl-10 pr-4 py-2.5 w-full rounded-lg border border-gray-300 text-gray-700 text-sm sm:text-sm placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200" />
+            <SearchBar onSearch={setSearchQuery} placeholder="Cari karyawan berdasarkan nama, role, atau perusahaan..." className="order-2 sm:order-1 sm:flex-1" />
           </div>
 
           <div className="order-1 sm:order-2 grid grid-cols-2 gap-2 sm:gap-3 w-full sm:max-w-sm">
@@ -170,7 +165,7 @@ const DataKaryawan = () => {
               <label htmlFor="filter-status" className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5 block">
                 Status
               </label>
-              <Select inputId="filter-status" className="text-xs sm:text-sm"
+              <Select inputId="filter-status" className="text-xs sm:text-sm" onChange={(opt) => setSelectedStatus(opt?.value ?? "")} isClearable placeholder="Pilih status…"
                 options={[
                   { value: "", label: "Semua" },
                   { value: "1", label: "Aktif" },
@@ -184,9 +179,6 @@ const DataKaryawan = () => {
                     }
                     : { value: "", label: "Semua" }
                 }
-                onChange={(opt) => setSelectedStatus(opt?.value ?? "")}
-                isClearable
-                placeholder="Pilih status…"
               />
             </div>
           </div>
@@ -194,15 +186,12 @@ const DataKaryawan = () => {
 
         {/* Kondisi Utama */}
         {isLoading ? (
-          // Loading
           <div className="flex justify-center py-20">
             <LoadingSpinner size="lg" />
           </div>
         ) : errorMessage ? (
-          // Error State
           <ErrorState message={"Terjadi kesalahan saat memuat data karyawan."} onRetry={fetchKaryawan} retryText="Coba Muat Ulang" />
         ) : users.length === 0 ? (
-          // Empty State
           <EmptyState title="Belum Ada Data Karyawan" description="Tambahkan karyawan baru atau cek kembali filter pencarian." actionLabel="Tambah Karyawan" onAction={() => navigate("/karyawan/tambah")} />
         ) : (
           // === Tabel & Konten Asli ===
@@ -216,10 +205,10 @@ const DataKaryawan = () => {
               )}
               <table className="min-w-full table-auto bg-white border-collapse shadow-md rounded-lg">
                 <thead>
-                  <tr className="bg-green-600 text-white py-2 text-sm px-4">
+                  <tr className="bg-green-500 text-white py-2 text-sm px-4">
                     {["No.", "NIP", "Nama Karyawan", "Shift", "Status", "Menu"].map(
                       (header, index) => (
-                        <th key={index} className={`px-4 py-2 font-semibold text-center ${index === 0 ? "first:rounded-tl-lg " : "last:rounded-tr-lg"}`}>
+                        <th key={index} className={`px-4 py-3 font-semibold text-center ${index === 0 ? "first:rounded-tl-lg " : "last:rounded-tr-lg"}`}>
                           {header}
                         </th>
                       )
@@ -227,75 +216,69 @@ const DataKaryawan = () => {
                   </tr>
                 </thead>
                 <tbody className="text-gray-800 text-sm">
-                  {Array.isArray(currentUsers) && currentUsers.length > 0 ? (
+                  {Array.isArray(currentUsers) && currentUsers.length > 0 &&
                     currentUsers.map((user, index) => (
                       <tr key={user.id} className="hover:bg-gray-50 transition duration-150">
                         {/* No */}
-                        <td className="px-4 py-1.5 text-center border-b border-gray-200">
+                        <td className="px-4 py-1 text-center border-b border-gray-200">
                           {indexOfFirstUser + index + 1}
                         </td>
 
                         {/* NIP */}
-                        <td className="px-4 py-1.5 text-center border-b border-gray-200">
+                        <td className="px-4 py-1 text-center border-b border-gray-200">
                           <span className={user.nip ? "" : "text-gray-400 italic text-xs"}>
                             {user.nip || "N/A"}
                           </span>
                         </td>
 
                         {/* Nama + Role + Perusahaan */}
-                        <td className="px-4 py-1.5 border-b border-gray-200 tracking-wide cursor-pointer group" onClick={() => navigate(`/karyawan/show/${user.id}`)}>
-                          <div className="flex items-center space-x-2">
-                            <span className="font-semibold text-sm capitalize transition-all duration-200 group-hover:underline group-hover:underline-offset-4 group-hover:text-green-600 group-hover:decoration-green-600">
+                        <td className="px-4 py-1 border-b border-gray-200 tracking-wide">
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-sm capitalize">
                               {user.nama || "Unknown Name"}
+                              {user.role && (
+                                <span className="ml-1 text-xs text-gray-500 font-normal">
+                                  ({user.role})
+                                </span>
+                              )}
                             </span>
-                            <span className="px-2 rounded-full text-[10px] font-medium bg-green-100 text-green-600 border border-green-500">
-                              {user.role || "N/A"}
+                            <span className="text-[10px] text-gray-500 font-medium uppercase">
+                              {user.perusahaan || "N/A"}
                             </span>
-                            <FontAwesomeIcon icon={faEye} className="text-green-600 text-sm opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-                          </div>
-                          <div className="text-xs text-gray-500 font-medium mt-0.5">
-                            {user.perusahaan || "N/A"}
                           </div>
                         </td>
 
-                        <td className="px-4 py-1.5 text-center border-b border-gray-200">
+                        <td className="px-4 py-1 text-center border-b border-gray-200">
                           <span className={user.shift ? "" : "text-gray-400 italic text-xs"}>
                             {user.shift || "N/A"}
                           </span>
                         </td>
 
                         {/* Status */}
-                        <td className="px-4 py-1.5 text-center border-b border-gray-200">
+                        <td className="px-4 py-1 text-center border-b border-gray-200">
                           <span className={`px-3 py-0.5 text-xs font-semibold rounded-full ${user.status === 1 ? "bg-emerald-500 text-white" : "bg-gray-500 text-white"}`}>
                             {user.status === 1 ? "Aktif" : "Nonaktif"}
                           </span>
                         </td>
-                        <td className="px-4 py-1.5 text-center border-b border-gray-200">
-                          <div className="flex justify-center gap-2">
-                            <button onClick={() => navigate(`/karyawan/edit/${user.id}`)} className={`px-3.5 py-1.5 font-medium rounded text-white text-sm flex items-center justify-center ${canEditOrDelete(user) ? "bg-yellow-500 hover:bg-yellow-600" : "bg-gray-400 cursor-not-allowed"}`} disabled={!canEditOrDelete(user)} title="Edit">
-                              <FontAwesomeIcon icon={faEdit} className="mr-1.5" />
+                        <td className="px-4 py-1 text-center border-b border-gray-200">
+                          <div className="flex justify-center gap-1.5">
+                            <button onClick={() => navigate(`/karyawan/show/${user.id}`)} className={`px-2.5 py-1.5 font-medium rounded text-white text-xs flex items-center justify-center ${canEditOrDelete(user) ? "bg-blue-500 hover:bg-blue-600" : "bg-gray-400 cursor-not-allowed"}`} disabled={!canEditOrDelete(user)} title="Edit">
+                              <FontAwesomeIcon icon={faInfoCircle} className="mr-1" />
+                              Detail
+                            </button>
+                            <button onClick={() => navigate(`/karyawan/edit/${user.id}`)} className={`px-2.5 py-1.5 font-medium rounded text-white text-xs flex items-center justify-center ${canEditOrDelete(user) ? "bg-yellow-500 hover:bg-yellow-600" : "bg-gray-400 cursor-not-allowed"}`} disabled={!canEditOrDelete(user)} title="Edit">
+                              <FontAwesomeIcon icon={faEdit} className="mr-1" />
                               Edit
                             </button>
-                            <button onClick={() => handleDelete(user.id)} className={`px-3.5 py-1.5 font-medium rounded text-white text-sm flex items-center justify-center ${canEditOrDelete(user) ? "bg-red-600 hover:bg-red-700" : "bg-gray-400 cursor-not-allowed"}`} disabled={!canEditOrDelete(user)} title="Hapus">
-                              <FontAwesomeIcon icon={faTrash} className="mr-1.5" />
+                            <button onClick={() => handleDelete(user.id)} className={`px-2.5 py-1.5 font-medium rounded text-white text-xs flex items-center justify-center ${canEditOrDelete(user) ? "bg-red-600 hover:bg-red-700" : "bg-gray-400 cursor-not-allowed"}`} disabled={!canEditOrDelete(user)} title="Hapus">
+                              <FontAwesomeIcon icon={faTrash} className="mr-1" />
                               Hapus
                             </button>
                           </div>
                         </td>
                       </tr>
                     ))
-                  ) : (
-                    <tr>
-                      <td colSpan="7" className="py-10 px-4 text-center text-gray-500 border-b border-gray-200">
-                        <div className="flex flex-col items-center justify-center">
-                          <FontAwesomeIcon icon={faTriangleExclamation} className="text-6xl text-gray-400 mb-3" />
-                          <p className="text-base font-medium text-gray-600">
-                            Oops! Data karyawan gagal dimuat. Coba cek koneksi kamu dulu, ya
-                          </p>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
+                  }
                 </tbody>
               </table>
             </div>
@@ -345,10 +328,8 @@ const DataKaryawan = () => {
                         <FontAwesomeIcon icon={faTrash} />
                         Hapus
                       </div>
-
                       {/* Divider */}
                       <div className="w-px bg-gray-200"></div>
-
                       {/* Edit */}
                       <div onClick={() => [1, 4].includes(editable?.id_role) && navigate(`/karyawan/edit/${user.id}`)} className={`flex-1 py-2 flex items-center justify-center gap-1 text-yellow-600 hover:bg-yellow-50 transition-colors ${![1, 4].includes(editable?.id_role) && "text-gray-400 cursor-not-allowed hover:bg-white"}`}>
                         <FontAwesomeIcon icon={faEdit} />
@@ -368,13 +349,7 @@ const DataKaryawan = () => {
 
 
         {/* Pagination - Versi Estetik dan Ramping */}
-        <Pagination
-          currentPage={currentPage}
-          totalItems={totalItems}
-          itemsPerPage={itemsPerPage}
-          onPageChange={setCurrentPage}
-          className="mt-10"
-        />
+        <Pagination currentPage={currentPage} totalItems={totalItems} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} className="mt-10" />
       </div>
     </div>
   );

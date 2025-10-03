@@ -10,30 +10,30 @@ const IconButton = ({ icon, label, onClick, isActive }) => (
     onClick={onClick}
     aria-label={label}
     className={`
-      flex items-center w-full p-2.5 my-1 rounded-xl text-sm font-medium tracking-wide
-      transition-all duration-200 ease-in-out overflow-hidden
-      ${isActive
+        flex items-center w-full p-2.5 my-1 rounded-xl text-sm font-medium tracking-wide
+        transition-all duration-200 ease-in-out overflow-hidden
+        ${isActive
         ? `
-            bg-white/20
-            backdrop-blur-xl
-            border border-white/20
-            shadow-sm shadow-black/20
-            text-white font-semibold
-            ring-1 ring-white/10
-          `
+              bg-white/20
+              backdrop-blur-xl
+              border border-white/20
+              shadow-sm shadow-black/20
+              text-white font-semibold
+              ring-1 ring-white/10
+            `
         : `
-            text-white/80
-            hover:text-white
-            hover:bg-white/10
-            hover:backdrop-blur-sm
-            hover:shadow-md hover:shadow-black/10
-          `
+              text-white/80
+              hover:text-white
+              hover:bg-white/10
+              hover:backdrop-blur-sm
+              hover:shadow-md hover:shadow-black/10
+            `
       }
-    `}
+      `}
   >
     <div className="flex items-center gap-3 transition-transform duration-500 ease-in-out group-hover:translate-x-1">
       <div className="w-6 h-6 flex items-center justify-center">
-        <FontAwesomeIcon icon={icon} className={`text-xl transition-colors duration-500 ${isActive ? "text-white" : "text-white/80 group-hover:text-white" }`}/>
+        <FontAwesomeIcon icon={icon} className={`text-xl transition-colors duration-500 ${isActive ? "text-white" : "text-white/80 group-hover:text-white"}`} />
       </div>
       <span className="truncate">{label}</span>
     </div>
@@ -121,7 +121,11 @@ const MenuSidebar = ({ perusahaanId, roleId, isOpen, toggleSidebar, isMobile }) 
                                   const isActiveSubmenu = location.pathname === sub.path;
                                   return (
                                     <button key={subIndex} onClick={() => {
-                                      navigate(sub.path);
+                                      if (sub.target === "_blank") {
+                                        window.open(sub.path, "_blank", "noopener,noreferrer");
+                                      } else {
+                                        navigate(sub.path);
+                                      }
                                       if (isMobile) toggleSidebar();
                                     }}
                                       className={`group flex items-center w-full text-left text-sm rounded-xl p-2.5 pl-5 transition-all duration-300 ${isActiveSubmenu ? `bg-white/25 backdrop-blur-lg border border-white/20 shadow-md shadow-green-400/30 text-white font-semibold ring-1 ring-white/10` : `hover:bg-white/10 hover:backdrop-blur-sm text-white/80 hover:text-white`}`}>

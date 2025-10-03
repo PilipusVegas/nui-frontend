@@ -16,6 +16,7 @@ export const PATTERNS = {
     MONTH_YEAR: "MMMM yyyy",             // "September 2025"
     SHORT_MONTH_YEAR: "MMM yy",          // "Sep 25"
     DAY: "EEEE",                         // "Kamis"
+    LONG_DATE: "dd MMMM yyyy",           // 12 September 2025
 };
 
 
@@ -32,7 +33,6 @@ export function formatDate(date, pattern = PATTERNS.DATE) {
     }
 }
 
-
 /* Variasi Umum */
 export const formatDateTime = (date) => formatDate(date, PATTERNS.DATETIME);
 export const formatTime = (date) => formatDate(date, PATTERNS.TIME);
@@ -44,6 +44,8 @@ export const formatShortDateTime = (date) => formatDate(date, PATTERNS.SHORT_DAT
 export const formatISODate = (date) => formatDate(date, PATTERNS.ISO_DATE);
 export const formatISODateTime = (date) => formatDate(date, PATTERNS.ISO_DATETIME);
 export const formatForDB = (date) => formatDate(date, PATTERNS.DB);
+export const formatLongDate = (date) => formatDate(date, PATTERNS.LONG_DATE);
+
 
 /* ================== Relative Time ================== */
 // Contoh: formatRelative("2025-09-11T14:00")
@@ -95,3 +97,28 @@ export const formatDateForFilename = (date) => {
     const dd = String(d.getDate()).padStart(2, "0");
     return `${yyyy}${mm}${dd}`;
 };
+
+// formatHourToTime(hour)
+//   - Mengubah angka jam bulat ke format "HH:00"
+//   - Contoh: 2 -> "02:00"
+export function formatHourToTime(hour) {
+    const h = parseInt(hour, 10);
+    if (isNaN(h)) return "-";
+    return `${h.toString().padStart(2, "0")}:00`;
+}
+
+// FOR REMARK
+// formatForInput
+export const formatForInput = (datetime, tipe_absensi) => {
+    if (!datetime) return "";
+    const d = new Date(datetime);
+
+    if (tipe_absensi === 1) {
+        // Lapangan → datetime-local
+        return d.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm
+    } else {
+        // Kantor → time
+        return d.toTimeString().slice(0, 5); // HH:mm
+    }
+};
+

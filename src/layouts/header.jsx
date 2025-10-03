@@ -59,12 +59,12 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
 
           {/* Brand */}
           <div className="flex flex-col">
-            <span className="text-md font-semibold tracking-wide text-white/90 drop-shadow-sm hover:text-white transition-colors duration-200">
+            <span className="text-md sm:text-lg font-bold tracking-wide text-white/90 drop-shadow-sm hover:text-white transition-colors duration-200">
               {user.perusahaan}
             </span>
-            <span className="text-[10px] md:text-xs font-medium text-white/70 -mt-1 tracking-wide">
+            {/* <span className="text-[10px] md:text-xs font-medium text-white/70 -mt-1 tracking-wide">
               Periode : {formatDate(period.start, PATTERNS.FULL)} s/d {formatDate(period.end, PATTERNS.FULL)}
-            </span>
+            </span> */}
           </div>
 
         </div>
