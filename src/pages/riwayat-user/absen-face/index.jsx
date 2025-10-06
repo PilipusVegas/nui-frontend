@@ -38,7 +38,7 @@ export default function RiwayatFace() {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const res = await fetch(`${apiUrl}/surat-dinas/profil`);
+                const res = await fetch(`${apiUrl}/face/karyawan`);
                 if (res.ok) {
                     const data = await res.json();
                     if (data.success && Array.isArray(data.data)) {
