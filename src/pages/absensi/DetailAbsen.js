@@ -74,186 +74,85 @@ const DetailAbsen = ({ formData = {} }) => {
     return new File([u8arr], filename, { type: mime });
   };
 
-
-const handleConfirmAndSubmit = async (e) => {
-  e.preventDefault();
-
-  /** --- Langkah 1: Validasi akun pengguna dulu --- */
-  const confirmIdentity = await Swal.fire({
-    title: "Konfirmasi Akun",
-    html: `
-      <p class="text-gray-700 text-sm mb-2">Apakah Anda benar-benar login sebagai</p>
-      <p class="font-semibold text-lg text-green-700">${user?.nama_user ?? "User Tidak Diketahui"}</p>
+  /** --- Tambahan: swal konfirmasi identitas --- */
+  const handleConfirmAndSubmit = (e) => {
+    e.preventDefault();
+    Swal.fire({
+      title: "Konfirmasi Akun",
+      html: `
+      <p class="text-gray-700 text-sm mb-2">
+        Apakah Anda benar-benar login sebagai
+      </p>
+      <p class="font-semibold text-lg text-green-700">
+        ${user?.nama_user ?? "User Tidak Diketahui"}
+      </p>
       <p class="text-gray-500 text-xs mt-3">
-        Pastikan akun ini milik Anda. Jika bukan, silakan keluar agar data absensi tidak salah tercatat.
+        Pastikan akun ini milik Anda. Jika bukan, silakan kembali ke beranda
+        untuk mengganti akun agar data absensi tidak salah tercatat.
       </p>
     `,
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonText: "Ya, Itu Saya",
-    cancelButtonText: "Bukan Saya",
-    reverseButtons: true,
-    customClass: {
-      confirmButton: "bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-semibold shadow",
-      cancelButton: "bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md font-semibold shadow",
-      popup: "rounded-2xl p-6",
-    },
-  });
-
-  // 🚪 Jika user bukan dirinya
-  if (confirmIdentity.dismiss === Swal.DismissReason.cancel) {
-    const res = await Swal.fire({
-      title: "Ganti Akun?",
-      text: "Anda memilih 'Bukan Saya'. Apakah ingin keluar dan login dengan akun lain?",
-      icon: "warning",
+      icon: "question",
       showCancelButton: true,
-      confirmButtonText: "Ya, Logout",
-      cancelButtonText: "Batal",
+      confirmButtonText: "Ya, Itu Saya",
+      cancelButtonText: "Bukan Saya",
       reverseButtons: true,
       customClass: {
-        confirmButton: "bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-semibold shadow",
-        cancelButton: "bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md font-semibold shadow",
+        confirmButton:
+          "bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-semibold shadow",
+        cancelButton:
+          "bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md font-semibold shadow",
         popup: "rounded-2xl p-6",
       },
-    });
-
-    if (res.isConfirmed) {
-      localStorage.removeItem("token");
-      navigate("/login");
-    } else {
-      navigate("/home");
-    }
-    return; // ❌ hentikan proses absensi
-  }
-
-  /** --- Langkah 2: Jalankan logika absensi seperti semula --- */
-  const apiUrl = process.env.REACT_APP_API_BASE_URL;
-
-  if (!user || !user.id_user) {
-    return Swal.fire({
-      icon: "error",
-      title: "User Tidak Dikenali",
-      text: "Silakan login ulang sebelum mengirim absensi.",
-    });
-  }
-
-  try {
-    // 🔍 Ambil riwayat absensi user
-    const res = await fetchWithJwt(`${apiUrl}/absen/riwayat/${user.id_user}`);
-    if (!res.ok) throw new Error("Gagal memeriksa riwayat absensi");
-
-    const data = await res.json();
-    const riwayat = data?.data || data || [];
-    const today = new Date().toISOString().split("T")[0];
-
-    // 🔎 Cari apakah sudah ada absen hari ini
-    const absenHariIni = riwayat.find((item) => {
-      const tanggalAbsen = new Date(item.jam_mulai).toISOString().split("T")[0];
-      return tanggalAbsen === today;
-    });
-
-    // === 1. BELUM ADA ABSEN MULAI ===
-    if (!absenHariIni) {
-      return handleSubmit(e, null);
-    }
-
-    // === 2. SUDAH ADA ABSEN MULAI TAPI BELUM ADA JAM_SELESAI ===
-    if (absenHariIni && !absenHariIni.jam_selesai) {
-      return handleSubmit(e, absenHariIni.id_absen);
-    }
-
-    // === 3. SUDAH ADA ABSEN MULAI & SUDAH ADA JAM_SELESAI ===
-    if (absenHariIni && absenHariIni.jam_selesai) {
-      const confirmUpdate = await Swal.fire({
-        title: "Absen Hari Ini Sudah Ada",
-        text: "Apakah Anda ingin memperbarui atau mengganti data absen hari ini?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Ya, Perbarui Absen",
-        cancelButtonText: "Batalkan",
-        reverseButtons: true,
-      });
-
-      if (confirmUpdate.isConfirmed) {
-        return handleSubmit(e, absenHariIni.id_absen, true);
-      } else {
-        return Swal.fire({
-          icon: "info",
-          title: "Dibatalkan",
-          text: "Tidak ada perubahan pada data absen hari ini.",
-          timer: 1800,
-          showConfirmButton: false,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        handleSubmit(e); // lanjut kirim absensi
+      } else if (result.dismiss === Swal.DismissReason.cancel) {
+        // 👉 swal kedua: tawarkan logout
+        Swal.fire({
+          title: "Ganti Akun?",
+          text: "Anda memilih 'Bukan Saya'. Apakah ingin keluar dan login dengan akun lain?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Ya, Logout",
+          cancelButtonText: "Batal",
+          reverseButtons: true,
+          customClass: {
+            confirmButton:
+              "bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-semibold shadow",
+            cancelButton:
+              "bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md font-semibold shadow",
+            popup: "rounded-2xl p-6",
+          },
+        }).then((res) => {
+          if (res.isConfirmed) {
+            // 🔑 proses logout sederhana
+            localStorage.removeItem("token");
+            navigate("/login"); // arahkan ke halaman login
+          } else {
+            navigate("/home"); // jika batal logout tetap ke beranda
+          }
         });
       }
-    }
-  } catch (err) {
-    console.error("Error riwayat:", err);
-    Swal.fire({
-      icon: "error",
-      title: "Gagal Mengecek Riwayat",
-      text: err.message || "Terjadi kesalahan saat memeriksa riwayat absensi.",
     });
-  }
-};
+  };
 
-
-
-  const handleSubmit = async (e, idAbsenParam = null, isUpdate = false) => {
+  /** Handle Submit */
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
-
-    const currentIdAbsen = idAbsenParam || id_absen || null;
     const formDataToSend = new FormData();
     let endpoint = "";
     let notificationTitle = "";
 
     try {
-      // === CASE 1: Update data absen (absen mulai ulang dengan id lama) ===
-      if (isUpdate && currentIdAbsen) {
-        endpoint = "/absen/mulai";
-        notificationTitle = "Data Absen Diperbarui!";
-
-        formDataToSend.append("id_absen", String(currentIdAbsen)); // penting!
-        if (userId) formDataToSend.append("id_user", String(userId));
-        if (id_shift) formDataToSend.append("id_shift", String(id_shift));
-        if (tugas) formDataToSend.append("deskripsi", tugas);
-        if (id_lokasi) formDataToSend.append("id_lokasi", String(id_lokasi));
-        if (tipe_absensi) formDataToSend.append("tipe_absensi", String(tipe_absensi));
-
-        const titikMulai = parseCoordinates(koordinatMulai);
-        if (titikMulai) {
-          formDataToSend.append("lat", String(titikMulai.latitude));
-          formDataToSend.append("lon", String(titikMulai.longitude));
-        }
-
-        if (fotoMulai?.startsWith?.("blob:")) {
-          const file = await blobUrlToFile(fotoMulai, "fotoMulai.jpg");
-          formDataToSend.append("foto", file);
-        } else if (fotoMulai instanceof File) {
-          formDataToSend.append("foto", fotoMulai);
-        } else if (typeof fotoMulai === "string" && fotoMulai.startsWith("data:image")) {
-          const file = base64ToFile(fotoMulai, "fotoMulai.jpg");
-          formDataToSend.append("foto", file);
-        }
-      }
-
-      // === CASE 2: Absen Selesai ===
-      else if (currentIdAbsen) {
+      if (id_absen) {
+        /** Absen Selesai */
         endpoint = "/absen/selesai";
         notificationTitle = "Absen Selesai Berhasil!";
-        formDataToSend.append("id_absen", String(currentIdAbsen));
 
+        formDataToSend.append("id_absen", id_absen);
         if (jamSelesai) formDataToSend.append("jam_selesai", jamSelesai);
-        if (userId) formDataToSend.append("id_user", String(userId));
-        if (id_lokasi) formDataToSend.append("id_lokasi", String(id_lokasi));
-
-        const titikSelesai = parseCoordinates(koordinatSelesai);
-        if (titikSelesai) {
-          formDataToSend.append("lat", String(titikSelesai.latitude));
-          formDataToSend.append("lon", String(titikSelesai.longitude));
-        }
-
         if (fotoSelesai?.startsWith?.("blob:")) {
           const file = await blobUrlToFile(fotoSelesai, "fotoSelesai.jpg");
           formDataToSend.append("foto", file);
@@ -263,10 +162,15 @@ const handleConfirmAndSubmit = async (e) => {
           const file = base64ToFile(fotoSelesai, "fotoSelesai.jpg");
           formDataToSend.append("foto", file);
         }
-      }
+        if (userId) formDataToSend.append("id_user", String(userId));
+        if (id_lokasi) formDataToSend.append("id_lokasi", String(id_lokasi));
 
-      // === CASE 3: Absen Mulai Baru ===
-      else {
+        const titikSelesai = parseCoordinates(koordinatSelesai);
+        if (titikSelesai) {
+          formDataToSend.append("lat", String(titikSelesai.latitude));
+          formDataToSend.append("lon", String(titikSelesai.longitude));
+        }
+      } else {
         endpoint = "/absen/mulai";
         notificationTitle = "Absen Mulai Berhasil!";
 
@@ -293,16 +197,20 @@ const handleConfirmAndSubmit = async (e) => {
         }
       }
 
-      // 🔗 Kirim ke server
       const response = await fetchWithJwt(`${apiUrl}${endpoint}`, {
         method: "POST",
         body: formDataToSend,
       });
 
       if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.message || "Gagal mengirim data absensi");
+        let errorData = { message: "Gagal mengirim data" };
+        try {
+          errorData = await response.json();
+        } catch (_) { }
+        throw new Error(errorData.message || "Gagal mengirim data");
       }
+
+      setIsSuccess(true);
 
       Swal.fire({
         title: notificationTitle,
@@ -320,20 +228,29 @@ const handleConfirmAndSubmit = async (e) => {
         confirmButtonText: "Lihat Riwayat",
         cancelButtonText: "Oke Sip!",
         reverseButtons: true,
-      }).then((r) => navigate(r.isConfirmed ? "/riwayat-pengguna" : "/"));
+        customClass: {
+          confirmButton:
+            "bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md font-semibold shadow-sm",
+          cancelButton:
+            "bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md font-semibold shadow-sm ml-2",
+          popup: "rounded-2xl shadow-lg p-6",
+          title: "text-lg font-bold text-gray-800",
+          htmlContainer: "text-sm text-gray-600 mt-2",
+        },
+      }).then((result) => {
+        navigate(result.isConfirmed ? "/riwayat-pengguna" : "/");
+      });
     } catch (error) {
+      const message = error.message || "Terjadi kesalahan";
       Swal.fire({
         icon: "error",
         title: "Kesalahan",
-        text: error.message || "Terjadi kesalahan saat mengirim absensi.",
+        text: message,
       });
     } finally {
       setIsLoading(false);
     }
   };
-
-
-
 
   /** Effects */
   useEffect(() => {
@@ -363,7 +280,11 @@ const handleConfirmAndSubmit = async (e) => {
                   </p>
                   <div className="flex justify-center">
                     <div className="w-40 h-52 rounded-xl overflow-hidden border bg-gray-100 shadow group">
-                      <img src={fotoMulai instanceof File ? URL.createObjectURL(fotoMulai) : fotoMulai} alt="Absen Mulai" className="w-full h-full object-cover transition scale-x-[-1]" />
+                      <img
+                        src={fotoMulai instanceof File ? URL.createObjectURL(fotoMulai) : fotoMulai}
+                        alt="Absen Mulai"
+                        className="w-full h-full object-cover transition scale-x-[-1]"
+                      />
                     </div>
                   </div>
                 </div>
