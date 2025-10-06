@@ -5,6 +5,7 @@ import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight, faChevronRight, faChevronUp, faMapMarkerAlt, faSpinner, faTimesCircle, } from "@fortawesome/free-solid-svg-icons";
 import Select from "react-select";
+import Swal from "sweetalert2";
 
 const AbsenMulai = ({ handleNextStepData }) => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -93,28 +94,29 @@ const AbsenMulai = ({ handleNextStepData }) => {
   }, [apiUrl]);
 
   const handleSubmit = (e) => {
-  e.preventDefault();
-  if (!isFormValid()) return;
+    e.preventDefault();
+    if (!isFormValid()) return;
 
-  const now = new Date();
+    const now = new Date();
 
-  const formData = {
-    userId,
-    nama: username, // supaya StepThree dapat "nama"
-    id_lokasi: selectedLocation?.value || "",
-    lokasi: selectedLocation?.label || "",
-    tanggalMulai: now.toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric",}),
-    jamMulai: now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit",}),
-    tugas,
-    id_shift: selectedShift?.id ?? "",
-    shift: selectedShift?.nama ?? "",
-    koordinatMulai: userCoords.latitude && userCoords.longitude ? `${userCoords.latitude},${userCoords.longitude}` : "",
-    fotoMulai,
-    tipe_absensi:1,
+    const formData = {
+      userId,
+      nama: username,
+      id_lokasi: selectedLocation?.value || "",
+      lokasi: selectedLocation?.label || "",
+      tanggalMulai: now.toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric", }),
+      jamMulai: now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit", }),
+      tugas,
+      id_shift: selectedShift?.id ?? "",
+      shift: selectedShift?.nama ?? "",
+      koordinatMulai: userCoords.latitude && userCoords.longitude ? `${userCoords.latitude},${userCoords.longitude}` : "",
+      fotoMulai,
+      tipe_absensi: 1,
+    };
+
+    handleNextStepData(formData);
   };
 
-  handleNextStepData(formData);
-};
 
   return (
     <MobileLayout title="Absen Masuk Kerja" className="bg-gray-100 border border-gray-200 rounded-lg shadow-sm">

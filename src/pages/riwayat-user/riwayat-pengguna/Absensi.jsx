@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch, faMapMarkerAlt, faClock, faUserClock, } from "@fortawesome/free-solid-svg-icons";
+import { faMapMarkerAlt, } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../../../utils/jwtHelper";
 import { formatFullDate, formatTime } from "../../../utils/dateUtils";
 import { LoadingSpinner, EmptyState, ErrorState, SearchBar } from "../../../components";
@@ -19,10 +19,9 @@ export default function Absensi() {
             try {
                 const res = await fetchWithJwt(`${apiUrl}/absen/riwayat/${user.id_user}`);
 
-                // === Perbedaan utama ===
                 if (res.status === 404) {
-                    setData([]);            // kosong → EmptyState otomatis muncul
-                    return;                 // hentikan proses tanpa set error
+                    setData([]);
+                    return;
                 }
 
                 if (!res.ok) throw new Error("Gagal memuat data absensi");

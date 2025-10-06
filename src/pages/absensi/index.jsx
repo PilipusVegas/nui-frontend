@@ -128,22 +128,44 @@ const Absensi = () => {
       try {
         const response = await fetchWithJwt(`${apiUrl}/absen/cek/${attendanceData.userId}`);
         const data = await response.json();
-        if (response.ok && Array.isArray(data) && data.length > 0) {
-          const { id_absen, id_user, username, id_lokasi, nama, deskripsi, jam_mulai, jam_selesai, shift } = data[0];
+
+        // ✅ Jika API success true → sudah absen
+        if (response.ok && data.success === true && data.data) {
+          const detail = data.data;
           setAttendanceData({
-            userId: String(id_user),
-            username: username || "",
-            id_absen: String(id_absen),
-            id_lokasi: id_lokasi || "",
-            nama: nama || "",
-            shift: shift || "",
-            deskripsi: deskripsi || "",
-            jam_mulai: jam_mulai ? String(jam_mulai) : null,
-            jam_selesai: jam_selesai ? String(jam_selesai) : null,
+            userId: String(detail.id_user),
+            username: detail.nama || "",
+            id_absen: String(detail.id_absen),
+            id_lokasi: detail.lokasi || "",
+            nama: detail.nama || "",
+            shift: detail.shift || "",
+            deskripsi: detail.deskripsi || "",
+            jam_mulai: detail.jam_mulai ? String(detail.jam_mulai) : null,
+            jam_selesai: detail.jam_selesai ? String(detail.jam_selesai) : null,
           });
-          setIsSelesaiFlow(!!jam_mulai && !jam_selesai);
+
+          // Jika jam_mulai sudah ada, berarti sudah absen masuk
+          setIsSelesaiFlow(!!detail.jam_mulai && !detail.jam_selesai);
           setCurrentStep(null);
-        } else {
+
+          console.log("✅ Sudah absen:", detail);
+        }
+
+        // ❌ Jika success false → belum absen
+        else if (response.ok && data.success === false) {
+          setAttendanceData(prev => ({
+            ...prev,
+            id_absen: "",
+            jam_mulai: null,
+            jam_selesai: null,
+          }));
+          setIsSelesaiFlow(false);
+          setCurrentStep(null);
+          console.log("❌ Belum absen hari ini");
+        }
+
+        else {
+          console.warn("⚠️ Response tidak sesuai format diharapkan:", data);
           setIsSelesaiFlow(false);
           setCurrentStep(null);
         }
@@ -153,8 +175,10 @@ const Absensi = () => {
         setCurrentStep(null);
       }
     };
+
     if (attendanceData.userId) checkAttendance();
   }, [apiUrl, attendanceData.userId]);
+
 
 
   const checkPermissions = async () => {
@@ -223,10 +247,10 @@ const Absensi = () => {
         reverseButtons: true,
       }).then((result) => {
         if (result.isConfirmed) {
-          navigate("/lembur"); // redirect ke lembur
+          navigate("/lembur");
         }
       });
-      return; // hentikan eksekusi, jangan lanjut ke absen
+      return;
     }
 
     setIsLoading(true);
@@ -277,7 +301,7 @@ const Absensi = () => {
       default:
         return (
           <MobileLayout title="Absensi Online">
-            <div className="w-full bg-white rounded-2xl shadow-lg p-5 space-y-6">
+            <div className="w-full bg-white rounded-2xl p-5 px-1 pt-2 space-y-6">
 
               {/* === Status Perizinan === */}
               <section>
@@ -349,25 +373,22 @@ const Absensi = () => {
                             <p className="text-xs font-semibold text-gray-800">
                               {formatFullDate(item.jam_mulai)}
                             </p>
-                            <p className="text-xs text-gray-700">{item.nama_shift}</p>
+                            <p className="text-xs text-gray-800 tracking-wider">{item.nama_shift}</p>
                           </div>
 
-                          {/* Bagian Masuk */}
-                          <div className="flex items-center gap-3 border-t border-gray-100 pt-2">
-                            {/* Icon di tengah vertikal */}
-                            <div className="flex flex-col justify-center p-3 bg-green-100 rounded-full">
-                              <FontAwesomeIcon icon={faCalendarPlus} className="w-5 h-5 text-green-700" />
+                          <div className="flex items-center gap-3 border-t border-green-200 pt-3 pb-3">
+                            <div className="flex flex-col justify-center p-3 bg-green-100 rounded-md">
+                              <FontAwesomeIcon icon={faCalendarPlus} className="w-6 h-6 text-green-700" />
                             </div>
 
-                            {/* Teks kanan bersusun */}
                             <div className="flex-1 flex flex-col">
-                              <span className="text-[10px] text-gray-800">Absen Masuk</span>
+                              <span className="text-[10px] text-gray-800 tracking-wider">Absen Masuk</span>
                               <div className="flex items-center gap-1">
                                 <span className="text-sm font-semibold text-green-700">
                                   {formatTime(item.jam_mulai)}
                                 </span>
                                 {terlambat && (
-                                  <span className="text-[9px] text-red-700 font-medium px-1 mt-1 bg-red-100 rounded">
+                                  <span className="text-[8px] text-red-700 font-medium px-1 mt-1 bg-red-100 rounded-sm">
                                     Telat {item.keterlambatan} menit
                                   </span>
                                 )}
@@ -378,11 +399,9 @@ const Absensi = () => {
                             </div>
                           </div>
 
-                          {/* Bagian Pulang */}
-                          <div className="flex items-center gap-3 border-t border-gray-100 mt-2 pt-2">
-                            {/* Icon di tengah vertikal */}
-                            <div className="flex flex-col justify-center p-3 rounded-full bg-orange-100">
-                              <FontAwesomeIcon icon={faSignOutAlt} className="w-5 h-5 text-orange-600 transform rotate-180" />
+                          <div className="flex items-center gap-3 border-t border-gray-300 mt-2 pt-4">
+                            <div className="flex flex-col justify-center p-3 rounded-md bg-orange-100">
+                              <FontAwesomeIcon icon={faSignOutAlt} className="w-6 h-6 text-orange-600 transform rotate-180" />
                             </div>
 
                             {/* Teks kanan bersusun */}
