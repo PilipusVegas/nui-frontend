@@ -81,8 +81,6 @@ const DetailKelolaPresensi = () => {
     }
   }, [location.search]);
 
-
-
   const dateRange = Object.keys(attendance || {});
 
   // --- EXPORT EXCEL ---
@@ -116,7 +114,7 @@ const DetailKelolaPresensi = () => {
     sheet.addRow([]);
 
     // ===== Header Tabel =====
-    const header = ["No", "Tanggal", "Masuk", "Terlambat (Menit)", "Pulang", "Lembur"];
+    const header = ["No", "Tanggal", "Shift", "Masuk", "Terlambat (Menit)", "Pulang", "Lembur", "Remark"];
     const headerRow = sheet.addRow(header);
     headerRow.eachCell((cell) => {
       cell.fill = {
@@ -124,7 +122,7 @@ const DetailKelolaPresensi = () => {
         pattern: "solid",
         fgColor: { argb: "FF16A34A" },
       };
-      cell.font = { bold: true, color: { argb: "FFFFFFFF" } }; // putih
+      cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
       cell.alignment = { horizontal: "center", vertical: "middle" };
       cell.border = {
         top: { style: "thin" },
@@ -134,6 +132,7 @@ const DetailKelolaPresensi = () => {
       };
     });
 
+
     // ===== Data Tabel =====
     dateRange.forEach((tgl, i) => {
       const rec = attendance[tgl];
@@ -142,15 +141,17 @@ const DetailKelolaPresensi = () => {
       const row = sheet.addRow([
         i + 1,
         tgl,
-        rec?.in ? formatTime(rec.in) : "",
-        typeof rec?.late === "number" ? rec.late : "",
-        rec?.out ? formatTime(rec.out) : "",
-        rec?.overtime ? formatOvertimeJamBulat(rec.overtime) : "",
+        rec?.shift || "-",
+        rec?.in ? formatTime(rec.in) : "-",
+        typeof rec?.late === "number" ? rec.late : "-",
+        rec?.out ? formatTime(rec.out) : "-",
+        rec?.overtime ?? "-",
+        rec?.remark ?? "-"   // << Remark ditambahkan di sini
       ]);
 
       row.eachCell((cell, colNumber) => {
         cell.alignment = {
-          horizontal: colNumber === 2 ? "left" : "center", // tanggal rata kiri, lain center
+          horizontal: colNumber === 2 || colNumber === 8 ? "left" : "center", // tanggal & remark rata kiri
           vertical: "middle",
         };
         cell.border = {
@@ -171,15 +172,17 @@ const DetailKelolaPresensi = () => {
       });
     });
 
+
     // ===== Auto Width =====
-    sheet.columns.forEach((col) => {
-      let max = 12;
+    sheet.columns.forEach((col, idx) => {
+      let max = idx === 7 ? 30 : 12; // Kolom Remark lebih lebar
       col.eachCell?.((c) => {
         const len = c.value ? c.value.toString().length : 0;
         if (len > max) max = len;
       });
       col.width = max + 2;
     });
+
 
     // ===== Save File =====
     const buf = await workbook.xlsx.writeBuffer();
@@ -195,18 +198,17 @@ const DetailKelolaPresensi = () => {
   // --- RENDER ---
   return (
     <div className="flex flex-col mb-10">
-      <SectionHeader title="Detail Kelola Presensi" subtitle="Menampilkan rekap presensi lengkap karyawan, termasuk jam masuk, pulang, dan keterlambatan." onBack={() => navigate("/kelola-absensi")}
+      <SectionHeader title="Detail Kelola Presensi" subtitle="Menampilkan rekap presensi lengkap karyawan, termasuk jam masuk, pulang, keterlambatan & Remark." onBack={() => navigate("/kelola-absensi")}
         actions={
           <div className="flex gap-2">
-            <button onClick={handleExport} className="flex items-center gap-2 bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+            <button onClick={handleExport} className="flex items-center gap-2 bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-semibold">
               <FontAwesomeIcon icon={faDownload} />
               <span className="hidden sm:block">Unduh Excel</span>
             </button>
-            <button onClick={() => setIsInfoOpen(true)} className="flex items-center gap-2 bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+            <button onClick={() => setIsInfoOpen(true)} className="flex items-center gap-2 bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-semibold">
               <FontAwesomeIcon icon={faInfo} />
               <span className="hidden sm:block">Informasi</span>
             </button>
-
           </div>
         }
       />
@@ -330,40 +332,52 @@ const DetailKelolaPresensi = () => {
       )}
 
       {/* Modal Informasi */}
-      <Modal isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} title="Informasi Halaman Presensi" note="Data diambil langsung dari sistem absensi dan otomatis menyesuaikan pembaruan terbaru.">
+      <Modal
+        isOpen={isInfoOpen}
+        onClose={() => setIsInfoOpen(false)}
+        title="Informasi Halaman Presensi"
+        note="Data diambil langsung dari sistem absensi dan selalu menyesuaikan pembaruan terbaru."
+      >
         <div className="space-y-4 text-sm text-gray-700">
-          <p> Halaman ini menampilkan <span className="font-semibold text-emerald-600">rekap presensi karyawan</span>,
-            termasuk jam masuk, jam pulang, keterlambatan, lembur, serta catatan (remark) per hari.
+          <p>
+            Halaman ini menampilkan <span className="font-semibold text-emerald-600">rekap presensi karyawan</span>
+            lengkap per hari: jam masuk, jam pulang, keterlambatan, lembur, dan catatan tambahan (remark).
           </p>
 
           <div className="space-y-2">
+            {/* Unduh Excel */}
             <div className="flex items-start gap-2 bg-blue-50 p-2 rounded">
               <FontAwesomeIcon icon={faDownload} className="text-blue-600 mt-1" />
-              <p><span className="font-medium">Unduh Excel:</span> mengekspor data presensi lengkap dengan detail harian.</p>
+              <p><span className="font-medium">Unduh Excel:</span> ekspor seluruh data presensi ke file Excel.</p>
             </div>
 
+            {/* Filter Tanggal */}
             <div className="flex items-start gap-2 bg-green-50 p-2 rounded">
               <FontAwesomeIcon icon={faClock} className="text-green-600 mt-1" />
-              <p><span className="font-medium">Filter Tanggal:</span> menampilkan data sesuai rentang tanggal tertentu.</p>
+              <p><span className="font-medium">Filter Tanggal:</span> tampilkan data sesuai rentang tanggal tertentu.</p>
             </div>
 
+            {/* Tabel Merah */}
             <div className="flex items-start gap-2 bg-red-50 p-2 rounded">
               <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-600 mt-1" />
-              <p><span className="font-medium">Tabel Merah:</span> baris berwarna merah menandakan <b>hari Minggu</b> agar mudah dikenali.</p>
+              <p><span className="font-medium">Tabel Merah:</span> baris merah menandakan <b>hari Minggu</b>.</p>
             </div>
 
+            {/* Statistik Ringkas */}
             <div className="flex items-start gap-2 bg-yellow-50 p-2 rounded">
               <FontAwesomeIcon icon={faUserCheck} className="text-yellow-600 mt-1" />
-              <p><span className="font-medium">Statistik Ringkas:</span> total hadir, lembur, dan keterlambatan tampil di atas tabel.</p>
+              <p><span className="font-medium">Statistik Ringkas:</span> total hadir, lembur, dan keterlambatan di atas tabel.</p>
             </div>
 
-            <div className="flex items-start gap-4 bg-purple-50 p-2 rounded">
+            {/* Kolom Remark */}
+            <div className="flex items-start gap-2 bg-purple-50 p-2 rounded">
               <FontAwesomeIcon icon={faInfo} className="text-purple-600 mt-1" />
-              <p><span className="font-medium">Kolom Remark:</span> berisi catatan khusus, misalnya izin, sakit, dinas luar, atau tambahan HRD.</p>
+              <p><span className="font-medium">Kolom Remark:</span> catatan khusus (izin, sakit, dinas luar, atau tambahan HRD).</p>
             </div>
           </div>
         </div>
       </Modal>
+
 
       <Modal isOpen={remarkModal.open} onClose={() => setRemarkModal({ open: false, remark: "", remarkBy: "", remarkStatus: null })} title="Detail Remark">
         <div className="p-6 text-sm text-gray-800 space-y-5">
@@ -399,8 +413,6 @@ const DetailKelolaPresensi = () => {
           </div>
         </div>
       </Modal>
-
-
     </div >
   );
 };

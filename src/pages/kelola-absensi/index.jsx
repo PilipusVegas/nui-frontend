@@ -1,17 +1,14 @@
-import ExcelJS from 'exceljs';
-import Select from "react-select";
-import { saveAs } from 'file-saver';
-import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
+import { exportRekapPresensi } from "./exportExcel";
 import { getDefaultPeriod } from "../../utils/getDefaultPeriod";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { faFolderOpen, faFileDownload, faExpand, faRefresh, faCircleInfo } from "@fortawesome/free-solid-svg-icons";
 import { LoadingSpinner, SectionHeader, EmptyState, ErrorState, SearchBar, Modal } from "../../components/";
-import { formatFullDate, formatLongDate, formatOvertimeJamBulat, isSunday, formatHourToTime } from "../../utils/dateUtils";
+import { formatLongDate } from "../../utils/dateUtils";
 
-const AbsensiKantor = () => {
+const DataRekapAbsensi  = () => {
   const Navigate = useNavigate();
   const user = getUserFromToken();
   const [error, setError] = useState(null);
@@ -94,167 +91,6 @@ const AbsensiKantor = () => {
     }
   };
 
-  const handleRekapData = async () => {
-    if (!filteredAbsenData.length) return;
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Rekap Kelola Presensi");
-    const offsetCol = 2;
-    const offsetRow = 7;
-    const tanggalColSpan = tanggalArray.length * 4;
-    const totalCols = 3 + tanggalColSpan + 2;
-    const jumlahKaryawan = filteredAbsenData.length;
-    const summary1 = `Periode Rekapitulasi Presensi: ${formatFullDate(startDate)} - ${formatFullDate(endDate)}`;
-    const summary2 = `Jumlah Karyawan: ${jumlahKaryawan} orang`;
-    const summary3 = `Catatan: Presensi Lapangan dilakukan via aplikasi absensi online (berbasis lokasi kerja). Presensi Kantor menggunakan sistem Face Recognition. Data ini menyajikan ringkasan kehadiran, keterlambatan, dan lemburan secara terstruktur untuk keperluan monitoring dan evaluasi.`;
-    worksheet.mergeCells(2, offsetCol, 2, offsetCol + totalCols - 1);
-    worksheet.getCell(2, offsetCol).value = summary1;
-    worksheet.getCell(2, offsetCol).font = { bold: true, size: 16 };
-    worksheet.getCell(2, offsetCol).alignment = { vertical: "middle", horizontal: "left" };
-    worksheet.mergeCells(3, offsetCol, 3, offsetCol + totalCols - 1);
-    worksheet.getCell(3, offsetCol).value = summary2;
-    worksheet.getCell(3, offsetCol).font = { size: 12 };
-    worksheet.getCell(3, offsetCol).alignment = { vertical: "middle", horizontal: "left" };
-    worksheet.mergeCells(4, offsetCol, 4, offsetCol + totalCols - 1);
-    worksheet.getCell(4, offsetCol).value = summary3;
-    worksheet.getCell(4, offsetCol).font = { size: 12 };
-    worksheet.getCell(4, offsetCol).alignment = { vertical: "middle", horizontal: "left" };
-
-    // 🔵 Header
-    const headerRow1 = ["Pegawai", "", "Jumlah", "", ""];
-    const headerRow2 = ["NIP", "Nama", "Kehadiran", "Keterlambatan", "Lemburan"];
-
-    tanggalArray.forEach((tgl) => {
-      const formattedDate = formatLongDate(tgl);
-      headerRow1.push(formattedDate, "", "", "");
-      headerRow2.push("IN", "LATE", "OUT", "T");
-    });
-
-    worksheet.getRow(offsetRow + 1).values = Array(offsetCol - 1).fill(null).concat(headerRow1);
-    worksheet.getRow(offsetRow + 2).values = Array(offsetCol - 1).fill(null).concat(headerRow2);
-
-    // Merge header cells
-    worksheet.mergeCells(offsetRow + 1, offsetCol, offsetRow + 1, offsetCol + 1); // Pegawai
-    worksheet.mergeCells(offsetRow + 1, offsetCol + 2, offsetRow + 1, offsetCol + 4); // Jumlah
-    tanggalArray.forEach((_, i) => {
-      const start = offsetCol + 5 + i * 4;
-      worksheet.mergeCells(offsetRow + 1, start, offsetRow + 1, start + 3);
-    });
-
-    // 🔴 Pewarnaan kolom hari Minggu dari header hingga baris terakhir karyawan
-    tanggalArray.forEach((tgl, index) => {
-      if (!isSunday(tgl)) return;
-
-      // posisi kolom tanggal pertama sekarang ada di offsetCol + 5
-      const startCol = offsetCol + 5 + index * 4;
-      const endCol = startCol + 3; // IN, LATE, OUT, OVERTIME
-      const startRow = offsetRow + 1; // Header (baris pertama tanggal)
-      const endRow = offsetRow + 3 + jumlahKaryawan - 1; // Baris terakhir data karyawan
-
-      for (let col = startCol; col <= endCol; col++) {
-        for (let row = startRow; row <= endRow; row++) {
-          const cell = worksheet.getCell(row, col);
-          cell.fill = {
-            type: "pattern",
-            pattern: "solid",
-            fgColor: { argb: "FFDC2626" }, // Merah solid
-          };
-          cell.font = {
-            color: { argb: "FFFFFFFF" },
-            bold: true,
-          };
-        }
-      }
-    });
-
-    // 🟣 Data Pegawai
-    filteredAbsenData.forEach((item, index) => {
-      const currentRowIndex = offsetRow + 3 + index;
-      const baseRow = [
-        item.nip ?? "",
-        item.nama,
-        item.total_days ?? "",
-        item.total_late ?? "",
-        formatOvertimeJamBulat(item.total_overtime) ?? ""
-      ];
-
-      const excelRow = worksheet.getRow(currentRowIndex);
-      excelRow.values = Array(offsetCol - 1).fill(null).concat(baseRow);
-      let colIndex = offsetCol + 5;
-      const isEmptyValue = (val) => val === null || val === undefined || val === "" || val === 0;
-      tanggalArray.forEach((tgl) => {
-        const att = item.attendance?.[tgl] || {};
-        const overtimeRaw = att.overtime ?? item.overtimes?.[tgl]?.durasi;
-        const overtimeFormatted = formatOvertimeJamBulat(overtimeRaw);
-        const isMinggu = isSunday(tgl);
-        const lateValue = parseInt(att.late ?? 0);
-        const isLate = lateValue >= 1;
-
-        const cellStyles = {
-          minggu: {
-            fill: { type: "pattern", pattern: "solid", fgColor: { argb: "FFDC2626" } },
-            font: { color: { argb: "FFFFFFFF" }, bold: true },
-          },
-          late: {
-            fill: { type: "pattern", pattern: "solid", fgColor: { argb: "FFB91C1C" } },
-            font: { color: { argb: "FFFFFFFF" }, bold: true },
-          },
-        };
-
-        const cellValues = [
-          isEmptyValue(att.in) ? "" : att.in,
-          (lateValue === 0 || isNaN(lateValue)) ? "" : lateValue.toString(),
-          isEmptyValue(att.out) ? "" : att.out,
-          overtimeFormatted,
-        ];
-
-        for (let i = 0; i < 4; i++) {
-          const cell = worksheet.getCell(currentRowIndex, colIndex + i);
-          cell.value = cellValues[i];
-          if (cell.value === "") { cell.font = { color: { argb: "FF9CA3AF" }, italic: true }; }
-          if (i === 1 && cell.value === "" && isMinggu) { cell.font = { color: { argb: "FFFFFFFF" }, bold: true }; }
-          if (isMinggu) { Object.assign(cell, cellStyles.minggu); }
-          if (i === 1 && isLate) {
-            Object.assign(cell, cellStyles.late);
-          }
-        }
-        colIndex += 4;
-      });
-    });
-
-    // Lebar kolom
-    worksheet.columns = Array(offsetCol - 1).fill({ width: 4 }).concat([
-      { width: 10 }, // NIP
-      { width: 28 }, // Nama
-      { width: 10 }, // Kehadiran
-      { width: 14 }, // Keterlambatan
-      { width: 10 }, // Lemburan
-      ...tanggalArray.flatMap(() => [
-        { width: 6 }, { width: 6 }, { width: 6 }, { width: 6 }
-      ])
-    ]);
-
-    // Border
-    worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
-      if (rowNumber < offsetRow) return;
-      row.eachCell({ includeEmpty: false }, (cell) => {
-        cell.border = {
-          top: { style: "thin" },
-          left: { style: "thin" },
-          bottom: { style: "thin" },
-          right: { style: "thin" },
-        };
-      });
-    });
-
-    // 💾 Simpan file
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    });
-    const namaFile = `Rekap_Presensi_${formatLongDate(startDate)}_${formatLongDate(endDate)}.xlsx`;
-    saveAs(blob, namaFile);
-  };
-
   useEffect(() => {
     if (!startDate && !endDate) {
       const { start, end } = getDefaultPeriod();
@@ -297,23 +133,23 @@ const AbsensiKantor = () => {
     <div className="min-h-screen flex flex-col justify-start p-5">
       <SectionHeader title="Kelola Presensi Karyawan" subtitle="Monitoring Presensi Karyawan secara real-time, akurat & simpel." onBack={() => Navigate("/")}
         actions={
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {canDownloadHRD && (
-              <button onClick={handleRekapData} disabled={filteredAbsenData.length === 0 || loading} className={`flex items-center gap-2 h-10 px-4 font-semibold rounded-md shadow transition ${filteredAbsenData.length === 0 || loading ? "bg-gray-400 text-white cursor-not-allowed" : "bg-green-500 hover:bg-green-600 text-white"}`}>
+              <button onClick={() => exportRekapPresensi({ filteredAbsenData, startDate, endDate, tanggalArray })} className={`flex items-center gap-2 h-10 px-4 font-semibold rounded-md shadow transition ${filteredAbsenData.length === 0 || loading ? "bg-gray-400 text-white cursor-not-allowed" : "bg-green-600 hover:bg-green-700 text-white"}`}>
                 <FontAwesomeIcon icon={faFileDownload} />
-                <span className="hidden sm:inline">Export Excel</span>
+                <span className="hidden sm:inline">Unduh Excel</span>
               </button>
             )}
 
             <button onClick={handleFullView} className="flex items-center gap-2 h-10 px-4 font-semibold rounded-md shadow bg-gray-500 hover:bg-gray-600 text-white transition">
               <FontAwesomeIcon icon={faExpand} />
-              <span className="hidden sm:inline">Fullscreen</span>
+              <span className="hidden sm:inline">Layar Penuh</span>
             </button>
 
             <button onClick={fetchAbsenData} disabled={loading} className={`flex items-center gap-2 h-10 px-4 font-semibold rounded-md shadow transition ${loading ? "bg-sky-400 text-white cursor-not-allowed" : "bg-sky-500 hover:bg-sky-600 text-white"}`}>
               <FontAwesomeIcon icon={faRefresh} />
               <span className="hidden sm:inline">
-                {loading ? "Menyegarkan..." : "Segarkan"}
+                {loading ? "Memperbarui..." : "Perbarui"}
               </span>
             </button>
 
@@ -378,9 +214,6 @@ const AbsensiKantor = () => {
                           onMouseLeave={() => setHoveredRow(null)}
                           className={hoveredRow === idx ? "bg-gray-200" : ""}>
                           <td className="border border-gray-300 px-3 py-1 text-center text-xs break-words tracking-wider">{item.nip || "-"}</td>
-                          {/* <td onClick={() => { window.open(`/kelola-absensi/${item.id_user}`, '_blank', 'noopener,noreferrer'); }} className="border border-gray-300 px-2 py-1 text-xs break-words font-semibold tracking-wider uppercase cursor-pointer hover:underline">
-                            {item.nama}
-                          </td> */}
                           <td onClick={() => { const url = `/kelola-absensi/${item.id_user}?startDate=${startDate}&endDate=${endDate}`; window.open(url, '_blank', 'noopener,noreferrer'); }} className="border border-gray-300 px-2 py-1 text-xs break-words font-semibold tracking-wider uppercase cursor-pointer hover:underline">
                             {item.nama}
                           </td>
@@ -444,7 +277,7 @@ const AbsensiKantor = () => {
                           return (
                             <React.Fragment key={`${tgl}-${rowIdx}`}>
                               <td className={tdBase}>{inTime}</td>
-                              <td className={`${tdBase} ${lateVal > 0 ? "text-red-700 bg-red-200 font-bold" : ""}`}>
+                              <td className={`${tdBase} ${lateVal > 0 ? "text-red-700 font-bold" : ""}`}>
                                 {lateMin}
                               </td>
                               <td className={tdBase}>{outTime}</td>
@@ -526,4 +359,4 @@ const AbsensiKantor = () => {
   );
 };
 
-export default AbsensiKantor;
+export default DataRekapAbsensi;
