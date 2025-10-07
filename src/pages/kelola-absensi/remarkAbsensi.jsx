@@ -55,7 +55,6 @@ const AbsenManual = () => {
         jam_selesai: "",
         remark: "",
         remark_status: null,
-        // remark_by: user.id_user,
     });
     const [formData, setFormData] = useState(defaultFormData(idUser));
 
@@ -206,7 +205,7 @@ const AbsenManual = () => {
                 actions={
                     <button type="button" onClick={() => setShowInfo(true)} className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded flex items-center rounded-md">
                         <FontAwesomeIcon icon={faInfoCircle} className="mr-2" />
-                        Informasi
+                        Informasi Fitur Remark
                     </button>}
             />
 
@@ -355,12 +354,11 @@ const AbsenManual = () => {
 
                             <div className="col-span-2">
                                 <label className="block text-sm font-medium mb-1">Status Remark</label>
-                                <Select value={ formData.remark_status ? { value: formData.remark_status, label: formData.remark_status === 1 ? "Absen Manual" : formData.remark_status === 2 ? "Izin Terlambat" : "Izin Pulang Awal",} : null}
+                                <Select value={formData.remark_status ? { value: formData.remark_status, label: formData.remark_status === 1 ? "Absen Manual" : formData.remark_status === 2 ? "Izin Terlambat" : "Izin Pulang Awal", } : null}
                                     onChange={(opt) =>
                                         setFormData((f) => ({
                                             ...f,
                                             remark_status: opt.value,
-                                            remark_by: f.remark_by || getUserFromToken()?.id_user,
                                         }))
                                     }
                                     options={[
@@ -389,7 +387,7 @@ const AbsenManual = () => {
             <Modal isOpen={showInfo} onClose={() => setShowInfo(false)} title="Informasi Absensi Manual" note="Panduan lengkap penggunaan fitur Absensi Manual" size="xl">
                 <div className="text-sm text-gray-700 leading-relaxed space-y-3">
                     <p>
-                        Fitur <b>Absensi Manual</b> disediakan sebagai solusi darurat ketika
+                        Fitur <b>Remark Absensi</b> disediakan sebagai solusi darurat ketika
                         absensi otomatis melalui kamera dan GPS tidak dapat dilakukan
                         (misalnya karena kendala teknis, perangkat bermasalah, atau kondisi
                         force majeure lainnya). Dengan fitur ini, admin/HR dapat
@@ -439,6 +437,10 @@ const AbsenManual = () => {
                                 <li>
                                     <b>Izin Terlambat</b>: dipilih bila karyawan sudah konfirmasi
                                     keterlambatan kepada HR/atasan (contoh: macet, urusan keluarga, dsb.). Dengan status ini, <b>waktu keterlambatan tidak dihitung sama sekali</b> sehingga tidak memengaruhi rekap keterlambatan karyawan.
+                                </li>
+                                <li>
+                                    <b>Izin Pulang Awal</b>: dipilih bila karyawan sudah konfirmasi
+                                    Izin Pulang Awal kepada HR/atasan (contoh: urusan keluarga, keaadan darurat, dsb.). Dengan status ini, menandai absensi karyawan sebagai setengah hari.
                                 </li>
                             </ul>
                         </li>
