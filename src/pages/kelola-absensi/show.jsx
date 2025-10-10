@@ -132,7 +132,6 @@ const DetailKelolaPresensi = () => {
       };
     });
 
-
     // ===== Data Tabel =====
     dateRange.forEach((tgl, i) => {
       const rec = attendance[tgl];
@@ -172,7 +171,6 @@ const DetailKelolaPresensi = () => {
       });
     });
 
-
     // ===== Auto Width =====
     sheet.columns.forEach((col, idx) => {
       let max = idx === 7 ? 30 : 12; // Kolom Remark lebih lebar
@@ -193,7 +191,6 @@ const DetailKelolaPresensi = () => {
       )}_${formatDateForFilename(customEndDate)}.xlsx`
     );
   };
-
 
   // --- RENDER ---
   return (
@@ -332,17 +329,9 @@ const DetailKelolaPresensi = () => {
       )}
 
       {/* Modal Informasi */}
-      <Modal
-        isOpen={isInfoOpen}
-        onClose={() => setIsInfoOpen(false)}
-        title="Informasi Halaman Presensi"
-        note="Data diambil langsung dari sistem absensi dan selalu menyesuaikan pembaruan terbaru."
-      >
+      <Modal isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} title="Informasi Halaman Presensi" note="Data diambil langsung dari sistem absensi dan selalu menyesuaikan pembaruan terbaru.">
         <div className="space-y-4 text-sm text-gray-700">
-          <p>
-            Halaman ini menampilkan <span className="font-semibold text-emerald-600">rekap presensi karyawan</span>
-            lengkap per hari: jam masuk, jam pulang, keterlambatan, lembur, dan catatan tambahan (remark).
-          </p>
+          <p> Halaman ini menampilkan <span className="font-semibold text-emerald-600">rekap presensi karyawan</span> lengkap per hari: jam masuk, jam pulang, keterlambatan, lembur, dan catatan tambahan (remark).</p>
 
           <div className="space-y-2">
             {/* Unduh Excel */}
@@ -395,6 +384,8 @@ const DetailKelolaPresensi = () => {
                 ? "bg-yellow-100 text-yellow-700"
                 : remarkModal.remarkStatus === 3
                   ? "bg-red-100 text-red-700"
+                  : remarkModal.remarkStatus === 4
+                    ? "bg-green-100 text-green-700"
                   : "bg-gray-100 text-gray-500"
               }`}
             >
@@ -404,6 +395,8 @@ const DetailKelolaPresensi = () => {
                   ? "Izin Terlambat"
                   : remarkModal.remarkStatus === 3
                     ? "Izin Pulang Cepat"
+                    : remarkModal.remarkStatus === 4
+                      ? "Cuti"
                     : "Tidak Ada Status"}
             </span>
 

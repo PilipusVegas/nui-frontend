@@ -126,7 +126,6 @@ const AbsenManual = () => {
         }
     };
 
-
     const handleSubmit = async e => {
         e.preventDefault();
         const f = formData;
@@ -209,7 +208,7 @@ const AbsenManual = () => {
                     </button>}
             />
 
-            <div className="p-4 space-y-6 mb-10">
+            <div className="p-4 space-y-6 mb-20">
                 {selectedUser && (
                     <div className="p-6 bg-white rounded-xl shadow-md border border-gray-200 space-y-3">
                         {/* Header */}
@@ -250,9 +249,7 @@ const AbsenManual = () => {
                         <div>
                             <p className="font-medium text-gray-800 mb-1">Absensi</p>
                             <p className="text-gray-700 text-sm leading-relaxed">
-                                {selectedUser.face_registered
-                                    ? "Karyawan terdaftar pada sistem Face Recognition dan melakukan absensi melalui pemindaian wajah."
-                                    : "Karyawan tidak terdaftar pada sistem Face Recognition dan menggunakan aplikasi absensi online."}
+                                {selectedUser.face_registered ? "Karyawan terdaftar pada sistem Face Recognition dan melakukan absensi melalui pemindaian wajah." : "Karyawan tidak terdaftar pada sistem Face Recognition dan menggunakan aplikasi absensi online."}
                             </p>
                         </div>
 
@@ -354,7 +351,7 @@ const AbsenManual = () => {
 
                             <div className="col-span-2">
                                 <label className="block text-sm font-medium mb-1">Status Remark</label>
-                                <Select value={formData.remark_status ? { value: formData.remark_status, label: formData.remark_status === 1 ? "Absen Manual" : formData.remark_status === 2 ? "Izin Terlambat" : "Izin Pulang Awal", } : null}
+                                <Select value={formData.remark_status ? { value: formData.remark_status, label: formData.remark_status === 1 ? "Absen Manual" : formData.remark_status === 2 ? "Izin Terlambat" : formData.remark_status === 3 ? "Izin Pulang Awal" : "Cuti", } : null}
                                     onChange={(opt) =>
                                         setFormData((f) => ({
                                             ...f,
@@ -365,6 +362,7 @@ const AbsenManual = () => {
                                         { value: 1, label: "Absen Manual" },
                                         { value: 2, label: "Izin Terlambat" },
                                         { value: 3, label: "Izin Pulang Awal" },
+                                        { value: 4, label: "Cuti" },
                                     ]}
                                     isDisabled={!!absenData?.remark_by && !!formData.remark_status}
                                 />
