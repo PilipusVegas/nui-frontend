@@ -12,17 +12,18 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 const Absensi = () => {
+  const navigate = useNavigate();
+  const user = getUserFromToken();
   const [isSunday, setIsSunday] = useState(false);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
-  const [currentStep, setCurrentStep] = useState(null);
-  const [isSelesaiFlow, setIsSelesaiFlow] = useState(false);
-  const [attendanceData, setAttendanceData] = useState({ userId: "", username: "", id_absen: "" });
-  const [attendanceHistory, setAttendanceHistory] = useState([]);
-  const [permStatus, setPermStatus] = useState({ camera: "unknown", location: "unknown" });
-  const [videoStreams, setVideoStreams] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const user = getUserFromToken();
-  const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(null);
+  const [videoStreams, setVideoStreams] = useState({});
+  const [isSelesaiFlow, setIsSelesaiFlow] = useState(false);
+  const [attendanceHistory, setAttendanceHistory] = useState([]);
+  const [isCheckingAttendance, setIsCheckingAttendance] = useState(true);
+  const [permStatus, setPermStatus] = useState({ camera: "unknown", location: "unknown" });
+  const [attendanceData, setAttendanceData] = useState({ userId: "", username: "", id_absen: "" });
 
   useEffect(() => {
     const updatePerm = async () => {
@@ -123,61 +124,51 @@ const Absensi = () => {
     if (attendanceData.userId) fetchAttendanceHistory();
   }, [attendanceData.userId]);
 
-  useEffect(() => {
-    const checkAttendance = async () => {
-      try {
-        const response = await fetchWithJwt(`${apiUrl}/absen/cek/${attendanceData.userId}`);
-        const data = await response.json();
+useEffect(() => {
+  const checkAttendance = async () => {
+    setIsCheckingAttendance(true); // ✅ Mulai loading
+    try {
+      const response = await fetchWithJwt(`${apiUrl}/absen/cek/${attendanceData.userId}`);
+      const data = await response.json();
 
-        // ✅ Jika API success true → sudah absen
-        if (response.ok && data.success === true && data.data) {
-          const detail = data.data;
-          setAttendanceData({
-            userId: String(detail.id_user),
-            username: detail.nama || "",
-            id_absen: String(detail.id_absen),
-            id_lokasi: detail.lokasi || "",
-            nama: detail.nama || "",
-            shift: detail.shift || "",
-            deskripsi: detail.deskripsi || "",
-            jam_mulai: detail.jam_mulai ? String(detail.jam_mulai) : null,
-            jam_selesai: detail.jam_selesai ? String(detail.jam_selesai) : null,
-          });
+      if (response.ok && data.success === true && data.data) {
+        const detail = data.data;
+        setAttendanceData({
+          userId: String(detail.id_user),
+          username: detail.nama || "",
+          id_absen: String(detail.id_absen),
+          id_lokasi: detail.lokasi || "",
+          nama: detail.nama || "",
+          shift: detail.shift || "",
+          deskripsi: detail.deskripsi || "",
+          jam_mulai: detail.jam_mulai ? String(detail.jam_mulai) : null,
+          jam_selesai: detail.jam_selesai ? String(detail.jam_selesai) : null,
+        });
 
-          // Jika jam_mulai sudah ada, berarti sudah absen masuk
-          setIsSelesaiFlow(!!detail.jam_mulai && !detail.jam_selesai);
-          setCurrentStep(null);
-
-          console.log("✅ Sudah absen:", detail);
-        }
-
-        // ❌ Jika success false → belum absen
-        else if (response.ok && data.success === false) {
-          setAttendanceData(prev => ({
-            ...prev,
-            id_absen: "",
-            jam_mulai: null,
-            jam_selesai: null,
-          }));
-          setIsSelesaiFlow(false);
-          setCurrentStep(null);
-          console.log("❌ Belum absen hari ini");
-        }
-
-        else {
-          console.warn("⚠️ Response tidak sesuai format diharapkan:", data);
-          setIsSelesaiFlow(false);
-          setCurrentStep(null);
-        }
-      } catch (error) {
-        console.error("Error checking attendance:", error);
+        setIsSelesaiFlow(!!detail.jam_mulai && !detail.jam_selesai);
+        setCurrentStep(null);
+      } else {
+        setAttendanceData(prev => ({
+          ...prev,
+          id_absen: "",
+          jam_mulai: null,
+          jam_selesai: null,
+        }));
         setIsSelesaiFlow(false);
         setCurrentStep(null);
       }
-    };
+    } catch (error) {
+      console.error("Error checking attendance:", error);
+      setIsSelesaiFlow(false);
+      setCurrentStep(null);
+    } finally {
+      setIsCheckingAttendance(false); // ✅ Selesai loading
+    }
+  };
 
-    if (attendanceData.userId) checkAttendance();
-  }, [apiUrl, attendanceData.userId]);
+  if (attendanceData.userId) checkAttendance();
+}, [apiUrl, attendanceData.userId]);
+
 
 
 
@@ -432,12 +423,16 @@ const Absensi = () => {
 
               {/* === Tombol Aksi === */}
               <section>
-                {!attendanceData.jam_mulai ? (
-                  <button disabled={isLoading} onClick={handleMulaiClick} className={`w-full py-5 rounded-xl font-semibold flex items-center justify-center gap-2 transition shadow-lg ${isSunday ? "bg-gray-400 text-white" : "bg-green-600 text-white hover:bg-green-700"}  ${isLoading && "opacity-60 cursor-not-allowed"}`}>
+                {isCheckingAttendance ? (
+                  <button disabled className="w-full py-5 rounded-xl font-semibold flex items-center justify-center gap-2 bg-gray-300 text-gray-600 shadow-md cursor-not-allowed">
+                    <FontAwesomeIcon icon={faClock} className="text-2xl animate-spin" />
+                    Memeriksa Kehadiran…
+                  </button>
+                ) : !attendanceData.jam_mulai ? (
+                  <button disabled={isLoading} onClick={handleMulaiClick} className={`w-full py-5 rounded-xl font-semibold flex items-center justify-center gap-2 transition shadow-lg ${isSunday ? "bg-gray-400 text-white" : "bg-green-600 text-white hover:bg-green-700"} ${isLoading && "opacity-60 cursor-not-allowed"}`}>
                     <FontAwesomeIcon icon={faCalendarPlus} className="text-2xl" />
                     {isSunday ? "Absen Masuk Nonaktif (Minggu)" : isLoading ? "Memuat…" : "Absen Masuk"}
                   </button>
-
                 ) : !attendanceData.jam_selesai ? (
                   <button disabled={isLoading} onClick={handleSelesaiClick} className={`w-full py-5 rounded-xl font-semibold flex items-center justify-center gap-2 transition bg-orange-500 text-white hover:bg-orange-600 shadow-lg ${isLoading && "opacity-60 cursor-not-allowed"}`}>
                     <FontAwesomeIcon icon={faSignOutAlt} className="text-2xl" />
