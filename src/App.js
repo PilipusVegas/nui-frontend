@@ -20,7 +20,7 @@ import DataKaryawan from "./pages/karyawan/";
 import TambahKaryawan from "./pages/karyawan/tambah";
 import EditKaryawan from "./pages/karyawan/edit";
 import ShowKaryawan from "./pages/karyawan/show";
-import Shift from "./pages/shift/shift";
+import Shift from "./pages/shift/";
 import TambahShift from "./pages/shift/tambah";
 import EditShift from "./pages/shift/edit";
 import RiwayatLembur from "./pages/riwayat-lembur";
@@ -41,14 +41,15 @@ import PerangkatAbsensi from "./pages/perangkat-absensi";
 import ManajemenHariLibur from "./pages/manajemen-libur";
 import FormulirDinas from "./pages/form/formDinas";
 import RemarkAbsensi from "./pages/kelola-absensi/remarkAbsensi";
-
-// ====================== DEKSTOP ============================
-// Pengajuan
 import PengajuanLembur from "./pages/pengajuan/lembur";
 import PengajuanAbsensi from "./pages/pengajuan/absensi";
 import DetailPengajuanAbsensi from "./pages/pengajuan/absensi/show";
 import PengajuanDinas from "./pages/pengajuan/surat-dinas";
 import DetailPengajuanDinas from "./pages/pengajuan/surat-dinas/show";
+import HrdAccess from "./pages/hrd-akses";
+import TambahHrdAccess from "./pages/hrd-akses/tambah";
+import EditHrdAccess from "./pages/hrd-akses/edit";
+
 
 
 // ===================== MOBILE USERS ========================
@@ -237,8 +238,6 @@ const App = () => {
     { path: "/karyawan/edit/:id", component: <EditKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
     { path: "/karyawan/show/:id", component: <ShowKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
     { path: "/penggajian", component: <DataPenggajian />, roles: ["1", "4", "6"], layout: SidebarLayout },
-    // { path: "/penggajian/:id_user", component: <DetailPenggajian />, roles: ["1", "4", "6"], layout: SidebarLayout },
-    // { path: "/penggajian/detail-lembur/:id", component: <DetailLembur />, roles: ["1", "4", "6"], layout: SidebarLayout },
     { path: "/riwayat-penggajian", component: <RiwayatPenggajian />, roles: ["1", "4", "6"], layout: SidebarLayout },
     { path: "/riwayat-surat-dinas", component: <RiwayatSuratDinas />, roles: ["1", "4", "5", "6","20"], layout: SidebarLayout },
     { path: "/divisi/", component: <Divisi />, roles: ["1", "4", "6"], layout: SidebarLayout },
@@ -248,9 +247,12 @@ const App = () => {
     { path: "/perusahaan/", component: <KelolaPerusahaan />, roles: ["1", "4", "6"], layout: SidebarLayout },
     { path: "/perusahaan/tambah", component: <TambahPerusahaan />, roles: ["1", "4", "6"], layout: SidebarLayout },
     { path: "/perusahaan/edit/:id", component: <EditPerusahaan />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/manajemen-hari-libur", component: <ManajemenHariLibur />, roles: ["1", "4", "6"], layout: SidebarLayout },
     { path: "/manajemen-menu", component: <ManajemenMenu />, roles: ["1"], layout: SidebarLayout },
     { path: "/perangkat-absensi", component: <PerangkatAbsensi />, roles: ["1"], layout: SidebarLayout },
-    { path: "/manajemen-hari-libur", component: <ManajemenHariLibur />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/akses-hrd", component: <HrdAccess />, roles: ["1"], layout: SidebarLayout },
+    { path: "/akses-hrd/tambah", component: <TambahHrdAccess />, roles: ["1"], layout: SidebarLayout },
+    { path: "/akses-hrd/edit/:id_user", component: <EditHrdAccess />, roles: ["1"], layout: SidebarLayout },
   ];
 
   return (
