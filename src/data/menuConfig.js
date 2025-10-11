@@ -1,5 +1,5 @@
 // src/data/menuConfig.js
-import { faHome, faPeopleGroup, faUsersCog, faCheckSquare, faUserCheck, faBook, faPenFancy, faLocationArrow, faBuilding, faCheckCircle, faClockRotateLeft, faKey, faTabletAlt, faCalendarDays, faUserAltSlash, faUserEdit } from "@fortawesome/free-solid-svg-icons";
+import { faHome, faPeopleGroup, faUsersCog, faCheckSquare, faUserCheck, faBook, faPenFancy, faLocationArrow, faBuilding, faCheckCircle, faClockRotateLeft, faKey, faTabletAlt, faCalendarDays, faUserEdit, faUserShield } from "@fortawesome/free-solid-svg-icons";
 
 export const menuConfig = [
     // 1. BERANDA
@@ -39,14 +39,14 @@ export const menuConfig = [
         items: [
             { label: "Dinas Keluar Kantor", icon: faPenFancy, roles: [1, 4, 5, 6, 20],
                 submenu: [
-                    { label: "Pengajuan Dinas", path: "/pengajuan-dinas", roles: [1, 4, 5, 6, 20] },
-                    { label: "Riwayat Dinas", path: "/riwayat-surat-dinas", roles: [1, 4, 5, 6, 20] },
+                    { label: "Pengajuan Dinas", icon: faPenFancy, path: "/pengajuan-dinas", roles: [1, 4, 5, 6, 20] },
+                    { label: "Riwayat Dinas", icon: faBook, path: "/riwayat-surat-dinas", roles: [1, 4, 5, 6, 20] },
                 ]
             },
             { label: "Lembur", icon: faCheckCircle, roles: [1, 4, 5, 6, 20],
                 submenu: [
-                    { label: "Pengajuan Lembur", path: "/pengajuan-lembur", roles: [1, 5, 20] },
-                    { label: "Riwayat Lembur", path: "/riwayat-lembur", roles: [1, 4, 5, 6, 20] },
+                    { label: "Pengajuan Lembur", icon: faPenFancy, path: "/pengajuan-lembur", roles: [1, 5, 20] },
+                    { label: "Riwayat Lembur", icon: faBook, path: "/riwayat-lembur", roles: [1, 4, 5, 6, 20] },
                 ]
             },
         ]
@@ -58,6 +58,7 @@ export const menuConfig = [
             { label: "Titik Lokasi Absensi", icon: faLocationArrow, path: "/lokasi-presensi", roles: [1, 5] },
             { label: "Perangkat Absensi", icon: faTabletAlt, path: "/perangkat-absensi", roles: [1] },
             { label: "Manajemen Menu", icon: faKey, path: "/manajemen-menu", roles: [1] },
+            { label: "Akses HRD", icon: faUserShield, path: "/akses-hrd", roles: [1] },
         ],
     },
 ];

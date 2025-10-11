@@ -1,44 +1,99 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import {
+  faClock,
+  faCalendarAlt,
+  faSun,
+  faCloudSun,
+  faCloud,
+  faCloudRain,
+  faCloudShowersHeavy,
+  faBolt,
+  faSmog,
+} from "@fortawesome/free-solid-svg-icons";
 import { getUserFromToken } from "../utils/jwtHelper";
 import DashboardCard from "../components/desktop/DashboardCard";
-import cardInfo from "../data/cardInfo";
 import { cardConfig } from "../data/menuConfig";
+import { formatFullDate } from "../utils/dateUtils";
 
 const HomeDesktop = () => {
   const navigate = useNavigate();
   const user = getUserFromToken();
   const roleId = user ? Number(user.id_role) : null;
   const perusahaanId = user ? Number(user.id_perusahaan) : null;
-  const [localTime, setLocalTime] = useState("");
-  const [showInfoModal, setShowInfoModal] = useState(false);
-  const [infoContent, setInfoContent] = useState("");
-  const [infoTitle, setInfoTitle] = useState("");
 
-  // fungsi update jam
-  const updateLocalTime = () => {
-    const time = new Date().toLocaleString("id-ID", {
-      weekday: "long",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      second: "numeric",
+  const [localTime, setLocalTime] = useState("");
+  const [weather, setWeather] = useState({
+    city: "Memuat...",
+    temp: "--",
+    description: "Mengambil data...",
+    icon: faCloudSun,
+    accent: "text-yellow-500",
+  });
+
+  // Update jam lokal
+  useEffect(() => {
+    const updateLocalTime = () => {
+      const time = new Date().toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      setLocalTime(time);
+    };
+    updateLocalTime();
+    const intervalId = setInterval(updateLocalTime, 60000);
+    return () => clearInterval(intervalId);
+  }, []);
+
+  // Fetch cuaca
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const { latitude, longitude } = pos.coords;
+      try {
+        const res = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&timezone=Asia%2FJakarta`
+        );
+        const data = await res.json();
+        const code = data.current.weather_code;
+
+        const { desc, icon, accent } = weatherCodeToDetail(code);
+        setWeather({
+          city: "Lokasi Anda",
+          temp: `${Math.round(data.current.temperature_2m)}°C`,
+          description: desc,
+          icon,
+          accent,
+        });
+      } catch {
+        setWeather({
+          city: "Jakarta",
+          temp: "27°C",
+          description: "Berawan",
+          icon: faCloud,
+          accent: "text-gray-400",
+        });
+      }
     });
-    setLocalTime(time);
+  }, []);
+
+  // Mapping kode cuaca → deskripsi + ikon + warna
+  const weatherCodeToDetail = (code) => {
+    const map = {
+      0: { desc: "Cerah", icon: faSun, accent: "text-yellow-400" },
+      1: { desc: "Cerah Berawan", icon: faCloudSun, accent: "text-yellow-500" },
+      2: { desc: "Berawan", icon: faCloud, accent: "text-gray-400" },
+      3: { desc: "Mendung", icon: faSmog, accent: "text-gray-500" },
+      61: { desc: "Hujan Ringan", icon: faCloudRain, accent: "text-blue-400" },
+      63: { desc: "Hujan Sedang", icon: faCloudRain, accent: "text-blue-500" },
+      65: { desc: "Hujan Lebat", icon: faCloudShowersHeavy, accent: "text-blue-600" },
+      80: { desc: "Hujan Lokal", icon: faCloudRain, accent: "text-blue-400" },
+      95: { desc: "Badai Petir", icon: faBolt, accent: "text-yellow-300" },
+    };
+    return map[code] || { desc: "Berawan", icon: faCloud, accent: "text-gray-400" };
   };
 
-  useEffect(() => {
-    if (!roleId) return;
-    updateLocalTime();
-    const intervalId = setInterval(updateLocalTime, 1000);
-    return () => clearInterval(intervalId);
-  }, [roleId]);
-
-  // filter card berdasarkan role & perusahaan
+  // Filter menu berdasarkan role & perusahaan
   const filteredCards =
     roleId && perusahaanId
       ? cardConfig.filter(
@@ -49,78 +104,69 @@ const HomeDesktop = () => {
       : [];
 
   return (
-    <div className="flex bg-gray-100">
-      <div className="flex-1 bg-white rounded-lg transition-all duration-300 ease-in-out">
-        <div className="relative overflow-hidden p-4 sm:p-10 rounded-2xl shadow-xl border border-white/20 bg-gradient-to-br from-green-500 to-green-400 text-white duration-300 hover:shadow-xl group">
-          {/* Glow Ambient */}
-          <div className="absolute -top-16 -left-16 w-48 h-48 bg-white/10 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl animate-pulse" />
-
-          {/* Konten Profil */}
-          <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4 sm:gap-6">
-            <div className="text-center sm:text-left space-y-1">
-              <h2 className="text-sm sm:text-base font-medium text-white/80 tracking-wide">
-                Selamat Datang,
-              </h2>
-              <h3 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white drop-shadow-md capitalize">
-                {user?.nama_user || "User"}
-              </h3>
-              <p className="text-white/80 text-xs sm:text-lg font-semibold mt-1">
-                {localTime}
-              </p>
-            </div>
-
-            {/* Role */}
-            <div className="text-sm sm:text-base font-semibold text-white/90 sm:text-right">
-              <span className="inline-block bg-white/20 px-4 py-1 rounded-full shadow-sm tracking-wide">
+    <div className="flex">
+      <div className="flex-1 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-500 to-green-400 text-white p-8 shadow-md">
+            <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-white/5 opacity-70 blur-3xl" />
+            <div className="absolute -top-24 -left-16 w-72 h-72 bg-white/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
+            <div className="absolute top-5 right-5">
+              <span className="inline-block bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full text-sm font-semibold shadow-md border border-white/10">
                 {user?.role || "-"}
               </span>
             </div>
+            <div className="relative z-10 space-y-3">
+              <p className="text-sm text-white/90">Selamat Datang,</p>
+              <h2 className="text-2xl sm:text-4xl font-extrabold capitalize drop-shadow-sm">
+                {user?.nama_user || "User"}
+              </h2>
+            </div>
+
+            <div className="mt-6 w-16 h-[3px] bg-white/40 rounded-full" />
+          </div>
+
+          {/* Info Card hanya di desktop */}
+          <div className="hidden lg:grid grid-cols-2 gap-4">
+            <InfoCard icon={faCalendarAlt} label="Tanggal" value={formatFullDate(new Date())}/>
+            <InfoCard icon={weather.icon} label={weather.city} value={`${weather.description} • ${weather.temp}`} accent={weather.accent}/>
           </div>
         </div>
 
-        {/* Cards */}
-        <div className="mt-6">
+        {/* ===== Menu Dashboard ===== */}
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 sm:p-5">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-700">
+              Menu Utama
+            </h3>
+            <span className="text-xs sm:text-sm text-gray-400">
+              {filteredCards.length} menu
+            </span>
+          </div>
+
           {filteredCards.length === 0 ? (
-            <p className="text-center text-gray-400">
+            <p className="text-center text-gray-400 text-sm py-8">
               Tidak ada data yang ditampilkan untuk role ini.
             </p>
           ) : (
-            <div  className={`grid grid-cols-2 ${ filteredCards.length > 2 ? "md:grid-cols-4" : "md:grid-cols-2" } gap-4`}>
+            <div className={`grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 transition-all duration-300`}>
               {filteredCards.map((card, index) => (
-                <DashboardCard key={index} title={card.title} icon={card.icon} color={card.color} onClick={() => navigate(card.link)} onInfoClick={(title) => { setInfoTitle(title); setInfoContent( cardInfo[title] || "Informasi belum tersedia."); setShowInfoModal(true); }}
-                />
+                <DashboardCard key={index} title={card.title} icon={card.icon} color={card.color} onClick={() => navigate(card.link)}/>
               ))}
             </div>
           )}
         </div>
-
-        {/* Modal Info */}
-        {showInfoModal && (
-          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white w-[90%] max-w-2xl rounded-xl shadow-2xl overflow-hidden relative">
-              <div className="flex items-center justify-between px-6 py-4 bg-green-500 border-b border-gray-200">
-                <h2 className="text-xl font-bold text-white">Informasi Menu</h2>
-                <button className="text-white hover:text-red-500 transition-colors" onClick={() => setShowInfoModal(false)} aria-label="Tutup">
-                  <FontAwesomeIcon icon={faTimes} className="text-3xl" />
-                </button>
-              </div>
-              <div className="px-6 pb-7 pt-5 space-y-2">
-                <h3 className="text-base sm:text-xl font-bold text-gray-800 border-b border-gray-200 pb-2">
-                  {infoTitle}
-                </h3>
-                <div className="max-h-80 overflow-y-auto scrollbar-green pr-1">
-                  <p className="text-xs sm:text-base text-gray-700 leading-relaxed whitespace-pre-line tracking-wide">
-                    {infoContent}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
 };
+
+const InfoCard = ({ icon, label, value, accent = "text-green-600" }) => (
+  <div className="flex flex-col items-center justify-center bg-white rounded-2xl p-5 border border-gray-200/60 shadow-sm hover:shadow-md hover:border-green-100 transition-all duration-300 text-center">
+    <FontAwesomeIcon icon={icon} className={`${accent} text-2xl mb-2`} />
+    <p className="text-xs text-gray-400">{label}</p>
+    <p className="text-lg font-semibold text-gray-700">{value}</p>
+  </div>
+);
 
 export default HomeDesktop;
