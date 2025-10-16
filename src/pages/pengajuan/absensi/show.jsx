@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { faMapMarkerAlt, faEye, faClock, faUser, faCalendarCheck, faSort, faSortUp, faSortDown } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faClock, faUser, faCalendarCheck, faSort, faSortUp, faSortDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
-import { Navigate, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { fetchWithJwt, getUserFromToken } from "../../../utils/jwtHelper";
 import { getDefaultPeriod } from "../../../utils/getDefaultPeriod";
 import { Modal } from "../../../components";
@@ -48,20 +48,25 @@ const DetailAbsensi = () => {
     if (!sortColumn) return 0;
 
     let valA, valB;
-    if (sortColumn === "tanggal") {
-      // bandingkan langsung sebagai timestamp
-      valA = new Date(a.jam_mulai).getTime();
-      valB = new Date(b.jam_mulai).getTime();
-    } else if (sortColumn === "status") {
-      // pastikan status selalu string
-      valA = String(a.status || "").toLowerCase();
-      valB = String(b.status || "").toLowerCase();
+    switch (sortColumn) {
+      case "tanggal":
+        valA = new Date(a.jam_mulai).getTime();
+        valB = new Date(b.jam_mulai).getTime();
+        break;
+      case "status":
+        valA = Number(a.status ?? 0);
+        valB = Number(b.status ?? 0);
+        break;
+      default:
+        valA = String(a[sortColumn] || "").toLowerCase();
+        valB = String(b[sortColumn] || "").toLowerCase();
     }
 
     if (valA < valB) return sortDirection === "asc" ? -1 : 1;
     if (valA > valB) return sortDirection === "asc" ? 1 : -1;
     return 0;
   });
+
 
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -195,17 +200,17 @@ const DetailAbsensi = () => {
     const result = await Swal.fire({
       title: "Konfirmasi Penolakan Absensi",
       html: `
-      <div class="text-gray-700 text-sm leading-relaxed">
-        <p>Apakah Anda yakin ingin <b class="text-red-600">menolak absensi ini</b>?</p>
-        <p class="mt-2 text-[13px] text-red-600 font-medium">
-          Data absensi yang ditolak <u>tidak akan masuk ke proses rekapitulasi penggajian</u> 
-          dan <u>tidak akan tampil pada rekapitulasi bulanan</u>.
-        </p>
-        <p class="mt-3 text-[13px] text-gray-600">
-          Tindakan ini bersifat <b>final</b> dan tidak dapat dibatalkan.
-        </p>
-      </div>
-    `,
+        <div class="text-gray-700 text-sm leading-relaxed">
+          <p>Apakah Anda yakin ingin <b class="text-red-600">menolak absensi ini</b>?</p>
+          <p class="mt-2 text-[13px] text-red-600 font-medium">
+            Data absensi yang ditolak <u>tidak akan masuk ke proses rekapitulasi penggajian</u> 
+            dan <u>tidak akan tampil pada rekapitulasi bulanan</u>.
+          </p>
+          <p class="mt-3 text-[13px] text-gray-600">
+            Tindakan ini bersifat <b>final</b> dan tidak dapat dibatalkan.
+          </p>
+        </div>
+      `,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
@@ -301,7 +306,6 @@ const DetailAbsensi = () => {
           <table className="min-w-full border-collapse rounded-lg">
             <thead>
               <tr className="bg-green-500 text-white">
-                {/* Kolom Tanggal (sortable) */}
                 <th className="py-2 px-4 font-semibold text-center first:rounded-tl-lg cursor-pointer" onClick={() => handleSort("tanggal")}>
                   <div className="flex items-center justify-center gap-3">
                     Tanggal
@@ -364,9 +368,11 @@ const DetailAbsensi = () => {
                     <td className={`text-center py-1 px-4 text-xs ${item.keterlambatan && item.keterlambatan !== "00:00" ? "text-red-500 font-semibold" : ""}`}>
                       {item.keterlambatan || "--:--"}
                     </td>
-                    <span className={`font-semibold px-2 py-1 rounded-full text-[10px] tracking-wider ${item.status == 1 ? "bg-green-600 text-white px-3" : item.status == 2 ? "bg-red-600 text-white" : "bg-yellow-500 text-white"}`}>
-                      {item.status == 1 ? "Approved" : item.status == 2 ? "Rejected" : "Unapproved"}
-                    </span>
+                    <td className="text-center py-1 px-4">
+                      <span className={`inline-flex justify-center items-center font-semibold px-3 py-1 rounded-full text-[10px] tracking-wider ${item.status == 1 ? "bg-green-600 text-white" : item.status == 2 ? "bg-red-600 text-white" : "bg-yellow-500 text-white"}`}>
+                        {item.status == 1 ? "Approved" : item.status == 2 ? "Rejected" : "Unapproved"}
+                      </span>
+                    </td>
                     <td className="text-center text-xs py-1 px-4">
                       <button onClick={() => handleViewClick(item)} className="bg-blue-500 text-white py-1 px-2 rounded hover:bg-blue-600 transition-colors duration-150">
                         <FontAwesomeIcon icon={faEye} className="text-xs mr-1" />
@@ -380,15 +386,11 @@ const DetailAbsensi = () => {
           </table>
         </div>
 
-
         {/* Mobile View - Informative Attendance Cards */}
         <div className="md:hidden space-y-3">
           {currentItems.length > 0 ? (
             currentItems.map((item) => (
-              <div
-                key={item.id_absen}
-                className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden"
-              >
+              <div key={item.id_absen} className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
                 {/* Header: Tanggal + Shift */}
                 <div className="flex justify-between items-center bg-gray-50 px-4 py-2 border-b">
                   <div>
@@ -401,7 +403,7 @@ const DetailAbsensi = () => {
                   </div>
                   <span
                     className={`px-3 py-1 text-[11px] font-semibold rounded-full border 
-              ${item.status == 1
+                ${item.status == 1
                         ? "bg-green-50 text-green-700 border-green-200"
                         : item.status == 2
                           ? "bg-red-50 text-red-700 border-red-200"
@@ -454,8 +456,8 @@ const DetailAbsensi = () => {
                       <p className="text-[11px] text-gray-500 font-medium uppercase">Terlambat</p>
                       <p
                         className={`text-[13px] font-semibold ${item.keterlambatan && item.keterlambatan !== "00:00"
-                            ? "text-red-600"
-                            : "text-gray-700"
+                          ? "text-red-600"
+                          : "text-gray-700"
                           }`}
                       >
                         {item.keterlambatan || "--:--"}
