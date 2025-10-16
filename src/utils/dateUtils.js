@@ -109,16 +109,21 @@ export function formatHourToTime(hour) {
 
 // FOR REMARK
 // formatForInput
+// utils/dateUtils.js
 export const formatForInput = (datetime, tipe_absensi) => {
     if (!datetime) return "";
-    const d = new Date(datetime);
+
+    // Tangani format dari backend "YYYY-MM-DD HH:mm:ss"
+    const [datePart, timePart] = datetime.split(" ");
+    if (!datePart || !timePart) return "";
 
     if (tipe_absensi === 1) {
-        // Lapangan → datetime-local
-        return d.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm
+        // Lapangan → datetime-local (YYYY-MM-DDTHH:mm)
+        return `${datePart}T${timePart.slice(0, 5)}`;
     } else {
-        // Kantor → time
-        return d.toTimeString().slice(0, 5); // HH:mm
+        // Kantor → time (HH:mm)
+        return timePart.slice(0, 5);
     }
 };
+
 
