@@ -1,6 +1,4 @@
 import { useEffect, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarDays, faUserTie } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import MobileLayout from "../../layouts/mobileLayout";
