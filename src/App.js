@@ -7,6 +7,8 @@ import Menu from "./pages/menu";
 import Login from "./pages/login";
 import Absen from "./pages/absensi";
 import Lembur from "./pages/lembur";
+import Tugas from "./pages/tugas";
+import DetailTugas from "./pages/tugas/show";
 import Cuti from "./pages/cuti";
 import PermohonanCuti from "./pages/cuti/formCuti";
 import Profile from "./pages/user-profile";
@@ -49,7 +51,6 @@ import DetailPengajuanDinas from "./pages/pengajuan/surat-dinas/show";
 import HrdAccess from "./pages/hrd-akses";
 import TambahHrdAccess from "./pages/hrd-akses/tambah";
 import EditHrdAccess from "./pages/hrd-akses/edit";
-
 
 
 // ===================== MOBILE USERS ========================
@@ -219,6 +220,8 @@ const App = () => {
     { path: "/lembur", component: <Lembur />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
     { path: "/cuti", component: <Cuti />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
     { path: "/formulir-cuti", component: <PermohonanCuti   />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
+    { path: "/tugas", component: <Tugas   />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
+    { path: "/tugas/:id", component: <DetailTugas   />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
 
     // DESKTOP
     { path: "/pengajuan-absensi", component: <PengajuanAbsensi />, roles: ["1", "4", "5", "6", "13", "20"], allowedCompanies: ["1", "4"], layout: SidebarLayout },

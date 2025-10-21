@@ -1,17 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faClock,
-  faCalendarAlt,
-  faSun,
-  faCloudSun,
-  faCloud,
-  faCloudRain,
-  faCloudShowersHeavy,
-  faBolt,
-  faSmog,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCalendarAlt, faSun, faCloudSun, faCloud, faCloudRain, faCloudShowersHeavy, faBolt, faSmog,} from "@fortawesome/free-solid-svg-icons";
 import { getUserFromToken } from "../utils/jwtHelper";
 import DashboardCard from "../components/desktop/DashboardCard";
 import { cardConfig } from "../data/menuConfig";

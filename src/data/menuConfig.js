@@ -57,8 +57,8 @@ export const menuConfig = [
         items: [
             { label: "Titik Lokasi Absensi", icon: faLocationArrow, path: "/lokasi-presensi", roles: [1, 5] },
             { label: "Perangkat Absensi", icon: faTabletAlt, path: "/perangkat-absensi", roles: [1] },
-            { label: "Manajemen Menu", icon: faKey, path: "/manajemen-menu", roles: [1] },
-            { label: "Akses HRD", icon: faUserShield, path: "/akses-hrd", roles: [1] },
+            { label: "Manajemen Menu", icon: faKey, path: "/manajemen-menu", roles: [1]},
+            { label: "Akses HRD", icon: faUserShield, path: "/akses-hrd", roles: [1]},
         ],
     },
 ];

@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Swal from "sweetalert2";
-import { faCalendarCheck, faBell, faHistory, faThList, faHome, faUser, faSignOutAlt, faQuestionCircle, faMapMarkerAlt, faArrowRight, faPenFancy, faPeopleGroup, faClipboardList, faClockFour, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { faCalendarCheck, faBell, faHistory, faThList, faHome, faUser, faSignOutAlt, faQuestionCircle, faMapMarkerAlt, faArrowRight, faPenFancy, faPeopleGroup, faClipboardList, faClockFour, faExclamationTriangle, faTasks, faTasksAlt } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../utils/jwtHelper";
 import { FooterMainBar, LoadingSpinner, EmptyState, ErrorState } from "../components";
 
@@ -43,37 +43,6 @@ const HomeMobile = ({ handleLogout }) => {
     if (idUser) fetchReminder();
   }, [apiUrl]);
 
-
-  // useEffect(() => {
-  //   const user = getUserFromToken();
-  //   const idUser = user?.id_user;
-  //   if (idUser) {
-  //     const fetchNotifications = async () => {
-  //       try {
-  //         setLoading(true);
-  //         const response = await fetchWithJwt(`${apiUrl}/notif/user/${idUser}`, {
-  //           headers: { "Cache-Control": "no-cache" },
-  //         });
-  //         if (!response.ok) {
-  //           throw new Error("Gagal mengambil data notifikasi");
-  //         }
-  //         const data = await response.json();
-  //         const unreadNotifications = data?.data?.some((notif) => notif.is_read === 0);
-  //         setHasNewNotifications(unreadNotifications);
-  //       } catch (error) {
-  //         console.error("Terjadi kesalahan:", error);
-  //       } finally {
-  //         setLoading(false);
-  //       }
-  //     };
-  //     fetchNotifications();
-  //   } else {
-  //     setLoading(false);
-  //   }
-  //   return () => {
-  //     setLoading(false);
-  //   };
-  // }, [apiUrl]);
 
   useEffect(() => {
     const user = getUserFromToken();
@@ -228,13 +197,13 @@ const HomeMobile = ({ handleLogout }) => {
         <MainMenuButton icon={faClockFour} label="Lembur" onClick={() => navigate("/lembur")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-teal-600 hover:scale-105 transition" />
         {/* <MainMenuButton icon={faClipboardList} label="Cuti" onClick={() => navigate("/cuti")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-indigo-600 hover:scale-105 transition" /> */}
         <MainMenuButton icon={faPenFancy} label="Dinas" onClick={() => window.open("/formulir-dinas", "_blank")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-blue-600 hover:scale-105 transition" />
+        <MainMenuButton icon={faTasks} label="Tugas" onClick={() => navigate("/tugas")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-lime-600 hover:scale-105 transition" />
         <MainMenuButton icon={faBell} label="Notifikasi" onClick={handleNotificationClick} hasNotification={hasNewNotifications} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-amber-600 hover:scale-105 transition" />
         <MainMenuButton icon={faHistory} label="Riwayat" onClick={() => navigate("/riwayat-pengguna")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-indigo-600 hover:scale-105 transition" />
         <MainMenuButton image="/NOS.png" label="NOS" onClick={() => window.open("https://nos.nicourbanindonesia.com/mypanel/maintenance", "_blank")} color="rounded-xl bg-gradient-to-br from-green-50 to-green-200 hover:scale-105 transition" />
         {/* <MainMenuButton icon={faThList} label="Lainnya" onClick={() => navigate("/menu")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-teal-600 hover:scale-105 transition" /> */}
       </div>
 
-      {/* === MENU BANTUAN === */}
       <div className="px-4 pt-4">
         <div className="flex items-center gap-2 mb-3">
           <span className="text-sm font-semibold">Bantuan</span>
@@ -278,7 +247,6 @@ const HomeMobile = ({ handleLogout }) => {
             {attendanceData.slice(1, 4).map((item) => (
               <div key={item.id_absen} className="bg-white shadow-md rounded-2xl p-3 border border-gray-200 cursor-pointer hover:shadow-lg hover:ring-1 hover:ring-green-400 active:scale-[0.98] transition-all duration-300">
                 <div className="flex items-start gap-3">
-                  {/* Tanggal */}
                   <div className="flex flex-col items-center min-w-[72px]">
                     <div className="bg-green-500 text-white rounded-xl py-2 px-3 text-center w-full">
                       <div className="text-[11px] font-medium opacity-90 tracking-wider">
@@ -331,6 +299,7 @@ const HomeMobile = ({ handleLogout }) => {
               </div>
             ))}
           </div>
+
         </div>
       )}
 
