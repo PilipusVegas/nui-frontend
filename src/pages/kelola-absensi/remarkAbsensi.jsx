@@ -265,20 +265,15 @@ const AbsenManual = () => {
                             <label className="block text-sm font-medium mb-2 text-gray-700">
                                 Cari Tanggal Absen
                             </label>
-                            <input type="date" className="border rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-green-500 focus:outline-none" value={selectedDate} onChange={e => setSelectedDate(e.target.value)} />
+                            <input type="date" className="border rounded-md px-3 py-1.5 border-gray-300 w-full focus:ring-2 focus:ring-green-500 focus:outline-none" value={selectedDate} onChange={e => setSelectedDate(e.target.value)} />
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-2 text-gray-700">
                                 Cari Nama Karyawan
                             </label>
-                            <Select options={profil.map(p => ({ value: p.id, label: p.nama }))} value={idUser ? { value: idUser, label: profil.find(p => p.id === idUser)?.nama } : null} onChange={opt => setIdUser(opt?.value || null)} placeholder="Pilih karyawan" isClearable
-                                onKeyDown={(e) => {
-                                    if (e.key === "Enter") {
-                                        e.preventDefault();
-                                        cekAbsen();
-                                    }
-                                }}
-                            />
+                            <div onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); if (idUser) cekAbsen(); } }}>
+                                <Select options={profil.map(p => ({ value: p.id, label: p.nama }))} value={idUser ? { value: idUser, label: profil.find(p => p.id === idUser)?.nama } : null} onChange={(opt) => setIdUser(opt?.value || null)} placeholder="Pilih karyawan" isClearable />
+                            </div>
                         </div>
                     </div>
 
@@ -367,7 +362,6 @@ const AbsenManual = () => {
                                     isDisabled={!!absenData?.remark_by && !!formData.remark_status}
                                 />
                             </div>
-
                         </div>
 
                         <div className="flex justify-between items-center pt-4">
@@ -425,20 +419,33 @@ const AbsenManual = () => {
                             (contoh: "lupa absen pulang", "izin terlambat karena macet", "kendala sinyal").
                         </li>
                         <li>
-                            Pilih <b>Status Remark</b> sesuai kondisi:
+                            Pilih <b>Status Remark</b> sesuai dengan kondisi aktual karyawan:
                             <ul className="list-circle pl-6">
                                 <li>
-                                    <b>Absen Manual</b>: digunakan bila absensi dibuat secara manual karena
-                                    error teknis, perangkat rusak, atau force majeure. Data tetap tercatat
-                                    sebagai absensi resmi.
+                                    <b>Absen Manual</b>: digunakan apabila data absensi harus dibuat secara
+                                    manual karena kendala teknis seperti perangkat rusak, sistem error,
+                                    atau keadaan darurat (*force majeure*). Meskipun dibuat manual, data ini
+                                    tetap tercatat sebagai absensi resmi dan sah.
                                 </li>
                                 <li>
-                                    <b>Izin Terlambat</b>: dipilih bila karyawan sudah konfirmasi
-                                    keterlambatan kepada HR/atasan (contoh: macet, urusan keluarga, dsb.). Dengan status ini, <b>waktu keterlambatan tidak dihitung sama sekali</b> sehingga tidak memengaruhi rekap keterlambatan karyawan.
+                                    <b>Izin Terlambat</b>: digunakan jika karyawan telah memberi
+                                    pemberitahuan sebelumnya kepada HR atau atasan terkait keterlambatan
+                                    (contoh: kemacetan, keperluan keluarga, urusan pribadi mendesak, dll.).
+                                    Dengan status ini, waktu keterlambatan tidak akan dihitung sehingga tidak
+                                    memengaruhi rekap keterlambatan karyawan.
                                 </li>
                                 <li>
-                                    <b>Izin Pulang Awal</b>: dipilih bila karyawan sudah konfirmasi
-                                    Izin Pulang Awal kepada HR/atasan (contoh: urusan keluarga, keaadan darurat, dsb.). Dengan status ini, menandai absensi karyawan sebagai setengah hari.
+                                    <b>Izin Pulang Awal</b>: digunakan bila karyawan harus meninggalkan
+                                    pekerjaan lebih awal dengan izin dari HR atau atasan (contoh: urusan
+                                    keluarga, keadaan darurat, keperluan pribadi, dll.). Status ini akan
+                                    menandai absensi sebagai <i>setengah hari kerja</i> (half-day).
+                                </li>
+                                <li>
+                                    <b>Cuti</b>: digunakan bila karyawan tidak masuk kerja selama satu hari
+                                    penuh atau lebih karena telah mengajukan cuti resmi kepada HR/atasan.
+                                    Contohnya seperti cuti tahunan, cuti sakit, cuti melahirkan, atau cuti
+                                    penting lainnya. Dengan status ini, sistem akan menandai hari tersebut
+                                    sebagai <i>hari tidak bekerja resmi</i> tanpa dianggap absen.
                                 </li>
                             </ul>
                         </li>
