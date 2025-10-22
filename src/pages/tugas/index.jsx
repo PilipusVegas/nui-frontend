@@ -41,13 +41,13 @@ const Tugas = () => {
     const TaskCard = ({ t }) => {
         const urgent = t.category?.toLowerCase() === "urgent";
         const isFinished = !!t.finished_at;
-        const cardColor = isFinished ? "border-gray-300 bg-gray-100 text-gray-500" : urgent ? "border-red-500/30 bg-red-50 text-red-700" : "border-emerald-500/30 bg-emerald-50 text-emerald-700";
+        const cardColor = isFinished ? "border-gray-200/60 bg-gray-100 text-gray-500" : urgent ? "border-red-500/30 bg-red-50 text-red-700" : "border-emerald-500/30 bg-emerald-50 text-emerald-700";
         const iconColor = isFinished ? "text-gray-400" : urgent ? "text-red-500" : "text-emerald-500";
         const textColor = isFinished ? "text-gray-600" : urgent ? "text-red-700" : "text-emerald-700";
 
         return (
             <div onClick={() => navigate(`/tugas/${t.id}`)} className={`border ${cardColor} rounded-md p-2 shadow-sm cursor-pointer hover:shadow-md active:scale-[0.98] transition-all duration-200`}>
-                <div className="flex justify-between items-center gap-2 pb-2 border-b border-gray-200">
+                <div className="flex justify-between items-center gap-2 pb-2">
                     <h2 className={`font-semibold capitalize text-xs truncate ${textColor}`}>
                         {t.nama_tugas}
                     </h2>
@@ -56,7 +56,6 @@ const Tugas = () => {
                     </span>
                 </div>
 
-                {/* === WAKTU === */}
                 <div className="mt-1 text-[11px] text-gray-700">
                     <div className="flex justify-between items-start">
                         <div>
@@ -64,7 +63,7 @@ const Tugas = () => {
                             <p>{formatLongDate(t.start_date)}</p>
                         </div>
                         <div className="text-right">
-                            <p className="text-[10px] font-medium text-gray-800">Deadline</p>
+                            <p className="text-[10px] font-medium text-gray-800">Tenggat Waktu</p>
                             <p>{formatLongDate(t.deadline_at)}</p>
                         </div>
                     </div>
