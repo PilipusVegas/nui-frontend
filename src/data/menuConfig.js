@@ -1,5 +1,5 @@
 // src/data/menuConfig.js
-import { faHome, faPeopleGroup, faUsersCog, faCheckSquare, faUserCheck, faBook, faPenFancy, faLocationArrow, faBuilding, faCheckCircle, faClockRotateLeft, faKey, faTabletAlt, faCalendarDays, faUserEdit, faUserShield } from "@fortawesome/free-solid-svg-icons";
+import { faHome, faPeopleGroup, faUsersCog, faCheckSquare, faUserCheck, faBook, faPenFancy, faLocationArrow, faBuilding, faCheckCircle, faClockRotateLeft, faKey, faTabletAlt, faCalendarDays, faUserEdit, faUserShield, faTasks } from "@fortawesome/free-solid-svg-icons";
 
 export const menuConfig = [
     // 1. BERANDA
@@ -9,11 +9,11 @@ export const menuConfig = [
     {
         sectionTitle: "Manajemen Organisasi",
         items: [
-            { label: "Karyawan", icon: faPeopleGroup, path: "/karyawan", roles: [1, 4, 6] },
+            { label: "Data Karyawan", icon: faPeopleGroup, path: "/karyawan", roles: [1, 4, 6] },
             { label: "Divisi", icon: faUsersCog, path: "/divisi", roles: [1, 4, 6] },
             { label: "Kelola Perusahaan", icon: faBuilding, roles: [1, 4, 6],
                 submenu: [
-                    { label: "Perusahaan", icon: faBuilding, path: "/perusahaan", roles: [1, 4, 6] },
+                    { label: "Data Perusahaan", icon: faBuilding, path: "/perusahaan", roles: [1, 4, 6] },
                     { label: "Manajemen Hari Libur", icon: faCalendarDays, path: "/manajemen-hari-libur", roles: [1] },
                 ]
             },
@@ -59,6 +59,7 @@ export const menuConfig = [
             { label: "Perangkat Absensi", icon: faTabletAlt, path: "/perangkat-absensi", roles: [1] },
             { label: "Manajemen Menu", icon: faKey, path: "/manajemen-menu", roles: [1]},
             { label: "Akses HRD", icon: faUserShield, path: "/akses-hrd", roles: [1]},
+            { label: "Penugasan", icon: faTasks, path: "/penugasan", roles: [1]},
         ],
     },
 ];
