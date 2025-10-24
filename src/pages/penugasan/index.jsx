@@ -1,24 +1,23 @@
+import toast from "react-hot-toast";
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faExclamationTriangle, faInfoCircle, faPenFancy } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
 import { fetchWithJwt } from "../../utils/jwtHelper";
+import { faExclamationTriangle, faPlus, faClockRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { SectionHeader, Modal, Pagination, LoadingSpinner, ErrorState, EmptyState, SearchBar } from "../../components";
+import Swal from "sweetalert2";
 
 const Penugasan = () => {
-    const apiUrl = process.env.REACT_APP_API_BASE_URL;
+    const itemsPerPage = 10;
     const navigate = useNavigate();
-
     const [tugas, setTugas] = useState([]);
-    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [openDetail, setOpenDetail] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
+    const [openDetail, setOpenDetail] = useState(null);
 
-    // === Fetch Data ===
     const fetchTugas = async () => {
         setLoading(true);
         setError(null);
@@ -39,6 +38,34 @@ const Penugasan = () => {
         fetchTugas();
     }, []);
 
+    const handleDelete = async (id) => {
+        const confirm = await Swal.fire({
+            title: "Konfirmasi Penghapusan",
+            text: "Yakin ingin menghapus penugasan ini? jika terhapus, penugasan tidak dapat dikembalikan.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Ya, hapus",
+            cancelButtonText: "Batal",
+        });
+
+        if (!confirm.isConfirmed) return;
+
+        try {
+            const res = await fetchWithJwt(`${apiUrl}/tugas/${id}`, { method: "DELETE" });
+
+            if (!res.ok) throw new Error(`Status ${res.status}`);
+
+            await res.json();
+            toast.success("Penugasan berhasil dihapus.");
+            fetchTugas();
+        } catch (err) {
+            console.error("Gagal menghapus penugasan:", err);
+            toast.error("Gagal menghapus penugasan. Silakan coba lagi.");
+        }
+    };
+
     // === Filter Search ===
     const filteredTugas = tugas.filter((t) =>
         t.nama.toLowerCase().includes(searchTerm.trim().toLowerCase())
@@ -58,135 +85,101 @@ const Penugasan = () => {
 
     return (
         <div className="w-full mx-auto">
-            <SectionHeader title="Data Penugasan" subtitle={`Menampilkan ${tugas.length} daftar tugas yang terdaftar.`} onBack={() => navigate("/")}
+            <SectionHeader title="Daftar Penugasan" subtitle={`Menampilkan ${tugas.length} data penugasan yang tercatat dalam sistem.`} onBack={() => navigate("/")}
                 actions={
-                    <button className="flex items-center justify-center px-3 py-2 sm:px-5 sm:py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg transition-all duration-200 ease-in-out active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2" onClick={() => navigate("/penugasan/tambah")}>
-                        <FontAwesomeIcon icon="plus" className="mr-2" />
-                        Tambah Tugas
-                    </button>
+                    <div className="flex flex-wrap gap-2">
+                        <button onClick={() => navigate("/penugasan/tambah")} className="flex items-center justify-center px-3 py-2 sm:px-4 sm:py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg transition-all duration-200 ease-in-out active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
+                            <FontAwesomeIcon icon={faPlus} className="text-sm sm:text-base" />
+                            <span className="hidden md:inline ml-2">Tambah</span>
+                        </button>
+                        <button onClick={() => navigate("/penugasan/riwayat")} className="flex items-center justify-center px-3 py-2 sm:px-4 sm:py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg transition-all duration-200 ease-in-out active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
+                            <FontAwesomeIcon icon={faClockRotateLeft} className="text-sm sm:text-base" />
+                            <span className="hidden md:inline ml-2">Riwayat</span>
+                        </button>
+                    </div>
                 }
             />
 
-            {/* Search Bar */}
             <div className="my-3">
-                <SearchBar
-                    className="max-w-lg sm:max-w-full"
-                    placeholder="Cari nama tugas..."
-                    onSearch={(val) => {
-                        setSearchTerm(val);
-                        setCurrentPage(1);
-                    }}
-                />
+                <SearchBar className="max-w-lg sm:max-w-full" placeholder="Cari nama tugas..." onSearch={(val) => { setSearchTerm(val); setCurrentPage(1); }} />
             </div>
 
             {/* === TABLE DESKTOP === */}
-            <div className="hidden sm:block">
-                <div className="overflow-x-auto bg-white shadow-md rounded-lg border border-gray-200">
-                    <table className="w-full text-sm text-left border border-gray-200 rounded-lg overflow-hidden">
-                        <thead className="bg-green-600 text-white font-semibold">
+            <div className="hidden md:block">
+                <div className="mt-3 overflow-x-auto bg-white border border-gray-200 rounded-lg shadow-md">
+                    <table className="w-full text-sm text-left border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                        <thead className="bg-green-500 text-white font-semibold">
                             <tr>
-                                <th className="px-4 py-3 text-center w-16">No.</th>
-                                <th className="px-4 py-3">Nama Tugas</th>
-                                <th className="px-4 py-3 text-center">Kategori</th>
-                                <th className="px-4 py-3 text-center">Deadline</th>
-                                <th className="px-4 py-3 text-center">Jumlah Pekerjaan</th>
-                                <th className="px-4 py-3 text-center w-32">Menu</th>
+                                <th className="px-5 py-3 text-center w-16">No.</th>
+                                <th className="px-5 py-3">Judul Penugasan</th>
+                                <th className="px-5 py-3 text-center">Kategori Tugas</th>
+                                <th className="px-5 py-3 text-center">Deadline</th>
+                                <th className="px-5 py-3 text-center">Jumlah Pekerjaan</th>
+                                <th className="px-5 py-3 text-center w-50">Menu</th>
                             </tr>
                         </thead>
 
-                        <tbody>
-                            {loading && (
+                        <tbody className="bg-white">
+                            {loading ? (
                                 <tr>
-                                    <td colSpan="5" className="py-10 text-center">
+                                    <td colSpan="6" className="py-10 text-center">
                                         <LoadingSpinner size="lg" text="Memuat data penugasan..." />
                                     </td>
                                 </tr>
-                            )}
-
-                            {!loading && error && (
+                            ) : error ? (
                                 <tr>
-                                    <td colSpan="5" className="py-10 text-center">
+                                    <td colSpan="6" className="py-10 text-center">
                                         <ErrorState message={error} onRetry={fetchTugas} />
                                     </td>
                                 </tr>
-                            )}
-
-                            {!loading && !error && currentTugas.length === 0 && (
+                            ) : currentTugas.length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" className="py-10 text-center">
+                                    <td colSpan="6" className="py-10 text-center">
                                         <EmptyState message="Belum ada data penugasan." />
                                     </td>
                                 </tr>
-                            )}
-                            {!loading &&
-                                !error &&
-                                currentTugas.length > 0 &&
+                            ) : (
                                 currentTugas.map((item, index) => (
-                                    <React.Fragment key={item.id}>
-                                        <tr className="border-t hover:bg-gray-50 transition">
-                                            <td className="px-4 py-2 text-center">
-                                                {indexOfFirstItem + index + 1}
-                                            </td>
-                                            <td className="px-4 py-2 font-semibold text-gray-800">
-                                                {item.nama}
-                                            </td>
-                                            <td className="px-4 py-2 text-center text-gray-700">
+                                    <tr key={item.id} className="border-t hover:bg-gray-50 transition">
+                                        <td className="px-5 py-2 text-center">
+                                            {indexOfFirstItem + index + 1}
+                                        </td>
+                                        <td className="px-5 py-2 font-semibold text-gray-800 max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap uppercase">
+                                            {item.nama}
+                                        </td>
+
+                                        <td className="px-5 py-2 text-center">
+                                            <span className={`inline-block px-1 py-0.5 text-sm font-semibold rounded-md capitalize min-w-[100px] ${item.category === "daily" ? "bg-green-100 text-green-700 border border-green-300" : item.category === "urgent" ? "bg-red-100 text-red-700 border border-red-300" : "bg-gray-100 text-gray-700 border border-gray-300"}`}>
                                                 {item.category}
-                                            </td>
-                                            <td className="px-4 py-2 text-center text-gray-700">
-                                                {formatDate(item.deadline_at)}
-                                            </td>
-                                            <td className="px-4 py-2 text-center text-gray-700">
-                                                {item.details?.length || 0} orang
-                                            </td>
-                                            <td className="px-4 py-2 text-center">
-                                                <div className="flex justify-center gap-2">
-                                                    {/* Tombol Detail */}
-                                                    <button
-                                                        onClick={() => setOpenDetail(openDetail === item.id ? null : item.id)}
-                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500 text-white text-xs font-semibold shadow-sm hover:bg-blue-600 hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                                                    >
-                                                        <FontAwesomeIcon icon={faInfoCircle} className="text-[11px]" />
-                                                        <span>Detail</span>
-                                                    </button>
+                                            </span>
+                                        </td>
 
-                                                    {/* Tombol Edit */}
-                                                    <button
-                                                        onClick={() => navigate(`/penugasan/edit/${item.id}`)}
-                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-semibold shadow-sm hover:bg-amber-600 hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
-                                                    >
-                                                        <FontAwesomeIcon icon={faPenFancy} className="text-[11px]" />
-                                                        <span>Edit</span>
-                                                    </button>
-                                                </div>
-                                            </td>
-
-                                        </tr>
-
-                                        {openDetail === item.id && (
-                                            <tr className="bg-gray-50 transition-all">
-                                                <td colSpan="5" className="px-5 py-3 text-sm text-gray-700">
-                                                    <div className="border-l-4 border-blue-500 pl-3">
-                                                        <strong>Rincian Tugas:</strong>
-                                                        <ul className="list-disc pl-5 mt-2 space-y-1">
-                                                            {item.details?.map((d, idx) => (
-                                                                <li key={d.id}>
-                                                                    <span className="font-semibold">#{idx + 1}</span> –{" "}
-                                                                    {d.deskripsi || "Tanpa deskripsi"}
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </React.Fragment>
-                                ))}
+                                        <td className="px-5 py-2 text-center text-gray-700">
+                                            {formatDate(item.deadline_at)}
+                                        </td>
+                                        <td className="px-5 py-2 text-center text-gray-700">
+                                            {item.details?.length || 0} orang
+                                        </td>
+                                        <td className="px-5 py-2 text-center">
+                                            <div className="flex justify-center gap-2">
+                                                <button onClick={() => navigate(`/penugasan/show/${item.id}`)} className="px-3 py-1.5 rounded bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 transition">
+                                                    Detail
+                                                </button>
+                                                <button onClick={() => navigate(`/penugasan/edit/${item.id}`)} className="px-3 py-1.5 rounded bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition">
+                                                    Edit
+                                                </button>
+                                                <button onClick={() => handleDelete(item.id)} className="px-3 py-1.5 rounded bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition">
+                                                    Hapus
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>
 
-                {/* Pagination Desktop */}
                 {filteredTugas.length > itemsPerPage && (
                     <div className="mt-2">
                         <Pagination currentPage={currentPage} totalItems={filteredTugas.length} itemsPerPage={itemsPerPage} onPageChange={handlePageChange} />
@@ -194,8 +187,9 @@ const Penugasan = () => {
                 )}
             </div>
 
+
             {/* === CARD MOBILE === */}
-            <div className="sm:hidden space-y-4">
+            <div className="md:hidden space-y-4">
                 {loading && (
                     <div className="text-center py-10">
                         <LoadingSpinner text="Memuat data penugasan..." />
@@ -219,10 +213,7 @@ const Penugasan = () => {
                 {!loading &&
                     !error &&
                     currentTugas.map((item) => (
-                        <div
-                            key={item.id}
-                            className="bg-white border border-gray-100 rounded-2xl shadow-md p-4 transition hover:shadow-lg"
-                        >
+                        <div key={item.id} className="bg-white border border-gray-100 rounded-2xl shadow-md p-4 transition hover:shadow-lg">
                             <div className="flex justify-between items-start">
                                 <div>
                                     <h2 className="text-sm font-semibold text-gray-800 leading-snug">

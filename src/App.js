@@ -264,7 +264,6 @@ const App = () => {
     { path: "/penugasan/tambah", component: <TambahPenugasan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
     { path: "/penugasan/edit/:id", component: <EditPenugasan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
     { path: "/penugasan/show/:id", component: <DetailPenugasan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-
   ];
 
   return (
