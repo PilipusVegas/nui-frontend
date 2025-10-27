@@ -1,3 +1,4 @@
+import Swal from "sweetalert2";
 import { useEffect, useState } from "react";
 import "sweetalert2/dist/sweetalert2.min.css";
 import { useNavigate } from "react-router-dom";
@@ -87,11 +88,9 @@ const PersetujuanLembur = () => {
       let body = {};
 
       if (item.id_absen) {
-        // Pengajuan kantor → kirim deskripsi & status
         endpoint = `${apiUrl}/lembur/approve-kantor/${item.id_absen}`;
         body = { status, deskripsi: item.deskripsi || "" };
       } else if (item.id_lembur) {
-        // Pengajuan lapangan → hanya kirim status
         endpoint = `${apiUrl}/lembur/approve/${item.id_lembur}`;
         body = { status };
       } else {
@@ -106,12 +105,27 @@ const PersetujuanLembur = () => {
 
       if (!res.ok) throw new Error("Gagal memperbarui status.");
 
+      // ✅ Notifikasi sukses
+      Swal.fire({
+        title: status === 1 ? "Disetujui!" : "Ditolak!",
+        text: `Pengajuan lembur ${status === 1 ? "berhasil disetujui" : "berhasil ditolak"}.`,
+        icon: "success",
+        confirmButtonColor: "#16a34a",
+      });
+
       // Refresh data
       fetchApprovalData(startDate, endDate);
     } catch (err) {
-      setErrorMessage(err.message);
+      // ❌ Notifikasi error
+      Swal.fire({
+        title: "Terjadi Kesalahan",
+        text: err.message,
+        icon: "error",
+        confirmButtonColor: "#dc2626",
+      });
     }
   };
+
 
   // Gunakan di tombol
   const handleApprove = (item) => handleUpdateStatus(item, 1);
@@ -287,15 +301,23 @@ const PersetujuanLembur = () => {
 
                 {/* Menu (Approve / Reject) */}
                 <div className="flex gap-2 pt-2">
-                  <button onClick={() => handleApprove(item.id_lembur)} className="flex-1 px-3 py-1 gap-1 font-semibold inline-flex items-center justify-center text-sm rounded-md bg-green-600 text-white hover:bg-green-700">
+                  <button
+                    onClick={() => handleApprove(item)}
+                    className="flex-1 px-3 py-1 gap-1 font-semibold inline-flex items-center justify-center text-sm rounded-md bg-green-600 text-white hover:bg-green-700"
+                  >
                     <FontAwesomeIcon icon={faCheck} />
                     Approve
                   </button>
-                  <button onClick={() => handleReject(item.id_lembur)} className="flex-1 px-3 py-1 gap-1 font-semibold inline-flex items-center justify-center text-sm rounded-md bg-red-600 text-white hover:bg-red-700">
+
+                  <button
+                    onClick={() => handleReject(item)}
+                    className="flex-1 px-3 py-1 gap-1 font-semibold inline-flex items-center justify-center text-sm rounded-md bg-red-600 text-white hover:bg-red-700"
+                  >
                     <FontAwesomeIcon icon={faTimes} />
                     Reject
                   </button>
                 </div>
+
               </div>
             );
           })
