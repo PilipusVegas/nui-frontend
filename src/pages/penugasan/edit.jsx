@@ -81,11 +81,40 @@ const EditTugas = () => {
         setWorkers([...workers, { id_user: "", deskripsi: "", id_tugas: idTugas }]);
     };
 
-    const handleRemoveWorker = (index) => {
-        const updated = [...workers];
-        updated.splice(index, 1);
-        setWorkers(updated);
+    const handleRemoveWorker = async (index) => {
+        const worker = workers[index];
+
+        const confirm = await Swal.fire({
+            title: "Hapus penugasan ini?",
+            text: "Data yang dihapus tidak dapat dikembalikan.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Ya, hapus",
+            cancelButtonText: "Batal",
+            confirmButtonColor: "#EF4444",
+            cancelButtonColor: "#6B7280",
+        });
+
+        if (!confirm.isConfirmed) return;
+
+        try {
+            if (worker.id_detail) {
+                const res = await fetchWithJwt(`${apiUrl}/tugas/user/${worker.id_detail}`, {
+                    method: "DELETE",
+                });
+
+                if (!res.ok) throw new Error(`Gagal menghapus pekerja dengan ID ${worker.id_detail}`);
+            }
+
+            setWorkers((prev) => prev.filter((_, i) => i !== index));
+
+            toast.success("Penugasan pekerja berhasil dihapus");
+        } catch (error) {
+            console.error("Error menghapus pekerja:", error);
+            toast.error("Gagal menghapus penugasan pekerja");
+        }
     };
+
 
     const handleWorkerChange = (index, field, value) => {
         const updated = [...workers];
@@ -131,7 +160,7 @@ const EditTugas = () => {
                         deskripsi: w.deskripsi,
                         id_tugas: idTugas
                     };
-                    if (w.id_detail) workerPayload.id = w.id_detail; // hanya worker lama punya id_detail
+                    if (w.id_detail) workerPayload.id = w.id_detail;
                     return workerPayload;
                 }),
             };
@@ -210,160 +239,158 @@ const EditTugas = () => {
                         </button>
                     </div>
 
-                    <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1 scrollbar-green">
+                    <div className="max-h-[55vh] overflow-y-auto pr-1 scrollbar-green">
                         {workers.length === 0 ? (
                             <p className="text-gray-500 text-sm italic">Belum ada pekerja ditambahkan.</p>
                         ) : (
                             workers.map((worker, index) => (
-                                <div key={index} className="relative border border-green-500/30 rounded-xl bg-gradient-to-br from-green-100 to-white p-4 shadow-md hover:shadow-lg transition-all duration-300">
-                                    <div className="flex justify-between items-start mb-4 pb-2 border-b border-green-500/30">
-                                        <div>
-                                            <h3 className="text-base font-semibold text-green-700">
-                                                Rincian Penugasan {index + 1}
-                                            </h3>
-                                        </div>
-
-                                        <div className="flex items-center gap-4 px-2">
-                                            <button className="text-lg text-blue-500 hover:text-blue-600 transition"
+                                <div
+                                    key={index}
+                                    className="relative border border-green-400/40 rounded-lg bg-white/80 shadow-sm hover:shadow-md transition-all duration-200 mb-3"
+                                >
+                                    {/* Header */}
+                                    <div className="flex justify-between items-center px-3 py-2 border-b border-green-300/40 bg-green-50">
+                                        <h3 className="text-sm font-semibold text-green-700">
+                                            Penugasan {index + 1}
+                                        </h3>
+                                        <div className="flex items-center gap-2">
+                                            {/* Tombol Salin */}
+                                            <button
                                                 type="button"
+                                                title="Salin Penugasan"
                                                 onClick={() => {
-                                                    const { id_detail, ...copiedWithoutId } = worker;
+                                                    const { id_detail, ...copied } = worker;
                                                     setWorkers((prev) => {
                                                         const updated = [...prev];
-                                                        updated.splice(index + 1, 0, copiedWithoutId);
+                                                        updated.splice(index + 1, 0, copied);
                                                         return updated;
                                                     });
-                                                    toast.success(`Penugasan berhasil disalin`);
+                                                    toast.success("Penugasan berhasil disalin");
                                                 }}
-                                                title="Salin Penugasan Ini"
+                                                className="flex items-center gap-1 px-3 py-[6px] rounded-md text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 active:scale-[0.98] transition-all duration-150 shadow-sm"
                                             >
-                                                <FontAwesomeIcon icon={faCopy} />
+                                                <FontAwesomeIcon icon={faCopy} className="w-3 h-3" />
+                                                <span>Salin</span>
                                             </button>
 
-
+                                            {/* Tombol Hapus */}
                                             {workers.length > 1 && (
-                                                <button type="button" onClick={() => handleRemoveWorker(index)} className="text-lg text-red-500 hover:text-red-600 transition" title="Hapus pekerja ini">
-                                                    <FontAwesomeIcon icon={faTrash} />
+                                                <button
+                                                    type="button"
+                                                    title="Hapus Penugasan"
+                                                    onClick={() => handleRemoveWorker(index)}
+                                                    className="flex items-center gap-1 px-3 py-[6px] rounded-md text-xs font-medium text-white bg-red-500 hover:bg-red-600 active:scale-[0.98] transition-all duration-150 shadow-sm"
+                                                >
+                                                    <FontAwesomeIcon icon={faTrash} className="w-3 h-3" />
+                                                    <span>Hapus</span>
                                                 </button>
                                             )}
                                         </div>
+
                                     </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                                        <div>
-                                            <label className="block text-md font-medium text-gray-800 mb-1">
-                                                Divisi Karyawan
-                                            </label>
-                                            <Select
-                                                value={
-                                                    divisiList
-                                                        .filter((div) => div.id !== 1)
-                                                        .map((div) => ({ value: div.id, label: div.nama }))
-                                                        .find((option) => option.value === worker.id) || null
-                                                }
-                                                onChange={(selectedOption) => {
-                                                    const divisiId = selectedOption ? selectedOption.value : "";
-                                                    handleWorkerChange(index, "id", divisiId);
-
-                                                    if (divisiId) {
-                                                        const filtered = profilList.filter(
-                                                            (user) => String(user.id_role) === String(divisiId)
+                                    {/* Isi compact */}
+                                    <div className="divide-y divide-gray-200 text-sm">
+                                        {/* Divisi */}
+                                        <div className="grid grid-cols-3 sm:grid-cols-4 items-center px-3 py-1.5">
+                                            <span className="text-gray-700 font-medium col-span-1">Divisi</span>
+                                            <div className="col-span-2 sm:col-span-3">
+                                                <Select
+                                                    value={divisiList
+                                                        .filter((d) => d.id !== 1)
+                                                        .map((d) => ({ value: d.id, label: d.nama }))
+                                                        .find((opt) => opt.value === worker.id) || null}
+                                                    onChange={(opt) => {
+                                                        const divisiId = opt ? opt.value : "";
+                                                        handleWorkerChange(index, "id", divisiId);
+                                                        handleWorkerChange(
+                                                            index,
+                                                            "filteredUsers",
+                                                            divisiId
+                                                                ? profilList.filter(
+                                                                    (u) => String(u.id_role) === String(divisiId)
+                                                                )
+                                                                : []
                                                         );
-                                                        handleWorkerChange(index, "filteredUsers", filtered);
-                                                    } else {
-                                                        handleWorkerChange(index, "filteredUsers", []);
+                                                    }}
+                                                    options={divisiList
+                                                        .filter((d) => d.id !== 1)
+                                                        .map((d) => ({ value: d.id, label: d.nama }))}
+                                                    placeholder="Pilih Divisi..."
+                                                    classNamePrefix="react-select"
+                                                    styles={{
+                                                        control: (base) => ({
+                                                            ...base,
+                                                            minHeight: "32px",
+                                                            borderRadius: "0.375rem",
+                                                            fontSize: "0.85rem",
+                                                            boxShadow: "none",
+                                                            borderColor: "#d1d5db",
+                                                            "&:hover": { borderColor: "#16a34a" },
+                                                        }),
+                                                    }}
+                                                    menuPortalTarget={document.body}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Karyawan */}
+                                        <div className="grid grid-cols-3 sm:grid-cols-4 items-center px-3 py-1.5">
+                                            <span className="text-gray-700 font-medium col-span-1">Karyawan</span>
+                                            <div className="col-span-2 sm:col-span-3">
+                                                <Select
+                                                    value={(worker.filteredUsers || [])
+                                                        .map((u) => ({ value: u.id_user, label: u.nama_user }))
+                                                        .find((opt) => opt.value === worker.id_user) || null}
+                                                    onChange={(opt) =>
+                                                        handleWorkerChange(index, "id_user", opt ? opt.value : "")
                                                     }
-                                                }}
-                                                options={divisiList
-                                                    .filter((div) => div.id !== 1)
-                                                    .map((div) => ({ value: div.id, label: div.nama }))}
-                                                placeholder="Pilih Divisi..."
-                                                classNamePrefix="react-select"
-                                                menuPortalTarget={document.body}
-                                                styles={{
-                                                    control: (base) => ({
-                                                        ...base,
-                                                        borderColor: "#9CA3AF",
-                                                        borderRadius: "0.5rem",
-                                                        minHeight: "38px",
-                                                        boxShadow: "none",
-                                                        "&:hover": { borderColor: "#22C55E" },
-                                                    }),
-                                                    menuPortal: (base) => ({
-                                                        ...base,
-                                                        zIndex: 9999,
-                                                    }),
-                                                }}
-                                            />
+                                                    options={(worker.filteredUsers || []).map((u) => ({
+                                                        value: u.id_user,
+                                                        label: u.nama_user,
+                                                    }))}
+                                                    placeholder={
+                                                        worker.id ? "Pilih Karyawan..." : "Pilih divisi dahulu"
+                                                    }
+                                                    isDisabled={!worker.id}
+                                                    classNamePrefix="react-select"
+                                                    styles={{
+                                                        control: (base, state) => ({
+                                                            ...base,
+                                                            minHeight: "32px",
+                                                            borderRadius: "0.375rem",
+                                                            fontSize: "0.85rem",
+                                                            backgroundColor: state.isDisabled ? "#f3f4f6" : "white",
+                                                            borderColor: state.isDisabled ? "#e5e7eb" : "#d1d5db",
+                                                            "&:hover": { borderColor: "#16a34a" },
+                                                        }),
+                                                    }}
+                                                    menuPortalTarget={document.body}
+                                                />
+                                            </div>
                                         </div>
 
-                                        {/* Pilih Karyawan */}
-                                        <div>
-                                            <label className="block text-md font-medium text-gray-800 mb-1">
-                                                Nama Karyawan
-                                            </label>
-                                            <Select
-                                                value={(worker.filteredUsers || [])
-                                                    .map((user) => ({ value: user.id_user, label: user.nama_user }))
-                                                    .find((option) => option.value === worker.id_user) || null}
-                                                onChange={(selectedOption) =>
-                                                    handleWorkerChange(
-                                                        index,
-                                                        "id_user",
-                                                        selectedOption ? selectedOption.value : ""
-                                                    )
-                                                }
-                                                options={(worker.filteredUsers || []).map((user) => ({
-                                                    value: user.id_user,
-                                                    label: user.nama_user,
-                                                }))}
-                                                placeholder={
-                                                    worker.id
-                                                        ? "Pilih Karyawan..."
-                                                        : "Pilih divisi terlebih dahulu"
-                                                }
-                                                isDisabled={!worker.id}
-                                                classNamePrefix="react-select"
-                                                menuPortalTarget={document.body}
-                                                styles={{
-                                                    control: (base, state) => ({
-                                                        ...base,
-                                                        borderColor: state.isDisabled ? "#E5E7EB" : "#9CA3AF",
-                                                        borderRadius: "0.5rem",
-                                                        minHeight: "38px",
-                                                        backgroundColor: state.isDisabled ? "#F9FAFB" : "white",
-                                                        boxShadow: "none",
-                                                        "&:hover": { borderColor: "#22C55E" },
-                                                    }),
-                                                    menuPortal: (base) => ({
-                                                        ...base,
-                                                        zIndex: 9999,
-                                                    }),
-                                                }}
-                                            />
+                                        {/* Deskripsi */}
+                                        <div className="grid grid-cols-3 sm:grid-cols-4 items-start px-3 py-1.5">
+                                            <span className="text-gray-700 font-medium col-span-1">Deskripsi Pekerjaan</span>
+                                            <div className="col-span-2 sm:col-span-3">
+                                                <textarea
+                                                    value={worker.deskripsi}
+                                                    onChange={(e) =>
+                                                        handleWorkerChange(index, "deskripsi", e.target.value)
+                                                    }
+                                                    placeholder="Tuliskan deskripsi..."
+                                                    rows="3"
+                                                    className="w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-green-500 outline-none resize-none"
+                                                />
+                                            </div>
                                         </div>
-                                    </div>
-
-                                    {/* Deskripsi Penugasan */}
-                                    <div>
-                                        <label className="block text-md font-medium text-gray-800 mb-1">
-                                            Deskripsi Penugasan
-                                        </label>
-                                        <textarea
-                                            placeholder="Tuliskan deskripsi penugasan dengan jelas..."
-                                            value={worker.deskripsi}
-                                            onChange={(e) =>
-                                                handleWorkerChange(index, "deskripsi", e.target.value)
-                                            }
-                                            rows="2"
-                                            className="w-full px-3 py-2 border border-gray-400/50 rounded-lg focus:ring-2 focus:ring-green-500 outline-none resize-none text-gray-900"
-                                            required
-                                        />
                                     </div>
                                 </div>
                             ))
                         )}
                     </div>
+
                 </div>
 
 

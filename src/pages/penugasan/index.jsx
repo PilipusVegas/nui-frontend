@@ -16,7 +16,6 @@ const Penugasan = () => {
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
-    const [openDetail, setOpenDetail] = useState(null);
 
     const fetchTugas = async () => {
         setLoading(true);
@@ -249,19 +248,10 @@ const Penugasan = () => {
                         const now = new Date();
                         const deadline = new Date(item.deadline_at);
                         const diffHari = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
-                        const waktuStatus =
-                            diffHari > 0
-                                ? `Berakhir dalam ${diffHari} hari`
-                                : diffHari === 0
-                                    ? "Batas waktu hari ini"
-                                    : `Terlambat ${Math.abs(diffHari)} hari`;
+                        const waktuStatus = diffHari > 0 ? `Berakhir dalam ${diffHari} hari` : diffHari === 0 ? "Batas waktu hari ini" : `Terlambat ${Math.abs(diffHari)} hari`;
 
                         return (
-                            <div
-                                key={item.id}
-                                className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 transition hover:shadow-md"
-                            >
-                                {/* === Header Nama + Category === */}
+                            <div key={item.id} className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 transition hover:shadow-md">
                                 <div className="flex justify-between items-start gap-2">
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2">
@@ -323,22 +313,13 @@ const Penugasan = () => {
 
                                 {/* === Tombol Aksi === */}
                                 <div className="flex justify-end gap-2 mt-3">
-                                    <button
-                                        onClick={() => navigate(`/penugasan/show/${item.id}`)}
-                                        className="px-3 py-1.5 rounded-md bg-blue-500 text-white text-[11px] font-medium hover:bg-blue-600 transition"
-                                    >
+                                    <button onClick={() => navigate(`/penugasan/show/${item.id}`)} className="px-3 py-1.5 rounded-md bg-blue-500 text-white text-[11px] font-medium hover:bg-blue-600 transition">
                                         <FontAwesomeIcon icon={faEye} className="mr-1" /> Detail
                                     </button>
-                                    <button
-                                        onClick={() => navigate(`/penugasan/edit/${item.id}`)}
-                                        className="px-3 py-1.5 rounded-md bg-amber-500 text-white text-[11px] font-medium hover:bg-amber-600 transition"
-                                    >
+                                    <button onClick={() => navigate(`/penugasan/edit/${item.id}`)} className="px-3 py-1.5 rounded-md bg-amber-500 text-white text-[11px] font-medium hover:bg-amber-600 transition">
                                         <FontAwesomeIcon icon={faPen} className="mr-1" /> Edit
                                     </button>
-                                    <button
-                                        onClick={() => handleDelete(item.id)}
-                                        className="px-3 py-1.5 rounded-md bg-red-500 text-white text-[11px] font-medium hover:bg-red-600 transition"
-                                    >
+                                    <button onClick={() => handleDelete(item.id)} className="px-3 py-1.5 rounded-md bg-red-500 text-white text-[11px] font-medium hover:bg-red-600 transition">
                                         <FontAwesomeIcon icon={faTrash} className="mr-1" /> Hapus
                                     </button>
                                 </div>
@@ -348,12 +329,7 @@ const Penugasan = () => {
 
                 {/* Pagination Mobile */}
                 {filteredTugas.length > itemsPerPage && (
-                    <Pagination
-                        currentPage={currentPage}
-                        totalItems={filteredTugas.length}
-                        itemsPerPage={itemsPerPage}
-                        onPageChange={handlePageChange}
-                    />
+                    <Pagination currentPage={currentPage} totalItems={filteredTugas.length} itemsPerPage={itemsPerPage} onPageChange={handlePageChange}/>
                 )}
             </div>
 
