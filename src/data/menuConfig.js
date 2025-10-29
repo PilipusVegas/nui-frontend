@@ -108,7 +108,7 @@ export const menuConfig = [
                 roles: [1],
                 submenu: [
                     { label: "Daftar Penugasan", icon: faListCheck, path: "/penugasan", roles: [1] },
-                    { label: "Riwayat Penugasan", icon: faFolderOpen, path: "/riwayat-penugasan", roles: [1] },
+                    { label: "Riwayat Penugasan", icon: faFolderOpen, path: "/penugasan/riwayat", roles: [1] },
                 ],
             },
         ],

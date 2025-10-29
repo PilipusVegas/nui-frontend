@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Swal from "sweetalert2";
-import { faCalendarCheck, faBell, faHistory, faThList, faHome, faUser, faSignOutAlt, faQuestionCircle, faMapMarkerAlt, faArrowRight, faPenFancy, faPeopleGroup, faClipboardList, faClockFour, faExclamationTriangle, faTasks, faTasksAlt } from "@fortawesome/free-solid-svg-icons";
+import { faCalendarCheck, faBell, faHistory, faSignOutAlt, faQuestionCircle, faMapMarkerAlt, faArrowRight, faPenFancy, faPeopleGroup, faClockFour, faTasks, } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../utils/jwtHelper";
 import { FooterMainBar, LoadingSpinner, EmptyState, ErrorState } from "../components";
 
