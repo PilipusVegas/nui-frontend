@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
 import { fetchWithJwt } from "../../utils/jwtHelper";
-import { faExclamationTriangle, faPlus, faClockRotateLeft } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faClockRotateLeft, faEye, faTrash, faPen } from "@fortawesome/free-solid-svg-icons";
 import { SectionHeader, Modal, Pagination, LoadingSpinner, ErrorState, EmptyState, SearchBar } from "../../components";
 import Swal from "sweetalert2";
 
@@ -111,10 +111,10 @@ const Penugasan = () => {
                         <thead className="bg-green-500 text-white font-semibold">
                             <tr>
                                 <th className="px-5 py-3 text-center w-16">No.</th>
-                                <th className="px-5 py-3">Judul Penugasan</th>
-                                <th className="px-5 py-3 text-center">Kategori Tugas</th>
-                                <th className="px-5 py-3 text-center">Deadline</th>
-                                <th className="px-5 py-3 text-center">Jumlah Pekerjaan</th>
+                                <th className="px-5 py-3 text-center">Kategori</th>
+                                <th className="px-5 py-3">Nama Penugasan</th>
+                                <th className="px-5 py-3 text-center">Batas Waktu</th>
+                                <th className="px-5 py-3 text-center">Status Pekerjaan</th>
                                 <th className="px-5 py-3 text-center w-50">Menu</th>
                             </tr>
                         </thead>
@@ -122,59 +122,97 @@ const Penugasan = () => {
                         <tbody className="bg-white">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="6" className="py-10 text-center">
+                                    <td colSpan="7" className="py-10 text-center">
                                         <LoadingSpinner size="lg" text="Memuat data penugasan..." />
                                     </td>
                                 </tr>
                             ) : error ? (
                                 <tr>
-                                    <td colSpan="6" className="py-10 text-center">
+                                    <td colSpan="7" className="py-10 text-center">
                                         <ErrorState message={error} onRetry={fetchTugas} />
                                     </td>
                                 </tr>
                             ) : currentTugas.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" className="py-10 text-center">
+                                    <td colSpan="7" className="py-10 text-center">
                                         <EmptyState message="Belum ada data penugasan." />
                                     </td>
                                 </tr>
                             ) : (
-                                currentTugas.map((item, index) => (
-                                    <tr key={item.id} className="border-t hover:bg-gray-50 transition">
-                                        <td className="px-5 py-2 text-center">
-                                            {indexOfFirstItem + index + 1}
-                                        </td>
-                                        <td className="px-5 py-2 font-semibold text-gray-800 max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap uppercase">
-                                            {item.nama}
-                                        </td>
+                                currentTugas.map((item, index) => {
+                                    const totalPekerja = item.details?.length || 0;
+                                    const selesai = item.details?.filter((d) => d.finished_at !== null).length || 0;
+                                    const progressPersen = totalPekerja > 0 ? Math.round((selesai / totalPekerja) * 100) : 0;
+                                    const now = new Date();
+                                    const deadline = new Date(item.deadline_at);
+                                    const diffHari = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+                                    const waktuStatus = diffHari > 0 ? `Tersisa ${diffHari} hari` : diffHari === 0 ? "Hari terakhir" : `Terlambat ${Math.abs(diffHari)} hari`;
 
-                                        <td className="px-5 py-2 text-center">
-                                            <span className={`inline-block px-1 py-0.5 text-sm font-semibold rounded-md capitalize min-w-[100px] ${item.category === "daily" ? "bg-green-100 text-green-700 border border-green-300" : item.category === "urgent" ? "bg-red-100 text-red-700 border border-red-300" : "bg-gray-100 text-gray-700 border border-gray-300"}`}>
-                                                {item.category}
-                                            </span>
-                                        </td>
+                                    return (
+                                        <tr key={item.id} className="border-t hover:bg-gray-50 transition">
+                                            <td className="px-1 py-2 text-center font-medium text-gray-700">
+                                                {indexOfFirstItem + index + 1}
+                                            </td>
+                                            <td className="px-1 py-2 text-center font-medium text-gray-700">
+                                                <span className={`inline-block px-1 text-xs font-semibold rounded-md capitalize border min-w-[70px] ${item.category === "urgent" ? "bg-red-100 text-red-700 border-red-300" : "bg-green-100 text-green-700 border-green-300"}`}>
+                                                    {item.category}
+                                                </span>
+                                            </td>
 
-                                        <td className="px-5 py-2 text-center text-gray-700">
-                                            {formatDate(item.deadline_at)}
-                                        </td>
-                                        <td className="px-5 py-2 text-center text-gray-700">
-                                            {item.details?.length || 0} orang
-                                        </td>
-                                        <td className="px-5 py-2 text-center">
-                                            <div className="flex justify-center gap-2">
-                                                <button onClick={() => navigate(`/penugasan/show/${item.id}`)} className="px-3 py-1.5 rounded bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 transition">
-                                                    Detail
-                                                </button>
-                                                <button onClick={() => navigate(`/penugasan/edit/${item.id}`)} className="px-3 py-1.5 rounded bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition">
-                                                    Edit
-                                                </button>
-                                                <button onClick={() => handleDelete(item.id)} className="px-3 py-1.5 rounded bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition">
-                                                    Hapus
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
+                                            <td className="px-3 py-2 max-w-[250px]">
+                                                <span className="block truncate text-gray-800 font-medium capitalize" title={item.nama}>
+                                                    {item.nama}
+                                                </span>
+                                                <div className="text-xs text-gray-500">
+                                                    Dimulai : {formatDate(item.start_date)}
+                                                </div>
+                                            </td>
+
+                                            <td className="px-5 py-2 text-center">
+                                                <div className="flex flex-col items-center leading-tight">
+                                                    <span className="text-xs text-gray-600">
+                                                        <span className="font-medium text-gray-700">{formatDate(item.deadline_at)}</span>
+                                                    </span>
+                                                    <span className={`text-xs mt-0.5 ${diffHari < 0 ? "text-red-600 font-semibold" : diffHari === 0 ? "text-amber-600 font-semibold" : "text-green-600 font-semibold"}`}>
+                                                        {waktuStatus}
+                                                    </span>
+                                                </div>
+                                            </td>
+
+                                            <td className="px-5 py-2 text-center align-middle">
+                                                <div className="flex flex-col items-center justify-center w-full">
+                                                    <div className="relative w-[130px] h-4 bg-gray-200 rounded-full overflow-hidden border border-gray-300/30">
+                                                        <div className={`absolute top-0 left-0 h-full rounded-full transition-all duration-500 ease-in-out ${progressPersen === 100 ? "bg-green-500" : "bg-amber-500"}`} style={{ width: `${progressPersen}%` }}></div>
+                                                        <span className={`absolute inset-0 flex items-center justify-center text-[11px] font-semibold ${progressPersen === 100 ? "text-white" : "text-gray-800"}`}>
+                                                            {progressPersen === 100 ? "Selesai" : "Proses"}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="text-[10px] text-gray-700 font-medium text-center truncate max-w-[150px] -mt-0.5">
+                                                        {selesai}/{totalPekerja} ({progressPersen}%)
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            <td className="px-5 py-2 text-center">
+                                                <div className="flex justify-center gap-2">
+                                                    <button onClick={() => navigate(`/penugasan/show/${item.id}`)} className="px-3 py-2 rounded bg-blue-500 text-white text-xs font-medium hover:bg-blue-600 transition">
+                                                        <FontAwesomeIcon icon={faEye} className="mr-1" />
+                                                        Detail
+                                                    </button>
+                                                    <button onClick={() => navigate(`/penugasan/edit/${item.id}`)} className="px-3 py-2 rounded bg-amber-500 text-white text-xs font-medium hover:bg-amber-600 transition">
+                                                        <FontAwesomeIcon icon={faPen} className="mr-1" />
+                                                        Edit
+                                                    </button>
+                                                    <button onClick={() => handleDelete(item.id)} className="px-3 py-2 rounded bg-red-500 text-white text-xs font-medium hover:bg-red-600 transition">
+                                                        <FontAwesomeIcon icon={faTrash} className="mr-1" />
+                                                        Hapus
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                             )}
                         </tbody>
                     </table>
@@ -187,7 +225,6 @@ const Penugasan = () => {
                 )}
             </div>
 
-
             {/* === CARD MOBILE === */}
             <div className="md:hidden space-y-4">
                 {loading && (
@@ -195,55 +232,119 @@ const Penugasan = () => {
                         <LoadingSpinner text="Memuat data penugasan..." />
                     </div>
                 )}
-                {!loading && error && (
-                    <ErrorState message={error} onRetry={fetchTugas} />
-                )}
+                {!loading && error && <ErrorState message={error} onRetry={fetchTugas} />}
                 {!loading && !error && currentTugas.length === 0 && (
-                    <div className="text-center text-gray-500 py-10">
-                        <FontAwesomeIcon
-                            icon={faExclamationTriangle}
-                            className="text-5xl mb-3 text-gray-400"
-                        />
-                        <div className="text-base font-medium">
-                            Belum ada data penugasan.
-                        </div>
-                    </div>
+                    <EmptyState message="Belum ada data penugasan." />
                 )}
 
                 {!loading &&
                     !error &&
-                    currentTugas.map((item) => (
-                        <div key={item.id} className="bg-white border border-gray-100 rounded-2xl shadow-md p-4 transition hover:shadow-lg">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <h2 className="text-sm font-semibold text-gray-800 leading-snug">
-                                        {item.nama}
-                                    </h2>
-                                    <div className="text-[11px] text-gray-500 mt-1">
-                                        Deadline: {formatDate(item.deadline_at)}
+                    currentTugas.map((item) => {
+                        const totalPekerja = item.details?.length || 0;
+                        const selesai =
+                            item.details?.filter((d) => d.finished_at !== null).length || 0;
+                        const progressPersen =
+                            totalPekerja > 0 ? Math.round((selesai / totalPekerja) * 100) : 0;
+
+                        const now = new Date();
+                        const deadline = new Date(item.deadline_at);
+                        const diffHari = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+                        const waktuStatus =
+                            diffHari > 0
+                                ? `Berakhir dalam ${diffHari} hari`
+                                : diffHari === 0
+                                    ? "Batas waktu hari ini"
+                                    : `Terlambat ${Math.abs(diffHari)} hari`;
+
+                        return (
+                            <div
+                                key={item.id}
+                                className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 transition hover:shadow-md"
+                            >
+                                {/* === Header Nama + Category === */}
+                                <div className="flex justify-between items-start gap-2">
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2">
+                                            <h2 className="text-sm font-semibold text-gray-800 truncate">
+                                                {item.nama}
+                                            </h2>
+                                            <span
+                                                className={`px-2 text-[10px] font-semibold rounded-md capitalize border ${item.category === "urgent"
+                                                    ? "bg-red-100 text-red-700 border-red-300"
+                                                    : "bg-green-100 text-green-700 border-green-300"
+                                                    }`}
+                                            >
+                                                {item.category}
+                                            </span>
+                                        </div>
+                                        <p className="text-[11px] text-gray-500 mt-0.5">
+                                            Mulai: {formatDate(item.start_date)}
+                                        </p>
+                                        <p className="text-[11px] text-gray-500">
+                                            Deadline:{" "}
+                                            <span className="font-medium text-gray-700">
+                                                {formatDate(item.deadline_at)}
+                                            </span>
+                                        </p>
+                                        <p
+                                            className={`text-[11px] mt-0.5 ${diffHari < 0
+                                                ? "text-red-600 font-medium"
+                                                : diffHari === 0
+                                                    ? "text-amber-600 font-medium"
+                                                    : "text-green-600 font-medium"
+                                                }`}
+                                        >
+                                            {waktuStatus}
+                                        </p>
                                     </div>
                                 </div>
-                                <button onClick={() =>
-                                    setOpenDetail(openDetail === item.id ? null : item.id)
-                                }
-                                    className="text-xs font-medium text-blue-600 hover:text-blue-800"
-                                >
-                                    Lihat Detail
-                                </button>
-                            </div>
 
-                            {openDetail === item.id && (
-                                <div className="mt-3 border-t pt-2 border-dashed border-gray-300 text-[11px] text-gray-700 space-y-1">
-                                    {item.details?.map((d, idx) => (
-                                        <p key={d.id}>
-                                            <span className="font-semibold">#{idx + 1}</span> –{" "}
-                                            {d.deskripsi || "Tanpa deskripsi"}
-                                        </p>
-                                    ))}
+                                {/* === Progress Bar + Status (Ramping & Sejajar) === */}
+                                <div className="flex items-center justify-between gap-2 mt-3">
+                                    <div className="relative flex-1 h-4 bg-gray-200 rounded-full overflow-hidden border border-gray-300">
+                                        <div
+                                            className={`absolute top-0 left-0 h-full rounded-full transition-all duration-500 ease-in-out ${progressPersen === 100 ? "bg-green-500" : "bg-amber-500"
+                                                }`}
+                                            style={{ width: `${progressPersen}%` }}
+                                        ></div>
+
+                                        <span
+                                            className={`absolute inset-0 flex items-center justify-center text-[11px] font-semibold ${progressPersen === 100 ? "text-white" : "text-gray-800"
+                                                }`}
+                                        >
+                                            {progressPersen === 100 ? "Selesai" : "Proses"}
+                                        </span>
+                                    </div>
+
+                                    <div className="text-[11px] text-gray-700 font-medium whitespace-nowrap ml-1">
+                                        {selesai}/{totalPekerja} ({progressPersen}%)
+                                    </div>
                                 </div>
-                            )}
-                        </div>
-                    ))}
+
+                                {/* === Tombol Aksi === */}
+                                <div className="flex justify-end gap-2 mt-3">
+                                    <button
+                                        onClick={() => navigate(`/penugasan/show/${item.id}`)}
+                                        className="px-3 py-1.5 rounded-md bg-blue-500 text-white text-[11px] font-medium hover:bg-blue-600 transition"
+                                    >
+                                        <FontAwesomeIcon icon={faEye} className="mr-1" /> Detail
+                                    </button>
+                                    <button
+                                        onClick={() => navigate(`/penugasan/edit/${item.id}`)}
+                                        className="px-3 py-1.5 rounded-md bg-amber-500 text-white text-[11px] font-medium hover:bg-amber-600 transition"
+                                    >
+                                        <FontAwesomeIcon icon={faPen} className="mr-1" /> Edit
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(item.id)}
+                                        className="px-3 py-1.5 rounded-md bg-red-500 text-white text-[11px] font-medium hover:bg-red-600 transition"
+                                    >
+                                        <FontAwesomeIcon icon={faTrash} className="mr-1" /> Hapus
+                                    </button>
+                                </div>
+                            </div>
+                        );
+                    })}
 
                 {/* Pagination Mobile */}
                 {filteredTugas.length > itemsPerPage && (
@@ -255,6 +356,11 @@ const Penugasan = () => {
                     />
                 )}
             </div>
+
+
+            <Modal isOpen={false} onClose={() => { }} title="Detail Penugasan" note="Informasi fitur menu  penugasan lengkap akan ditampilkan di sini.">
+                <div></div>
+            </Modal>
         </div>
     );
 };

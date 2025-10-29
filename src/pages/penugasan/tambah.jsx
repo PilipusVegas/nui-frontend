@@ -40,8 +40,6 @@ const TambahTugas = () => {
         fetchData();
     }, [apiUrl]);
 
-
-
     const handleBack = async () => {
         const confirm = await Swal.fire({
             title: "Batalkan penambahan tugas?",
@@ -83,8 +81,21 @@ const TambahTugas = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const today = new Date().toISOString().split("T")[0];
+
         if (!nama.trim() || !startDate || !deadlineAt) {
             Swal.fire("Peringatan", "Nama, tanggal mulai, dan deadline wajib diisi!", "warning");
+            return;
+        }
+
+        if (startDate < today) {
+            Swal.fire("Peringatan", "Tanggal mulai tidak boleh mundur dari hari ini!", "warning");
+            return;
+        }
+
+        if (deadlineAt < startDate) {
+            Swal.fire("Peringatan", "Deadline tidak boleh kurang dari tanggal mulai!", "warning");
             return;
         }
 
@@ -97,6 +108,7 @@ const TambahTugas = () => {
             cancelButtonText: "Batal",
             iconColor: "#22C55E",
         });
+
         if (!confirm.isConfirmed) return;
 
         try {
@@ -132,7 +144,6 @@ const TambahTugas = () => {
         }
     };
 
-
     return (
         <div className="min-h-screen flex flex-col">
             <SectionHeader title="Tambah Penugasan" onBack={handleBack} subtitle="Tambah penugasan baru" />
@@ -143,9 +154,13 @@ const TambahTugas = () => {
                         Nama Tugas
                     </label>
                     <p className="text-sm text-gray-500 mb-2">
-                        Masukkan nama atau judul tugas. Ini berfungsi sebagai penanda utama untuk keseluruhan penugasan, sehingga mudah dikenali dan dibedakan dari tugas lainnya.
+                        Masukkan nama penugasan sebagai penanda secara ringkas.
                     </p>
-                    <input type="text" value={nama} onChange={(e) => setNama(e.target.value)} required placeholder="Masukkan Nama Penugasan" className="w-full px-4 py-2 border border-gray-300/50 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                    <input type="text" value={nama} onChange={(e) => setNama(e.target.value.slice(0, 150))} maxLength={150} required placeholder="Masukkan Nama Penugasan" className="w-full px-4 py-2 border border-gray-300/50 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"/>
+                    <p className="text-xs text-gray-400 mt-1">
+                        Maksimal 150 karakter ({nama.length}/150)
+                    </p>
+
                 </div>
 
                 <div>
@@ -158,12 +173,17 @@ const TambahTugas = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label className="block mb-1 font-medium text-gray-700">Tanggal Mulai Penugasan</label>
-                        <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required className="w-full border border-gray-300/50 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                        <label className="block mb-1 font-medium text-gray-700">
+                            Tanggal Mulai Penugasan
+                        </label>
+                        <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required min={new Date().toISOString().split("T")[0]} className="w-full border border-gray-300/50 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     </div>
+
                     <div>
-                        <label className="block mb-1 font-medium text-gray-700">Tenggat Waktu Penugasan</label>
-                        <input type="date" value={deadlineAt} onChange={(e) => setDeadlineAt(e.target.value)} required min={startDate || undefined} className="w-full border border-gray-300/50 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                        <label className="block mb-1 font-medium text-gray-700">
+                            Tenggat Waktu Penugasan
+                        </label>
+                        <input type="date" value={deadlineAt} onChange={(e) => setDeadlineAt(e.target.value)} required min={startDate || new Date().toISOString().split("T")[0]} disabled={!startDate} className={`w-full border border-gray-300/50 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none ${!startDate ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}`} />
                     </div>
                 </div>
 
@@ -244,6 +264,7 @@ const TambahTugas = () => {
                                                 .map((div) => ({ value: div.id, label: div.nama }))}
                                             placeholder="Pilih Divisi..."
                                             classNamePrefix="react-select"
+                                            required
                                             menuPortalTarget={document.body}
                                             styles={{
                                                 control: (base) => ({
@@ -280,6 +301,7 @@ const TambahTugas = () => {
                                             }))}
                                             placeholder={worker.id ? "Pilih Karyawan..." : "Pilih divisi terlebih dahulu"}
                                             isDisabled={!worker.id}
+                                            required
                                             classNamePrefix="react-select"
                                             menuPortalTarget={document.body}
                                             styles={{
