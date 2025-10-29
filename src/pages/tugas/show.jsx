@@ -193,7 +193,7 @@ const DetailTugasMobile = () => {
                                 <div className="space-y-3">
                                 {!isCameraOpen && (
                                     <div className="relative border border-gray-200 rounded-xl overflow-hidden">
-                                    <img src={photo || `${apiUrl}/img/tugas/${task.bukti_foto}`} alt="Bukti Tugas" className="w-full h-52 object-cover"/>
+                                    <img src={photo || `${apiUrl}/img/tugas/${task.bukti_foto}`} alt="Bukti Tugas" className="w-full h-52 object-cover scale-x-[-1]"/>
                                     </div>
                                 )}
 
@@ -209,7 +209,7 @@ const DetailTugasMobile = () => {
                                 {isCameraOpen && (
                                     <div className="space-y-2">
                                     <div className="w-full aspect-[4/3] rounded-md overflow-hidden border border-gray-200">
-                                        <Webcam ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode }} className="w-full h-full object-cover" mirrored={facingMode === "user"}/>
+                                        <Webcam ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode }} className="w-full h-full object-cover scale-x-[-1]" mirrored={facingMode === "user"}/>
                                     </div>
 
                                     <div className="flex gap-2">
@@ -275,7 +275,7 @@ const DetailTugasMobile = () => {
                                 {photo && (
                                     <div className="space-y-3">
                                         <div className="relative rounded-2xl overflow-hidden shadow-md border border-gray-200">
-                                            <img src={photo} alt="Preview" className="w-full h-52 object-cover rounded-2xl" />
+                                            <img src={photo} alt="Preview" className="w-full h-52 object-cover rounded-2xl scale-x-[-1]" />
                                         </div>
 
                                         <div className="flex gap-3">
