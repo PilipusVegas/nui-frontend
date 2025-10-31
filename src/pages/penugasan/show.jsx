@@ -102,9 +102,7 @@ const DetailPenugasan = () => {
         try {
             const confirm = await Swal.fire({
                 title: status === 1 ? "Setujui tugas?" : "Tolak tugas?",
-                text: status === 1
-                    ? "Pastikan pekerjaan ini sudah selesai dengan benar dan telah diperiksa sebelum menyetujui."
-                    : "Tugas akan dikembalikan ke karyawan untuk diperbaiki dan dikirim ulang. Pastikan sudah konfirmasi ke karyawan sebelum menolak.",
+                text: status === 1 ? "Pastikan pekerjaan sudah benar sebelum disetujui." : "Tugas akan dikembalikan ke karyawan untuk diperbaiki.",
                 icon: status === 1 ? "question" : "warning",
                 showCancelButton: true,
                 confirmButtonText: status === 1 ? "Ya, setujui" : "Ya, tolak",
@@ -114,39 +112,29 @@ const DetailPenugasan = () => {
 
             if (!confirm.isConfirmed) return;
 
-            // Update status lokal
-            const updatedDetails = tugas.details.map((w) =>
-                w.id === detailId ? { ...w, status } : w
-            );
+            const url = `${apiUrl}/tugas/status/${detailId}?status=${status}`;
+            const res = await fetchWithJwt(url, { method: "GET" });
 
-            const payload = {
-                nama: tugas.nama,
-                start_date: formatISODate(tugas.start_date),
-                deadline_at: formatISODate(tugas.deadline_at),
-                category: tugas.category,
-                is_complete: tugas.is_complete,
-                worker_list: updatedDetails,
-            };
+            if (!res.ok) throw new Error(`Gagal update status (${res.status})`);
 
-            const res = await fetchWithJwt(`${apiUrl}/tugas/${id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            });
+            setTugas((prev) => ({
+                ...prev,
+                details: prev.details.map((item) =>
+                    item.id === detailId ? { ...item, status } : item
+                ),
+            }));
 
-            if (!res.ok) throw new Error(`Status ${res.status}`);
-
-            setTugas((prev) => ({ ...prev, details: updatedDetails }));
             if (selectedDetail && selectedDetail.id === detailId) {
                 setSelectedDetail((prev) => ({ ...prev, status }));
             }
-            toast.success(`Tugas berhasil ${status === 1 ? "disetujui" : "ditolak"}.`);
 
+            toast.success(`Tugas berhasil ${status === 1 ? "disetujui" : "ditolak"}.`);
         } catch (err) {
-            console.error("Gagal mengubah status:", err);
-            toast.error("Gagal mengubah status pekerja.");
+            console.error("Gagal memperbarui status tugas:", err);
+            toast.error("Gagal memperbarui status tugas.");
         }
     };
+
 
     const handleRefresh = async () => {
         toast.loading("Menyegarkan data...", { id: "refresh" });
@@ -466,8 +454,8 @@ const DetailPenugasan = () => {
                                                     : faTimesCircle
                                             }
                                             className={`w-4 h-4 mr-2 ${selectedDetail.status === 1
-                                                    ? "text-green-600"
-                                                    : "text-red-500"
+                                                ? "text-green-600"
+                                                : "text-red-500"
                                                 }`}
                                         />
                                         {selectedDetail.status === 1

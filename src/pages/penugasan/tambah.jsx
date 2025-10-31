@@ -197,10 +197,10 @@ const TambahTugas = () => {
                         </div>
                         <button type="button" onClick={handleAddWorker} className="bg-green-600 hover:bg-green-700 text-white px-3.5 py-2 rounded-md text-sm flex items-center gap-2 shadow-md transition-all hover:scale-105">
                             <FontAwesomeIcon icon={faPlus} />
-                            Tambah Pekerja
+                            Tambah Baru
                         </button>
                     </div>
-                    <div className="max-h-[55vh] overflow-y-auto pr-1 scrollbar-green space-y-3">
+                    <div className="max-h-[70vh] overflow-y-auto pr-1 scrollbar-green space-y-3">
                         {workerList.map((worker, index) => (
                             <div key={index} className="relative border border-green-400/40 rounded-lg bg-white/80 shadow-sm hover:shadow-md transition-all duration-200">
                                 <div className="flex justify-between items-center px-3 py-2 border-b border-green-300/40 bg-green-50">
