@@ -34,8 +34,8 @@ const DataAbsensi = () => {
       let filtered = [];
       if ([1, 4, 6].includes(userRole)) filtered = data;
       else if (userRole === 20 || userRole === 13)
-        filtered = data.filter((d) => d.id_role === 22);
-      else if (userRole === 5) filtered = data.filter((d) => d.id_role === 3);
+        filtered = data.data.filter((d) => d.id_role === 22);
+      else if (userRole === 5) filtered = data.data.filter((d) => d.id_role === 3);
       setAbsenData(Array.isArray(filtered) ? filtered : []);
     } catch (err) {
       console.error("Error fetching absen data:", err);

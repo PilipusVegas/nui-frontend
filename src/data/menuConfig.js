@@ -8,9 +8,7 @@ import {
     faUserEdit,
     faUserCheck,
     faCheckSquare,
-    faClockRotateLeft,
     faMoneyBillWave,
-    faClipboardList,
     faPlaneDeparture,
     faFileSignature,
     faBusinessTime,
@@ -23,7 +21,6 @@ import {
     faHistory,
     faBriefcase,
     faClock,
-    faTimeline,
     faFolderOpen,
     faEdit
 } from "@fortawesome/free-solid-svg-icons";
@@ -68,9 +65,9 @@ export const menuConfig = [
             {
                 label: "Kelola Absensi",
                 icon: faUserEdit,
-                roles: [1, 4, 5, 6],
+                roles: [1, 4, 5, 6, 13],
                 submenu: [
-                    { label: "Persetujuan Absensi", icon: faCheckSquare, path: "/pengajuan-absensi", roles: [1, 4, 5, 6, 13, 20], perusahaan: [1, 4] },
+                    { label: "Persetujuan Absensi", icon: faCheckSquare, path: "/pengajuan-absensi", roles: [1, 4, 5, 6, 13], perusahaan: [1, 4] },
                     { label: "Data Absensi Harian", icon: faUserCheck, path: "/kelola-absensi", roles: [1, 4, 6], target: "_blank" },
                     { label: "Remark Absensi", icon: faEdit, path: "/remark-absensi", roles: [1, 4, 6] },
                 ],
@@ -105,10 +102,10 @@ export const menuConfig = [
             {
                 label: "Penugasan",
                 icon: faTasks,
-                roles: [1],
+                roles: [1, 5, 20],
                 submenu: [
-                    { label: "Daftar Penugasan", icon: faListCheck, path: "/penugasan", roles: [1] },
-                    { label: "Riwayat Penugasan", icon: faFolderOpen, path: "/penugasan/riwayat", roles: [1] },
+                    { label: "Daftar Penugasan", icon: faListCheck, path: "/penugasan", roles: [1, 5, 20] },
+                    { label: "Riwayat Penugasan", icon: faFolderOpen, path: "/penugasan/riwayat", roles: [1, 5,20] },
                 ],
             },
         ],

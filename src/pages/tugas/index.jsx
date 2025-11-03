@@ -47,9 +47,15 @@ const Tugas = () => {
         const category = t.category?.toLowerCase();
         const isFinished = !!t.finished_at;
         const approval = t.status_persetujuan;
-        if (activeTab === "urgent") return category === "urgent";
-        if (activeTab === "daily") return category === "daily";
-        if (activeTab === "history") return isFinished && approval === 1;
+        if (activeTab === "urgent")
+            return category === "urgent" && t.status_tugas !== 1;
+
+        if (activeTab === "daily")
+            return category === "daily" && t.status_tugas !== 1;
+
+        if (activeTab === "history")
+            return t.status_tugas === 1;
+
 
         if (activeTab === "all") {
             const isPending = isFinished && approval === 0;

@@ -13,7 +13,6 @@ const HomeDesktop = () => {
   const roleId = user ? Number(user.id_role) : null;
   const perusahaanId = user ? Number(user.id_perusahaan) : null;
 
-  const [localTime, setLocalTime] = useState("");
   const [weather, setWeather] = useState({
     city: "Memuat...",
     temp: "--",
@@ -21,20 +20,6 @@ const HomeDesktop = () => {
     icon: faCloudSun,
     accent: "text-yellow-500",
   });
-
-  // Update jam lokal
-  useEffect(() => {
-    const updateLocalTime = () => {
-      const time = new Date().toLocaleTimeString("id-ID", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      setLocalTime(time);
-    };
-    updateLocalTime();
-    const intervalId = setInterval(updateLocalTime, 60000);
-    return () => clearInterval(intervalId);
-  }, []);
 
   // Fetch cuaca
   useEffect(() => {

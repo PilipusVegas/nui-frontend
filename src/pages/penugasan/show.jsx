@@ -51,13 +51,36 @@ const DetailPenugasan = () => {
 
             if (!res.ok) throw new Error(`Status ${res.status}`);
 
-            toast.success("Penugasan berhasil diselesaikan.");
             setTugas((prev) => ({ ...prev, is_complete: 1 }));
+            toast.success("Penugasan berhasil diselesaikan.");
+
+            // === 🌿 Swal versi lebih profesional & informatif ===
+            await Swal.fire({
+                title: "Penugasan Telah Diselesaikan",
+                text: "Semua pekerjaan dalam penugasan ini telah diverifikasi dan selesai dengan baik. Anda dapat melihat detailnya di halaman riwayat penugasan.",
+                icon: "success",
+                confirmButtonText: "Lihat Riwayat",
+                confirmButtonColor: "#16A34A", // hijau khas
+                background: "#f9fafb",
+                color: "#111827",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                customClass: {
+                    popup: "rounded-xl shadow-lg",
+                    confirmButton: "px-4 py-2 text-sm font-medium rounded-md",
+                },
+            });
+
+            // Arahkan ke halaman riwayat penugasan
+            navigate("/penugasan/riwayat");
+
         } catch (err) {
             console.error("Gagal memperbarui status:", err);
             toast.error("Gagal memperbarui status penugasan.");
         }
     };
+
+
 
     /** === Handle Pause / Resume === */
     const handleTogglePause = async (detailId, isPaused) => {
@@ -94,7 +117,7 @@ const DetailPenugasan = () => {
     /** === Handle Lihat Foto === */
     const handleViewPhoto = (photoName) => {
         if (!photoName) return toast.error("Tidak ada foto tersedia.");
-        window.open(`${apiUrl}/uploads/tugas/${photoName}`, "_blank");
+        window.open(`${apiUrl}/uploads/img/tugas/${photoName}`, "_blank");
     };
 
     /** === Handle Approval === */
@@ -160,7 +183,7 @@ const DetailPenugasan = () => {
 
     return (
         <div>
-            <SectionHeader title="Detail Penugasan" subtitle="Informasi lengkap penugasan dan pekerja terkait" onBack={() => navigate("/penugasan")}
+            <SectionHeader title="Detail Penugasan" subtitle="Informasi lengkap penugasan dan pekerja terkait" onBack={() => navigate(-1)}
                 actions={
                     <div>
                         <button onClick={handleRefresh} className="flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md border border-blue-300 bg-blue-500 text-white hover:bg-blue-600 hover:shadow-sm transition-all" title="Segarkan Data">
@@ -327,10 +350,7 @@ const DetailPenugasan = () => {
                                                             </button>
                                                         ) : (
                                                             !tugas.is_complete && (
-                                                                <button onClick={() => handleTogglePause(item.id, item.is_paused)}
-                                                                    className={`flex items-center justify-center gap-2 w-24 px-3 py-2 rounded-md text-sm font-medium tracking-wide transition ${item.is_paused ? "bg-green-500 text-white hover:bg-green-600" : "bg-orange-500 text-white hover:bg-orange-600"}`}
-                                                                    title={item.is_paused ? "Lanjutkan" : "Pause"}
-                                                                >
+                                                                <button onClick={() => handleTogglePause(item.id, item.is_paused)} className={`flex items-center justify-center gap-2 w-24 px-3 py-2 rounded-md text-sm font-medium tracking-wide transition ${item.is_paused ? "bg-green-500 text-white hover:bg-green-600" : "bg-orange-500 text-white hover:bg-orange-600"}`} title={item.is_paused ? "Lanjutkan" : "Pause"}>
                                                                     <FontAwesomeIcon icon={item.is_paused ? faPlay : faPause} className="w-4 h-4" />
                                                                     <span>
                                                                         {item.is_paused ? "Lanjut" : "Tunda"}
@@ -355,13 +375,7 @@ const DetailPenugasan = () => {
             </main>
 
             {/* === Modal Detail Pekerja === */}
-            <Modal
-                isOpen={isModalOpen}
-                onClose={handleCloseModal}
-                title="Detail Pekerjaan"
-                note={selectedDetail ? selectedDetail.nama_user : ""}
-                size="lg"
-            >
+            <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="Detail Pekerjaan" note={selectedDetail ? selectedDetail.nama_user : ""} size="lg">
                 {selectedDetail ? (
                     <div className="space-y-5 text-gray-700">
                         {/* === Informasi Utama === */}
@@ -407,7 +421,7 @@ const DetailPenugasan = () => {
                             {selectedDetail.bukti_foto ? (
                                 <div className="flex justify-center">
                                     <img
-                                        src={`${apiUrl}/uploads/tugas/${selectedDetail.bukti_foto}`}
+                                        src={`${apiUrl}/uploads/img/tugas/${selectedDetail.bukti_foto}`}
                                         alt="Bukti pekerjaan"
                                         className="rounded-lg shadow-md border border-gray-200 w-full max-w-sm sm:max-w-xs object-cover transition-transform duration-300 hover:scale-[1.02] cursor-pointer"
                                         onClick={() => handleViewPhoto(selectedDetail.bukti_foto)}

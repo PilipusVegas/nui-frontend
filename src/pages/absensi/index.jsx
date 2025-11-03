@@ -100,7 +100,7 @@ const Absensi = () => {
       const response = await fetchWithJwt(`${apiUrl}/absen/riwayat/${attendanceData.userId}`);
       const data = await response.json();
       if (response.ok) {
-        const last24Hours = data.filter((item) => new Date() - new Date(item.jam_mulai) <= 24 * 60 * 60 * 1000);
+        const last24Hours = data.data.filter((item) => new Date() - new Date(item.jam_mulai) <= 24 * 60 * 60 * 1000);
         setAttendanceHistory(last24Hours.slice(0, 1) || []);
       }
     } catch (error) {
@@ -124,51 +124,51 @@ const Absensi = () => {
     if (attendanceData.userId) fetchAttendanceHistory();
   }, [attendanceData.userId]);
 
-useEffect(() => {
-  const checkAttendance = async () => {
-    setIsCheckingAttendance(true); // ✅ Mulai loading
-    try {
-      const response = await fetchWithJwt(`${apiUrl}/absen/cek/${attendanceData.userId}`);
-      const data = await response.json();
+  useEffect(() => {
+    const checkAttendance = async () => {
+      setIsCheckingAttendance(true); // ✅ Mulai loading
+      try {
+        const response = await fetchWithJwt(`${apiUrl}/absen/cek/${attendanceData.userId}`);
+        const data = await response.json();
 
-      if (response.ok && data.success === true && data.data) {
-        const detail = data.data;
-        setAttendanceData({
-          userId: String(detail.id_user),
-          username: detail.nama || "",
-          id_absen: String(detail.id_absen),
-          id_lokasi: detail.lokasi || "",
-          nama: detail.nama || "",
-          shift: detail.shift || "",
-          deskripsi: detail.deskripsi || "",
-          jam_mulai: detail.jam_mulai ? String(detail.jam_mulai) : null,
-          jam_selesai: detail.jam_selesai ? String(detail.jam_selesai) : null,
-        });
+        if (response.ok && data.success === true && data.data) {
+          const detail = data.data;
+          setAttendanceData({
+            userId: String(detail.id_user),
+            username: detail.nama || "",
+            id_absen: String(detail.id_absen),
+            id_lokasi: detail.lokasi || "",
+            nama: detail.nama || "",
+            shift: detail.shift || "",
+            deskripsi: detail.deskripsi || "",
+            jam_mulai: detail.jam_mulai ? String(detail.jam_mulai) : null,
+            jam_selesai: detail.jam_selesai ? String(detail.jam_selesai) : null,
+            total_tugas_urgent: detail.total_tugas_urgent || 0,
+          });
 
-        setIsSelesaiFlow(!!detail.jam_mulai && !detail.jam_selesai);
-        setCurrentStep(null);
-      } else {
-        setAttendanceData(prev => ({
-          ...prev,
-          id_absen: "",
-          jam_mulai: null,
-          jam_selesai: null,
-        }));
+          setIsSelesaiFlow(!!detail.jam_mulai && !detail.jam_selesai);
+          setCurrentStep(null);
+        } else {
+          setAttendanceData(prev => ({
+            ...prev,
+            id_absen: "",
+            jam_mulai: null,
+            jam_selesai: null,
+          }));
+          setIsSelesaiFlow(false);
+          setCurrentStep(null);
+        }
+      } catch (error) {
+        console.error("Error checking attendance:", error);
         setIsSelesaiFlow(false);
         setCurrentStep(null);
+      } finally {
+        setIsCheckingAttendance(false); // ✅ Selesai loading
       }
-    } catch (error) {
-      console.error("Error checking attendance:", error);
-      setIsSelesaiFlow(false);
-      setCurrentStep(null);
-    } finally {
-      setIsCheckingAttendance(false); // ✅ Selesai loading
-    }
-  };
+    };
 
-  if (attendanceData.userId) checkAttendance();
-}, [apiUrl, attendanceData.userId]);
-
+    if (attendanceData.userId) checkAttendance();
+  }, [apiUrl, attendanceData.userId]);
 
 
 
@@ -261,6 +261,22 @@ useEffect(() => {
 
 
   const handleSelesaiClick = async () => {
+    if (attendanceData.total_tugas_urgent > 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Tidak Dapat Absen Pulang",
+        html: `
+        <p>Masih terdapat <b>${attendanceData.total_tugas_urgent}</b> tugas <b>urgent</b> yang belum diselesaikan.</p>
+        <p>Mohon selesaikan terlebih dahulu sebelum melakukan absen pulang.</p>
+        <p class="mt-2 text-sm text-gray-600">
+          Jika Anda memiliki keadaan mendesak, silakan konfirmasikan kepada <b>Kepala Divisi</b> 
+          agar tugas dapat ditunda sementara.
+        </p>
+      `,
+        confirmButtonText: "Saya Mengerti",
+      });
+      return;
+    }
     setIsLoading(true);
     try {
       await navigator.mediaDevices.getUserMedia({ video: true });
