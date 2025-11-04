@@ -51,16 +51,23 @@ const DetailKaryawan = () => {
         .replace(/\b\w/g, (c) => c.toUpperCase())
       : <span className="text-gray-400">N/A</span>;
 
-  const showExtraInfo = user?.id_perusahaan !== 1 && user?.id_perusahaan !== 4;
 
   return (
     <div>
-      <SectionHeader title="Detail Karyawan" subtitle="Informasi lengkap karyawan" onBack={() => navigate("/karyawan")} />
+      <SectionHeader title="Detail Karyawan" subtitle="Informasi lengkap karyawan" onBack={() => navigate("/karyawan")}
+        actions={
+          <button onClick={() => navigate(`/karyawan/edit/${id}`)} className="flex items-center gap-2 bg-yellow-500 text-white font-semibold px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors duration-200 shadow-sm">
+            <FontAwesomeIcon icon={faUserTie} />
+            <span>Edit Karyawan</span>
+          </button>
+        }
+      />
+
 
       <main className="bg-white/80 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 p-6 pt-4 w-full transition-all duration-300 space-y-8">
         {loading && <LoadingSpinner message="Memuat data karyawan..." />}
         {!loading && error && <ErrorState message={error} />}
-        {!loading && !error && !karyawan && ( <EmptyState message="Data karyawan tidak ditemukan." />)}
+        {!loading && !error && !karyawan && (<EmptyState message="Data karyawan tidak ditemukan." />)}
         {!loading && !error && karyawan && (
           <>
             <SectionTitle text="Biodata Karyawan" />
@@ -89,30 +96,28 @@ const DetailKaryawan = () => {
             </div>
 
             {/* Informasi Tambahan */}
-            {showExtraInfo && (
-              <>
-                <SectionTitle text="Informasi Tambahan" />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {[
-                    { icon: faIdCard, label: "NIK", value: safeText(karyawan.nik) },
-                    { icon: faMoneyCheckAlt, label: "NPWP", value: safeText(karyawan.npwp) },
-                    { icon: faMoneyCheckAlt, label: "No. Rekening", value: safeText(karyawan.no_rek) },
-                    { icon: faUserTie, label: "Status Nikah", value: formatStatusNikah(karyawan.status_nikah), },
-                    { icon: faChildren, label: "Jumlah Anak", value: karyawan.jml_anak ?? (<span className="text-gray-400">N/A</span>), },
-                  ].map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-4 bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-lg transition-transform hover:-translate-y-1">
-                      <FontAwesomeIcon icon={item.icon} className="text-green-500 w-6 h-6 flex-shrink-0" />
-                      <div className="flex-1">
-                        <div className="text-gray-500 text-sm">{item.label}</div>
-                        <div className="text-gray-900 font-semibold">
-                          {item.value}
-                        </div>
+            <>
+              <SectionTitle text="Informasi Tambahan" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {[
+                  { icon: faIdCard, label: "NIK", value: safeText(karyawan.nik) },
+                  { icon: faMoneyCheckAlt, label: "NPWP", value: safeText(karyawan.npwp) },
+                  { icon: faMoneyCheckAlt, label: "No. Rekening", value: safeText(karyawan.no_rek) },
+                  { icon: faUserTie, label: "Status Nikah", value: formatStatusNikah(karyawan.status_nikah), },
+                  { icon: faChildren, label: "Jumlah Anak", value: karyawan.jml_anak ?? (<span className="text-gray-400">N/A</span>), },
+                ].map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-4 bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-lg transition-transform hover:-translate-y-1">
+                    <FontAwesomeIcon icon={item.icon} className="text-green-500 w-6 h-6 flex-shrink-0" />
+                    <div className="flex-1">
+                      <div className="text-gray-500 text-sm">{item.label}</div>
+                      <div className="text-gray-900 font-semibold">
+                        {item.value}
                       </div>
                     </div>
-                  ))}
-                </div>
-              </>
-            )}
+                  </div>
+                ))}
+              </div>
+            </>
           </>
         )}
       </main>

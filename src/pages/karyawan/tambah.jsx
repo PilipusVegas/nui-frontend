@@ -15,18 +15,7 @@ const TambahKaryawan = () => {
   const [perusahaanList, setPerusahaanList] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
   const [currentUser, setCurrentUser] = useState({ nip: "", nik: "", npwp: "", no_rek: "", nama: "", status_nikah: "", jml_anak: "", id_perusahaan: "", id_role: "", id_shift: "", telp: "", username: "", password: "", status: 1, });
-  const [userCompanyId, setUserCompanyId] = useState(null);
   const [showShiftDetails, setShowShiftDetails] = useState(false);
-  const [hidePersonalFields, setHidePersonalFields] = useState(false);
-
-  useEffect(() => {
-    const user = getUserFromToken();
-    if (user) {
-      setUserCompanyId(String(user.id_perusahaan));
-      setHidePersonalFields(user.id_perusahaan === 1 || user.id_perusahaan === 4);
-    }
-  }, []);
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -108,12 +97,10 @@ const TambahKaryawan = () => {
           </div>
 
           {/* NIK */}
-          {!hidePersonalFields && (
             <div>
               <label className="block mb-1 font-medium text-gray-700">NIK</label>
               <input type="text" name="nik" value={currentUser.nik} onChange={handleChange} placeholder="Masukkan Nomor Induk Kependudukan" required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
             </div>
-          )}
 
           {/* NIP */}
           <div>
@@ -122,12 +109,10 @@ const TambahKaryawan = () => {
           </div>
 
           {/* NPWP */}
-          {!hidePersonalFields && (
             <div>
               <label className="block mb-1 font-medium text-gray-700">NPWP</label>
               <input type="text" name="npwp" value={currentUser.npwp} onChange={handleChange} placeholder="Masukkan Nomor Pokok Wajib Pajak" required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
             </div>
-          )}
 
           {/* Nama */}
           <div>
@@ -142,15 +127,12 @@ const TambahKaryawan = () => {
           </div>
 
           {/* No Rekening */}
-          {!hidePersonalFields && (
             <div>
               <label className="block mb-1 font-medium text-gray-700">Nomor Rekening</label>
               <input type="text" name="no_rek" value={currentUser.no_rek} onChange={handleChange} placeholder="Masukkan nomor rekening karyawan" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
             </div>
-          )}
 
           {/* STATUS NIKAH */}
-          {!hidePersonalFields && (
             <div>
               <label className="block mb-1 font-medium text-gray-700">Status Nikah</label>
               <select name="status_nikah" value={currentUser.status_nikah || ""} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
@@ -160,7 +142,6 @@ const TambahKaryawan = () => {
                 <option value="Cerai">Cerai</option>
               </select>
             </div>
-          )}
 
           {/* JUMLAH ANAK - Tampilkan jika Sudah Menikah */}
           {currentUser.status_nikah === "Sudah_Menikah" && (

@@ -114,6 +114,8 @@ const Penugasan = () => {
                                 <th className="px-5 py-3">Nama Penugasan</th>
                                 <th className="px-5 py-3 text-center">Batas Waktu</th>
                                 <th className="px-5 py-3 text-center">Status Pengumpulan</th>
+                                <th className="px-5 py-3 text-center">Keterangan</th>
+
                                 <th className="px-5 py-3 text-center w-50">Menu</th>
                             </tr>
                         </thead>
@@ -140,18 +142,22 @@ const Penugasan = () => {
                             ) : (
                                 currentTugas.map((item, index) => {
                                     const totalPekerja = item.details?.length || 0;
-                                    const selesai = item.details?.filter((d) => d.status === 1).length || 0;
+                                    const selesai = item.details?.filter((d) => {
+                                        if (d.finished_at && d.status === 0) return true;
+                                        if (d.finished_at && d.status === 1) return true;
+                                        return false;
+                                    }).length || 0;
+
                                     const progressPersen = totalPekerja > 0 ? Math.round((selesai / totalPekerja) * 100) : 0;
 
                                     const now = new Date();
                                     const deadline = new Date(item.deadline_at);
                                     const diffHari = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
-                                    const waktuStatus =
-                                        diffHari > 0
-                                            ? `Tersisa ${diffHari} hari`
-                                            : diffHari === 0
-                                                ? "Hari terakhir"
-                                                : `Terlambat ${Math.abs(diffHari)} hari`;
+                                    const waktuStatus = diffHari > 0 ? `Tersisa ${diffHari} hari` : diffHari === 0 ? "Hari terakhir" : `Terlambat ${Math.abs(diffHari)} hari`;
+                                    const pendingCount = item.details?.filter((d) => d.finished_at && d.status === 0)?.length || 0;
+                                    const disetujuiCount = item.details?.filter((d) => d.finished_at && d.status === 1)?.length || 0;
+                                    const ditolakCount = item.details?.filter((d) => d.finished_at && d.status === 2)?.length || 0;
+                                    const ditundaCount = item.details?.filter((d) => d.is_paused === 1 && item.category === "urgent")?.length || 0;
 
                                     return (
                                         <tr key={item.id} className="border-t hover:bg-gray-50 transition">
@@ -196,17 +202,7 @@ const Penugasan = () => {
                                             <td className="px-5 py-2 text-center">
                                                 <div className="flex flex-col items-center">
                                                     <div className="relative w-[140px] h-4 bg-gray-100 rounded-full overflow-hidden border border-gray-200 shadow-inner">
-                                                        <div
-                                                            className={`absolute top-0 left-0 h-full rounded-full transition-all duration-500 ease-in-out ${progressPersen === 100
-                                                                    ? "bg-green-600"
-                                                                    : progressPersen >= 50
-                                                                        ? "bg-green-400"
-                                                                        : progressPersen > 0
-                                                                            ? "bg-amber-400"
-                                                                            : "bg-gray-300"
-                                                                }`}
-                                                            style={{ width: `${progressPersen}%` }}
-                                                        ></div>
+                                                        <div className={`absolute top-0 left-0 h-full rounded-full transition-all duration-500 ease-in-out ${progressPersen === 100 ? "bg-green-600" : progressPersen >= 50 ? "bg-green-400" : progressPersen > 0 ? "bg-amber-400" : "bg-gray-300"}`} style={{ width: `${progressPersen}%` }}></div>
                                                         <span
                                                             className={`absolute inset-0 flex items-center justify-center text-[11px] font-semibold ${progressPersen === 100 ? "text-white" : "text-gray-800"
                                                                 }`}
@@ -217,6 +213,27 @@ const Penugasan = () => {
 
                                                     <div className="text-[11px] text-gray-700 font-medium mt-1">
                                                         {selesai}/{totalPekerja} Sudah Mengumpulkan
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            <td className="px-4 py-2 text-xs text-center">
+                                                <div className="grid grid-cols-2 gap-1 text-[12px] tracking-wide">
+                                                    <div className="flex items-center justify-center gap-1 bg-blue-50 text-blue-700 rounded py-0.5 font-medium">
+                                                        <span className="w-2 h-2 bg-blue-500 "></span>
+                                                        Pending: <span className="font-semibold">{pendingCount}</span>
+                                                    </div>
+                                                    <div className="flex items-center justify-center gap-1 bg-green-50 text-green-700 rounded py-0.5 font-medium">
+                                                        <span className="w-2 h-2 bg-green-500 "></span>
+                                                        Disetujui: <span className="font-semibold">{disetujuiCount}</span>
+                                                    </div>
+                                                    <div className="flex items-center justify-center gap-1 bg-red-50 text-red-700 rounded py-0.5 font-medium">
+                                                        <span className="w-2 h-2 bg-red-500 "></span>
+                                                        Ditolak: <span className="font-semibold">{ditolakCount}</span>
+                                                    </div>
+                                                    <div className="flex items-center justify-center gap-1 bg-amber-50 text-amber-700 rounded py-0.5 font-medium">
+                                                        <span className="w-2 h-2 bg-amber-500 "></span>
+                                                        Ditunda: <span className="font-semibold">{ditundaCount}</span>
                                                     </div>
                                                 </div>
                                             </td>

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash, faInfoCircle, faSave, faTimes, faChevronDown, } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
-import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
+import { fetchWithJwt } from "../../utils/jwtHelper";
 import { SectionHeader } from "../../components";
 
 const EditKaryawan = () => {
@@ -13,20 +13,10 @@ const EditKaryawan = () => {
     const [divisiList, setDivisiList] = useState([]);
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const [currentUser, setCurrentUser] = useState({});
-    const [showPassword, setShowPassword] = useState(false);
     const [perusahaanList, setPerusahaanList] = useState([]);
-    const [userCompanyId, setUserCompanyId] = useState(null);
+    const [showPassword, setShowPassword] = useState(false);
     const [showShiftDetails, setShowShiftDetails] = useState(false);
 
-    useEffect(() => {
-        const user = getUserFromToken();
-        if (user && user.id_perusahaan) {
-            setUserCompanyId(String(user.id_perusahaan));
-        }
-    }, []);
-
-    // Kondisi untuk sembunyikan beberapa input jika id_role 4 atau 6
-    const hideFields = userCompanyId === "1" || userCompanyId === "4";
 
     useEffect(() => {
         const fetchData = async () => {
@@ -76,10 +66,6 @@ const EditKaryawan = () => {
         setCurrentUser((prev) => ({ ...prev, [name]: updatedValue }));
     };
 
-    const handleBack = () => {
-        navigate("/karyawan");
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         const payload = { ...currentUser, };
@@ -109,7 +95,7 @@ const EditKaryawan = () => {
 
     return (
         <div className="bg-white flex flex-col">
-            <SectionHeader title="Edit Karyawan" onBack={handleBack} subtitle="Formulir untuk mengedit data karyawan" />
+            <SectionHeader title="Edit Karyawan" onBack={() => navigate(-1)} subtitle="Formulir untuk mengedit data karyawan" />
             <form onSubmit={handleSubmit} className="flex-grow pb-5 px-3 w-full mx-auto space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* === Biodata Karyawan === */}
@@ -126,13 +112,11 @@ const EditKaryawan = () => {
                     </div>
 
                     {/* NIK */}
-                    {!hideFields && (
                         <div>
                             <label className="block mb-1 font-medium text-gray-700">NIK</label>
                             <p className="text-xs text-gray-500 mb-2 -mt-1.5">Masukkan Nomor Induk Kependudukan (NIK).</p>
                             <input type="text" name="nik" value={currentUser.nik} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                         </div>
-                    )}
 
                     {/* NIP */}
                     <div>
@@ -142,13 +126,11 @@ const EditKaryawan = () => {
                     </div>
 
                     {/* NPWP */}
-                    {!hideFields && (
                         <div>
                             <label className="block mb-1 font-medium text-gray-700">NPWP</label>
                             <p className="text-xs text-gray-500 mb-2 -mt-1.5">Masukkan Nomor Pokok Wajib Pajak (NPWP).</p>
                             <input type="text" name="npwp" value={currentUser.npwp} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                         </div>
-                    )}
 
                     {/* Nama */}
                     <div>
@@ -165,16 +147,13 @@ const EditKaryawan = () => {
                     </div>
 
                     {/* No Rekening */}
-                    {!hideFields && (
                         <div>
                             <label className="block mb-1 font-medium text-gray-700">Nomor Rekening</label>
                             <p className="text-xs text-gray-500 mb-2 -mt-1.5">Masukkan Nomor Rekening Karyawan.</p>
                             <input type="text" name="no_rek" value={currentUser.no_rek} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                         </div>
-                    )}
 
                     {/* STATUS NIKAH */}
-                    {!hideFields && (
                         <div>
                             <label className="block mb-1 font-medium text-gray-700">Status Nikah</label>
                             <p className="text-xs text-gray-500 mb-2 -mt-1.5">Pilih status pernikahan karyawan.</p>
@@ -185,10 +164,9 @@ const EditKaryawan = () => {
                                 <option value="Cerai">Cerai</option>
                             </select>
                         </div>
-                    )}
 
                     {/* JUMLAH ANAK - Tampilkan jika Sudah Menikah */}
-                    {!hideFields && currentUser.status_nikah === "Sudah_Menikah" && (
+                    {currentUser.status_nikah === "Sudah_Menikah" && (
                         <div>
                             <label className="block mb-1 font-medium text-gray-700">Jumlah Anak</label>
                             <p className="text-xs text-gray-500 mb-2 -mt-1.5">Masukkan jumlah anak (jika ada). Jika belum mempunyai anak maka isi 0 saja</p>
@@ -445,7 +423,7 @@ const EditKaryawan = () => {
                 </div>
 
                 <div className="pt-10 flex flex-row justify-end gap-3 flex-wrap">
-                    <button type="button" onClick={handleBack} className="bg-red-500 hover:bg-red-600 text-white w-full sm:w-auto px-4 py-2.5 rounded-lg flex items-center justify-center">
+                    <button type="button" onClick={() => navigate("/karyawan")} className="bg-red-500 hover:bg-red-600 text-white w-full sm:w-auto px-4 py-2.5 rounded-lg flex items-center justify-center">
                         <FontAwesomeIcon icon={faTimes} className="mr-2" />
                         Batalkan
                     </button>

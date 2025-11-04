@@ -192,7 +192,6 @@ const DetailKelolaPresensi = () => {
     );
   };
 
-  // --- RENDER ---
   return (
     <div className="flex flex-col mb-10">
       <SectionHeader title="Detail Kelola Presensi" subtitle="Menampilkan rekap presensi lengkap karyawan, termasuk jam masuk, pulang, keterlambatan & Remark." onBack={() => navigate("/kelola-absensi")}
@@ -272,16 +271,18 @@ const DetailKelolaPresensi = () => {
 
           {/* Tabel */}
           <table className="min-w-full border-collapse">
-            <thead className="bg-green-500 text-white">
+            <thead className="bg-green-500 text-white text-sm">
               <tr>
-                <th className="px-4 py-2 border-t border-b rounded-tl-xl">No</th>
-                <th className="px-4 py-2 border-t border-b">Tanggal</th>
-                <th className="px-4 py-2 border-t border-b">Shift</th>
-                <th className="px-4 py-2 border-t border-b">Masuk</th>
-                <th className="px-4 py-2 border-t border-b">Terlambat</th>
-                <th className="px-4 py-2 border-t border-b">Pulang</th>
-                <th className="px-4 py-2 border-t border-b">Lembur</th>
-                <th className="px-4 py-2 border-t border-b rounded-tr-xl">Remark</th>
+                <th className="px-2 py-2 border-t border-b rounded-tl-xl">No</th>
+                <th className="px-2 py-2 border-t border-b">Tanggal</th>
+                <th className="px-2 py-2 border-t border-b">Shift</th>
+                <th className="px-2 py-2 border-t border-b">Masuk</th>
+                <th className="px-2 py-2 border-t border-b">Terlambat</th>
+                <th className="px-2 py-2 border-t border-b">Pulang</th>
+                <th className="px-2 py-2 border-t border-b">Total Jam Lembur</th>
+                <th className="px-2 py-2 border-t border-b">Mulai Lembur</th>
+                <th className="px-2 py-2 border-t border-b">Selesai Lembur</th>
+                <th className="px-2 py-2 border-t border-b rounded-tr-xl">Remark</th>
               </tr>
             </thead>
             <tbody>
@@ -308,6 +309,9 @@ const DetailKelolaPresensi = () => {
                     <td className="px-4 py-2">
                       {typeof rec?.overtime === "number" ? rec.overtime : "-"}
                     </td>
+                    <td className="px-4 py-2">{rec?.overtime_start || "-"}</td>
+                    <td className="px-4 py-2">{rec?.overtime_end || "-"}</td>
+
                     <td className="px-4 py-2">
                       {rec?.remark ? (
                         <div className="flex justify-center">
@@ -386,7 +390,9 @@ const DetailKelolaPresensi = () => {
                   ? "bg-red-100 text-red-700"
                   : remarkModal.remarkStatus === 4
                     ? "bg-green-100 text-green-700"
-                  : "bg-gray-100 text-gray-500"
+                    : remarkModal.remarkStatus === 5
+                      ? "bg-pink-100 text-pink-700"
+                      : "bg-gray-100 text-gray-500"
               }`}
             >
               {remarkModal.remarkStatus === 1
@@ -397,7 +403,9 @@ const DetailKelolaPresensi = () => {
                     ? "Izin Pulang Cepat"
                     : remarkModal.remarkStatus === 4
                       ? "Cuti"
-                    : "Tidak Ada Status"}
+                      : remarkModal.remarkStatus === 5
+                        ? "Izin Sakit"
+                        : "Tidak Ada Status"}
             </span>
 
             <span className="italic text-gray-500">

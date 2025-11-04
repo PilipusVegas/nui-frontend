@@ -33,12 +33,12 @@ export const exportRekapPresensi = async ({ filteredAbsenData, startDate, endDat
 
     // 🔵 Header
     const headerRow1 = ["Pegawai", "", "Jumlah", "", ""];
-    const headerRow2 = ["NIP", "Nama Karyawan", "Kehadiran", "Keterlambatan", "Lemburan"];
+    const headerRow2 = ["NIP", "Nama Karyawan", "Hadir", "Telat", "Lembur"];
 
     tanggalArray.forEach((tgl) => {
         const formattedDate = formatLongDate(tgl);
-        headerRow1.push(formattedDate, "", "", "");
-        headerRow2.push("IN", "LATE", "OUT", "T");
+        headerRow1.push(formattedDate, "", "", "", "", "");
+        headerRow2.push("IN", "LATE", "OUT", "T", "LM", "LP");
     });
 
     worksheet.getRow(offsetRow + 1).values = Array(offsetCol - 1).fill(null).concat(headerRow1);
@@ -63,8 +63,8 @@ export const exportRekapPresensi = async ({ filteredAbsenData, startDate, endDat
     worksheet.mergeCells(offsetRow + 1, offsetCol, offsetRow + 1, offsetCol + 1); // Pegawai
     worksheet.mergeCells(offsetRow + 1, offsetCol + 2, offsetRow + 1, offsetCol + 4); // Jumlah
     tanggalArray.forEach((_, i) => {
-        const start = offsetCol + 5 + i * 4;
-        worksheet.mergeCells(offsetRow + 1, start, offsetRow + 1, start + 3);
+        const start = offsetCol + 5 + i * 6;
+        worksheet.mergeCells(offsetRow + 1, start, offsetRow + 1, start + 5);
     });
 
     // 🔴 Pewarnaan kolom hari Minggu dari header hingga baris terakhir karyawan
@@ -72,8 +72,8 @@ export const exportRekapPresensi = async ({ filteredAbsenData, startDate, endDat
         if (!isSunday(tgl)) return;
 
         // posisi kolom tanggal pertama sekarang ada di offsetCol + 5
-        const startCol = offsetCol + 5 + index * 4;
-        const endCol = startCol + 3; // IN, LATE, OUT, OVERTIME
+        const startCol = offsetCol + 5 + index * 6;
+        const endCol = startCol + 5; // IN, LATE, OUT, OVERTIME
         const startRow = offsetRow + 1; // Header (baris pertama tanggal)
         const endRow = offsetRow + 3 + jumlahKaryawan - 1; // Baris terakhir data karyawan
 
@@ -121,6 +121,8 @@ export const exportRekapPresensi = async ({ filteredAbsenData, startDate, endDat
         tanggalArray.forEach((tgl) => {
             const att = item.attendance?.[tgl] || {};
             const overtimeValue = att.overtime ?? item.overtimes?.[tgl]?.durasi;
+            const overtimeStart = att.overtime ?? item.overtimes?.[tgl]?.mulai;
+            const overtimeEnd = att.overtime ?? item.overtimes?.[tgl]?.selesai;
             const isMinggu = isSunday(tgl);
             const lateValue = parseInt(att.late ?? 0);
             const isLate = lateValue >= 1;
@@ -141,9 +143,11 @@ export const exportRekapPresensi = async ({ filteredAbsenData, startDate, endDat
                 (lateValue === 0 || isNaN(lateValue)) ? "" : lateValue.toString(),
                 isEmptyValue(att.out) ? "" : att.out,
                 overtimeValue ?? "",
+                overtimeStart ?? "",
+                overtimeEnd ?? "",
             ];
 
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < 6; i++) {
                 const cell = worksheet.getCell(currentRowIndex, colIndex + i);
                 cell.value = cellValues[i];
 
@@ -155,7 +159,7 @@ export const exportRekapPresensi = async ({ filteredAbsenData, startDate, endDat
                 if (isMinggu) { Object.assign(cell, cellStyles.minggu); }
                 if (i === 1 && isLate) { Object.assign(cell, cellStyles.late); }
             }
-            colIndex += 4;
+            colIndex += 6;
         });
     });
 
@@ -164,11 +168,11 @@ export const exportRekapPresensi = async ({ filteredAbsenData, startDate, endDat
     worksheet.columns = Array(offsetCol - 1).fill({ width: 4 }).concat([
         { width: 10 }, // NIP
         { width: 28 }, // Nama
-        { width: 10 }, // Kehadiran
-        { width: 14 }, // Keterlambatan
-        { width: 10 }, // Lemburan
+        { width: 8 }, // Kehadiran
+        { width: 8 }, // Keterlambatan
+        { width: 8 }, // Lemburan
         ...tanggalArray.flatMap(() => [
-            { width: 6 }, { width: 6 }, { width: 6 }, { width: 6 }
+            { width: 6 }, { width: 6 }, { width: 6 }, { width: 6 }, { width: 6 }, { width: 6 }
         ])
     ]);
 
@@ -182,6 +186,14 @@ export const exportRekapPresensi = async ({ filteredAbsenData, startDate, endDat
                 bottom: { style: "thin" },
                 right: { style: "thin" },
             };
+        });
+    });
+
+    // 🔤 Mengecilkan semua ukuran font (misalnya jadi 9pt)
+    worksheet.eachRow({ includeEmpty: false }, (row) => {
+        row.eachCell({ includeEmpty: false }, (cell) => {
+            if (!cell.font) cell.font = {}; // pastikan font terdefinisi
+            cell.font = { ...cell.font, size: 9 }; // ubah ukuran font default jadi 9
         });
     });
 

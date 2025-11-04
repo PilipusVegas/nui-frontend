@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrash, faPlus, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import { faEdit, faTrash, faPlus, faInfoCircle, faChevronUp, faChevronDown, faSort } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import SectionHeader from "../../components/desktop/SectionHeader";
 import { LoadingSpinner, EmptyState, ErrorState, Pagination, SearchBar } from "../../components/";
@@ -20,6 +20,19 @@ const DataKaryawan = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPerusahaan, setSelectedPerusahaan] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
+  const [sortOrder, setSortOrder] = useState(null);
+
+  const handleSortStatus = () => {
+    setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+    const sortedUsers = [...users].sort((a, b) => {
+      if (sortOrder === "asc") {
+        return b.status - a.status; // descending
+      } else {
+        return a.status - b.status; // ascending
+      }
+    });
+    setUsers(sortedUsers);
+  };
 
   const canEditOrDelete = (user) => {
     // Admin Utama full akses
@@ -130,59 +143,46 @@ const DataKaryawan = () => {
         }
         />
 
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 sm:gap-4 mb-4">
-          <div className="order-2 sm:order-1 relative w-full sm:flex-1">
-            <SearchBar onSearch={setSearchQuery} placeholder="Cari karyawan berdasarkan nama, role, atau perusahaan..." className="order-2 sm:order-1 sm:flex-1" />
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
+          <div className="w-full sm:flex-[2.5]">
+            <SearchBar
+              onSearch={setSearchQuery}
+              placeholder="Cari karyawan berdasarkan nama, role, atau perusahaan..."
+              className="text-sm"
+            />
           </div>
 
-          <div className="order-1 sm:order-2 grid grid-cols-2 gap-2 sm:gap-3 w-full sm:max-w-sm">
-            {/* Filter Perusahaan */}
-            <div>
-              <label htmlFor="filter-perusahaan" className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5 block">
-                Perusahaan
-              </label>
-              <Select inputId="filter-perusahaan" className="text-xs sm:text-sm"
-                options={[
-                  { value: "", label: "Semua" },
-                  ...[...new Set(users.map((u) => u.perusahaan).filter(Boolean))].map((p) => ({
-                    value: p,
-                    label: p,
-                  })),
-                ]}
-                value={
-                  selectedPerusahaan
-                    ? { value: selectedPerusahaan, label: selectedPerusahaan }
-                    : { value: "", label: "Semua" }
-                }
-                onChange={(opt) => setSelectedPerusahaan(opt?.value ?? "")}
-                isClearable
-                placeholder="Pilih perusahaan…"
-              />
-            </div>
-
-            {/* Filter Status */}
-            <div>
-              <label htmlFor="filter-status" className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5 block">
-                Status
-              </label>
-              <Select inputId="filter-status" className="text-xs sm:text-sm" onChange={(opt) => setSelectedStatus(opt?.value ?? "")} isClearable placeholder="Pilih status…"
-                options={[
-                  { value: "", label: "Semua" },
-                  { value: "1", label: "Aktif" },
-                  { value: "0", label: "Nonaktif" },
-                ]}
-                value={
-                  selectedStatus
-                    ? {
-                      value: selectedStatus,
-                      label: selectedStatus === "1" ? "Aktif" : "Nonaktif",
-                    }
-                    : { value: "", label: "Semua" }
-                }
-              />
-            </div>
+          <div className="w-full sm:flex-[1]">
+            <label htmlFor="filter-perusahaan" className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5 block">
+              Perusahaan
+            </label>
+            <Select inputId="filter-perusahaan" className="text-xs sm:text-sm"
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  minHeight: 36,
+                  borderRadius: 8,
+                }),
+              }}
+              options={[
+                { value: "", label: "Semua" },
+                ...[...new Set(users.map((u) => u.perusahaan).filter(Boolean))].map((p) => ({
+                  value: p,
+                  label: p,
+                })),
+              ]}
+              value={
+                selectedPerusahaan
+                  ? { value: selectedPerusahaan, label: selectedPerusahaan }
+                  : { value: "", label: "Semua" }
+              }
+              onChange={(opt) => setSelectedPerusahaan(opt?.value ?? "")}
+              isClearable
+              placeholder="Pilih perusahaan…"
+            />
           </div>
         </div>
+
 
         {/* Kondisi Utama */}
         {isLoading ? (
@@ -194,10 +194,8 @@ const DataKaryawan = () => {
         ) : users.length === 0 ? (
           <EmptyState title="Belum Ada Data Karyawan" description="Tambahkan karyawan baru atau cek kembali filter pencarian." actionLabel="Tambah Karyawan" onAction={() => navigate("/karyawan/tambah")} />
         ) : (
-          // === Tabel & Konten Asli ===
           <>
             <div className="relative hidden md:block">
-              {/* Spinner area tabel bila hanya aksi (misal delete) */}
               {loadingAction && (
                 <div className="absolute inset-0 flex items-center justify-center bg-white/60 z-10">
                   <LoadingSpinner size="lg" />
@@ -206,15 +204,32 @@ const DataKaryawan = () => {
               <table className="min-w-full table-auto bg-white border-collapse shadow-md rounded-lg">
                 <thead>
                   <tr className="bg-green-500 text-white py-2 text-sm px-4">
-                    {["No.", "NIP", "Nama Karyawan", "Shift", "Status", "Menu"].map(
-                      (header, index) => (
-                        <th key={index} className={`px-4 py-3 font-semibold text-center ${index === 0 ? "first:rounded-tl-lg " : "last:rounded-tr-lg"}`}>
-                          {header}
-                        </th>
-                      )
-                    )}
+                    <th className="px-4 py-3 font-semibold text-center rounded-tl-lg">No.</th>
+                    <th className="px-4 py-3 font-semibold text-center">NIP</th>
+                    <th className="px-4 py-3 font-semibold text-center">Nama Karyawan</th>
+                    <th className="px-4 py-3 font-semibold text-center">Shift</th>
+
+                    <th className="px-4 py-3 font-semibold text-center cursor-pointer select-none" onClick={handleSortStatus} title={`Urutkan Status (${sortOrder === "asc" ? "Aktif dulu" : "Nonaktif dulu"})`}>
+                      <div className="flex items-center justify-center gap-2">
+                        <span>Status</span>
+                        <FontAwesomeIcon
+                          icon={
+                            sortOrder === "asc"
+                              ? faChevronUp
+                              : sortOrder === "desc"
+                                ? faChevronDown
+                                : faSort
+                          }
+                          className={`text-base transition-transform duration-200 ${sortOrder ? "text-white" : "text-white/70"
+                            }`}
+                        />
+                      </div>
+                    </th>
+
+                    <th className="px-4 py-3 font-semibold text-center rounded-tr-lg">Menu</th>
                   </tr>
                 </thead>
+
                 <tbody className="text-gray-800 text-sm">
                   {Array.isArray(currentUsers) && currentUsers.length > 0 &&
                     currentUsers.map((user, index) => (
