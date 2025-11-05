@@ -83,7 +83,6 @@ const DetailKelolaPresensi = () => {
 
   const dateRange = Object.keys(attendance || {});
 
-  // --- EXPORT EXCEL ---
   const handleExport = async () => {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet("Rekap Presensi");
@@ -102,7 +101,6 @@ const DetailKelolaPresensi = () => {
       });
     };
 
-    // ===== Informasi Karyawan =====
     sheet.addRow([]);
     sheet.addRow(["Nama", dataUser?.nama || ""]);
     sheet.addRow(["NIP", dataUser?.nip || ""]);
@@ -113,8 +111,7 @@ const DetailKelolaPresensi = () => {
     sheet.addRow(["Total Lembur", totalLembur || 0]);
     sheet.addRow([]);
 
-    // ===== Header Tabel =====
-    const header = ["No", "Tanggal", "Shift", "Masuk", "Terlambat (Menit)", "Pulang", "Lembur", "Remark"];
+    const header = ["No", "Tanggal", "Shift", "Masuk", "Terlambat (Menit)", "Pulang", "Total Jam Lembur", "Mulai Lembur", "Selesai Lembur", "Remark"];
     const headerRow = sheet.addRow(header);
     headerRow.eachCell((cell) => {
       cell.fill = {
@@ -132,7 +129,6 @@ const DetailKelolaPresensi = () => {
       };
     });
 
-    // ===== Data Tabel =====
     dateRange.forEach((tgl, i) => {
       const rec = attendance[tgl];
       const isSunday = new Date(tgl).getDay() === 0;
@@ -145,14 +141,17 @@ const DetailKelolaPresensi = () => {
         typeof rec?.late === "number" ? rec.late : "-",
         rec?.out ? formatTime(rec.out) : "-",
         rec?.overtime ?? "-",
-        rec?.remark ?? "-"   // << Remark ditambahkan di sini
+        rec?.overtime_start ?? "-",
+        rec?.overtime_end ?? "-",
+        rec?.remark ?? "-"
       ]);
 
       row.eachCell((cell, colNumber) => {
         cell.alignment = {
-          horizontal: colNumber === 2 || colNumber === 8 ? "left" : "center", // tanggal & remark rata kiri
+          horizontal: colNumber === 3 || colNumber === 10 ? "left" : "center",
           vertical: "middle",
         };
+
         cell.border = {
           top: { style: "thin" },
           left: { style: "thin" },
@@ -164,25 +163,26 @@ const DetailKelolaPresensi = () => {
           cell.fill = {
             type: "pattern",
             pattern: "solid",
-            fgColor: { argb: "FFDC2626" }, // merah
+            fgColor: { argb: "FFDC2626" },
           };
           cell.font = { color: { argb: "FFFFFFFF" }, bold: true };
         }
       });
     });
 
-    // ===== Auto Width =====
     sheet.columns.forEach((col, idx) => {
-      let max = idx === 7 ? 30 : 12; // Kolom Remark lebih lebar
+      let base = 12;
+      if (idx === 7 || idx === 8) base = 16;
+      if (idx === 9) base = 25;
+
+      let max = base;
       col.eachCell?.((c) => {
         const len = c.value ? c.value.toString().length : 0;
         if (len > max) max = len;
       });
-      col.width = max + 2;
+      col.width = Math.min(max + 2, 30);
     });
 
-
-    // ===== Save File =====
     const buf = await workbook.xlsx.writeBuffer();
     saveAs(
       new Blob([buf]),

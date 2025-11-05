@@ -87,11 +87,9 @@ const PersetujuanLembur = () => {
       let body = {};
 
       if (item.id_absen) {
-        // Pengajuan kantor → kirim deskripsi & status
         endpoint = `${apiUrl}/lembur/approve-kantor/${item.id_absen}`;
         body = { status, deskripsi: item.deskripsi || "" };
       } else if (item.id_lembur) {
-        // Pengajuan lapangan → hanya kirim status
         endpoint = `${apiUrl}/lembur/approve/${item.id_lembur}`;
         body = { status };
       } else {
@@ -106,14 +104,12 @@ const PersetujuanLembur = () => {
 
       if (!res.ok) throw new Error("Gagal memperbarui status.");
 
-      // Refresh data
       fetchApprovalData(startDate, endDate);
     } catch (err) {
       setErrorMessage(err.message);
     }
   };
 
-  // Gunakan di tombol
   const handleApprove = (item) => handleUpdateStatus(item, 1);
   const handleReject = (item) => handleUpdateStatus(item, 2);
 
@@ -141,7 +137,6 @@ const PersetujuanLembur = () => {
       />
 
 
-
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full mb-4">
         <div className="w-full sm:flex-1">
           <SearchBar value={searchQuery} onSearch={(val) => setSearchQuery(val)} placeholder="Cari Nama Karyawan..." className="w-full" />
@@ -159,7 +154,6 @@ const PersetujuanLembur = () => {
         </div>
       </div>
 
-      {/* ======= Tabel Desktop ======= */}
       <div className="hidden md:block">
         <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
           <table className="min-w-full table-auto text-sm">
@@ -215,7 +209,7 @@ const PersetujuanLembur = () => {
                       </td>
                       <td className="py-2.5 px-5 text-center font-medium">
                         <div> {a.jam_mulai} – {a.jam_selesai}</div>
-                        <div className="text-gray-500 text-xs mt-0.5"> Total: {hours} jam</div>
+                        <div className="text-gray-500 text-xs mt-0.5"> Total: {a.total_lembur} jam</div>
                       </td>
 
                       <td className="py-2.5 px-5 text-center">

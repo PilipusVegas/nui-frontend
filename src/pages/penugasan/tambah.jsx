@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { fetchWithJwt } from "../../utils/jwtHelper";
-import { faSave, faTimes, faPlus, faTrash, faCopy } from "@fortawesome/free-solid-svg-icons";
+import { faSave, faTimes, faPlus, faTrash, faCopy, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { SectionHeader } from "../../components";
 import Select from "react-select";
 
@@ -18,6 +18,8 @@ const TambahTugas = () => {
     const [category, setCategory] = useState("daily");
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const [workerList, setWorkerList] = useState([{ id_user: "", deskripsi: "", filteredUsers: [] }]);
+    const [loading, setLoading] = useState(false);
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -111,6 +113,9 @@ const TambahTugas = () => {
 
         if (!confirm.isConfirmed) return;
 
+        // ✅ Aktifkan indikator loading di sini
+        setLoading(true);
+
         try {
             const payload = {
                 nama,
@@ -141,8 +146,12 @@ const TambahTugas = () => {
             }).then(() => navigate("/penugasan"));
         } catch (err) {
             Swal.fire("Gagal", err.message || "Terjadi kesalahan saat menambah tugas.", "error");
+        } finally {
+            // ✅ Matikan indikator loading di sini
+            setLoading(false);
         }
     };
+
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -209,14 +218,14 @@ const TambahTugas = () => {
                                     </h3>
                                     <div className="flex items-center gap-2">
                                         <button type="button" onClick={() => {
-                                                const copied = { ...worker };
-                                                setWorkerList((prev) => {
-                                                    const updated = [...prev];
-                                                    updated.splice(index + 1, 0, copied);
-                                                    return updated;
-                                                });
-                                                toast.success("Penugasan berhasil disalin");
-                                            }}
+                                            const copied = { ...worker };
+                                            setWorkerList((prev) => {
+                                                const updated = [...prev];
+                                                updated.splice(index + 1, 0, copied);
+                                                return updated;
+                                            });
+                                            toast.success("Penugasan berhasil disalin");
+                                        }}
                                             className="flex items-center justify-center gap-1 px-3 py-1 rounded text-[10px] font-medium text-white bg-blue-500 hover:bg-blue-600 transition-all shadow-sm"
                                         >
                                             <FontAwesomeIcon icon={faCopy} className="w-3 h-3" />
@@ -357,10 +366,21 @@ const TambahTugas = () => {
                         <FontAwesomeIcon icon={faTimes} className="mr-2" />
                         Batal
                     </button>
-                    <button type="submit" className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center shadow">
-                        <FontAwesomeIcon icon={faSave} className="mr-2" />
-                        Simpan Tugas
+                    <button type="submit" disabled={loading} className={`${loading ? "bg-green-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"} text-white px-4 py-2 rounded flex items-center shadow transition-all`}>
+                        {loading ? (
+                            <>
+                                <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
+                                Menyimpan...
+                            </>
+                        ) : (
+                            <>
+                                <FontAwesomeIcon icon={faSave} className="mr-2" />
+                                Simpan Tugas
+                            </>
+                        )}
                     </button>
+
+
                 </div>
             </form>
         </div>

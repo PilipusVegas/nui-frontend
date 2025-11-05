@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faSave, faTimes, faPlus, faTrash, faCopy } from "@fortawesome/free-solid-svg-icons";
+import { faSave, faTimes, faPlus, faTrash, faCopy, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import Select from "react-select";
 import toast from "react-hot-toast";
-import { SectionHeader } from "../../components";
+import { SectionHeader, LoadingSpinner, ErrorState, EmptyState } from "../../components";
+
 const EditTugas = () => {
     const { id } = useParams();
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -17,9 +18,12 @@ const EditTugas = () => {
     const [deadline, setDeadline] = useState("");
     const [workers, setWorkers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [divisiList, setDivisiList] = useState([]);
     const [idTugas, setIdTugas] = useState(null);
     const [profilList, setProfilList] = useState([]);
+    const [saving, setSaving] = useState(false);
+
 
     useEffect(() => {
         const fetchAllData = async () => {
@@ -137,6 +141,7 @@ const EditTugas = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         const confirm = await Swal.fire({
             title: "Simpan perubahan?",
             text: "Perubahan akan disimpan ke sistem.",
@@ -146,7 +151,10 @@ const EditTugas = () => {
             cancelButtonText: "Batal",
             iconColor: "#22C55E",
         });
+
         if (!confirm.isConfirmed) return;
+
+        setSaving(true);
 
         try {
             const payload = {
@@ -181,17 +189,17 @@ const EditTugas = () => {
             }).then(() => navigate("/penugasan"));
         } catch (err) {
             Swal.fire("Gagal", err.message || "Terjadi kesalahan saat menyimpan.", "error");
+        } finally {
+            setSaving(false);
         }
     };
 
 
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center min-h-screen">
-                <p className="text-gray-600 text-lg font-medium animate-pulse">Memuat data tugas...</p>
-            </div>
-        );
-    }
+
+    if (loading) return <LoadingSpinner message="Memuat data penugasan..." />;
+    if (error) return <ErrorState message={error} onRetry={() => window.location.reload()} />;
+    if (!workers.length && !nama)
+        return <EmptyState message="Data tugas tidak ditemukan atau belum tersedia." />;
 
     return (
         <div className="min-h-screen bg-white flex flex-col">
@@ -399,10 +407,20 @@ const EditTugas = () => {
                         <FontAwesomeIcon icon={faTimes} className="mr-2" />
                         Batal
                     </button>
-                    <button type="submit" className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center shadow">
-                        <FontAwesomeIcon icon={faSave} className="mr-2" />
-                        Simpan Perubahan
+                    <button type="submit" disabled={saving} className={`${saving ? "bg-green-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"} text-white px-4 py-2 rounded flex items-center shadow transition-all`}>
+                        {saving ? (
+                            <>
+                                <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
+                                Menyimpan...
+                            </>
+                        ) : (
+                            <>
+                                <FontAwesomeIcon icon={faSave} className="mr-2" />
+                                Simpan Perubahan
+                            </>
+                        )}
                     </button>
+
                 </div>
             </form>
         </div>

@@ -27,7 +27,7 @@ import TambahShift from "./pages/shift/tambah";
 import EditShift from "./pages/shift/edit";
 import RiwayatLembur from "./pages/riwayat-lembur";
 import DataPenggajian from "./pages/penggajian";
-import RiwayatPenggajian from "./pages/riwayatPenggajian";
+import RiwayatPenggajian from "./pages/penggajian/riwayat";
 import RiwayatFace from "./pages/riwayat-user/absen-face";
 import RiwayatSuratDinas from "./pages/riwayatSuratDinas";
 import Divisi from "./pages/divisi";
@@ -246,7 +246,7 @@ const App = () => {
     { path: "/karyawan/edit/:id", component: <EditKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
     { path: "/karyawan/show/:id", component: <ShowKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
     { path: "/penggajian", component: <DataPenggajian />, roles: ["1", "4", "6"], layout: SidebarLayout },
-    { path: "/riwayat-penggajian", component: <RiwayatPenggajian />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/penggajian/riwayat", component: <RiwayatPenggajian />, roles: ["1", "4", "6"], layout: SidebarLayout },
     { path: "/riwayat-surat-dinas", component: <RiwayatSuratDinas />, roles: ["1", "4", "5", "6","20"], layout: SidebarLayout },
     { path: "/divisi/", component: <Divisi />, roles: ["1", "4", "6"], layout: SidebarLayout },
     { path: "/shift/", component: <Shift />, roles: ["1", "4", "6"], layout: SidebarLayout },

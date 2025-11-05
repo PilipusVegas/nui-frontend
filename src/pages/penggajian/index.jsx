@@ -42,7 +42,6 @@ const DataPenggajian = () => {
         setPeriodList(json.data || []);
 
         if (json.data?.length) {
-          // Ambil periode terakhir
           const lastPeriod = json.data[json.data.length - 1];
           setSelectedPeriod(lastPeriod.id);
         }
@@ -52,6 +51,7 @@ const DataPenggajian = () => {
     };
     loadPeriods();
   }, [apiUrl]);
+
 
 
   const fetchGaji = async (periodeId) => {
@@ -224,7 +224,7 @@ const DataPenggajian = () => {
 
   return (
     <div className="flex flex-col">
-      <SectionHeader title="Ringkasan Penggajian" subtitle={`Menampilkan ${filteredData.length} karyawan pada periode terpilih. Lakukan sinkronisasi untuk memperbarui data.`} onBack={() => navigate("/home")}
+      <SectionHeader title="Ringkasan Penggajian Periode Saat Ini" subtitle={`Menampilkan ${filteredData.length} karyawan pada periode terpilih. Lakukan sinkronisasi untuk memperbarui data.`} onBack={() => navigate("/home")}
         actions={
           <div className="flex flex-wrap gap-2">
             <button onClick={() => setShowInfo(true)} className="flex items-center justify-center px-3 sm:px-4 py-2 rounded-md text-white bg-blue-500 hover:bg-blue-600 gap-1">
@@ -247,7 +247,23 @@ const DataPenggajian = () => {
           <SearchBar placeholder="Cari nama karyawan..." onSearch={setSearchName} />
         </div>
         <div>
-          <Select value={periodList.find((p) => p.id === selectedPeriod) || null} onChange={(option) => setSelectedPeriod(option.id)} options={periodList} getOptionLabel={(p) => `Periode ${formatLongDate(p.tgl_awal)} s/d ${formatLongDate(p.tgl_akhir)}`} getOptionValue={(p) => p.id} placeholder="Pilih Periode" className="text-xs font-medium leading-tight" />
+          {selectedPeriod && (
+            <div className="text-sm font-medium text-gray-700 bg-gray-100 px-3 py-2 rounded-md shadow-sm border border-gray-200 whitespace-nowrap">
+              {(() => {
+                const period = periodList.find((p) => p.id === selectedPeriod);
+                if (!period) return null;
+                return (
+                  <>
+                    Periode:{" "}
+                    <span className="text-green-700 font-semibold">
+                      {formatLongDate(period.tgl_awal)} s/d {formatLongDate(period.tgl_akhir)}
+                    </span>
+                  </>
+                );
+              })()}
+            </div>
+          )}
+
         </div>
         <button onClick={handleSync} disabled={loading} className={`flex items-center justify-center px-3 sm:px-4 py-2 rounded-md text-white ${loading ? "bg-cyan-400 cursor-not-allowed" : "bg-cyan-500 hover:bg-cyan-600"}`}>
           <FontAwesomeIcon icon={faSync} className={loading ? "animate-spin mr-0 sm:mr-1" : "mr-0 sm:mr-1"} />
@@ -295,13 +311,13 @@ const DataPenggajian = () => {
                 <tr key={i} className="odd:bg-gray-50 even:bg-white hover:bg-gray-100 text-xs font-medium tracking-wide border-b">
                   <td className="px-3 py-2 font-medium hover:underline hover:cursor-pointer">
                     <span onClick={() => {
-                        const selectedPeriodData = periodList.find((p) => p.id === selectedPeriod);
-                        const startDate = selectedPeriodData?.tgl_awal;
-                        const endDate = selectedPeriodData?.tgl_akhir;
+                      const selectedPeriodData = periodList.find((p) => p.id === selectedPeriod);
+                      const startDate = selectedPeriodData?.tgl_awal;
+                      const endDate = selectedPeriodData?.tgl_akhir;
 
-                        const url = `/kelola-absensi/${item.id_user}?startDate=${formatISODate(startDate)}&endDate=${formatISODate(endDate)}`;
-                        window.open(url, "_blank"); // buka di tab baru
-                      }}
+                      const url = `/kelola-absensi/${item.id_user}?startDate=${formatISODate(startDate)}&endDate=${formatISODate(endDate)}`;
+                      window.open(url, "_blank"); // buka di tab baru
+                    }}
                     >
                       {item.nama}
                     </span>

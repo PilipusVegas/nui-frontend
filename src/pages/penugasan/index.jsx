@@ -220,19 +220,19 @@ const Penugasan = () => {
                                             <td className="px-4 py-2 text-xs text-center">
                                                 <div className="grid grid-cols-2 gap-1 text-[12px] tracking-wide">
                                                     <div className="flex items-center justify-center gap-1 bg-blue-50 text-blue-700 rounded py-0.5 font-medium">
-                                                        <span className="w-2 h-2 bg-blue-500 "></span>
+                                                        <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                                                         Pending: <span className="font-semibold">{pendingCount}</span>
                                                     </div>
                                                     <div className="flex items-center justify-center gap-1 bg-green-50 text-green-700 rounded py-0.5 font-medium">
-                                                        <span className="w-2 h-2 bg-green-500 "></span>
+                                                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
                                                         Disetujui: <span className="font-semibold">{disetujuiCount}</span>
                                                     </div>
                                                     <div className="flex items-center justify-center gap-1 bg-red-50 text-red-700 rounded py-0.5 font-medium">
-                                                        <span className="w-2 h-2 bg-red-500 "></span>
+                                                        <span className="w-2 h-2 bg-red-500 rounded-full"></span>
                                                         Ditolak: <span className="font-semibold">{ditolakCount}</span>
                                                     </div>
                                                     <div className="flex items-center justify-center gap-1 bg-amber-50 text-amber-700 rounded py-0.5 font-medium">
-                                                        <span className="w-2 h-2 bg-amber-500 "></span>
+                                                        <span className="w-2 h-2 bg-amber-500 rounded-full"></span>
                                                         Ditunda: <span className="font-semibold">{ditundaCount}</span>
                                                     </div>
                                                 </div>
@@ -267,13 +267,13 @@ const Penugasan = () => {
                 )}
             </div>
 
-            {/* === CARD MOBILE (Penugasan Sedang Berjalan) === */}
             <div className="md:hidden space-y-4">
                 {loading && (
                     <div className="text-center py-10">
                         <LoadingSpinner text="Memuat data penugasan..." />
                     </div>
                 )}
+
                 {!loading && error && <ErrorState message={error} onRetry={fetchTugas} />}
                 {!loading && !error && currentTugas.length === 0 && (
                     <EmptyState message="Belum ada data penugasan aktif." />
@@ -283,43 +283,71 @@ const Penugasan = () => {
                     !error &&
                     currentTugas.map((item) => {
                         const totalPekerja = item.details?.length || 0;
-                        const selesai = item.details?.filter((d) => d.finished_at !== null).length || 0;
-                        const progressPersen = totalPekerja > 0 ? Math.round((selesai / totalPekerja) * 100) : 0;
+                        const selesai =
+                            item.details?.filter((d) => d.finished_at !== null).length || 0;
+                        const progressPersen =
+                            totalPekerja > 0 ? Math.round((selesai / totalPekerja) * 100) : 0;
                         const now = new Date();
                         const deadline = new Date(item.deadline_at);
                         const diffHari = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
-                        const waktuStatus = diffHari > 0 ? `Berakhir dalam ${diffHari} hari` : diffHari === 0 ? "Batas waktu hari ini" : `Terlambat ${Math.abs(diffHari)} hari`;
+                        const waktuStatus =
+                            diffHari > 0
+                                ? `Berakhir dalam ${diffHari} hari`
+                                : diffHari === 0
+                                    ? "Batas waktu hari ini"
+                                    : `Terlambat ${Math.abs(diffHari)} hari`;
 
                         return (
-                            <div key={item.id} className="relative bg-white border border-gray-100 rounded-2xl shadow-sm p-4 transition hover:shadow-md">
-                                <div className="absolute top-3 right-3">
-                                    <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-md capitalize border shadow-sm ${item.category === "urgent" ? "bg-red-100 text-red-700 border-red-300" : "bg-green-100 text-green-700 border-green-300"}`}>
+                            <div
+                                key={item.id}
+                                className="relative bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-4 space-y-3"
+                            >
+                                {/* === HEADER === */}
+                                <div className="flex items-start justify-between gap-2">
+                                    <div className="flex flex-col min-w-0">
+                                        <h2 className="text-[13.5px] font-semibold text-gray-800 truncate">
+                                            {item.nama}
+                                        </h2>
+                                        <p
+                                            className={`text-[11px] mt-0.5 font-medium ${diffHari < 0
+                                                    ? "text-red-600"
+                                                    : diffHari === 0
+                                                        ? "text-amber-600"
+                                                        : "text-green-600"
+                                                }`}
+                                        >
+                                            {waktuStatus}
+                                        </p>
+                                    </div>
+
+                                    <span
+                                        className={`px-2 py-0.5 text-[10px] font-semibold rounded-md capitalize border shadow-sm whitespace-nowrap ${item.category === "urgent"
+                                                ? "bg-red-100 text-red-700 border-red-300"
+                                                : "bg-green-100 text-green-700 border-green-300"
+                                            }`}
+                                    >
                                         {item.category}
                                     </span>
                                 </div>
 
-                                <div className="pr-14">
-                                    <h2 className="text-[13px] font-semibold text-gray-800 leading-snug truncate">
-                                        {item.nama}
-                                    </h2>
-                                    <p className="text-[11px] text-gray-500 mt-1">
-                                        Mulai:{" "}
+                                {/* === INFORMASI WAKTU === */}
+                                <div className="border-t border-gray-100 pt-2 text-[11px] text-gray-600 grid grid-cols-2 gap-y-1">
+                                    <p>
+                                        <span className="text-gray-500">Mulai:</span>{" "}
                                         <span className="font-medium text-gray-700">
                                             {formatDate(item.start_date)}
                                         </span>
                                     </p>
-                                    <p className="text-[11px] text-gray-500">
-                                        Deadline:{" "}
+                                    <p className="text-right">
+                                        <span className="text-gray-500">Deadline:</span>{" "}
                                         <span className="font-medium text-gray-700">
                                             {formatDate(item.deadline_at)}
                                         </span>
                                     </p>
-                                    <p className={`text-[11px] mt-0.5 font-medium ${diffHari < 0 ? "text-red-600" : diffHari === 0 ? "text-amber-600" : "text-green-600"}`}>
-                                        {waktuStatus}
-                                    </p>
                                 </div>
 
-                                <div className="mt-3">
+                                {/* === PROGRESS === */}
+                                <div className="border-t border-gray-100 pt-3">
                                     <div className="flex items-center justify-between mb-1">
                                         <p className="text-[11px] text-gray-700 font-medium">
                                             Progres Pengerjaan
@@ -329,23 +357,32 @@ const Penugasan = () => {
                                         </span>
                                     </div>
                                     <div className="relative h-4 bg-gray-200 rounded-full overflow-hidden border border-gray-300">
-                                        <div className={`absolute top-0 left-0 h-full rounded-full transition-all duration-500 ease-in-out ${progressPersen === 100 ? "bg-green-500" : "bg-amber-500"}`} style={{ width: `${progressPersen}%` }}></div>
-                                        <span className={`absolute inset-0 flex items-center justify-center text-[11px] font-semibold ${progressPersen === 100 ? "text-white" : "text-gray-800"}`}>
+                                        <div
+                                            className={`absolute top-0 left-0 h-full rounded-full transition-all duration-500 ease-in-out ${progressPersen === 100 ? "bg-green-500" : "bg-amber-500"
+                                                }`}
+                                            style={{ width: `${progressPersen}%` }}
+                                        ></div>
+                                        <span
+                                            className={`absolute inset-0 flex items-center justify-center text-[11px] font-semibold ${progressPersen === 100 ? "text-white" : "text-gray-800"
+                                                }`}
+                                        >
                                             {progressPersen === 100 ? "Selesai" : `${progressPersen}%`}
                                         </span>
                                     </div>
                                 </div>
 
-                                {/* === Tombol Aksi === */}
-                                <div className="flex justify-end gap-2 mt-4">
-                                    <button onClick={() => navigate(`/penugasan/show/${item.id}`)} className="px-3 py-1.5 rounded-md bg-green-500 text-white text-[11px] font-medium hover:bg-green-600 transition">
-                                        <FontAwesomeIcon icon={faEye} className="mr-1" />
-                                        Lihat Detail
-                                    </button>
-                                    <button onClick={() => navigate(`/penugasan/edit/${item.id}`)} className="px-3 py-1.5 rounded-md bg-amber-500 text-white text-[11px] font-medium hover:bg-amber-600 transition">
-                                        <FontAwesomeIcon icon={faPen} className="mr-1" />
-                                        Edit
-                                    </button>
+                                {/* === SECTION BUTTON === */}
+                                <div className="border-t border-gray-100 pt-3">
+                                    <div className="flex flex-wrap justify-end gap-2">
+                                        <button onClick={() => navigate(`/penugasan/show/${item.id}`)} className="flex items-center gap-1 px-3 py-1.5 rounded bg-blue-500 text-white text-[11px] font-medium hover:bg-blue-600 transition">
+                                            <FontAwesomeIcon icon={faEye} className="text-[10px]" />
+                                            Lihat Detail
+                                        </button>
+                                        <button onClick={() => navigate(`/penugasan/edit/${item.id}`)} className="flex items-center gap-1 px-3 py-1.5 rounded bg-amber-500 text-white text-[11px] font-medium hover:bg-amber-600 transition">
+                                            <FontAwesomeIcon icon={faPen} className="text-[10px]" />
+                                            Edit
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         );
@@ -353,9 +390,10 @@ const Penugasan = () => {
 
                 {/* Pagination Mobile */}
                 {filteredTugas.length > itemsPerPage && (
-                    <Pagination currentPage={currentPage} totalItems={filteredTugas.length} itemsPerPage={itemsPerPage} onPageChange={handlePageChange} />
+                    <Pagination currentPage={currentPage} totalItems={filteredTugas.length} itemsPerPage={itemsPerPage} onPageChange={handlePageChange}/>
                 )}
             </div>
+
 
 
 

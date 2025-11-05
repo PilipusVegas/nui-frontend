@@ -73,7 +73,12 @@ export const menuConfig = [
                 ],
             },
             { label: "Jam Kerja / Shift", icon: faClock, path: "/shift", roles: [1, 4, 6] },
-            { label: "Penggajian", icon: faMoneyBillWave, path: "/penggajian", roles: [1, 4, 6] },
+            {
+                label: "Penggajian", icon: faMoneyBillWave, roles: [1, 4, 6], submenu: [
+                    { label: "Periode Saat Ini", icon: faPenFancy, path: "/penggajian", roles: [1] },
+                    { label: "Riwayat Penggajian", icon: faHistory, path: "/penggajian/riwayat", roles: [1, 4, 6] }
+                ]
+            },
         ],
     },
 
@@ -105,7 +110,7 @@ export const menuConfig = [
                 roles: [1, 5, 20],
                 submenu: [
                     { label: "Daftar Penugasan", icon: faListCheck, path: "/penugasan", roles: [1, 5, 20] },
-                    { label: "Riwayat Penugasan", icon: faFolderOpen, path: "/penugasan/riwayat", roles: [1, 5,20] },
+                    { label: "Riwayat Penugasan", icon: faFolderOpen, path: "/penugasan/riwayat", roles: [1, 5, 20] },
                 ],
             },
         ],

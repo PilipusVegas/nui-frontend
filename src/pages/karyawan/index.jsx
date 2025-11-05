@@ -145,11 +145,7 @@ const DataKaryawan = () => {
 
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
           <div className="w-full sm:flex-[2.5]">
-            <SearchBar
-              onSearch={setSearchQuery}
-              placeholder="Cari karyawan berdasarkan nama, role, atau perusahaan..."
-              className="text-sm"
-            />
+            <SearchBar onSearch={setSearchQuery} placeholder="Cari karyawan berdasarkan nama, role, atau perusahaan..." className="text-sm"/>
           </div>
 
           <div className="w-full sm:flex-[1]">
