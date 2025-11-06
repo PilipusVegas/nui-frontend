@@ -60,8 +60,7 @@ const Profile = () => {
   return (
     <MobileLayout title="Profil Karyawan">
       <div className="p-3 min-w-full mx-auto space-y-4">
-        {/* Foto Profil */}
-        <div className="flex flex-col justify-center items-center mb-10">
+        <div className="flex flex-col justify-center items-center mb-5">
           <div className="relative w-24 h-24 mb-4">
             {profileData?.foto ? (
               <img src={profileData.foto} alt="User Avatar" className="w-full h-full rounded-full object-cover shadow-lg border-4 border-white"/>
