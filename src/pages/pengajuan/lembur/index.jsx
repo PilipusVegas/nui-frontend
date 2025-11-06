@@ -1,3 +1,5 @@
+import Swal from "sweetalert2";
+import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import "sweetalert2/dist/sweetalert2.min.css";
 import { useNavigate } from "react-router-dom";
@@ -81,34 +83,58 @@ const PersetujuanLembur = () => {
     setIsModalOpen(true);
   };
 
-  const handleUpdateStatus = async (item, status) => {
-    try {
-      let endpoint = "";
-      let body = {};
+const handleUpdateStatus = async (item, status) => {
+  try {
+    let endpoint = "";
+    let body = {};
 
-      if (item.id_absen) {
-        endpoint = `${apiUrl}/lembur/approve-kantor/${item.id_absen}`;
-        body = { status, deskripsi: item.deskripsi || "" };
-      } else if (item.id_lembur) {
-        endpoint = `${apiUrl}/lembur/approve/${item.id_lembur}`;
-        body = { status };
-      } else {
-        throw new Error("Data lembur tidak valid.");
-      }
+    if (item.id_absen) {
+      endpoint = `${apiUrl}/lembur/approve-kantor/${item.id_absen}`;
+      body = { status, deskripsi: item.deskripsi || "" };
+    } else if (item.id_lembur) {
+      endpoint = `${apiUrl}/lembur/approve/${item.id_lembur}`;
 
-      const res = await fetchWithJwt(endpoint, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      if (!res.ok) throw new Error("Gagal memperbarui status.");
-
-      fetchApprovalData(startDate, endDate);
-    } catch (err) {
-      setErrorMessage(err.message);
+      // Kondisi lembur
+      const isLemburValid =
+        item.total_lembur > 5 && ![63, 64, 66].includes(item.id_lokasi);
+      body = {
+        status,
+        condition: { is_lembur: isLemburValid },
+      };
+    } else {
+      throw new Error("Data lembur tidak valid.");
     }
-  };
+
+    const res = await fetchWithJwt(endpoint, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) throw new Error("Gagal memperbarui status.");
+
+    // Tampilkan notifikasi sesuai kondisi
+    if (status === 1) {
+      if (item.total_lembur > 5 && ![63, 64, 66].includes(item.id_lokasi)) {
+        Swal.fire({
+          icon: "success",
+          title: "Selamat!",
+          text: "Karyawan ini akan mendapatkan tunjangan lembur.",
+        });
+      } else {
+        toast.success("Pengajuan lembur berhasil disetujui.");
+      }
+    } else if (status === 2) {
+      toast.error("Pengajuan lembur ditolak.");
+    }
+
+    fetchApprovalData(startDate, endDate);
+  } catch (err) {
+    setErrorMessage(err.message);
+    toast.error(err.message);
+  }
+};
+
 
   const handleApprove = (item) => handleUpdateStatus(item, 1);
   const handleReject = (item) => handleUpdateStatus(item, 2);

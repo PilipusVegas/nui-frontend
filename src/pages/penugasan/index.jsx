@@ -89,12 +89,12 @@ const Penugasan = () => {
                     <div className="flex flex-wrap gap-2">
                         <button onClick={() => navigate("/penugasan/tambah")} className="flex items-center justify-center px-3 py-2 sm:px-4 sm:py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg transition-all duration-200 ease-in-out active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
                             <FontAwesomeIcon icon={faPlus} className="text-sm sm:text-base" />
-                            <span className="hidden md:inline ml-2">Tambah</span>
+                            <span className="hidden md:inline ml-2">Tambah Tugas</span>
                         </button>
-                        <button onClick={() => navigate("/penugasan/riwayat")} className="flex items-center justify-center px-3 py-2 sm:px-4 sm:py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg transition-all duration-200 ease-in-out active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
+                        {/* <button onClick={() => navigate("/penugasan/riwayat")} className="flex items-center justify-center px-3 py-2 sm:px-4 sm:py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg transition-all duration-200 ease-in-out active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
                             <FontAwesomeIcon icon={faClockRotateLeft} className="text-sm sm:text-base" />
                             <span className="hidden md:inline ml-2">Riwayat</span>
-                        </button>
+                        </button> */}
                     </div>
                 }
             />

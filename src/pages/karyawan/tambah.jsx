@@ -14,7 +14,7 @@ const TambahKaryawan = () => {
   const [shiftList, setShiftList] = useState([]);
   const [perusahaanList, setPerusahaanList] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
-  const [currentUser, setCurrentUser] = useState({ nip: "", nik: "", npwp: "", no_rek: "", nama: "", status_nikah: "", jml_anak: "", id_perusahaan: "", id_role: "", id_shift: "", telp: "", username: "", password: "", status: 1, });
+  const [currentUser, setCurrentUser] = useState({ nip: "", nik: "", npwp: "", no_rek: "", nama: "", status_nikah: "", jml_anak: 0, id_perusahaan: "", id_role: "", id_shift: "", telp: "", username: "", password: "", status: 1, });
   const [showShiftDetails, setShowShiftDetails] = useState(false);
 
   useEffect(() => {
@@ -97,10 +97,10 @@ const TambahKaryawan = () => {
           </div>
 
           {/* NIK */}
-            <div>
-              <label className="block mb-1 font-medium text-gray-700">NIK</label>
-              <input type="text" name="nik" value={currentUser.nik} onChange={handleChange} placeholder="Masukkan Nomor Induk Kependudukan" required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
-            </div>
+          <div>
+            <label className="block mb-1 font-medium text-gray-700">NIK</label>
+            <input type="text" name="nik" value={currentUser.nik} onChange={handleChange} placeholder="Masukkan Nomor Induk Kependudukan" required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+          </div>
 
           {/* NIP */}
           <div>
@@ -109,10 +109,10 @@ const TambahKaryawan = () => {
           </div>
 
           {/* NPWP */}
-            <div>
-              <label className="block mb-1 font-medium text-gray-700">NPWP</label>
-              <input type="text" name="npwp" value={currentUser.npwp} onChange={handleChange} placeholder="Masukkan Nomor Pokok Wajib Pajak" required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
-            </div>
+          <div>
+            <label className="block mb-1 font-medium text-gray-700">NPWP</label>
+            <input type="text" name="npwp" value={currentUser.npwp} onChange={handleChange} placeholder="Masukkan Nomor Pokok Wajib Pajak" required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+          </div>
 
           {/* Nama */}
           <div>
@@ -127,29 +127,55 @@ const TambahKaryawan = () => {
           </div>
 
           {/* No Rekening */}
-            <div>
-              <label className="block mb-1 font-medium text-gray-700">Nomor Rekening</label>
-              <input type="text" name="no_rek" value={currentUser.no_rek} onChange={handleChange} placeholder="Masukkan nomor rekening karyawan" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
-            </div>
+          <div>
+            <label className="block mb-1 font-medium text-gray-700">Nomor Rekening</label>
+            <input type="text" name="no_rek" value={currentUser.no_rek} onChange={handleChange} placeholder="Masukkan nomor rekening karyawan" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+          </div>
 
           {/* STATUS NIKAH */}
-            <div>
-              <label className="block mb-1 font-medium text-gray-700">Status Nikah</label>
-              <select name="status_nikah" value={currentUser.status_nikah || ""} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
-                <option value="">Pilih Status</option>
-                <option value="Belum_Menikah">Belum Menikah</option>
-                <option value="Sudah_Menikah">Sudah Menikah</option>
-                <option value="Cerai">Cerai</option>
-              </select>
-            </div>
+          <div>
+            <label className="block mb-1 font-medium text-gray-700">Status Nikah</label>
+            <select name="status_nikah" value={currentUser.status_nikah || ""} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+              <option value="">Pilih Status</option>
+              <option value="Belum_Menikah">Belum Menikah</option>
+              <option value="Sudah_Menikah">Sudah Menikah</option>
+              <option value="Cerai">Cerai</option>
+            </select>
+          </div>
 
           {/* JUMLAH ANAK - Tampilkan jika Sudah Menikah */}
           {currentUser.status_nikah === "Sudah_Menikah" && (
             <div>
               <label className="block mb-1 font-medium text-gray-700">Jumlah Anak</label>
-              <input type="number" name="jml_anak" value={currentUser.jml_anak || ""} onChange={handleChange} min="0" placeholder="Masukkan jumlah anak (0 jika tidak ada)" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+              <input type="number" name="jml_anak" value={currentUser.jml_anak || 0} onChange={handleChange} min="0" placeholder="Masukkan jumlah anak (0 jika tidak ada)" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
             </div>
           )}
+
+          {/* STATUS KENDARAAN (OPSIONAL, DEFAULT 0) */}
+          <div>
+            <label className="block mb-1 font-medium text-gray-700">
+              Status Kendaraan <span className="text-gray-400 text-sm font-normal">(Opsional)</span>
+            </label>
+
+            <select
+              name="status_kendaraan"
+              value={
+                currentUser.status_kendaraan !== undefined && currentUser.status_kendaraan !== null
+                  ? currentUser.status_kendaraan
+                  : 0
+              }
+              onChange={(e) => {
+                const value = e.target.value === "" ? 0 : parseInt(e.target.value);
+                handleChange({ target: { name: "status_kendaraan", value } });
+              }}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+            >
+              <option value="0">Tanpa Tunjangan Transportasi</option>
+              <option value="1">Kendaraan Pribadi (Dapat Tunjangan)</option>
+              <option value="2">Kendaraan Kantor (Tanpa Tunjangan)</option>
+            </select>
+          </div>
+
 
           <div className="col-span-full flex flex-col mt-4">
             <div className="flex items-center">
@@ -225,6 +251,7 @@ const TambahKaryawan = () => {
               classNamePrefix="react-select"
             />
           </div>
+
 
           <div className="col-span-full flex flex-col mt-4">
             <div className="flex items-center">
@@ -319,14 +346,12 @@ const TambahKaryawan = () => {
               </p>
               <ul className="list-disc list-inside ml-6 mt-2 text-gray-700 space-y-1 text-sm">
                 <li>
-                  <strong>Karyawan Kantor:</strong> Wajib <strong>mendaftarkan wajah terlebih dahulu</strong> di perangkat
-                  <strong> Face Recognition</strong> (tablet atau mesin absensi kantor) agar dapat melakukan absensi.
-                  Username dan password bersifat opsional, karena proses absensi dilakukan melalui sistem pengenalan wajah.
+                  <strong>Karyawan Kantor:</strong> Harus <strong>daftar wajah</strong> di perangkat <strong>Face Recognition</strong> (tablet/mesin kantor) sebelum bisa absen.
+                  Username dan password tidak wajib karena absensi lewat wajah.
                 </li>
                 <li>
-                  <strong>Karyawan Lapangan:</strong> Wajib menggunakan <strong>Aplikasi Absensi Online</strong> melalui
-                  handphone masing-masing, dengan login menggunakan <strong>username</strong> dan <strong>password</strong>.
-                  Proses absensi memanfaatkan <strong>kamera</strong> dan <strong>pelacakan lokasi (GPS)</strong> untuk memastikan kehadiran di lokasi kerja.
+                  <strong>Karyawan Lapangan:</strong> Wajib absen lewat <strong>Aplikasi Absensi Online</strong> di handphone, dengan <strong>username</strong> dan <strong>password</strong>.
+                  Sistem memakai <strong>kamera</strong> dan <strong>GPS</strong> untuk memastikan lokasi kehadiran.
                 </li>
               </ul>
             </div>
@@ -349,7 +374,6 @@ const TambahKaryawan = () => {
               </div>
             </div>
           </div>
-
 
           <div className="md:col-span-2 p-6 bg-white rounded-2xl shadow-lg border border-green-300">
             <div className="flex items-center justify-between mb-4">

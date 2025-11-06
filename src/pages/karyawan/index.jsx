@@ -26,9 +26,9 @@ const DataKaryawan = () => {
     setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     const sortedUsers = [...users].sort((a, b) => {
       if (sortOrder === "asc") {
-        return b.status - a.status; // descending
+        return b.status - a.status;
       } else {
-        return a.status - b.status; // ascending
+        return a.status - b.status;
       }
     });
     setUsers(sortedUsers);

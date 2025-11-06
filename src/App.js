@@ -56,6 +56,10 @@ import TambahPenugasan from "./pages/penugasan/tambah";
 import EditPenugasan from "./pages/penugasan/edit";
 import DetailPenugasan from "./pages/penugasan/show";
 import RiwayatPenugasan from "./pages/penugasan/riwayat";
+import PengaturanTunjangan from "./pages/tunjangan";
+import RekapTunjangan from "./pages/tunjangan/rekap";
+
+import RoleApp from "./pages/role-app";
 
 
 // ===================== MOBILE USERS ========================
@@ -261,11 +265,15 @@ const App = () => {
     { path: "/akses-hrd", component: <HrdAccess />, roles: ["1"], layout: SidebarLayout },
     { path: "/akses-hrd/tambah", component: <TambahHrdAccess />, roles: ["1"], layout: SidebarLayout },
     { path: "/akses-hrd/edit/:id_user", component: <EditHrdAccess />, roles: ["1"], layout: SidebarLayout },
+    { path: "/role-app", component: <RoleApp />, roles: ["1"], layout: SidebarLayout },
     { path: "/penugasan", component: <Penugasan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
     { path: "/penugasan/tambah", component: <TambahPenugasan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
     { path: "/penugasan/edit/:id", component: <EditPenugasan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
     { path: "/penugasan/show/:id", component: <DetailPenugasan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
     { path: "/penugasan/riwayat", component: <RiwayatPenugasan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+    { path: "/pengaturan-tunjangan", component: <PengaturanTunjangan />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/rekap-tunjangan", component: <RekapTunjangan />, roles: ["1", "4", "6"] },    
+
   ];
 
   return (

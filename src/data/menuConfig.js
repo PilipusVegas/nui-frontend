@@ -22,7 +22,12 @@ import {
     faBriefcase,
     faClock,
     faFolderOpen,
-    faEdit
+    faEdit, 
+    faUserGear,
+    faCheckCircle,
+    faGears,
+    faDollarSign,
+    faMoneyCheckDollar
 } from "@fortawesome/free-solid-svg-icons";
 import { faPenFancy } from "@fortawesome/free-solid-svg-icons/faPenFancy";
 
@@ -40,9 +45,9 @@ export const menuConfig = [
         ],
     },
 
-    // 2. MANAJEMEN ORGANISASI
+    // 2. MANAJEMEN SDM
     {
-        sectionTitle: "Manajemen Organisasi",
+        sectionTitle: "Manajemen SDM",
         items: [
             { label: "Data Karyawan", icon: faPeopleGroup, path: "/karyawan", roles: [1, 4, 6] },
             { label: "Divisi", icon: faUsersCog, path: "/divisi", roles: [1, 4, 6] },
@@ -60,7 +65,7 @@ export const menuConfig = [
 
     // 3. ABSENSI & PENGGAJIAN
     {
-        sectionTitle: "Absensi & Penggajian",
+        sectionTitle: "Kehadiran & Penggajian",
         items: [
             {
                 label: "Kelola Absensi",
@@ -70,6 +75,15 @@ export const menuConfig = [
                     { label: "Persetujuan Absensi", icon: faCheckSquare, path: "/pengajuan-absensi", roles: [1, 4, 5, 6, 13], perusahaan: [1, 4] },
                     { label: "Data Absensi Harian", icon: faUserCheck, path: "/kelola-absensi", roles: [1, 4, 6], target: "_blank" },
                     { label: "Remark Absensi", icon: faEdit, path: "/remark-absensi", roles: [1, 4, 6] },
+                ],
+            },
+            {
+                label: "Kelola Tunjangan",
+                icon: faDollarSign,
+                roles: [1, 4, 5, 6, 13],
+                submenu: [
+                    { label: "Rekap Tunjangan", icon: faCheckCircle, path: "/rekap-tunjangan", roles: [1, 4, 5, 6, 13], perusahaan: [1, 4], target: "_blank" },
+                    { label: "Nominal Tunjangan", icon: faMoneyCheckDollar, path: "/pengaturan-tunjangan", roles: [1, 4, 6] },
                 ],
             },
             { label: "Jam Kerja / Shift", icon: faClock, path: "/shift", roles: [1, 4, 6] },
@@ -124,6 +138,7 @@ export const menuConfig = [
             { label: "Perangkat Absensi", icon: faTabletScreenButton, path: "/perangkat-absensi", roles: [1] },
             { label: "Manajemen Menu", icon: faKey, path: "/manajemen-menu", roles: [1] },
             { label: "Akses HRD", icon: faUserShield, path: "/akses-hrd", roles: [1] },
+            { label: "Role App", icon: faUserGear, path: "/role-app", roles: [1] },
         ],
     },
 ];

@@ -32,7 +32,7 @@ const DataAbsensi = () => {
       const user = getUserFromToken();
       const userRole = user?.id_role;
       let filtered = [];
-      if ([1, 4, 6].includes(userRole)) filtered = data;
+      if ([1, 4, 6].includes(userRole)) filtered = data.data;
       else if (userRole === 20 || userRole === 13)
         filtered = data.data.filter((d) => d.id_role === 22);
       else if (userRole === 5) filtered = data.data.filter((d) => d.id_role === 3);

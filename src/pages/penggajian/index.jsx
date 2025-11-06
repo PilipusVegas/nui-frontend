@@ -248,14 +248,14 @@ const DataPenggajian = () => {
         </div>
         <div>
           {selectedPeriod && (
-            <div className="text-sm font-medium text-gray-700 bg-gray-100 px-3 py-2 rounded-md shadow-sm border border-gray-200 whitespace-nowrap">
+            <div className="text-sm font-medium text-gray-700 px-3 py-2.5 rounded-lg shadow-sm border border-gray-300 whitespace-nowrap">
               {(() => {
                 const period = periodList.find((p) => p.id === selectedPeriod);
                 if (!period) return null;
                 return (
                   <>
                     Periode:{" "}
-                    <span className="text-green-700 font-semibold">
+                    <span className="font-semibold">
                       {formatLongDate(period.tgl_awal)} s/d {formatLongDate(period.tgl_akhir)}
                     </span>
                   </>

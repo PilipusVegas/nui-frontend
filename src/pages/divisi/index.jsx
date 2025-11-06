@@ -23,7 +23,7 @@ const DivisiTable = () => {
   const [editId, setEditId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const itemsPerPage = 12;
+  const itemsPerPage = 10;
   const navigate = useNavigate();
   const perusahaanOptions = perusahaan.map((p) => ({ value: p.id, label: p.nama,}));
 

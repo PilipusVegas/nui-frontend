@@ -249,38 +249,43 @@ const DetailAbsensi = () => {
     <div className="flex flex-col justify-start">
       <SectionHeader title="Detail Persetujuan Presensi" subtitle="Detail Persetujuan Absensi Karyawan" onBack={() => Navigate("/pengajuan-absensi")} />
 
-      {/* Card Nama */}
+      {/* Card Nama (Responsive & Refined Design) */}
       {cardNama ? (
-        <div className="w-full rounded-2xl bg-gradient-to-br from-emerald-25 via-white to-emerald-50 border border-emerald-100 shadow-sm p-5 sm:py-6 sm:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className="space-y-4 sm:col-span-2">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-wide leading-snug" onClick={() => Navigate(`/karyawan/show/${cardNama.id_user}`)}>
+        <div className="w-full rounded-2xl bg-gradient-to-br from-emerald-25 via-white to-emerald-50 border border-emerald-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 sm:p-6 lg:p-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+
+            {/* === Kiri: Info Utama === */}
+            <div className="flex-1 space-y-3">
+              <h1
+                className="text-2xl sm:text-3xl font-bold text-gray-900 leading-snug tracking-wide hover:text-emerald-700 cursor-pointer transition-colors"
+                onClick={() => Navigate(`/karyawan/show/${cardNama.id_user}`)}
+              >
                 {cardNama.nama}
               </h1>
-              <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-y-2 gap-x-6 text-base text-gray-700">
-                <p>
-                  <span className="inline-block font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md mr-1">
-                    NIP
-                  </span>
-                  {cardNama.nip}
-                </p>
-                <p>
-                  <span className="inline-block font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md mr-1">
-                    Divisi
-                  </span>
-                  {cardNama.role}
-                </p>
-                <p>
-                  <span className="inline-block font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md mr-1">
-                    Perusahaan
-                  </span>
-                  {cardNama.perusahaan}
-                </p>
+
+              {/* === Info Detail === */}
+              <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-y-2 gap-x-6 text-sm sm:text-base text-gray-700">
+                {[
+                  { label: "NIP", value: cardNama.nip },
+                  { label: "Divisi", value: cardNama.role },
+                  { label: "Perusahaan", value: cardNama.perusahaan },
+                ].map((item, idx) => (
+                  <p key={idx}>
+                    <span className="inline-block font-medium text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-md mr-1.5 text-sm">
+                      {item.label}
+                    </span>
+                    <span className="font-semibold text-gray-800">{item.value || "-"}</span>
+                  </p>
+                ))}
               </div>
             </div>
-            <div className="flex flex-col justify-center sm:text-right text-sm sm:text-base text-gray-700 border-t sm:border-t-0 sm:border-l sm:pl-6 border-emerald-100 pt-4 sm:pt-0">
-              <p className="font-semibold text-emerald-600 mb-1">Periode Absen</p>
-              <p>
+
+            {/* === Kanan: Periode Absen === */}
+            <div className="flex flex-col justify-center sm:text-right border-t sm:border-t-0 sm:border-l sm:pl-6 border-emerald-100 pt-4 sm:pt-0">
+              <p className="font-semibold text-emerald-600 mb-1 text-sm sm:text-base">
+                Periode Absen
+              </p>
+              <p className="text-gray-800 font-medium text-sm sm:text-base">
                 {formatFullDate(getDefaultPeriod().start)}
                 <span className="mx-1">–</span>
                 {formatFullDate(getDefaultPeriod().end)}
@@ -289,12 +294,13 @@ const DetailAbsensi = () => {
           </div>
         </div>
       ) : (
-        <div className="w-full bg-white border border-green-200 rounded-2xl shadow-md p-4 mb-4 space-y-4 animate-pulse">
-          <div className="h-6 w-1/3 bg-gray-300 rounded"></div>
+        /* Skeleton Loading */
+        <div className="w-full bg-white border border-green-200 rounded-2xl shadow-sm p-5 space-y-4 animate-pulse">
+          <div className="h-6 w-1/3 bg-gray-200 rounded"></div>
           <div className="space-y-2">
-            <div className="h-4 w-2/5 bg-gray-300 rounded"></div>
-            <div className="h-4 w-1/4 bg-gray-300 rounded"></div>
-            <div className="h-4 w-1/3 bg-gray-300 rounded"></div>
+            <div className="h-4 w-2/5 bg-gray-200 rounded"></div>
+            <div className="h-4 w-1/4 bg-gray-200 rounded"></div>
+            <div className="h-4 w-1/3 bg-gray-200 rounded"></div>
           </div>
         </div>
       )}
@@ -386,12 +392,10 @@ const DetailAbsensi = () => {
           </table>
         </div>
 
-        {/* Mobile View - Informative Attendance Cards */}
         <div className="md:hidden space-y-3">
           {currentItems.length > 0 ? (
             currentItems.map((item) => (
               <div key={item.id_absen} className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
-                {/* Header: Tanggal + Shift */}
                 <div className="flex justify-between items-center bg-gray-50 px-4 py-2 border-b">
                   <div>
                     <p className="text-[13px] font-semibold text-gray-700">
