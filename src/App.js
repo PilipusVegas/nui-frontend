@@ -56,7 +56,6 @@ import TambahPenugasan from "./pages/penugasan/tambah";
 import EditPenugasan from "./pages/penugasan/edit";
 import DetailPenugasan from "./pages/penugasan/show";
 import RiwayatPenugasan from "./pages/penugasan/riwayat";
-import PengaturanTunjangan from "./pages/tunjangan";
 import RekapTunjangan from "./pages/tunjangan/rekap";
 
 import RoleApp from "./pages/role-app";
@@ -271,8 +270,7 @@ const App = () => {
     { path: "/penugasan/edit/:id", component: <EditPenugasan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
     { path: "/penugasan/show/:id", component: <DetailPenugasan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
     { path: "/penugasan/riwayat", component: <RiwayatPenugasan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-    { path: "/pengaturan-tunjangan", component: <PengaturanTunjangan />, roles: ["1", "4", "6"], layout: SidebarLayout },
-    { path: "/rekap-tunjangan", component: <RekapTunjangan />, roles: ["1", "4", "6"] },    
+      { path: "/rekap-tunjangan", component: <RekapTunjangan />, roles: ["1", "4", "6"] },    
 
   ];
 

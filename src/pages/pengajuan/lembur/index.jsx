@@ -99,7 +99,7 @@ const handleUpdateStatus = async (item, status) => {
         item.total_lembur > 5 && ![63, 64, 66].includes(item.id_lokasi);
       body = {
         status,
-        condition: { is_lembur: isLemburValid },
+        condition: { lembur: isLemburValid },
       };
     } else {
       throw new Error("Data lembur tidak valid.");

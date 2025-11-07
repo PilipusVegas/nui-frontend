@@ -1,24 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
-// import { exportRekapTunjangan } from "./exportExcel";
-import { getDefaultPeriod } from "../../utils/getDefaultPeriod";
+import { getDefaultPeriodWeek } from "../../utils/getDefaultPeriod";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import EditNominalTunjangan from "./editNominalTunjangan";
+import { exportRekapTunjangan } from "./exportRekapTunjangan";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
-import {
-    faFolderOpen,
-    faFileDownload,
-    faExpand,
-    faRefresh,
-    faCircleInfo,
-} from "@fortawesome/free-solid-svg-icons";
-import {
-    LoadingSpinner,
-    SectionHeader,
-    EmptyState,
-    ErrorState,
-    SearchBar,
-    Modal,
-} from "../../components/";
+import { faFolderOpen, faFileExcel, faExpand, faRefresh, faCircleInfo, faCheckCircle, faExpandArrowsAlt, faMoneyBillWave, faSpinner, faRotateRight } from "@fortawesome/free-solid-svg-icons";
+import { LoadingSpinner, SectionHeader, EmptyState, ErrorState, SearchBar, Modal } from "../../components/";
 import { formatLongDate } from "../../utils/dateUtils";
 
 const DataRekapTunjangan = () => {
@@ -27,31 +15,17 @@ const DataRekapTunjangan = () => {
     const [error, setError] = useState(null);
     const [endDate, setEndDate] = useState("");
     const [loading, setLoading] = useState(false);
-    const [sortKey, setSortKey] = useState("nama");
     const [dataTunjangan, setDataTunjangan] = useState([]);
     const [startDate, setStartDate] = useState("");
     const [searchName, setSearchName] = useState("");
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
-    const [sortOrder, setSortOrder] = useState("asc");
-    const [hoveredRow, setHoveredRow] = useState(null);
+    const [hoveredData, setHoveredData] = useState(null); // simpan data saat hover
+    const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 }); // posisi tooltip
     const [tanggalArray, setTanggalArray] = useState([]);
     const canDownloadHRD = [1, 4, 6].includes(user.id_role);
     const [showInfoModal, setShowInfoModal] = useState(false);
     const [isDateSelected, setIsDateSelected] = useState(false);
-
-    const sortData = (data) => {
-        return [...data].sort((a, b) => {
-            let valA, valB;
-            switch (sortKey) {
-                default:
-                    valA = (a.nama_user || "").toLowerCase();
-                    valB = (b.nama_user || "").toLowerCase();
-            }
-            if (valA < valB) return sortOrder === "asc" ? -1 : 1;
-            if (valA > valB) return sortOrder === "asc" ? 1 : -1;
-            return 0;
-        });
-    };
+    const [showEditNominal, setShowEditNominal] = useState(false);
 
     const fetchTunjanganData = async () => {
         if (!startDate || !endDate) return;
@@ -63,10 +37,7 @@ const DataRekapTunjangan = () => {
             if (!response.ok) throw new Error("Gagal mengambil data tunjangan.");
             const result = await response.json();
 
-            // Ganti ini:
-            // setTanggalArray(result.dateRange || []);
-            setTanggalArray(result.date_range || []); // <-- sesuaikan dengan API terbaru
-
+            setTanggalArray(result.date_range || []);
             setDataTunjangan(result.data || []);
         } catch (err) {
             console.error(err);
@@ -78,28 +49,18 @@ const DataRekapTunjangan = () => {
         }
     };
 
-
-    const filteredTunjanganData = sortData(
-        dataTunjangan
-            .map((item) => ({
-                ...item,
-                nama_user: typeof item.nama_user === "string" ? item.nama_user : "-",
-            }))
-            .filter((item) => item.nama_user.toLowerCase().includes(searchName.toLowerCase()))
-    );
-
-    const toggleSort = (key) => {
-        if (sortKey === key) {
-            setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
-        } else {
-            setSortKey(key);
-            setSortOrder("asc");
-        }
-    };
+    const filteredTunjanganData = dataTunjangan
+        .map((item) => ({
+            ...item,
+            nama_user: typeof item.nama_user === "string" ? item.nama_user : "-",
+        }))
+        .filter((item) =>
+            item.nama_user.toLowerCase().includes(searchName.toLowerCase())
+        );
 
     useEffect(() => {
         if (!startDate && !endDate) {
-            const { start, end } = getDefaultPeriod();
+            const { start, end } = getDefaultPeriodWeek();
             setStartDate(start);
             setEndDate(end);
         }
@@ -112,17 +73,6 @@ const DataRekapTunjangan = () => {
         }
     }, [startDate, endDate]);
 
-    const dayMeta = (tanggal) => {
-        const day = new Date(tanggal).getDay();
-        const isSunday = day === 0;
-        return {
-            isSunday,
-            dayName: ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][day],
-            bg: isSunday ? "bg-red-600" : "bg-green-500",
-            border: isSunday ? "border-red-800" : "border-green-600",
-        };
-    };
-
     const handleFullView = () => {
         if (!document.fullscreenElement) {
             document.documentElement.requestFullscreen().catch((err) => console.error(err));
@@ -131,243 +81,198 @@ const DataRekapTunjangan = () => {
         }
     };
 
+    const handleMouseEnter = (e, data) => {
+        const rect = e.target.getBoundingClientRect();
+        setTooltipPos({ x: rect.x + rect.width / 2, y: rect.y - 10 }); // posisi di atas cell
+        setHoveredData(data);
+    };
+
+    const handleMouseLeave = () => {
+        setHoveredData(null);
+    };
+
     return (
         <div className="min-h-screen flex flex-col justify-start p-5">
-            <SectionHeader
-                title="Rekap Tunjangan Karyawan"
-                subtitle="Monitoring tunjangan karyawan per hari."
-                onBack={() => Navigate("/")}
-                actions={
-                    <div className="flex items-center gap-2">
-                        {/* {canDownloadHRD && (
-                            <button
-                                onClick={() =>
-                                    exportRekapTunjangan({ filteredTunjanganData, startDate, endDate, tanggalArray })
-                                }
-                                className={`flex items-center gap-2 h-10 px-4 font-semibold rounded-md shadow transition ${filteredTunjanganData.length === 0 || loading
-                                        ? "bg-gray-400 text-white cursor-not-allowed"
-                                        : "bg-green-600 hover:bg-green-700 text-white"
-                                    }`}
-                            >
-                                <FontAwesomeIcon icon={faFileDownload} />
-                                <span className="hidden sm:inline">Unduh Excel</span>
-                            </button>
-                        )} */}
+            <SectionHeader title="Rekap Tunjangan Karyawan" subtitle="Menampilkan Rekap Tunjangan Perminggu Secara Otomatis dan Sistematis." onBack={() => Navigate("/")}
 
-                        <button
-                            onClick={handleFullView}
-                            className="flex items-center gap-2 h-10 px-4 font-semibold rounded-md shadow bg-gray-500 hover:bg-gray-600 text-white transition"
-                        >
-                            <FontAwesomeIcon icon={faExpand} />
+                actions={
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <button onClick={() => setShowEditNominal(true)} className="flex items-center gap-2 h-9 px-3 text-sm font-medium rounded-md shadow-md bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white transition-all duration-200">
+                            <FontAwesomeIcon icon={faMoneyBillWave} />
+                            <span className="hidden sm:inline">Nominal</span>
+                        </button>
+
+                        <button onClick={() => exportRekapTunjangan(dataTunjangan, tanggalArray)} className="flex items-center gap-2 h-9 px-3 text-sm font-medium rounded-md shadow-md bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white transition-all duration-200">
+                            <FontAwesomeIcon icon={faFileExcel} />
+                            <span className="hidden sm:inline">Download</span>
+                        </button>
+
+                        <button onClick={handleFullView} className="flex items-center gap-2 h-9 px-3 text-sm font-medium rounded-md shadow-md bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white transition-all duration-200">
+                            <FontAwesomeIcon icon={faExpandArrowsAlt} />
                             <span className="hidden sm:inline">Layar Penuh</span>
                         </button>
 
-                        <button
-                            onClick={fetchTunjanganData}
-                            disabled={loading}
-                            className={`flex items-center gap-2 h-10 px-4 font-semibold rounded-md shadow transition ${loading
-                                ? "bg-sky-400 text-white cursor-not-allowed"
-                                : "bg-sky-500 hover:bg-sky-600 text-white"
-                                }`}
+                        <button onClick={fetchTunjanganData} disabled={loading}
+                            className={`flex items-center gap-2 h-9 px-3 text-sm font-medium rounded-md shadow-md transition-all duration-200 ${loading ? "bg-sky-400 cursor-not-allowed text-white" : "bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white"}`}
                         >
-                            <FontAwesomeIcon icon={faRefresh} />
-                            <span className="hidden sm:inline">{loading ? "Memperbarui..." : "Perbarui"}</span>
+                            <FontAwesomeIcon icon={loading ? faSpinner : faRotateRight} spin={loading} />
+                            <span className="hidden sm:inline">{loading ? "..." : "Refresh"}</span>
                         </button>
 
-                        <button
-                            onClick={() => setShowInfoModal(true)}
-                            className="flex items-center gap-2 h-10 px-4 font-semibold rounded-md shadow bg-blue-500 hover:bg-blue-600 text-white transition"
-                        >
+                        <button onClick={() => setShowInfoModal(true)} className="flex items-center gap-2 h-9 px-3 text-sm font-medium rounded-md shadow-md bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white transition-all duration-200">
                             <FontAwesomeIcon icon={faCircleInfo} />
-                            <span className="hidden sm:inline">Informasi</span>
+                            <span className="hidden sm:inline">Info</span>
                         </button>
                     </div>
                 }
             />
 
             <div className="w-full flex flex-row flex-wrap items-center justify-between gap-4 mb-4">
-                <SearchBar
-                    placeholder="Cari Karyawan..."
-                    className="flex-1 min-w-[200px]"
-                    onSearch={(val) => setSearchName(val)}
-                />
+                <SearchBar placeholder="Cari Karyawan..." className="flex-1 min-w-[200px]" onSearch={(val) => setSearchName(val)} />
                 <div className="flex items-center gap-1">
-                    <input
-                        type="date"
-                        className="border-2 border-gray-300 rounded-md px-2 py-2.5 text-sm"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                    />
+                    <input type="date" className="border-2 border-gray-300 rounded-md px-2 py-2.5 text-sm" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
                     <span className="mx-1 text-gray-600">s/d</span>
-                    <input
-                        type="date"
-                        className="border-2 border-gray-300 rounded-md px-2 py-2.5 text-sm"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                    />
+                    <input type="date" className="border-2 border-gray-300 rounded-md px-2 py-2.5 text-sm" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
                 </div>
             </div>
 
-            {/* Data Table */}
             {isDateSelected && !loading && !error && dataTunjangan.length > 0 && (
-                <div className="w-full overflow-x-auto rounded-lg shadow-md border border-gray-300 bg-white">
-                    <div className="min-w-full max-w-[30vw]">
-                        <div className="flex w-full">
-                            {/* Kolom Pegawai & Total */}
-                            <div className="flex flex-col border-r bg-white shrink-0" style={{ borderRight: "1px solid #ccc" }}>
-                                <table className="border-collapse w-full">
-                                    <thead>
-                                        <tr>
-                                            <th colSpan={2} className="sticky top-0 z-10 bg-green-500 text-white border border-green-600 px-3 py-2.5 text-[14px] text-center min-w-[150px]">
-                                                PEGAWAI
+                <div className="w-full shadow-md bg-white">
+                    <div className="flex min-w-full relative">
+                        {/* Bagian Kiri */}
+                        <div className="flex flex-col bg-white shrink-0 sticky left-0 z-30 border-r" style={{ minWidth: "450px" }}>
+                            <table className="w-full">
+                                <thead>
+                                    <tr>
+                                        <th colSpan={2} className="sticky top-0 z-20 bg-green-500 text-white border border-transparent px-2 py-1 text-[11px] font-medium text-center rounded-tl-lg">
+                                            PEGAWAI
+                                        </th>
+                                        <th colSpan={4} className="sticky top-0 z-20 bg-green-500 text-white border px-2 py-1 text-[11px] font-medium text-center">
+                                            JUMLAH
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        {["NIP", "Nama", "TUM", "TSM", "TKP", "NOMINAL"].map((header) => (
+                                            <th key={header} className="sticky top-[26px] z-20 bg-green-500 text-white border px-1 py-0.5 text-[10px] font-normal text-center">
+                                                {header}
                                             </th>
-                                            <th colSpan={1} className="sticky top-0 z-10 bg-green-500 text-white border border-green-600 px-3 py-2.5 text-[14px] text-center min-w-[80px]">
-                                                JUMLAH
-                                            </th>
-                                        </tr>
-                                        <tr>
-                                            <th className="sticky top-[32px] z-10 bg-green-500 text-white border border-green-600 px-3 py-0.5 text-[11.5px] text-center min-w-[85px]">
-                                                ID User
-                                            </th>
-                                            <th className="sticky top-[32px] z-10 bg-green-500 text-white border border-green-600 px-3 py-0.5 text-[11.5px] text-center min-w-[150px]">
-                                                NAMA KARYAWAN
-                                            </th>
-                                            <th
-                                                onClick={() => toggleSort("kehadiran")}
-                                                className="sticky top-[32px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-0.5 text-[11.5px] text-center min-w-[60px] cursor-pointer"
-                                            >
-                                                TOTAL
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {filteredTunjanganData.map((item, idx) => (
-                                            <tr
-                                                key={idx}
-                                                onMouseEnter={() => setHoveredRow(idx)}
-                                                onMouseLeave={() => setHoveredRow(null)}
-                                                className={hoveredRow === idx ? "bg-gray-100" : ""}
-                                            >
-                                                <td className="border px-2 py-1 text-center text-xs">{item.id_user}</td>
-                                                <td className="border px-2 py-1 text-xs font-semibold">{item.nama_user}</td>
-                                                <td className="border px-2 py-1 text-center text-xs font-bold">
-                                                    {Object.values(item.tunjangan).flat().reduce((sum, t) => sum + t.nominal, 0)}
-                                                </td>
-                                            </tr>
                                         ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredTunjanganData.map((item, idx) => (
+                                        <tr key={idx}>
+                                            <td className="border px-2 py-1 text-center text-xs">{item.nip}</td>
+                                            <td className="border px-2 py-1 text-[10px] font-semibold uppercase">{item.nama_user}</td>
+                                            <td className="border px-2 py-1 text-center text-xs">{item.total?.id_tunjangan_1 ?? "-"}</td>
+                                            <td className="border px-2 py-1 text-center text-xs">{item.total?.id_tunjangan_2 ?? "-"}</td>
+                                            <td className="border px-2 py-1 text-center text-xs">{item.total?.id_tunjangan_3 ?? "-"}</td>
+                                            <td className="border px-2 py-1 text-center text-xs font-bold">
+                                                {item.total?.tunjangan
+                                                    ? new Intl.NumberFormat("id-ID", {
+                                                        style: "currency",
+                                                        currency: "IDR",
+                                                        minimumFractionDigits: 0,
+                                                    }).format(item.total.tunjangan)
+                                                    : "-"}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
 
-                            {/* Kolom Tanggal */}
-                            <div className="overflow-x-auto" style={{ flexGrow: 1 }}>
-                                <table className="border-collapse w-full min-w-max bg-white">
+                        {/* Bagian Kanan */}
+                        <div className="flex-1 overflow-x-auto rounded-tr-lg">
+                            <div className="inline-block min-w-max align-top">
+                                <table>
                                     <thead>
                                         <tr>
-                                            {tanggalArray.map((tgl) => {
-                                                const m = dayMeta(tgl);
-                                                return (
-                                                    <th
-                                                        key={tgl}
-                                                        colSpan={3}
-                                                        className={`sticky top-0 z-10 text-white ${m.bg} ${m.border} border px-2 py-0.5 text-center text-xs min-w-[120px]`}
-                                                    >
-                                                        {formatLongDate(tgl)}
-                                                    </th>
-                                                );
-                                            })}
+                                            {tanggalArray.map((tgl) => (
+                                                <th key={tgl} colSpan={3} className="sticky top-0 z-10 bg-green-500 text-white border px-2 py-1 text-[11px] font-medium text-center">
+                                                    {formatLongDate(tgl)}
+                                                </th>
+                                            ))}
                                         </tr>
                                         <tr>
-                                            {tanggalArray.map((tgl) => {
-                                                const m = dayMeta(tgl);
-                                                return (
-                                                    <th
-                                                        key={`hari-${tgl}`}
-                                                        colSpan={3}
-                                                        className={`sticky top-0 z-20 text-white ${m.bg} ${m.border} border px-2 py-0.5 text-center text-xs`}
-                                                    >
-                                                        {m.dayName}
-                                                    </th>
-                                                );
-                                            })}
-                                        </tr>
-                                        <tr>
-                                            {tanggalArray.map((tgl) => {
-                                                const m = dayMeta(tgl);
-                                                return ["Tunjangan", "Nominal", "Jam"].map((label) => (
-                                                    <th
-                                                        key={`${tgl}-${label}`}
-                                                        className={`text-white ${m.bg} ${m.border} border px-1 py-0.5 text-[11.5px]`}
-                                                    >
+                                            {tanggalArray.map((tgl) =>
+                                                ["TKP", "TUM", "TSM"].map((label) => (
+                                                    <th key={`${tgl}-${label}`} className="sticky tracking-widest top-[26px] z-20 bg-green-500 text-white border px-3 py-0.5 text-[10px] font-normal text-center">
                                                         {label}
                                                     </th>
-                                                ));
-                                            })}
+                                                ))
+                                            )}
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {filteredTunjanganData.map((item, rowIdx) => (
-                                            <tr
-                                                key={rowIdx}
-                                                onMouseEnter={() => setHoveredRow(rowIdx)}
-                                                onMouseLeave={() => setHoveredRow(null)}
-                                                className={hoveredRow === rowIdx ? "bg-gray-100" : ""}
-                                            >
+                                            <tr key={rowIdx}>
                                                 {tanggalArray.map((tgl) => {
                                                     const tunjanganHari = item.tunjangan[tgl] || [];
-                                                    const m = dayMeta(tgl);
-                                                    return (
-                                                        <td key={tgl} className={`border px-2 py-1 text-xs ${m.isSunday ? "bg-red-600 text-white" : "bg-white"}`}>
-                                                            {tunjanganHari.length > 0
-                                                                ? tunjanganHari.map((t) => (
-                                                                    <div key={t.id}>
-                                                                        <span className="font-semibold">{t.tunjangan}:</span> {t.nominal.toLocaleString()}
-                                                                        {t.jam_mulai ? ` (${t.jam_mulai})` : ""}
-                                                                    </div>
-                                                                ))
-                                                                : "-"}
-                                                        </td>
-                                                    );
+                                                    const typeIds = [1, 2, 3]; // 1: Transport, 2: Makan, 3: Shift Malam
+                                                    return typeIds.map((id) => {
+                                                        const data = tunjanganHari.find((t) => t.id === id);
+                                                        return (
+                                                            <td key={`${tgl}-${id}`} className="border px-2 py-1 text-center text-xs relative" onMouseEnter={(e) => data && handleMouseEnter(e, data)} onMouseLeave={handleMouseLeave}>
+                                                                {data ? (
+                                                                    <FontAwesomeIcon icon={faCheckCircle} className="text-green-600 cursor-pointer" />
+                                                                ) : (
+                                                                    "-"
+                                                                )}
+                                                            </td>
+                                                        );
+                                                    });
                                                 })}
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
+
+                                {/* Tooltip */}
+                                {hoveredData && (
+                                    <div className="absolute z-50 bg-white text-gray-800 text-[11px] rounded-lg px-3 py-2.5 shadow-lg border border-gray-300 pointer-events-none transition-all duration-150"
+                                        style={{ left: tooltipPos.x, top: tooltipPos.y, transform: "translate(-50%, -110%)", }}
+                                    >
+                                        <div className="font-semibold text-gray-900">{hoveredData.tunjangan}</div>
+                                        <div>Nominal: <span className="font-medium text-gray-900">Rp{hoveredData.nominal.toLocaleString()}</span></div>
+                                        <div>Mulai: {hoveredData.jam_mulai || "-"}</div>
+                                        <div>Selesai: {hoveredData.jam_selesai || "-"}</div>
+                                        <div className="text-gray-500 text-right text-[10px] mt-1">{formatLongDate(hoveredData.tanggal)}</div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
                 </div>
             )}
 
-
+            {/* Modal Info */}
             {showInfoModal && (
-                <Modal
-                    isOpen={showInfoModal}
-                    title="Informasi Halaman"
-                    note="Panduan singkat untuk memahami tombol dan label kolom."
-                    onClose={() => setShowInfoModal(false)}
-                >
+                <Modal isOpen={showInfoModal} title="Informasi Halaman Rekap Tunjangan" note="Panduan singkat untuk memahami tombol dan label kolom." onClose={() => setShowInfoModal(false)}>
                     <div className="grid grid-cols-1 gap-3 text-sm text-gray-700">
                         <div className="flex items-center gap-2">
-                            <FontAwesomeIcon icon={faFileDownload} className="text-green-600" />
-                            <span>
-                                <b>Export Excel</b> – Unduh rekap tunjangan lengkap.
-                            </span>
+                            <FontAwesomeIcon icon={faFileExcel} className="text-green-600" />
+                            <span><b>Export Excel</b> – Unduh rekap tunjangan lengkap.</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <FontAwesomeIcon icon={faExpand} className="text-yellow-500" />
-                            <span>
-                                <b>Fullscreen</b> – Perbesar tampilan tabel penuh layar.
-                            </span>
+                            <span><b>Fullscreen</b> – Perbesar tampilan tabel penuh layar.</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <FontAwesomeIcon icon={faRefresh} className="text-blue-600" />
-                            <span>
-                                <b>Segarkan</b> – Muat ulang data sesuai rentang tanggal.
-                            </span>
+                            <span><b>Segarkan</b> – Muat ulang data sesuai rentang tanggal.</span>
                         </div>
                         <hr className="my-2 border-gray-300" />
+                        <div className="grid grid-cols-[50px_auto] gap-y-2 text-sm">
+                            <span className="font-bold text-green-700">TUM</span>
+                            <span>Tunjangan Uang Makan</span>
 
+                            <span className="font-bold text-red-600">TSM</span>
+                            <span>Tunjangan Shift Malam</span>
+
+                            <span className="font-bold text-indigo-700">TKP</span>
+                            <span>Tunjangan Kendaraan Pribadi</span>
+                        </div>
                         <p className="mt-2 text-xs text-gray-500">
                             Pastikan rentang tanggal sudah dipilih agar data ditampilkan lengkap.
                         </p>
@@ -380,28 +285,18 @@ const DataRekapTunjangan = () => {
                     <LoadingSpinner message="Memuat data tunjangan..." />
                 </div>
             )}
-
             {!loading && error && (
                 <div className="flex flex-col items-center justify-center py-8">
-                    <ErrorState
-                        message={error}
-                        onRetry={() => {
-                            setLoading(true);
-                            fetchTunjanganData();
-                        }}
-                    />
+                    <ErrorState message={error} onRetry={() => { setLoading(true); fetchTunjanganData(); }} />
+                </div>
+            )}
+            {!loading && !error && dataTunjangan.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-8 text-gray-600">
+                    <EmptyState icon={faFolderOpen} title="Data kosong" subtitle="Silakan pilih rentang tanggal lain." />
                 </div>
             )}
 
-            {!loading && !error && dataTunjangan.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-8 text-gray-600">
-                    <EmptyState
-                        icon={faFolderOpen}
-                        title="Data kosong"
-                        subtitle="Silakan pilih rentang tanggal lain."
-                    />
-                </div>
-            )}
+            <EditNominalTunjangan isOpen={showEditNominal} onClose={() => setShowEditNominal(false)} />
         </div>
     );
 };

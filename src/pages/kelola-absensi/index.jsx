@@ -340,9 +340,7 @@ const DataRekapAbsensi = () => {
               <span className="font-bold text-purple-700">LP</span>
               <span>Jam Lembur pulang karyawan.</span>
             </div>
-
             <hr className="my-2 border-gray-300" />
-
             <p className="mt-2 text-xs text-gray-500">
               Pastikan rentang tanggal sudah dipilih agar data ditampilkan lengkap.
             </p>

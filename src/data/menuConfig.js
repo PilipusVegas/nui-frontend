@@ -83,7 +83,6 @@ export const menuConfig = [
                 roles: [1, 4, 5, 6, 13],
                 submenu: [
                     { label: "Rekap Tunjangan", icon: faCheckCircle, path: "/rekap-tunjangan", roles: [1, 4, 5, 6, 13], perusahaan: [1, 4], target: "_blank" },
-                    { label: "Nominal Tunjangan", icon: faMoneyCheckDollar, path: "/pengaturan-tunjangan", roles: [1, 4, 6] },
                 ],
             },
             { label: "Jam Kerja / Shift", icon: faClock, path: "/shift", roles: [1, 4, 6] },

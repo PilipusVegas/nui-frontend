@@ -234,12 +234,12 @@ const DetailAbsensi = () => {
 
     // Cek shift malam
     if (nightShiftIds.includes(idShift) && !excludedLocations.includes(locStart) && !excludedLocations.includes(locEnd)) {
-      conditions.is_night_shift = true;
+      conditions.night_shift = true;
     }
 
     // Cek tunjangan transportasi
     if (Number(absen.status_kendaraan) === 1) {
-      conditions.is_transport = true;
+      conditions.transport = true;
     }
 
     return Object.keys(conditions).length > 0 ? conditions : false;
