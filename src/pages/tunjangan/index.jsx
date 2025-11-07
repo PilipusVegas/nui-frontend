@@ -71,6 +71,7 @@ const PengaturanTunjangan = () => {
     const handlePageChange = (page) => setCurrentPage(page);
 
     // Submit Form
+    // Submit Form
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!nama.trim() || !nominal || !deskripsi.trim()) {
@@ -80,9 +81,10 @@ const PengaturanTunjangan = () => {
 
         try {
             const url = editId
-                ? `${apiUrl}/tunjangan/${editId}`
-                : `${apiUrl}/tunjangan`;
-            const method = editId ? "POST" : "POST"; // sesuai instruksi Anda
+                ? `${apiUrl}/tunjangan/${editId}` // endpoint untuk edit
+                : `${apiUrl}/tunjangan`;         // endpoint untuk tambah
+            const method = editId ? "PUT" : "POST"; // PUT untuk edit, POST untuk tambah
+
             const res = await fetchWithJwt(url, {
                 method,
                 headers: { "Content-Type": "application/json" },
@@ -110,6 +112,7 @@ const PengaturanTunjangan = () => {
             toast.error(err.message || "Terjadi kesalahan saat menyimpan data.");
         }
     };
+
 
     // Edit Data
     const handleEdit = (item) => {

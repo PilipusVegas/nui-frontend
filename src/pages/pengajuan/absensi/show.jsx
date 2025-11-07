@@ -68,7 +68,6 @@ const DetailAbsensi = () => {
   });
 
 
-
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = sortedAbsen.slice(indexOfFirstItem, indexOfLastItem);
@@ -142,43 +141,23 @@ const DetailAbsensi = () => {
   };
 
   const handleStatusUpdate = async (id_absen) => {
-    if (!id_absen) return;
     const selectedAbsen = absen.find((item) => item.id_absen === id_absen);
-    const isOutMissing = !selectedAbsen.jam_selesai;
-
-    if (isOutMissing) {
-      const result = await Swal.fire({
-        title: "Konfirmasi Persetujuan",
-        text: "Absen belum diselesaikan apakah anda ingin menyetujui absensi ini?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Ya, Setujui",
-        cancelButtonText: "Batal",
-      });
-
-      if (!result.isConfirmed) return;
-    }
+    const conditions = calculateConditions(selectedAbsen); // Bisa object atau false
 
     try {
       setIsLoading(true);
       const response = await fetchWithJwt(`${apiUrl}/absen/status/${id_absen}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: 1 }),
+        body: JSON.stringify({
+          status: 1,
+          condition: conditions, // object atau false
+        }),
       });
 
       if (!response.ok) throw new Error("Gagal memperbarui status");
 
-      setStatusApproval((prevState) => ({
-        ...prevState,
-        [id_absen]: true,
-      }));
-
-      setCurrentItems((prevItems) =>
-        prevItems.filter((item) => item.id_absen !== id_absen)
-      );
-
-      toast.success("Absensi disetujui dan otomatis masuk ke rekap kelola presensi.", { duration: 4000 });
+      toast.success("Absensi disetujui.", { duration: 4000 });
       await fetchAbsenData();
       setIsModalOpen(false);
     } catch (error) {
@@ -227,7 +206,7 @@ const DetailAbsensi = () => {
       const response = await fetchWithJwt(`${apiUrl}/absen/status/${id_absen}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: 2 }), // 2 = Ditolak
+        body: JSON.stringify({ status: 2 }),
       });
 
       if (!response.ok) throw new Error("Gagal menolak absensi");
@@ -244,6 +223,27 @@ const DetailAbsensi = () => {
     }
   };
 
+  const calculateConditions = (absen) => {
+    const nightShiftIds = [2, 3]; // Shift malam
+    const excludedLocations = [63, 64, 66]; // Lokasi pengecualian
+    const conditions = {};
+
+    const idShift = Number(absen.id_shift);
+    const locStart = Number(absen.id_lokasi_mulai);
+    const locEnd = Number(absen.id_lokasi_selesai);
+
+    // Cek shift malam
+    if (nightShiftIds.includes(idShift) && !excludedLocations.includes(locStart) && !excludedLocations.includes(locEnd)) {
+      conditions.is_night_shift = true;
+    }
+
+    // Cek tunjangan transportasi
+    if (Number(absen.status_kendaraan) === 1) {
+      conditions.is_transport = true;
+    }
+
+    return Object.keys(conditions).length > 0 ? conditions : false;
+  };
 
   return (
     <div className="flex flex-col justify-start">
@@ -256,10 +256,7 @@ const DetailAbsensi = () => {
 
             {/* === Kiri: Info Utama === */}
             <div className="flex-1 space-y-3">
-              <h1
-                className="text-2xl sm:text-3xl font-bold text-gray-900 leading-snug tracking-wide hover:text-emerald-700 cursor-pointer transition-colors"
-                onClick={() => Navigate(`/karyawan/show/${cardNama.id_user}`)}
-              >
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-snug tracking-wide hover:text-emerald-700 cursor-pointer transition-colors" onClick={() => Navigate(`/karyawan/show/${cardNama.id_user}`)}>
                 {cardNama.nama}
               </h1>
 
