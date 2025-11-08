@@ -112,9 +112,7 @@ const DataRekapTunjangan = () => {
                             <span className="hidden sm:inline">Layar Penuh</span>
                         </button>
 
-                        <button onClick={fetchTunjanganData} disabled={loading}
-                            className={`flex items-center gap-2 h-9 px-3 text-sm font-medium rounded-md shadow-md transition-all duration-200 ${loading ? "bg-sky-400 cursor-not-allowed text-white" : "bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white"}`}
-                        >
+                        <button onClick={fetchTunjanganData} disabled={loading} className={`flex items-center gap-2 h-9 px-3 text-sm font-medium rounded-md shadow-md transition-all duration-200 ${loading ? "bg-sky-400 cursor-not-allowed text-white" : "bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white"}`}>
                             <FontAwesomeIcon icon={loading ? faSpinner : faRotateRight} spin={loading} />
                             <span className="hidden sm:inline">{loading ? "..." : "Refresh"}</span>
                         </button>
@@ -140,64 +138,75 @@ const DataRekapTunjangan = () => {
                 <div className="w-full shadow-md bg-white">
                     <div className="flex min-w-full relative">
                         {/* Bagian Kiri */}
-                        <div className="flex flex-col bg-white shrink-0 sticky left-0 z-30 border-r" style={{ minWidth: "450px" }}>
-                            <table className="w-full">
+                        <div className="flex flex-col bg-white shrink-0 sticky left-0 z-30 border-r" style={{ minWidth: "520px" }}>
+                            <table className="border-collapse w-full min-w-max border border-gray-300">
                                 <thead>
                                     <tr>
-                                        <th colSpan={2} className="sticky top-0 z-20 bg-green-500 text-white border border-transparent px-2 py-1 text-[11px] font-medium text-center rounded-tl-lg">
+                                        <th colSpan={2} className="sticky top-0 z-20 bg-green-500 text-white border px-4 py-2 text-[14px] text-center rounded-tl-lg">
                                             PEGAWAI
                                         </th>
-                                        <th colSpan={4} className="sticky top-0 z-20 bg-green-500 text-white border px-2 py-1 text-[11px] font-medium text-center">
+                                        <th colSpan={4} className="sticky top-0 z-20 bg-green-500 text-white border px-4 py-2 text-[14px] text-center">
                                             JUMLAH
                                         </th>
                                     </tr>
                                     <tr>
-                                        {["NIP", "Nama", "TUM", "TSM", "TKP", "NOMINAL"].map((header) => (
-                                            <th key={header} className="sticky top-[26px] z-20 bg-green-500 text-white border px-1 py-0.5 text-[10px] font-normal text-center">
-                                                {header}
-                                            </th>
-                                        ))}
+                                        {["NIP", "Nama", "TUM", "TSM", "TKP", "NOMINAL"].map((header) => {
+                                            let minWidth = "80px"; // default untuk kolom kecil
+                                            if (header === "Nama") minWidth = "200px"; // kolom Nama lebar
+                                            if (header === "NOMINAL") minWidth = "150px"; // kolom Nominal lebar
+                                            return (
+                                                <th key={header} className="sticky top-[36px] z-20 bg-green-500 text-white border px-3 py-2 text-[13px] text-center" style={{ minWidth }}>
+                                                    {header}
+                                                </th>
+                                            );
+                                        })}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {filteredTunjanganData.map((item, idx) => (
                                         <tr key={idx}>
-                                            <td className="border px-2 py-1 text-center text-xs">{item.nip}</td>
-                                            <td className="border px-2 py-1 text-[10px] font-semibold uppercase">{item.nama_user}</td>
-                                            <td className="border px-2 py-1 text-center text-xs">{item.total?.id_tunjangan_1 ?? "-"}</td>
-                                            <td className="border px-2 py-1 text-center text-xs">{item.total?.id_tunjangan_2 ?? "-"}</td>
-                                            <td className="border px-2 py-1 text-center text-xs">{item.total?.id_tunjangan_3 ?? "-"}</td>
-                                            <td className="border px-2 py-1 text-center text-xs font-bold">
+                                            <td className="border px-3 py-2 text-center text-[13px]">{item.nip}</td>
+                                            <td className="border px-4 py-2 text-[13px] font-semibold uppercase">{item.nama_user}</td>
+                                            <td className="border px-3 py-2 text-center text-[13px]">{item.total?.id_tunjangan_1 ?? "-"}</td>
+                                            <td className="border px-3 py-2 text-center text-[13px]">{item.total?.id_tunjangan_2 ?? "-"}</td>
+                                            <td className="border px-3 py-2 text-center text-[13px]">{item.total?.id_tunjangan_3 ?? "-"}</td>
+                                            <td className="border px-4 py-2 text-center text-[13px] font-bold">
                                                 {item.total?.tunjangan
-                                                    ? new Intl.NumberFormat("id-ID", {
-                                                        style: "currency",
-                                                        currency: "IDR",
-                                                        minimumFractionDigits: 0,
-                                                    }).format(item.total.tunjangan)
+                                                    ? new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(item.total.tunjangan)
                                                     : "-"}
                                             </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
+
                         </div>
 
                         {/* Bagian Kanan */}
                         <div className="flex-1 overflow-x-auto rounded-tr-lg">
-                            <div className="inline-block min-w-max align-top">
-                                <table>
+                            <div className="inline-block min-w-full align-top">
+                                <table className="table-fixed w-full border-collapse">
                                     <thead>
                                         <tr>
                                             {tanggalArray.map((tgl) => (
-                                                <th key={tgl} colSpan={3} className="sticky top-0 z-10 bg-green-500 text-white border px-2 py-1 text-[11px] font-medium text-center">
+                                                <th
+                                                    key={tgl}
+                                                    colSpan={3}
+                                                    className="sticky top-0 z-10 bg-green-500 text-white border px-2 py-2 text-[13px] font-medium text-center"
+                                                    style={{ width: `${100 / 7}%` }} // 7 hari full
+                                                >
                                                     {formatLongDate(tgl)}
                                                 </th>
                                             ))}
                                         </tr>
                                         <tr>
                                             {tanggalArray.map((tgl) =>
-                                                ["TKP", "TUM", "TSM"].map((label) => (
-                                                    <th key={`${tgl}-${label}`} className="sticky tracking-widest top-[26px] z-20 bg-green-500 text-white border px-3 py-0.5 text-[10px] font-normal text-center">
+                                                ["TKP", "TUM", "TSM"].map((label, idx) => (
+                                                    <th
+                                                        key={`${tgl}-${label}`}
+                                                        className="sticky tracking-widest top-[38px] z-20 bg-green-500 text-white border px-1 py-2 text-[13px] font-normal text-center"
+                                                        style={{ width: `calc(${100 / 7}% / 3)` }} // 3 subkolom tiap hari
+                                                    >
                                                         {label}
                                                     </th>
                                                 ))
@@ -209,16 +218,17 @@ const DataRekapTunjangan = () => {
                                             <tr key={rowIdx}>
                                                 {tanggalArray.map((tgl) => {
                                                     const tunjanganHari = item.tunjangan[tgl] || [];
-                                                    const typeIds = [1, 2, 3]; // 1: Transport, 2: Makan, 3: Shift Malam
+                                                    const typeIds = [1, 2, 3];
                                                     return typeIds.map((id) => {
                                                         const data = tunjanganHari.find((t) => t.id === id);
                                                         return (
-                                                            <td key={`${tgl}-${id}`} className="border px-2 py-1 text-center text-xs relative" onMouseEnter={(e) => data && handleMouseEnter(e, data)} onMouseLeave={handleMouseLeave}>
-                                                                {data ? (
-                                                                    <FontAwesomeIcon icon={faCheckCircle} className="text-green-600 cursor-pointer" />
-                                                                ) : (
-                                                                    "-"
-                                                                )}
+                                                            <td
+                                                                key={`${tgl}-${id}`}
+                                                                className="border px-1 py-2 text-center text-[13px] relative"
+                                                                onMouseEnter={(e) => data && handleMouseEnter(e, data)}
+                                                                onMouseLeave={handleMouseLeave}
+                                                            >
+                                                                {data ? <FontAwesomeIcon icon={faCheckCircle} className="text-green-600 cursor-pointer" /> : "-"}
                                                             </td>
                                                         );
                                                     });
@@ -230,14 +240,14 @@ const DataRekapTunjangan = () => {
 
                                 {/* Tooltip */}
                                 {hoveredData && (
-                                    <div className="absolute z-50 bg-white text-gray-800 text-[11px] rounded-lg px-3 py-2.5 shadow-lg border border-gray-300 pointer-events-none transition-all duration-150"
-                                        style={{ left: tooltipPos.x, top: tooltipPos.y, transform: "translate(-50%, -110%)", }}
+                                    <div className="absolute z-50 bg-white text-gray-800 text-[12px] rounded-lg px-3 py-3 shadow-lg border border-gray-300 pointer-events-none transition-all duration-150"
+                                        style={{ left: tooltipPos.x, top: tooltipPos.y, transform: "translate(-60%, -85%)" }}
                                     >
                                         <div className="font-semibold text-gray-900">{hoveredData.tunjangan}</div>
                                         <div>Nominal: <span className="font-medium text-gray-900">Rp{hoveredData.nominal.toLocaleString()}</span></div>
                                         <div>Mulai: {hoveredData.jam_mulai || "-"}</div>
                                         <div>Selesai: {hoveredData.jam_selesai || "-"}</div>
-                                        <div className="text-gray-500 text-right text-[10px] mt-1">{formatLongDate(hoveredData.tanggal)}</div>
+                                        <div className="text-gray-500 text-right text-[12px] mt-1">{formatLongDate(hoveredData.tanggal)}</div>
                                     </div>
                                 )}
                             </div>
@@ -266,10 +276,8 @@ const DataRekapTunjangan = () => {
                         <div className="grid grid-cols-[50px_auto] gap-y-2 text-sm">
                             <span className="font-bold text-green-700">TUM</span>
                             <span>Tunjangan Uang Makan</span>
-
                             <span className="font-bold text-red-600">TSM</span>
                             <span>Tunjangan Shift Malam</span>
-
                             <span className="font-bold text-indigo-700">TKP</span>
                             <span>Tunjangan Kendaraan Pribadi</span>
                         </div>
