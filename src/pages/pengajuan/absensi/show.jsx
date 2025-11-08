@@ -485,27 +485,57 @@ const DetailAbsensi = () => {
       {/* PAGINATION */}
       <Pagination currentPage={currentPage} totalItems={filteredAbsen.length} itemsPerPage={itemsPerPage} onPageChange={(page) => setCurrentPage(page)} className="mt-6" />
 
-      <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="Detail Absensi" note="Periksa detail absensi karyawan sebelum persetujuan." size="xl" className="max-w-full sm:max-w-xl lg:max-w-3xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
-        <div className="space-y-4 text-sm text-gray-700">
-          <section className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-            <h4 className="mb-3 flex items-center gap-2 border-b pb-2 text-base font-medium">
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        title="Detail Absensi"
+        note="Periksa detail absensi karyawan sebelum persetujuan."
+        size="xl"
+        footer={
+          (user.id_role === 1 || user.id_role === 4) && selectedAbsen?.status === 0 && (
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => handleReject(selectedAbsen?.id_absen)}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-semibold transition"
+                disabled={isLoading}
+              >
+                Tolak Absensi
+              </button>
+
+              <button
+                onClick={() => handleStatusUpdate(selectedAbsen?.id_absen)}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-semibold transition"
+                disabled={isLoading}
+              >
+                Setujui Absensi
+              </button>
+            </div>
+          )
+        }
+      >
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden text-gray-700">
+          {/* Informasi Karyawan */}
+          <section className="p-4 border-b border-gray-200">
+            <h4 className="flex items-center gap-2 text-base font-semibold text-gray-800 mb-2">
               <FontAwesomeIcon icon={faUser} className="text-green-600" />
               Informasi Karyawan
             </h4>
-            <div className="grid sm:grid-cols-2 gap-3">
+            <div className="grid sm:grid-cols-2 gap-2 text-sm">
               <p><strong>Nama:</strong> {employeeInfo?.nama}</p>
               <p><strong>NIP:</strong> {employeeInfo?.nip}</p>
               <p><strong>Perusahaan:</strong> {employeeInfo?.perusahaan}</p>
               <p><strong>Role:</strong> {employeeInfo?.role}</p>
             </div>
           </section>
-          <section className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-            <header className="flex justify-between items-center mb-4 border-b pb-2">
-              <div className="flex items-center gap-3">
+
+          {/* Ringkasan Absensi */}
+          <section className="p-4 border-b border-gray-200">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3">
+              <div className="flex items-center gap-3 mb-2 sm:mb-0">
                 <FontAwesomeIcon icon={faCalendarCheck} className="text-green-600 text-xl" />
                 <div>
-                  <h3 className="font-semibold">Ringkasan Absensi</h3>
-                  <p className="text-xs text-gray-600">Detail Kehadiran Karyawan</p>
+                  <h3 className="font-semibold text-gray-800">Ringkasan Absensi</h3>
+                  <p className="text-xs text-gray-500">Detail Kehadiran Karyawan</p>
                 </div>
               </div>
               {selectedAbsen?.jam_mulai && (
@@ -513,94 +543,118 @@ const DetailAbsensi = () => {
                   {formatFullDate(selectedAbsen.jam_mulai)}
                 </p>
               )}
-            </header>
+            </div>
+
             {!selectedAbsen && (
               <p className="text-gray-400 italic">Tidak ada data presensi.</p>
             )}
 
             {selectedAbsen && (
               <>
-                <div className="flex justify-between items-center mb-4 p-3 bg-gray-50 rounded-lg border">
-                  <div className="flex items-center gap-2">
+                {/* Status & Shift */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 p-2 bg-gray-50 rounded border text-sm">
+                  <div className="flex items-center gap-2 mb-2 sm:mb-0">
                     <FontAwesomeIcon icon={faClock} className="text-green-500 text-sm" />
                     <span className="font-semibold">{selectedAbsen.shift || "-"}</span>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold transition-all duration-300  ${selectedAbsen?.status === 1 ? "bg-green-100 text-green-700 border border-green-300" : selectedAbsen?.status === 2 ? "bg-red-100 text-red-700 border border-red-300" : "bg-yellow-100 text-yellow-700 border border-yellow-300"}`}>
-                    {selectedAbsen?.status === 1 ? "Sudah Disetujui" : selectedAbsen?.status === 2 ? "Telah Ditolak" : "Menunggu Persetujuan"}
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold transition-all duration-300 ${selectedAbsen?.status === 1
+                      ? "bg-green-100 text-green-700 border border-green-300"
+                      : selectedAbsen?.status === 2
+                        ? "bg-red-100 text-red-700 border border-red-300"
+                        : "bg-yellow-100 text-yellow-700 border border-yellow-300"
+                    }`}>
+                    {selectedAbsen?.status === 1
+                      ? "Sudah Disetujui"
+                      : selectedAbsen?.status === 2
+                        ? "Telah Ditolak"
+                        : "Menunggu Persetujuan"}
                   </span>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-4">
+                {/* Absen Masuk & Pulang (grid dengan border vertikal) */}
+                <div className="grid md:grid-cols-2 text-sm border-t border-b border-gray-200">
                   {[
-                    { label: "Absen Masuk", jam: selectedAbsen.jam_mulai, lokasi: selectedAbsen.lokasi_mulai, titik: selectedAbsen.titik_mulai_pengguna, foto: selectedAbsen.foto_mulai, jarak: selectedAbsen.jarak_mulai, keterlambatan: selectedAbsen.keterlambatan },
-                    { label: "Absen Pulang", jam: selectedAbsen.jam_selesai, lokasi: selectedAbsen.lokasi_selesai, titik: selectedAbsen.titik_selesai_pengguna, foto: selectedAbsen.foto_selesai, jarak: selectedAbsen.jarak_selesai },
+                    {
+                      label: "Absen Masuk",
+                      jam: selectedAbsen.jam_mulai,
+                      lokasi: selectedAbsen.lokasi_mulai,
+                      titik: selectedAbsen.titik_mulai_pengguna,
+                      foto: selectedAbsen.foto_mulai,
+                      jarak: selectedAbsen.jarak_mulai,
+                      keterlambatan: selectedAbsen.keterlambatan,
+                    },
+                    {
+                      label: "Absen Pulang",
+                      jam: selectedAbsen.jam_selesai,
+                      lokasi: selectedAbsen.lokasi_selesai,
+                      titik: selectedAbsen.titik_selesai_pengguna,
+                      foto: selectedAbsen.foto_selesai,
+                      jarak: selectedAbsen.jarak_selesai,
+                    },
                   ].map((item, i) => (
-                    <div key={i} className="border rounded-lg shadow-sm hover:shadow-md transition">
-                      <h4 className="px-4 py-2 border-b font-semibold">{item.label}</h4>
-                      <div className="flex p-4 gap-4">
-                        <div className="w-24 h-24 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 border">
-                          {item.foto ? (
-                            <a href={item.foto} target="_blank" rel="noopener noreferrer">
-                              <img src={item.foto} alt={item.label} className="w-full h-full object-cover" />
-                            </a>
-                          ) : (
-                            <div className="flex h-full items-center justify-center text-gray-400 text-xs">
-                              Tidak ada foto
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex flex-col gap-1 text-sm w-full">
-                          <div><strong>Waktu:</strong> {item.jam ? formatTime(item.jam) : "-"}</div>
-                          <div><strong>Tanggal:</strong> {item.jam && formatFullDate(item.jam)}</div>
-                          <div><strong>Lokasi Kerja:</strong> {item.lokasi || "-"}</div>
-                          <div>
-                            <strong>Lokasi Absen:</strong>{" "}
-                            {item.titik ? (
-                              <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.titik)}`} target="_blank" rel="noopener noreferrer" className="underline text-blue-600 hover:text-blue-800">
-                                Lihat di GMaps
-                              </a>
-                            ) : "-"}
+                    <div
+                      key={i}
+                      className={`flex flex-col sm:flex-row gap-3 p-3 items-start ${i === 0 ? "border-r border-gray-200" : ""}`}
+                    >
+                      {/* Foto */}
+                      <div className="w-20 h-20 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 border">
+                        {item.foto ? (
+                          <a href={item.foto} target="_blank" rel="noopener noreferrer">
+                            <img src={item.foto} alt={item.label} className="w-full h-full object-cover" />
+                          </a>
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-gray-400 text-xs">
+                            Tidak ada foto
                           </div>
-                          <div><strong>Jarak:</strong> {formatDistance(item.jarak)}</div>
-                          {i === 0 && item.keterlambatan !== "00:00" && (
-                            <div className="text-red-600 font-semibold">
-                              Keterlambatan: {item.keterlambatan}
-                            </div>
-                          )}
+                        )}
+                      </div>
+
+                      {/* Detail */}
+                      <div className="flex-1 flex flex-col gap-1 w-full">
+                        <h5 className="font-semibold text-gray-800">{item.label}</h5>
+                        <div><strong>Waktu:</strong> {item.jam ? formatTime(item.jam) : "-"}</div>
+                        <div><strong>Tanggal:</strong> {item.jam && formatFullDate(item.jam)}</div>
+                        <div><strong>Lokasi Kerja:</strong> {item.lokasi || "-"}</div>
+                        <div>
+                          <strong>Lokasi Absen:</strong>{" "}
+                          {item.titik ? (
+                            <a
+                              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.titik)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline text-blue-600 hover:text-blue-800"
+                            >
+                              Lihat di GMaps
+                            </a>
+                          ) : "-"}
                         </div>
+                        <div><strong>Jarak:</strong> {formatDistance(item.jarak)}</div>
+                        {i === 0 && item.keterlambatan !== "00:00" && (
+                          <div className="text-red-600 font-semibold">
+                            Keterlambatan: {item.keterlambatan}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
                 </div>
 
                 {/* Keterangan */}
-                <div className="mt-4 p-3 bg-gray-50 rounded-lg border">
-                  <h5 className="font-semibold mb-1">Keterangan Karyawan:</h5>
+                <div className="mt-3 text-sm">
+                  <h5 className="font-semibold mb-1 text-gray-800">Keterangan Karyawan:</h5>
                   <p className="text-gray-600">
                     {selectedAbsen.deskripsi || <span className="italic text-gray-400">Tidak ada keterangan</span>}
                   </p>
-                </div>
-
-                {/* Aksi HRD */}
-                <div className="mt-6 border-t pt-4 flex justify-end items-center">
-                  {(user.id_role === 1 || user.id_role === 4) && selectedAbsen?.status === 0 && (
-                    <div className="flex gap-3">
-                      <button onClick={() => handleReject(selectedAbsen?.id_absen)} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition" disabled={isLoading}>
-                        Tolak
-                      </button>
-
-                      <button onClick={() => handleStatusUpdate(selectedAbsen?.id_absen)} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition" disabled={isLoading}>
-                        Setujui
-                      </button>
-                    </div>
-                  )}
                 </div>
               </>
             )}
           </section>
         </div>
       </Modal>
+
+
+
+
     </div>
   );
 };

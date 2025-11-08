@@ -6,7 +6,7 @@ import EditNominalTunjangan from "./editNominalTunjangan";
 import { exportRekapTunjangan } from "./exportRekapTunjangan";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { faFolderOpen, faFileExcel, faExpand, faRefresh, faCircleInfo, faCheckCircle, faExpandArrowsAlt, faMoneyBillWave, faSpinner, faRotateRight } from "@fortawesome/free-solid-svg-icons";
-import { LoadingSpinner, SectionHeader, EmptyState, ErrorState, SearchBar, Modal } from "../../components/";
+import { LoadingSpinner, SectionHeader, EmptyState, ErrorState, SearchBar, Modal } from "../../components";
 import { formatLongDate } from "../../utils/dateUtils";
 
 const DataRekapTunjangan = () => {

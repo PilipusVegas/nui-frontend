@@ -1,19 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faUser, faBarsStaggered, faPowerOff } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { getUserFromToken } from "../utils/jwtHelper";
-import { getDefaultPeriod } from "../utils/getDefaultPeriod";
-import { formatDate, PATTERNS } from "../utils/dateUtils";
 
 const Header = ({ toggleSidebar, isSidebarOpen }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileMenuRef = useRef(null);
-  const navigate = useNavigate();
   const user = getUserFromToken();
   const toggleProfile = () => setIsProfileOpen((prev) => !prev);
-  const period = getDefaultPeriod();
 
   const handleLogout = () => {
     Swal.fire({

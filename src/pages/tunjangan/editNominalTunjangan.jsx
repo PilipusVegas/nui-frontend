@@ -75,7 +75,7 @@ const EditNominalTunjangan = ({ isOpen, onClose }) => {
                         <FontAwesomeIcon icon={faInfoCircle} className="mr-1" />
                         Petunjuk Informasi:
                     </p>
-                    <p>
+                    <p className="font-normal text-blue-700">
                         Anda dapat menyesuaikan nominal tunjangan langsung pada kolom
                         “Nominal (Rp)”. Pastikan nilai yang dimasukkan sesuai dengan kebijakan
                         perusahaan dan tidak menggunakan tanda titik atau koma. Setelah selesai,

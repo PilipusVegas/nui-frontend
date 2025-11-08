@@ -149,7 +149,6 @@ const Tugas = () => {
 
         return (
             <div onClick={() => navigate(`/tugas/${t.id}`)} className={`border ${borderColor} rounded-lg p-2.5 shadow-sm bg-white cursor-pointer  transition-all duration-200 hover:shadow-md hover:-translate-y-[2px] active:scale-[0.99]`}>
-                {/* Header */}
                 <div className="flex justify-between items-start mb-1.5">
                     <div className="flex-1 min-w-0">
                         <h2 className="font-semibold text-[9.5px] text-gray-900 leading-tight truncate uppercase">
@@ -185,8 +184,7 @@ const Tugas = () => {
                         <span>
                             <span className="font-medium text-gray-800">Tenggat:</span> {formatLongDate(t.deadline_at)}{" "}
                             {activeTab !== "history" && (
-                                <span
-                                    className={`ml-1 text-[10px] font-medium ${deadlineInfo.includes("Terlambat")
+                                <span className={`ml-1 text-[10px] font-medium ${deadlineInfo.includes("Terlambat")
                                         ? "text-rose-600"
                                         : deadlineInfo.includes("hari ini")
                                             ? "text-amber-600"
@@ -203,9 +201,7 @@ const Tugas = () => {
                     {t.finished_at && (
                         <div className="border-t border-gray-200 pt-1.5 mt-1.5">
                             <p className="text-[8.5px] text-gray-600 italic flex items-center gap-1">
-                                <FontAwesomeIcon
-                                    icon={faCircleCheck}
-                                    className="text-emerald-500 text-[8px]"
+                                <FontAwesomeIcon icon={faCircleCheck} className="text-emerald-500 text-[8px]"
                                 />
                                 <span>
                                     <span className="font-medium text-gray-800">Selesai:</span>{" "}

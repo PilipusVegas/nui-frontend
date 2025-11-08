@@ -138,7 +138,6 @@ const MenuSidebar = ({ perusahaanId, roleId, isOpen, toggleSidebar, isMobile }) 
                                 })}
                             </div>
                           )}
-
                       </>
                     )}
                   </div>
@@ -149,7 +148,6 @@ const MenuSidebar = ({ perusahaanId, roleId, isOpen, toggleSidebar, isMobile }) 
         </div>
 
       </div>
-      {/* Overlay Hitam Saat Sidebar Terbuka */}
       {isMobile && isOpen && (
         <div onClick={toggleSidebar} className="fixed top-0 left-0 w-full h-full bg-black/40 z-40" />
       )}
