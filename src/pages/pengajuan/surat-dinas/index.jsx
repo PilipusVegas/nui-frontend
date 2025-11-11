@@ -103,30 +103,29 @@ const SuratDinas = () => {
         }
       />
 
-      {/* Search + Filter Bar */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 my-4">
-        <SearchBar
-          onSearch={(val) => setSearchTerm(val)}
-          placeholder="Cari nama..."
-        />
-
-
-        <div className="flex items-center gap-2">
-          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border border-gray-300 rounded-md px-2 py-2.5 text-sm" />
-          <span>-</span>
-          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="border border-gray-300 rounded-md px-2 py-2.5 text-sm" />
-
-          <button onClick={() => {
-            const { start, end } = getDefaultPeriod();
-            setStartDate(start);
-            setEndDate(end);
-          }}
-            className="bg-green-500 hover:bg-green-600 text-white px-3 py-2.5 rounded-md text-sm shadow"
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 my-4 w-full">
+        <div className="flex flex-col sm:flex-row items-center gap-2 w-full">
+          <div className="flex-grow w-full">
+            <SearchBar onSearch={(val) => setSearchTerm(val)} placeholder="Cari nama..."/>
+          </div>
+          <div className="flex items-center gap-2">
+            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border border-gray-300 rounded-md px-2 py-2.5 text-sm"/>
+            <span>-</span>
+            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="border border-gray-300 rounded-md px-2 py-2.5 text-sm"/>
+          </div>
+          <button
+            onClick={() => {
+              const { start, end } = getDefaultPeriod();
+              setStartDate(start);
+              setEndDate(end);
+            }}
+            className="bg-green-500 hover:bg-green-600 text-white px-3 py-2.5 rounded-md text-sm shadow whitespace-nowrap"
           >
             Periode Saat Ini
           </button>
         </div>
       </div>
+
 
       {loading ? (
         <LoadingSpinner />

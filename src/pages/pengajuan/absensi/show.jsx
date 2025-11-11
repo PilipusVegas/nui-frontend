@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { faEye, faClock, faUser, faCalendarCheck, faSort, faSortUp, faSortDown } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faClock, faUser, faCalendarCheck, faSort, faSortUp, faSortDown, faMotorcycle, faMoon, faFileSignature, faMoneyBillWave, faExclamationTriangle, faUserCheck, faCalendarDays } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
@@ -22,8 +22,6 @@ const DetailAbsensi = () => {
   const [selectedAbsen, setSelectedAbsen] = useState(null);
   const [cardNama, setCardNama] = useState(null);
   const [isApproved, setIsApproved] = useState(false);
-  const [statusApproval, setStatusApproval] = useState({});
-  const [CurrentItems, setCurrentItems] = useState([]);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -67,7 +65,6 @@ const DetailAbsensi = () => {
     return 0;
   });
 
-
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = sortedAbsen.slice(indexOfFirstItem, indexOfLastItem);
@@ -102,6 +99,7 @@ const DetailAbsensi = () => {
         nip: data.nip,
         perusahaan: data.perusahaan,
         role: data.role,
+        kendaraan: data.status_kendaraan,
       });
     } catch (err) {
       console.error(err);
@@ -123,6 +121,7 @@ const DetailAbsensi = () => {
         nip: data.nip,
         perusahaan: data.perusahaan,
         role: data.role,
+        kendaraan: data.status_kendaraan,
       });
     };
     fetchAbsenData();
@@ -142,7 +141,7 @@ const DetailAbsensi = () => {
 
   const handleStatusUpdate = async (id_absen) => {
     const selectedAbsen = absen.find((item) => item.id_absen === id_absen);
-    const conditions = calculateConditions(selectedAbsen); // Bisa object atau false
+    const conditions = calculateConditions(selectedAbsen);
 
     try {
       setIsLoading(true);
@@ -151,13 +150,43 @@ const DetailAbsensi = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status: 1,
-          condition: conditions, // object atau false
+          condition: conditions,
         }),
       });
 
       if (!response.ok) throw new Error("Gagal memperbarui status");
 
-      toast.success("Absensi disetujui.", { duration: 4000 });
+      toast.success("Absensi disetujui.", { duration: 3000 });
+
+      // 🔹 Tampilkan Swal jika ada tunjangan
+      if (conditions && (conditions.night_shift || conditions.transport)) {
+        const tunjanganList = [];
+
+        if (conditions.night_shift) tunjanganList.push("Tunjangan Shift Malam 🌙");
+        if (conditions.transport) tunjanganList.push("Tunjangan Transportasi 🛵");
+
+        Swal.fire({
+          title: "Absensi Disetujui ✅",
+          html: `
+          <div class="text-gray-700 leading-relaxed text-sm">
+            <p class="mb-2">Karyawan ini berhak mendapatkan:</p>
+            <ul class="text-left font-medium space-y-1">
+              ${tunjanganList.map((t) => `<li>• ${t}</li>`).join("")}
+            </ul>
+          </div>
+        `,
+          icon: "success",
+          confirmButtonText: "Oke, Lanjutkan",
+          confirmButtonColor: "#10B981",
+          showClass: {
+            popup: "animate__animated animate__fadeInDown",
+          },
+          hideClass: {
+            popup: "animate__animated animate__fadeOutUp",
+          },
+        });
+      }
+
       await fetchAbsenData();
       setIsModalOpen(false);
     } catch (error) {
@@ -166,6 +195,7 @@ const DetailAbsensi = () => {
       setIsLoading(false);
     }
   };
+
 
   const formatDistance = (meters) => {
     if (meters == null) return "-";
@@ -231,14 +261,16 @@ const DetailAbsensi = () => {
     const idShift = Number(absen.id_shift);
     const locStart = Number(absen.id_lokasi_mulai);
     const locEnd = Number(absen.id_lokasi_selesai);
-
+    const statusKendaraan = Number(absen.status_kendaraan);
     // Cek shift malam
-    if (nightShiftIds.includes(idShift) && !excludedLocations.includes(locStart) && !excludedLocations.includes(locEnd)) {
+    // Jika shift malam dan salah satu lokasi tidak termasuk lokasi pengecualian
+    if (nightShiftIds.includes(idShift) && (!excludedLocations.includes(locStart) || !excludedLocations.includes(locEnd))) {
       conditions.night_shift = true;
     }
 
     // Cek tunjangan transportasi
-    if (Number(absen.status_kendaraan) === 1) {
+    // Jika status kendaraan milik pribadi dan salah satu lokasi tidak termasuk lokasi pengecualian
+    if (Number(statusKendaraan) === 1 && (!excludedLocations.includes(locStart) || !excludedLocations.includes(locEnd))) {
       conditions.transport = true;
     }
 
@@ -249,50 +281,42 @@ const DetailAbsensi = () => {
     <div className="flex flex-col justify-start">
       <SectionHeader title="Detail Persetujuan Presensi" subtitle="Detail Persetujuan Absensi Karyawan" onBack={() => Navigate("/pengajuan-absensi")} />
 
-      {/* Card Nama (Responsive & Refined Design) */}
       {cardNama ? (
-        <div className="w-full rounded-2xl bg-gradient-to-br from-emerald-25 via-white to-emerald-50 border border-emerald-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 sm:p-6 lg:p-8">
+        <div className="w-full rounded-xl bg-white border border-emerald-100 shadow-sm hover:shadow-md transition-all duration-300 p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+            <div className="flex items-center gap-4 flex-1">
+              <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-xl font-semibold">
+                {cardNama.nama?.charAt(0)?.toUpperCase() || "?"}
+              </div>
 
-            {/* === Kiri: Info Utama === */}
-            <div className="flex-1 space-y-3">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-snug tracking-wide hover:text-emerald-700 cursor-pointer transition-colors" onClick={() => Navigate(`/karyawan/show/${cardNama.id_user}`)}>
-                {cardNama.nama}
-              </h1>
-
-              {/* === Info Detail === */}
-              <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-y-2 gap-x-6 text-sm sm:text-base text-gray-700">
-                {[
-                  { label: "NIP", value: cardNama.nip },
-                  { label: "Divisi", value: cardNama.role },
-                  { label: "Perusahaan", value: cardNama.perusahaan },
-                ].map((item, idx) => (
-                  <p key={idx}>
-                    <span className="inline-block font-medium text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-md mr-1.5 text-sm">
-                      {item.label}
-                    </span>
-                    <span className="font-semibold text-gray-800">{item.value || "-"}</span>
-                  </p>
-                ))}
+              <div>
+                <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 leading-tight hover:text-emerald-700 cursor-pointer transition-colors" onClick={() => Navigate(`/karyawan/show/${cardNama.id_user}`)}>
+                  {cardNama.nama}
+                </h1>
+                <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-gray-600">
+                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-md">
+                    {cardNama.role || "–"}
+                  </span>
+                  <span className="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-md">
+                    {cardNama.perusahaan || "–"}
+                  </span>
+                  <span className="text-gray-400">NIP:</span>
+                  <span className="font-medium text-gray-800">{cardNama.nip || "–"}</span>
+                </div>
               </div>
             </div>
-
-            {/* === Kanan: Periode Absen === */}
-            <div className="flex flex-col justify-center sm:text-right border-t sm:border-t-0 sm:border-l sm:pl-6 border-emerald-100 pt-4 sm:pt-0">
-              <p className="font-semibold text-emerald-600 mb-1 text-sm sm:text-base">
-                Periode Absen
-              </p>
-              <p className="text-gray-800 font-medium text-sm sm:text-base">
-                {formatFullDate(getDefaultPeriod().start)}
-                <span className="mx-1">–</span>
-                {formatFullDate(getDefaultPeriod().end)}
-              </p>
+            <div className="flex flex-col sm:items-end gap-3 border-t sm:border-t-0 sm:border-l border-emerald-100 pt-4 sm:pt-0 sm:pl-6">
+              <div className="text-sm text-gray-700">
+                <p className="font-medium text-emerald-600">Periode Absen</p>
+                <p className="font-semibold mt-0.5">
+                  {formatFullDate(getDefaultPeriod().start)} – {formatFullDate(getDefaultPeriod().end)}
+                </p>
+              </div>
             </div>
           </div>
         </div>
       ) : (
-        /* Skeleton Loading */
-        <div className="w-full bg-white border border-green-200 rounded-2xl shadow-sm p-5 space-y-4 animate-pulse">
+        <div className="w-full bg-white border border-emerald-100 rounded-xl shadow-sm p-5 space-y-3 animate-pulse">
           <div className="h-6 w-1/3 bg-gray-200 rounded"></div>
           <div className="space-y-2">
             <div className="h-4 w-2/5 bg-gray-200 rounded"></div>
@@ -301,6 +325,8 @@ const DetailAbsensi = () => {
           </div>
         </div>
       )}
+
+
 
       <SearchBar onSearch={handleSearch} placeholder="Cari Tanggal / Lokasi Absen..." className="my-4" />
 
@@ -411,17 +437,12 @@ const DetailAbsensi = () => {
                           : "bg-yellow-50 text-yellow-700 border-yellow-200"
                       }`}
                   >
-                    {item.status == 1
-                      ? "Disetujui"
-                      : item.status == 2
-                        ? "Ditolak"
-                        : "Menunggu"}
+                    {item.status == 1 ? "Disetujui" : item.status == 2 ? "Ditolak" : "Menunggu"}
                   </span>
                 </div>
 
                 {/* Body: Lokasi & Jam */}
                 <div className="px-4 py-3 space-y-2">
-                  {/* Lokasi */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="w-1/2">
                       <p className="text-[11px] text-gray-500 uppercase font-medium">Lokasi Mulai</p>
@@ -439,7 +460,6 @@ const DetailAbsensi = () => {
 
                   <hr className="border-gray-200 my-2" />
 
-                  {/* Jam Masuk / Keluar / Keterlambatan */}
                   <div className="grid grid-cols-3 text-center">
                     <div>
                       <p className="text-[11px] text-gray-500 font-medium uppercase">Masuk</p>
@@ -485,28 +505,14 @@ const DetailAbsensi = () => {
       {/* PAGINATION */}
       <Pagination currentPage={currentPage} totalItems={filteredAbsen.length} itemsPerPage={itemsPerPage} onPageChange={(page) => setCurrentPage(page)} className="mt-6" />
 
-      <Modal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        title="Detail Absensi"
-        note="Periksa detail absensi karyawan sebelum persetujuan."
-        size="xl"
+      <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="Detail Absensi" note="Periksa dengan cermat sebelum memberikan keputusan." size="xl"
         footer={
           (user.id_role === 1 || user.id_role === 4) && selectedAbsen?.status === 0 && (
-            <div className="flex flex-wrap gap-3">
-              <button
-                onClick={() => handleReject(selectedAbsen?.id_absen)}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-semibold transition"
-                disabled={isLoading}
-              >
+            <div className="flex flex-wrap justify-end gap-3">
+              <button onClick={() => handleReject(selectedAbsen?.id_absen)} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition" disabled={isLoading}>
                 Tolak Absensi
               </button>
-
-              <button
-                onClick={() => handleStatusUpdate(selectedAbsen?.id_absen)}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-semibold transition"
-                disabled={isLoading}
-              >
+              <button onClick={() => handleStatusUpdate(selectedAbsen?.id_absen)} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition" disabled={isLoading}>
                 Setujui Absensi
               </button>
             </div>
@@ -514,147 +520,214 @@ const DetailAbsensi = () => {
         }
       >
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden text-gray-700">
-          {/* Informasi Karyawan */}
-          <section className="p-4 border-b border-gray-200">
-            <h4 className="flex items-center gap-2 text-base font-semibold text-gray-800 mb-2">
-              <FontAwesomeIcon icon={faUser} className="text-green-600" />
-              Informasi Karyawan
-            </h4>
-            <div className="grid sm:grid-cols-2 gap-2 text-sm">
-              <p><strong>Nama:</strong> {employeeInfo?.nama}</p>
-              <p><strong>NIP:</strong> {employeeInfo?.nip}</p>
-              <p><strong>Perusahaan:</strong> {employeeInfo?.perusahaan}</p>
-              <p><strong>Role:</strong> {employeeInfo?.role}</p>
-            </div>
-          </section>
 
-          {/* Ringkasan Absensi */}
-          <section className="p-4 border-b border-gray-200">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3">
-              <div className="flex items-center gap-3 mb-2 sm:mb-0">
-                <FontAwesomeIcon icon={faCalendarCheck} className="text-green-600 text-xl" />
-                <div>
-                  <h3 className="font-semibold text-gray-800">Ringkasan Absensi</h3>
-                  <p className="text-xs text-gray-500">Detail Kehadiran Karyawan</p>
-                </div>
-              </div>
-              {selectedAbsen?.jam_mulai && (
-                <p className="text-sm font-medium text-gray-600">
-                  {formatFullDate(selectedAbsen.jam_mulai)}
+          {/* Jika belum ada data */}
+          {!selectedAbsen ? (
+            <div className="p-6 text-center text-gray-500 italic">
+              Data absensi tidak ditemukan atau belum dimuat.
+            </div>
+          ) : (
+            <>
+              {/* 🔹 Info Box / Note Section */}
+              <div className="bg-green-50 border-l-4 border-green-600 p-3 text-sm text-green-800 rounded">
+                <p>
+                  <strong>Catatan:</strong> Mohon periksa kembali detail absensi seperti waktu, lokasi, dan foto pendukung sebelum memberikan keputusan persetujuan atau penolakan.
                 </p>
-              )}
-            </div>
+              </div>
 
-            {!selectedAbsen && (
-              <p className="text-gray-400 italic">Tidak ada data presensi.</p>
-            )}
+              {/* 🔸 SECTION 1 — Informasi Karyawan */}
+              <section className="p-5 border-b border-gray-100">
+                <h4 className="flex items-center gap-2 text-base font-semibold text-green-700 mb-3">
+                  <FontAwesomeIcon icon={faUser} className="text-green-500" />
+                  Informasi Karyawan
+                </h4>
 
-            {selectedAbsen && (
-              <>
-                {/* Status & Shift */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 p-2 bg-gray-50 rounded border text-sm">
-                  <div className="flex items-center gap-2 mb-2 sm:mb-0">
-                    <FontAwesomeIcon icon={faClock} className="text-green-500 text-sm" />
-                    <span className="font-semibold">{selectedAbsen.shift || "-"}</span>
-                  </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold transition-all duration-300 ${selectedAbsen?.status === 1
-                      ? "bg-green-100 text-green-700 border border-green-300"
-                      : selectedAbsen?.status === 2
-                        ? "bg-red-100 text-red-700 border border-red-300"
-                        : "bg-yellow-100 text-yellow-700 border border-yellow-300"
-                    }`}>
-                    {selectedAbsen?.status === 1
-                      ? "Sudah Disetujui"
-                      : selectedAbsen?.status === 2
-                        ? "Telah Ditolak"
-                        : "Menunggu Persetujuan"}
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 text-sm leading-relaxed">
+                  <p><strong>Nama:</strong> {employeeInfo?.nama || "-"}</p>
+                  <p><strong>NIP:</strong> {employeeInfo?.nip || "-"}</p>
+                  <p><strong>Perusahaan:</strong> {employeeInfo?.perusahaan || "-"}</p>
+                  <p><strong>Role:</strong> {employeeInfo?.role || "-"}</p>
+                  <p>
+                    <strong>Kendaraan:</strong>{" "}
+                    {selectedAbsen?.status_kendaraan === 1 ? "Milik Pribadi" : selectedAbsen?.status_kendaraan === 2 ? "Milik Perusahaan" : "Belum Ada Data"}
+                  </p>
+                </div>
+              </section>
+
+              {/* 🔸 SECTION 2 — Ringkasan Absensi */}
+              <section className="p-5 border-b border-gray-100">
+                <h4 className="flex items-center gap-2 text-base font-semibold text-green-700 mb-3">
+                  <FontAwesomeIcon icon={faCalendarCheck} className="text-green-500" />
+                  Ringkasan Absensi
+                </h4>
+
+                <div className="flex justify-between items-start sm:items-center mb-3">
+                  {selectedAbsen?.jam_mulai ? (
+                    <span className="text-sm font-medium text-gray-600">
+                      {formatFullDate(selectedAbsen.jam_mulai)}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-400 italic">Tanggal tidak tersedia</span>
+                  )}
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold border transition-all ${selectedAbsen?.status === 1 ? "bg-green-100 text-green-700 border-green-300" : selectedAbsen?.status === 2 ? "bg-red-100 text-red-700 border-red-300" : "bg-yellow-100 text-yellow-700 border-yellow-300"}`}>
+                    {selectedAbsen?.status === 1 ? "Sudah Disetujui" : selectedAbsen?.status === 2 ? "Telah Ditolak" : "Menunggu Persetujuan"}
                   </span>
                 </div>
 
-                {/* Absen Masuk & Pulang (grid dengan border vertikal) */}
-                <div className="grid md:grid-cols-2 text-sm border-t border-b border-gray-200">
+                <div className="p-3 bg-green-50 rounded-md border border-green-100 text-sm">
+                  <p><strong>Shift:</strong> {selectedAbsen?.shift || "-"}</p>
+                </div>
+              </section>
+
+              {/* 🔸 SECTION 3 — Tunjangan & Shift */}
+              <section className="p-5 border-b border-gray-100">
+                <h4 className="flex items-center gap-2 text-base font-semibold text-green-700 mb-3">
+                  <FontAwesomeIcon icon={faMoneyBillWave} className="text-green-500" />
+                  Informasi Tunjangan & Shift
+                </h4>
+
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="flex items-center gap-2 p-3 bg-green-50 rounded border border-green-100 text-sm">
+                    <FontAwesomeIcon icon={faMotorcycle} className="text-green-500" />
+                    <span className="font-medium">
+                      {calculateConditions(selectedAbsen)?.transport
+                        ? "Mendapat Tunjangan Transportasi"
+                        : "Tidak Dapat Tunjangan Transportasi"}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 p-3 bg-green-50 rounded border border-green-100 text-sm">
+                    <FontAwesomeIcon icon={faMoon} className="text-green-500" />
+                    <span className="font-medium">
+                      {calculateConditions(selectedAbsen)?.night_shift
+                        ? "Mendapat Tunjangan Shift Malam"
+                        : "Tidak Dapat Tunjangan Shift Malam"}
+                    </span>
+                  </div>
+                </div>
+              </section>
+
+              {/* 🔸 SECTION 4 — Absen Masuk & Pulang */}
+              <section className="p-6">
+                {/* Header Section */}
+                <h4 className="flex items-center gap-2 text-base font-semibold text-green-700 mb-6">
+                  <FontAwesomeIcon icon={faClock} className="text-green-600" />
+                  Detail Absen Masuk & Pulang
+                </h4>
+
+                {/* Dua Card Sejajar */}
+                <div className="grid md:grid-cols-2 gap-5">
                   {[
                     {
                       label: "Absen Masuk",
-                      jam: selectedAbsen.jam_mulai,
-                      lokasi: selectedAbsen.lokasi_mulai,
-                      titik: selectedAbsen.titik_mulai_pengguna,
-                      foto: selectedAbsen.foto_mulai,
-                      jarak: selectedAbsen.jarak_mulai,
-                      keterlambatan: selectedAbsen.keterlambatan,
+                      jam: selectedAbsen?.jam_mulai,
+                      lokasi: selectedAbsen?.lokasi_mulai,
+                      titik: selectedAbsen?.titik_mulai_pengguna,
+                      foto: selectedAbsen?.foto_mulai,
+                      jarak: selectedAbsen?.jarak_mulai,
+                      keterlambatan: selectedAbsen?.keterlambatan,
                     },
                     {
                       label: "Absen Pulang",
-                      jam: selectedAbsen.jam_selesai,
-                      lokasi: selectedAbsen.lokasi_selesai,
-                      titik: selectedAbsen.titik_selesai_pengguna,
-                      foto: selectedAbsen.foto_selesai,
-                      jarak: selectedAbsen.jarak_selesai,
+                      jam: selectedAbsen?.jam_selesai,
+                      lokasi: selectedAbsen?.lokasi_selesai,
+                      titik: selectedAbsen?.titik_selesai_pengguna,
+                      foto: selectedAbsen?.foto_selesai,
+                      jarak: selectedAbsen?.jarak_selesai,
                     },
                   ].map((item, i) => (
-                    <div
-                      key={i}
-                      className={`flex flex-col sm:flex-row gap-3 p-3 items-start ${i === 0 ? "border-r border-gray-200" : ""}`}
-                    >
-                      {/* Foto */}
-                      <div className="w-20 h-20 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 border">
-                        {item.foto ? (
-                          <a href={item.foto} target="_blank" rel="noopener noreferrer">
-                            <img src={item.foto} alt={item.label} className="w-full h-full object-cover" />
-                          </a>
-                        ) : (
-                          <div className="flex h-full items-center justify-center text-gray-400 text-xs">
-                            Tidak ada foto
+                    <div key={i} className="bg-white border border-green-100 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+                      <div className="bg-green-50 border-b border-green-100 px-5 py-3 rounded-t-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-100">
+                            <FontAwesomeIcon icon={faClock} className="text-green-600 text-lg" />
                           </div>
-                        )}
+
+                          <div className="flex flex-col leading-tight">
+                            <h5 className="text-green-700 font-semibold text-sm">{item.label}</h5>
+                            <p className="text-green-600 text-xs">{item.jam ? formatFullDate(item.jam) : "-"}</p>
+                          </div>
+                        </div>
                       </div>
 
-                      {/* Detail */}
-                      <div className="flex-1 flex flex-col gap-1 w-full">
-                        <h5 className="font-semibold text-gray-800">{item.label}</h5>
-                        <div><strong>Waktu:</strong> {item.jam ? formatTime(item.jam) : "-"}</div>
-                        <div><strong>Tanggal:</strong> {item.jam && formatFullDate(item.jam)}</div>
-                        <div><strong>Lokasi Kerja:</strong> {item.lokasi || "-"}</div>
-                        <div>
-                          <strong>Lokasi Absen:</strong>{" "}
-                          {item.titik ? (
-                            <a
-                              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.titik)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="underline text-blue-600 hover:text-blue-800"
-                            >
-                              Lihat di GMaps
+
+                      {/* Isi Card */}
+                      <div className="flex flex-col sm:flex-row items-start gap-6 p-5">
+                        {/* FOTO */}
+                        <div className="w-32 h-32 rounded-lg overflow-hidden border border-green-100 shadow-sm flex-shrink-0 bg-green-50">
+                          {item.foto ? (
+                            <a href={item.foto} target="_blank" rel="noopener noreferrer">
+                              <img src={item.foto} alt={item.label} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
                             </a>
-                          ) : "-"}
+                          ) : (
+                            <div className="flex h-full items-center justify-center text-green-400 text-xs">
+                              Tidak ada foto
+                            </div>
+                          )}
                         </div>
-                        <div><strong>Jarak:</strong> {formatDistance(item.jarak)}</div>
-                        {i === 0 && item.keterlambatan !== "00:00" && (
-                          <div className="text-red-600 font-semibold">
-                            Keterlambatan: {item.keterlambatan}
+
+                        {/* INFORMASI */}
+                        <div className="flex-1 flex flex-col gap-3 text-gray-700">
+                          <div>
+                            <p className="text-xs text-gray-500">Waktu</p>
+                            <p className="font-medium text-gray-800">
+                              {item.jam ? formatTime(item.jam) : "-"}
+                            </p>
                           </div>
-                        )}
+
+                          <div>
+                            <p className="text-xs text-gray-500">Lokasi Kerja</p>
+                            <p className="font-medium text-gray-800">{item.lokasi || "-"}</p>
+                          </div>
+
+                          <div>
+                            <p className="text-xs text-gray-500">Lokasi Absen Karyawan</p>
+                            {item.titik ? (
+                              <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.titik)}`} target="_blank" rel="noopener noreferrer" className="font-medium text-green-600 underline hover:text-green-800 inline-block">
+                                Lihat di Maps
+                              </a>
+                            ) : (
+                              <p className="font-medium text-gray-800">-</p>
+                            )}
+                          </div>
+
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <p className="text-xs text-gray-500">Jarak Lokasi Bekerja dari Titik Presensi</p>
+                              <p className="font-medium text-gray-800">{formatDistance(item.jarak)}</p>
+                            </div>
+
+                            {i === 0 && item.keterlambatan && item.keterlambatan !== "00:00" && (
+                              <div className="text-red-600 font-semibold text-sm flex items-center gap-1">
+                                <FontAwesomeIcon icon={faExclamationTriangle} />
+                                <span>{item.keterlambatan}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
+              </section>
 
-                {/* Keterangan */}
-                <div className="mt-3 text-sm">
-                  <h5 className="font-semibold mb-1 text-gray-800">Keterangan Karyawan:</h5>
-                  <p className="text-gray-600">
-                    {selectedAbsen.deskripsi || <span className="italic text-gray-400">Tidak ada keterangan</span>}
-                  </p>
-                </div>
-              </>
-            )}
-          </section>
+
+              {/* 🔸 SECTION 5 — Keterangan Karyawan */}
+              <section className="p-5">
+                <h4 className="flex items-center gap-2 text-base font-semibold text-green-700 mb-2">
+                  <FontAwesomeIcon icon={faFileSignature} className="text-green-500" />
+                  Keterangan Karyawan
+                </h4>
+                <p className="text-gray-700 bg-green-50 p-3 rounded border border-green-100 text-sm">
+                  {selectedAbsen?.deskripsi || (
+                    <span className="italic text-gray-400">Tidak ada keterangan tambahan.</span>
+                  )}
+                </p>
+              </section>
+            </>
+          )}
         </div>
       </Modal>
-
-
-
-
     </div>
   );
 };

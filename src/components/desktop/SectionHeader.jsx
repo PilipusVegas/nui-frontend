@@ -4,7 +4,6 @@ import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 const SectionHeader = ({ title, subtitle, onBack, actions }) => {
     return (
         <div className=" w-full mb-4 flex items-center justify-between gap-2 sm:gap-4">
-            {/* Kiri: Back + Title/SubTitle dalam satu grup */}
             <div className="flex items-center gap-2 sm:gap-3 flex-shrink">
                 {onBack && (
                     <FontAwesomeIcon icon={faArrowLeft} onClick={onBack} title="Kembali" className="cursor-pointer text-white bg-green-500 hover:bg-green-600 transition rounded-full p-2.5 sm:p-4 shadow-lg" />

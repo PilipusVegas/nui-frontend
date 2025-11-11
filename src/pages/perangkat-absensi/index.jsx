@@ -21,7 +21,7 @@ const PerangkatAbsensi = () => {
         try {
             const res = await fetchWithJwt(`${apiUrl}/mesin`);
             const data = await res.json();
-            if (data?.status?.toLowerCase() === "success") {
+            if (data?.success) {
                 setMenu(data.data || []);
             } else {
                 setMenu([]);

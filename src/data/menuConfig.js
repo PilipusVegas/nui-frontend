@@ -22,12 +22,9 @@ import {
     faBriefcase,
     faClock,
     faFolderOpen,
-    faEdit, 
+    faEdit,
     faUserGear,
-    faCheckCircle,
-    faGears,
-    faDollarSign,
-    faMoneyCheckDollar
+    faGift
 } from "@fortawesome/free-solid-svg-icons";
 import { faPenFancy } from "@fortawesome/free-solid-svg-icons/faPenFancy";
 
@@ -64,7 +61,7 @@ export const menuConfig = [
     },
 
     // 3. ABSENSI & PENGGAJIAN
-    {
+    {   
         sectionTitle: "Kehadiran & Penggajian",
         items: [
             {
@@ -77,14 +74,7 @@ export const menuConfig = [
                     { label: "Remark Absensi", icon: faEdit, path: "/remark-absensi", roles: [1, 4, 6] },
                 ],
             },
-            {
-                label: "Kelola Tunjangan",
-                icon: faDollarSign,
-                roles: [1, 4, 5, 6, 13],
-                submenu: [
-                    { label: "Rekap Tunjangan", icon: faCheckCircle, path: "/rekap-tunjangan", roles: [1, 4, 5, 6, 13], perusahaan: [1, 4], target: "_blank" },
-                ],
-            },
+            { label: "Rekap Tunjangan", icon: faGift, path: "/rekap-tunjangan", roles: [1, 4, 6], perusahaan: [1, 4], target: "_blank" },
             { label: "Jam Kerja / Shift", icon: faClock, path: "/shift", roles: [1, 4, 6] },
             {
                 label: "Penggajian", icon: faMoneyBillWave, roles: [1, 4, 6], submenu: [

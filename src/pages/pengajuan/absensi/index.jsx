@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { faArrowLeft, faArrowRight, faCheck, faEye, faExclamationTriangle, faCalendarAlt, faCheckCircle, faSortDown, faSort, faSortUp, faSortAsc } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faEye, faExclamationTriangle, faCalendarAlt, faCheckCircle, faSortDown, faSortUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
 import { fetchWithJwt, getUserFromToken } from "../../../utils/jwtHelper";

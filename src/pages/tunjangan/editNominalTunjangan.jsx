@@ -112,10 +112,7 @@ const EditNominalTunjangan = ({ isOpen, onClose }) => {
                             </tr>
                         ) : (
                             tunjangan.map((item) => (
-                                <tr
-                                    key={item.id}
-                                    className="hover:bg-gray-50 transition-colors border-t"
-                                >
+                                <tr key={item.id} className="hover:bg-gray-50 transition-colors border-t">
                                     <td className="px-4 border-r">
                                         <div className="flex flex-col">
                                             <span className="text-gray-800 font-medium">
@@ -131,13 +128,8 @@ const EditNominalTunjangan = ({ isOpen, onClose }) => {
                                             <span className="absolute left-3 text-gray-500 text-sm">
                                                 Rp
                                             </span>
-                                            <input
-                                                type="text"
-                                                value={Number(item.nominal).toLocaleString("id-ID")}
-                                                onChange={(e) => {
-                                                    const rawValue = e.target.value.replace(/\D/g, "");
-                                                    handleChange(item.id, rawValue);
-                                                }}
+                                            <input type="text" value={Number(item.nominal).toLocaleString("id-ID")}
+                                                onChange={(e) => { const rawValue = e.target.value.replace(/\D/g, ""); handleChange(item.id, rawValue);}}
                                                 className="pl-7 pr-2 w-full text-right bg-transparent focus:outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [appearance:textfield]"
                                             />
                                         </div>
