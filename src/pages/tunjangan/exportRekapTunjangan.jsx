@@ -104,9 +104,9 @@ export const exportRekapTunjangan = async (
         "", // kolom A kosong agar mulai dari kolom B
         item.nip,
         item.nama_user,
-        item.total?.id_tunjangan_3 ?? "-",
         item.total?.id_tunjangan_1 ?? "-",
         item.total?.id_tunjangan_2 ?? "-",
+        item.total?.id_tunjangan_3 ?? "-",
         item.total?.tunjangan ?? 0,
       ];
 
