@@ -96,6 +96,12 @@ const TambahKaryawan = () => {
             </p>
           </div>
 
+          {/* Nama */}
+          <div>
+            <label className="block mb-1 font-medium text-gray-700">Nama Lengkap</label>
+            <input type="text" name="nama" value={currentUser.nama} onChange={handleChange} placeholder="Masukkan nama lengkap karyawan" required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+          </div>
+
           {/* NIK */}
           <div>
             <label className="block mb-1 font-medium text-gray-700">NIK</label>
@@ -112,12 +118,6 @@ const TambahKaryawan = () => {
           <div>
             <label className="block mb-1 font-medium text-gray-700">NPWP</label>
             <input type="text" name="npwp" value={currentUser.npwp} onChange={handleChange} placeholder="Masukkan Nomor Pokok Wajib Pajak" required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
-          </div>
-
-          {/* Nama */}
-          <div>
-            <label className="block mb-1 font-medium text-gray-700">Nama Lengkap</label>
-            <input type="text" name="nama" value={currentUser.nama} onChange={handleChange} placeholder="Masukkan nama lengkap karyawan" required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
           </div>
 
           {/* Telepon */}

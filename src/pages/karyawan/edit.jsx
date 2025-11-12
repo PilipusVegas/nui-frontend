@@ -111,6 +111,13 @@ const EditKaryawan = () => {
                         </p>
                     </div>
 
+                    {/* Nama */}
+                    <div>
+                        <label className="block mb-1 font-medium text-gray-700">Nama Lengkap</label>
+                        <p className="text-sm text-gray-500 mb-2 -mt-1.5">Masukkan <span className="font-semibold text-gray-800">nama lengkap</span> karyawan.</p>
+                        <input type="text" name="nama" value={currentUser.nama} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                    </div>
+
                     {/* NIK */}
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">NIK</label>
@@ -130,13 +137,6 @@ const EditKaryawan = () => {
                         <label className="block mb-1 font-medium text-gray-700">NPWP</label>
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">Masukkan Nomor Pokok Wajib Pajak (NPWP).</p>
                         <input type="text" name="npwp" value={currentUser.npwp} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
-                    </div>
-
-                    {/* Nama */}
-                    <div>
-                        <label className="block mb-1 font-medium text-gray-700">Nama Lengkap</label>
-                        <p className="text-sm text-gray-500 mb-2 -mt-1.5">Masukkan <span className="font-semibold text-gray-800">nama lengkap</span> karyawan.</p>
-                        <input type="text" name="nama" value={currentUser.nama} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     </div>
 
                     {/* Telepon */}

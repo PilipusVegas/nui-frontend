@@ -230,29 +230,51 @@ const DataRekapAbsensi = () => {
               <div className="overflow-x-auto" style={{ flexGrow: 1 }}>
                 <table className="border-collapse w-full min-w-max bg-white">
                   <thead>
+                    {/* Baris tanggal */}
                     <tr>
                       {tanggalArray.map(tgl => {
                         const m = dayMeta(tgl);
                         return (
-                          <th key={tgl} colSpan={6} className={`sticky top-0 z-10 text-white ${m.bg} ${m.border} border px-2 py-0.5 text-center text-xs min-w-[120px]`}>
+                          <th
+                            key={tgl}
+                            colSpan={m.isSunday ? 6 : 4}
+                            className={`sticky top-0 z-10 text-white ${m.bg} ${m.border} border px-2 py-0.5 text-center text-xs min-w-[120px]`}
+                          >
                             {formatLongDate(tgl)}
                           </th>
                         );
                       })}
                     </tr>
+
+                    {/* Baris nama hari */}
                     <tr>
                       {tanggalArray.map(tgl => {
                         const m = dayMeta(tgl);
                         return (
-                          <th key={`hari-${tgl}`} colSpan={6} className={`sticky top-0 z-20 text-white ${m.bg} ${m.border} border px-2 py-0.5 text-center text-xs`}> {m.dayName}</th>
+                          <th
+                            key={`hari-${tgl}`}
+                            colSpan={m.isSunday ? 6 : 4}
+                            className={`sticky top-0 z-20 text-white ${m.bg} ${m.border} border px-2 py-0.5 text-center text-xs`}
+                          >
+                            {m.dayName}
+                          </th>
                         );
                       })}
                     </tr>
+
+                    {/* Baris label kolom */}
                     <tr>
                       {tanggalArray.map(tgl => {
                         const m = dayMeta(tgl);
-                        return ["IN", "LATE", "OUT", "T", "LM", "LP"].map(label => (
-                          <th key={`${tgl}-${label}`} className={`text-white ${m.bg} ${m.border} border px-1 py-0.5 text-[11.5px]`}> {label}</th>
+                        // hanya tampilkan LM dan LP jika hari Minggu
+                        const labels = m.isSunday ? ["IN", "LATE", "OUT", "T", "LM", "LP"] : ["IN", "LATE", "OUT", "T"];
+                        return labels.map(label => (
+                          <th
+                            key={`${tgl}-${label}`}
+                            className={`text-white ${m.bg} ${m.border} border px-1 py-0.5 text-[11.5px]`}
+                          >
+                            {label}
+                          </th>
                         ));
                       })}
                     </tr>
@@ -264,7 +286,7 @@ const DataRekapAbsensi = () => {
                         key={rowIdx}
                         onMouseEnter={() => setHoveredRow(rowIdx)}
                         onMouseLeave={() => setHoveredRow(null)}
-                        className="group" // penting: ini kunci agar seluruh baris merespons hover
+                        className="group"
                       >
                         {tanggalArray.map((tgl, colIdx) => {
                           const m = dayMeta(tgl);
@@ -274,13 +296,16 @@ const DataRekapAbsensi = () => {
                           const lateMin = lateVal === null || lateVal === undefined || lateVal === 0 ? "-" : lateVal;
                           const outTime = att.out || "-";
                           const rawOt = att.overtime ?? item.overtimes?.[tgl]?.durasi;
-                          const startOvertime = att.overtime ?? item.overtimes?.[tgl]?.mulai ?? "-";
-                          const lastOvertime = att.overtime ?? item.overtimes?.[tgl]?.selesai ?? "-";
+                          const startOvertime = item.overtimes?.[tgl]?.mulai ?? "-";
+                          const lastOvertime = item.overtimes?.[tgl]?.selesai ?? "-";
                           const overtime = rawOt === null || rawOt === undefined || rawOt === 0 ? "-" : rawOt;
                           const isEvenCol = colIdx % 2 === 0;
 
                           // === Style dasar tiap sel ===
-                          const tdBase = `border px-2 py-1 text-center text-xs min-w-[50px] ${m.isSunday ? "border-red-800 bg-red-600 text-white font-semibold group-hover:!bg-red-700 group-hover:!text-white" : `border-gray-300 ${isEvenCol ? "bg-gray-100" : "bg-white"} group-hover:!bg-gray-200`}`;
+                          const tdBase = `border px-2 py-1 text-center text-xs min-w-[50px] ${m.isSunday
+                              ? "border-red-800 bg-red-600 text-white font-semibold group-hover:!bg-red-700 group-hover:!text-white"
+                              : `border-gray-300 ${isEvenCol ? "bg-gray-100" : "bg-white"} group-hover:!bg-gray-200`
+                            }`;
 
                           return (
                             <React.Fragment key={`${tgl}-${rowIdx}`}>
@@ -288,8 +313,14 @@ const DataRekapAbsensi = () => {
                               <td className={`${tdBase} ${lateVal > 0 ? "text-red-700 font-bold" : ""}`}>{lateMin}</td>
                               <td className={tdBase}>{outTime}</td>
                               <td className={tdBase}>{overtime}</td>
-                              <td className={tdBase}>{startOvertime}</td>
-                              <td className={tdBase}>{lastOvertime}</td>
+
+                              {/* Hanya render LM & LP jika hari Minggu */}
+                              {m.isSunday && (
+                                <>
+                                  <td className={tdBase}>{startOvertime}</td>
+                                  <td className={tdBase}>{lastOvertime}</td>
+                                </>
+                              )}
                             </React.Fragment>
                           );
                         })}
@@ -298,6 +329,7 @@ const DataRekapAbsensi = () => {
                   </tbody>
                 </table>
               </div>
+
             </div>
           </div>
         </div>
