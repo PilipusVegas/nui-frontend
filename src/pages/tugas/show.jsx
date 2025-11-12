@@ -2,9 +2,6 @@ import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-    faTag,
-    faUserTie,
-    faClock,
     faHourglassHalf,
     faCircleCheck,
     faCircleXmark,
@@ -15,7 +12,6 @@ import {
     faTimes,
     faCameraRetro,
     faHammer,
-    faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import toast from "react-hot-toast";
 import MobileLayout from "../../layouts/mobileLayout";
@@ -120,196 +116,193 @@ const DetailTugasMobile = () => {
                     <EmptyState title="Data Tidak Ditemukan" description="Tugas ini tidak tersedia atau sudah dihapus." />
                 ) : (
                     <>
-                        <h1 className="text-sm font-bold text-gray-900 leading-snug mb-2 capitalize break-words">
+                        <h1 className="text-[13px] font-semibold text-gray-900 mb-1 leading-snug">
                             {task.nama_tugas}
                         </h1>
+                        <p className="text-[10px] text-gray-500 mb-3">
+                            {formatFullDate(task.start_date)} · oleh {task.nama_kadiv}
+                        </p>
 
-                        <div className="text-[10px] sm:text-[11px] text-gray-700 mb-3 border-b border-gray-200 pb-2">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
-
-                                {/* Dibuat Oleh */}
-                                <div className="flex items-center">
-                                    <FontAwesomeIcon icon={faUserTie} className="mr-2 text-green-500 w-3.5" />
-                                    <span className="font-semibold text-gray-800 mr-1">Dibuat Oleh:</span>
-                                    <span className="truncate text-gray-700">{task.nama_kadiv}</span>
-                                </div>
-
-                                {/* Mulai */}
-                                <div className="flex items-center">
-                                    <FontAwesomeIcon icon={faClock} className="mr-2 text-green-500 w-3.5" />
-                                    <span className="font-semibold text-gray-800 mr-1">Tugas Dimulai:</span>
-                                    <span className="text-gray-700">{formatFullDate(task.start_date)}</span>
-                                </div>
-
-                                {/* Tenggat */}
-                                <div className="flex items-center">
-                                    <FontAwesomeIcon icon={faHourglassHalf} className="mr-2 text-green-500 w-3.5" />
-                                    <span className="font-semibold text-gray-800 mr-1">Tenggat Waktu:</span>
-                                    <span className={`${task.category === "urgent" ? "text-red-600 font-semibold" : "text-green-700 font-medium"}`}>
-                                        {formatFullDate(task.deadline_at)}
-                                    </span>
-                                </div>
-
-                                {/* Kategori */}
-                                <div className="flex items-center">
-                                    <FontAwesomeIcon icon={faTag} className="mr-2 text-green-500 w-3.5" />
-                                    <span className="font-semibold text-gray-800 mr-1">Kategori:</span>
-                                    <span className={`uppercase font-semibold ${task.category === "urgent" ? "text-red-600" : task.category === "daily" ? "text-green-700" : "text-gray-700"}`}>
+                        {/* === INFORMASI SINGKAT === */}
+                        <section className="border-y border-gray-100 py-2 mb-3">
+                            <div className="grid grid-cols-2 gap-y-1 text-[10px] text-gray-700">
+                                <div>
+                                    <span className="font-medium text-gray-800">Kategori:</span>{" "}
+                                    <span className={`uppercase ${task.category === "urgent" ? "text-red-600 font-semibold" : "text-green-600"}`}>
                                         {task.category}
                                     </span>
                                 </div>
+                                <div>
+                                    <span className="font-medium text-gray-800">Tenggat:</span>{" "}
+                                    <span className={`${task.category === "urgent" ? "text-red-600 font-semibold" : "text-gray-700"}`}>
+                                        {formatFullDate(task.deadline_at)}
+                                    </span>
+                                </div>
                             </div>
-                        </div>
+                        </section>
 
-
-                        {/* === DESKRIPSI PENUGASAN === */}
-                        <div className="mt-4 mb-4">
-                            <h3 className="text-xs font-semibold text-green-600 mb-1">
-                                Deskripsi Penugasan :
-                            </h3>
-                            <p className="text-[12px] leading-relaxed text-gray-800 whitespace-pre-line text-justify">
+                        {/* === DESKRIPSI === */}
+                        <section className="mb-3">
+                            <h3 className="text-[11px] font-semibold text-green-600 mb-1">Deskripsi Penugasan</h3>
+                            <p className="text-[11px] text-gray-800 leading-relaxed text-justify">
                                 {task.deskripsi || "Belum ada deskripsi tugas dari Kadiv."}
                             </p>
-                        </div>
+                        </section>
 
 
                         {/* === STATUS === */}
-                        <div className="text-[11px] space-y-1 mb-4 border-t border-gray-200 pt-5">
+                        <section className="mb-4">
+                            <h3 className="text-[11px] font-semibold text-green-600 mb-1">Status Penugasan</h3>
                             {task.is_paused === 1 && (
-                                <p className="text-amber-600 font-medium">
+                                <p className="text-[11px] text-amber-600">
                                     <FontAwesomeIcon icon={faPauseCircle} className="mr-1 text-amber-500" />
-                                    Tugas sedang <strong>ditunda sementara</strong>.
+                                    Penugasan Ditunda Sementara.
                                 </p>
                             )}
                             {task.status_tugas === 2 && (
-                                <p className="text-red-600 font-medium">
+                                <p className="text-[11px] text-red-600 font-medium">
                                     <FontAwesomeIcon icon={faCircleXmark} className="mr-1 text-red-500" />
-                                    Pengajuan <strong>ditolak</strong> — mohon revisi segera.
+                                    Pengajuan Ditolak, Mohon Revisi Segera.
                                 </p>
                             )}
                             {task.status_tugas === 0 && task.finished_at && (
-                                <p className="text-gray-600 font-medium">
+                                <p className="text-[11px] text-gray-600">
                                     <FontAwesomeIcon icon={faHourglassHalf} className="mr-1 text-gray-500" />
-                                    Menunggu <strong>verifikasi</strong> dari atasan.
+                                    Menunggu verifikasi.
                                 </p>
                             )}
                             {task.status_tugas === 1 && (
-                                <p className="text-emerald-600 font-medium">
+                                <p className="text-[11px] text-emerald-600">
                                     <FontAwesomeIcon icon={faCircleCheck} className="mr-1 text-emerald-500" />
-                                    Tugas <strong>selesai</strong> dan telah <strong>disetujui</strong>.
+                                    Penugasan Selesai dan disetujui.
+                                </p>
+                            )}
+                            {task.finished_at === null && (
+                                <p className="text-[11px] text-gray-600">
+                                    <FontAwesomeIcon icon={faHourglassHalf} className="mr-1 text-gray-500" />
+                                    Tugas Belum Selesai, Mohon Selesaikan Secepatnya.
                                 </p>
                             )}
                             {!task.finished_at && task.status_tugas === null && (
-                                <p className="text-blue-600 font-medium">
+                                <p className="text-[11px] text-blue-600">
                                     <FontAwesomeIcon icon={faHammer} className="mr-1 text-blue-500" />
-                                    Sedang <strong>dikerjakan</strong>, selesaikan tepat waktu.
+                                    Sedang dikerjakan.
                                 </p>
                             )}
-                        </div>
+                        </section>
+
 
                         {/* === PENGUMPULAN HASIL PEKERJAAN === */}
-                        <div className="mt-6 border-t border-gray-200 pt-5 pb-24">
-                            <h3 className="text-[15px] font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                                <span className="inline-block w-1 h-4 bg-green-500 rounded"></span>
-                                Bukti Penyelesaian Pekerjaan
-                            </h3>
+                        <div className="mt-6 border-t border-gray-100 pt-5 pb-24">
+                            <div className="flex items-center mb-4">
+                                <span className="inline-block w-1 h-4 bg-green-500 rounded mr-2"></span>
+                                <div>
+                                    <h3 className="text-[13px] font-semibold text-gray-800">Bukti Penyelesaian Pekerjaan</h3>
+                                    <p className="text-[10px] text-gray-500">Unggah foto hasil kerja Anda sebagai tanda penyelesaian tugas.</p>
+                                </div>
+                            </div>
 
-                            {/* === KONDISI SAAT TIDAK ADA FOTO DAN KAMERA TERTUTUP === */}
+                            {/* === KONDISI: TIDAK ADA FOTO === */}
                             {!photo && !isCameraOpen && (
-                                <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 shadow-sm hover:shadow-md transition-all duration-300 p-3">
+                                <div className="rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-300 p-3">
                                     {task.bukti_foto ? (
                                         <>
-                                            <div className="overflow-hidden rounded-xl">
-                                                <img src={`${apiUrl}/img/tugas/${task.bukti_foto}`} alt="Bukti" className="w-full h-52 sm:h-64 object-cover rounded-xl transition-transform duration-500 scale-x-[-1]" />
+                                            <div className="rounded-lg overflow-hidden mb-3">
+                                                <img src={`${apiUrl}/img/tugas/${task.bukti_foto}`} alt="Bukti" className="w-full h-48 object-cover rounded-lg"/>
                                             </div>
+                                            <p className="text-[11px] text-gray-700 text-center leading-snug mb-3">
+                                                {Number(task.status_tugas) === 2
+                                                    ? "Tugas ini memerlukan pembaruan. Silakan unggah ulang bukti pekerjaan terbaru Anda."
+                                                    : "Bukti pekerjaan telah dikirim dan menunggu verifikasi dari kepala divisi."}
+                                            </p>
 
-                                            <div className="text-center mt-3">
-                                                <p className="text-[12px] text-gray-600 mb-1">
-                                                    Bukti hasil pekerjaan telah dikirim.
-                                                    {Number(task.status_tugas) === 2 ? " Tugas memerlukan pembaruan, silakan unggah ulang secepatnya!." : " Menunggu verifikasi dari kepala divisi."}
-                                                </p>
-
-                                                {Number(task.status_tugas) === 2 && (
-                                                    <button type="button" onClick={() => setIsCameraOpen(true)} className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs sm:text-sm font-medium rounded-md shadow-sm transition-all">
-                                                        <FontAwesomeIcon icon={faSyncAlt} className="text-white text-xs" />
-                                                        Ambil Ulang Foto
-                                                    </button>
-                                                )}
-                                            </div>
+                                            {Number(task.status_tugas) === 2 && (
+                                                <button type="button" onClick={() => setIsCameraOpen(true)} className="w-full py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-md text-[11px] font-medium transition-all flex items-center justify-center gap-2">
+                                                    <FontAwesomeIcon icon={faSyncAlt} className="text-white text-xs" />
+                                                    Ambil Ulang Foto
+                                                </button>
+                                            )}
                                         </>
                                     ) : (
-                                        <div className="flex flex-col items-center justify-center py-6 text-gray-600">
-                                            <p className="text-xs sm:text-sm mb-3 text-center">
-                                                Belum ada bukti penyelesaian pekerjaan.
-                                                Silakan ambil foto untuk menandai bahwa pekerjaan ini telah selesai.
+                                        <div className="text-center flex flex-col items-center justify-center py-5 text-gray-600">
+                                            <p className="text-[11px] leading-snug mb-3 max-w-[260px]">
+                                                Belum ada bukti penyelesaian tugas. Silakan ambil foto sebagai tanda bahwa pekerjaan telah selesai.
                                             </p>
-                                            <button type="button" onClick={() => setIsCameraOpen(true)} className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium rounded-md shadow-md transition-all">
+                                            <button type="button" onClick={() => setIsCameraOpen(true)} className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-[11px] font-medium rounded-md shadow-sm transition-all">
                                                 <FontAwesomeIcon icon={faCamera} className="text-white text-xs" />
-                                                Ambil Foto & Kirim Hasil
+                                                Ambil Foto & Kirim
                                             </button>
                                         </div>
                                     )}
                                 </div>
                             )}
 
-                            {/* === TAMPILAN KAMERA === */}
+                            {/* === KONDISI: KAMERA TERBUKA === */}
                             {isCameraOpen && (
-                                <div className="mt-4 space-y-3 rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white shadow-inner p-3">
+                                <div className="mt-4 space-y-3 rounded-xl border border-gray-200 bg-gray-50 shadow-inner p-3">
                                     <div className="w-full aspect-[4/3] rounded-lg overflow-hidden border border-gray-300 bg-black">
-                                        <Webcam ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode }} className="w-full h-full object-cover scale-x-[-1]" />
+                                        <Webcam ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode }} className="w-full h-full object-cover"/>
                                     </div>
 
-                                    <div className="flex flex-row gap-2">
-                                        <button onClick={switchCamera} className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium shadow-sm transition-all flex items-center justify-center gap-2">
+                                    <div className="flex gap-2">
+                                        <button onClick={switchCamera} className="flex-1 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md text-[11px] font-medium transition-all flex items-center justify-center gap-2">
                                             <FontAwesomeIcon icon={faSyncAlt} />
                                             Ganti Kamera
                                         </button>
-                                        <button onClick={() => { capturePhoto(); setIsCameraOpen(false); }} className="flex-1 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium shadow-sm transition-all flex items-center justify-center gap-2">
+                                        <button
+                                            onClick={() => {
+                                                capturePhoto();
+                                                setIsCameraOpen(false);
+                                            }}
+                                            className="flex-1 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md text-[11px] font-medium transition-all flex items-center justify-center gap-2"
+                                        >
                                             <FontAwesomeIcon icon={faCameraRetro} />
                                             Ambil Foto
                                         </button>
                                     </div>
 
-                                    <small className="text-[11px] text-gray-500 text-center block">
+                                    <p className="text-[10px] text-gray-500 text-center">
                                         Pastikan hasil kerja terlihat jelas dan pencahayaan cukup.
-                                    </small>
+                                    </p>
 
-                                    <button onClick={() => setIsCameraOpen(false)} className="w-full py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md text-sm font-medium transition-all flex items-center justify-center gap-2">
+                                    <button onClick={() => setIsCameraOpen(false)} className="w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-[11px] font-medium transition-all flex items-center justify-center gap-2">
                                         <FontAwesomeIcon icon={faTimes} />
                                         Batalkan
                                     </button>
                                 </div>
                             )}
 
-                            {/* === TAMPILAN FOTO SETELAH AMBIL FOTO === */}
+                            {/* === KONDISI: SETELAH AMBIL FOTO === */}
                             {photo && !isCameraOpen && (
-                                <div className="mt-5">
-                                    <h4 className="text-xs sm:text-sm font-semibold text-gray-700 mb-3 text-center">
-                                        {task.bukti_foto ? "Foto Revisi Hasil Pekerjaan" : "Bukti Hasil Pekerjaan"}
-                                    </h4>
-
-                                    <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm">
-                                        <img src={photo} alt="Preview Bukti" className="w-full h-52 sm:h-64 object-cover rounded-xl transition-transform duration-500 scale-x-[-1]" />
+                                <div className="mt-4">
+                                    <div className="rounded-lg overflow-hidden border border-gray-200 shadow-sm mb-3">
+                                        <img src={photo} alt="Preview Bukti" className="w-full h-48 object-cover rounded-lg"/>
                                     </div>
 
-                                    <div className="flex flex-row justify-between items-center gap-3 mt-4">
-                                        <button onClick={() => setPhoto(null)} className="w-1/2 min-h-[44px] flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-medium transition-all shadow-sm">
+                                    <div className="flex justify-between gap-3">
+                                        <button onClick={() => setPhoto(null)} className="flex-1 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md text-[11px] font-medium flex items-center justify-center gap-2">
                                             <FontAwesomeIcon icon={faTimes} />
-                                            <span>Ulangi</span>
+                                            Ulangi
                                         </button>
 
-                                        <button onClick={handleUpload} disabled={uploading} className={`w-1/2 min-h-[44px] flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-all shadow-sm ${uploading ? "bg-gray-400 cursor-not-allowed text-white" : "bg-green-600 hover:bg-green-700 text-white"}`}>
+                                        <button onClick={handleUpload} disabled={uploading}
+                                            className={`flex-1 py-2 rounded-md text-[11px] font-medium flex items-center justify-center gap-2 transition-all ${uploading
+                                                    ? "bg-gray-400 cursor-not-allowed text-white"
+                                                    : "bg-green-600 hover:bg-green-700 text-white"
+                                                }`}
+                                        >
                                             <FontAwesomeIcon icon={faPaperPlane} />
-                                            <span>{uploading ? "Mengirim..." : "Kirim Bukti"}</span>
+                                            {uploading ? "Mengirim..." : "Kirim Bukti"}
                                         </button>
                                     </div>
 
-                                    <p className="text-[11px] text-gray-500 text-center mt-2">
+                                    <p className="text-[10px] text-gray-500 text-center mt-2">
                                         Pastikan foto yang dikirim sudah benar dan mewakili hasil pekerjaan Anda.
                                     </p>
                                 </div>
                             )}
                         </div>
+
                     </>
                 )}
             </div>

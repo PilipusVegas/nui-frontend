@@ -349,7 +349,7 @@ const DataRekapTunjangan = () => {
             )}
             {!loading && !error && dataTunjangan.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-8 text-gray-600">
-                    <EmptyState icon={faFolderOpen} title="Data kosong" subtitle="Silakan pilih rentang tanggal lain." />
+                    <EmptyState icon={faFolderOpen} title="Data Tunjangan Kosong" description="Data Tunjangan Pada Minggu Ini Kosong." subtitle="Silakan pilih rentang tanggal lain." />
                 </div>
             )}
 

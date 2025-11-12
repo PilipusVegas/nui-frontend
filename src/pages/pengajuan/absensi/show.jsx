@@ -580,32 +580,31 @@ const DetailAbsensi = () => {
               </section>
 
               {/* 🔸 SECTION 3 — Tunjangan & Shift */}
-              <section className="p-5 border-b border-gray-100">
-                <h4 className="flex items-center gap-2 text-base font-semibold text-green-700 mb-3">
-                  <FontAwesomeIcon icon={faMoneyBillWave} className="text-green-500" />
-                  Informasi Tunjangan & Shift
-                </h4>
+              {(calculateConditions(selectedAbsen)?.transport || calculateConditions(selectedAbsen)?.night_shift) && (
+                <section className="p-5 border-b border-gray-100">
+                  <h4 className="flex items-center gap-2 text-base font-semibold text-green-700 mb-3">
+                    <FontAwesomeIcon icon={faMoneyBillWave} className="text-green-500" />
+                    Informasi Tunjangan & Shift
+                  </h4>
 
-                <div className="grid sm:grid-cols-2 gap-3">
-                  <div className="flex items-center gap-2 p-3 bg-green-50 rounded border border-green-100 text-sm">
-                    <FontAwesomeIcon icon={faMotorcycle} className="text-green-500" />
-                    <span className="font-medium">
-                      {calculateConditions(selectedAbsen)?.transport
-                        ? "Mendapat Tunjangan Transportasi"
-                        : "Tidak Dapat Tunjangan Transportasi"}
-                    </span>
-                  </div>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {calculateConditions(selectedAbsen)?.transport && (
+                      <div className="flex items-center gap-2 p-3 bg-green-50 rounded border border-green-100 text-sm">
+                        <FontAwesomeIcon icon={faMotorcycle} className="text-green-500" />
+                        <span className="font-medium">Mendapat Tunjangan Transportasi</span>
+                      </div>
+                    )}
 
-                  <div className="flex items-center gap-2 p-3 bg-green-50 rounded border border-green-100 text-sm">
-                    <FontAwesomeIcon icon={faMoon} className="text-green-500" />
-                    <span className="font-medium">
-                      {calculateConditions(selectedAbsen)?.night_shift
-                        ? "Mendapat Tunjangan Shift Malam"
-                        : "Tidak Dapat Tunjangan Shift Malam"}
-                    </span>
+                    {calculateConditions(selectedAbsen)?.night_shift && (
+                      <div className="flex items-center gap-2 p-3 bg-green-50 rounded border border-green-100 text-sm">
+                        <FontAwesomeIcon icon={faMoon} className="text-green-500" />
+                        <span className="font-medium">Mendapat Tunjangan Shift Malam</span>
+                      </div>
+                    )}
                   </div>
-                </div>
-              </section>
+                </section>
+              )}
+
 
               {/* 🔸 SECTION 4 — Absen Masuk & Pulang */}
               <section className="p-6">

@@ -1,4 +1,3 @@
-import Swal from "sweetalert2";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -6,12 +5,8 @@ import { faArrowRight, faAngleDown, } from "@fortawesome/free-solid-svg-icons";
 import { menuConfig } from "../data/menuConfig";
 
 const IconButton = ({ icon, label, onClick, isActive }) => (
-  <button
-    onClick={onClick}
-    aria-label={label}
-    className={`
-        flex items-center w-full p-2.5 my-1 rounded-xl text-sm font-medium tracking-wide
-        transition-all duration-200 ease-in-out overflow-hidden
+  <button onClick={onClick} aria-label={label}
+    className={` flex items-center w-full p-2.5 my-1 rounded-xl text-sm font-medium tracking-wide transition-all duration-200 ease-in-out overflow-hidden
         ${isActive
         ? `
               bg-white/20
@@ -67,7 +62,6 @@ const MenuSidebar = ({ perusahaanId, roleId, isOpen, toggleSidebar, isMobile }) 
               {group.sectionTitle && (
                 <div className="mb-3 select-none">
                   <div className="flex items-center">
-                    {/* Accent bar hijau gradient */}
                     <div className="w-1 h-4 bg-gradient-to-b from-green-400 via-green-300 to-white/60 rounded-xl mr-2 shadow-sm"></div>
                     <p className="text-xs text-white/95 tracking-widest font-semibold uppercase drop-shadow-sm">
                       {group.sectionTitle}
@@ -85,7 +79,18 @@ const MenuSidebar = ({ perusahaanId, roleId, isOpen, toggleSidebar, isMobile }) 
                 return (
                   <div key={index}>
                     {!menu.submenu ? (
-                      <IconButton label={menu.label} icon={menu.icon} onClick={() => { menu.isAction ? menu.onClick() : navigate(menu.path); if (isMobile) toggleSidebar(); }} isActive={isActive} />
+                      <IconButton label={menu.label} icon={menu.icon} onClick={() => {
+                        if (menu.target === "_blank") {
+                          window.open(menu.path, "_blank", "noopener,noreferrer");
+                        } else if (menu.isAction) {
+                          menu.onClick();
+                        } else {
+                          navigate(menu.path);
+                        }
+                        if (isMobile) toggleSidebar();
+                      }}
+                        isActive={isActive}
+                      />
                     ) : (
                       <>
                         {/* Menu Induk */}

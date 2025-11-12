@@ -37,7 +37,7 @@ export const menuConfig = [
                 label: "Dashboard",
                 icon: faHome,
                 path: "/home",
-                roles: [1, 2, 3, 4, 5, 6, 13, 20],
+                roles: [1, 2, 3, 4, 5, 6, 18, 20],
             },
         ],
     },
@@ -67,9 +67,9 @@ export const menuConfig = [
             {
                 label: "Kelola Absensi",
                 icon: faUserEdit,
-                roles: [1, 4, 5, 6, 13],
+                roles: [1, 4, 5, 6, 18],
                 submenu: [
-                    { label: "Persetujuan Absensi", icon: faCheckSquare, path: "/pengajuan-absensi", roles: [1, 4, 5, 6, 13], perusahaan: [1, 4] },
+                    { label: "Persetujuan Absensi", icon: faCheckSquare, path: "/pengajuan-absensi", roles: [1, 4, 5, 6, 18], perusahaan: [1, 4] },
                     { label: "Data Absensi Harian", icon: faUserCheck, path: "/kelola-absensi", roles: [1, 4, 6], target: "_blank" },
                     { label: "Remark Absensi", icon: faEdit, path: "/remark-absensi", roles: [1, 4, 6] },
                 ],

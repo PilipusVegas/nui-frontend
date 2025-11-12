@@ -30,10 +30,11 @@ export default function SuratDinasPage() {
         const result = await res.json();
 
         const allEmployees = result.data.map((u) => ({
-          value: u.id,
-          label: u.nama,
+          value: u.id_user,
+          label: u.nama_user,
           id_role: u.id_role,
         }));
+
         setNamaOptions(allEmployees);
 
         const kadivFiltered = allEmployees
@@ -232,14 +233,14 @@ export default function SuratDinasPage() {
             <label className="block text-sm font-semibold text-gray-900">
               Tanggal Berangkat<span className="text-red-600">*</span>
             </label>
-            <input type="date" className="mt-2 w-full border border-gray-300 rounded-lg p-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500" value={form.tgl_berangkat} onChange={(e) => handleChange("tgl_berangkat", e.target.value)}/>
+            <input type="date" className="mt-2 w-full border border-gray-300 rounded-lg p-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500" value={form.tgl_berangkat} onChange={(e) => handleChange("tgl_berangkat", e.target.value)} />
           </div>
           {form.kategori?.value === 2 && (
             <div>
               <label className="block text-sm font-semibold text-gray-900">
                 Tanggal Pulang<span className="text-red-600">*</span>
               </label>
-              <input type="date" className="mt-2 w-full border border-gray-300 rounded-lg p-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500" value={form.tgl_pulang} onChange={(e) => handleChange("tgl_pulang", e.target.value)}/>
+              <input type="date" className="mt-2 w-full border border-gray-300 rounded-lg p-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500" value={form.tgl_pulang} onChange={(e) => handleChange("tgl_pulang", e.target.value)} />
             </div>
           )}
         </section>
@@ -249,7 +250,7 @@ export default function SuratDinasPage() {
           <label className="block text-sm font-semibold text-gray-900">
             Jam Berangkat<span className="text-red-600">*</span>
           </label>
-          <input type="time" className="mt-2 w-full border border-gray-300 rounded-lg p-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500" value={form.waktu} onChange={(e) => handleChange("waktu", e.target.value)}/>
+          <input type="time" className="mt-2 w-full border border-gray-300 rounded-lg p-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500" value={form.waktu} onChange={(e) => handleChange("waktu", e.target.value)} />
         </section>
 
         {/* Kepala Divisi */}
@@ -277,12 +278,12 @@ export default function SuratDinasPage() {
           <label className="block text-sm font-semibold text-gray-900">
             Keterangan Tugas<span className="text-red-600">*</span>
           </label>
-          <textarea className="mt-2 w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-emerald-500 focus:ring-emerald-500" rows="3" placeholder="Tuliskan tujuan/deskripsi tugas" value={form.keterangan} onChange={(e) => handleChange("keterangan", e.target.value)}/>
+          <textarea className="mt-2 w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-emerald-500 focus:ring-emerald-500" rows="3" placeholder="Tuliskan tujuan/deskripsi tugas" value={form.keterangan} onChange={(e) => handleChange("keterangan", e.target.value)} />
         </section>
 
         {/* Konfirmasi */}
         <section className="bg-emerald-50/80 border border-emerald-300 rounded-xl p-4 flex items-start gap-3">
-          <input type="checkbox" id="confirm" checked={confirm} onChange={(e) => setConfirm(e.target.checked)} className="mt-1 accent-emerald-600"/>
+          <input type="checkbox" id="confirm" checked={confirm} onChange={(e) => setConfirm(e.target.checked)} className="mt-1 accent-emerald-600" />
           <label htmlFor="confirm" className="text-[10px] text-gray-800 leading-snug tracking-wide">
             Dengan ini saya menyatakan seluruh data yang saya isi
             <strong> benar, sah, dan dapat dipertanggungjawabkan</strong>.

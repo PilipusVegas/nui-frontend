@@ -232,11 +232,11 @@ const App = () => {
     { path: "/tugas/:id", component: <DetailTugas   />, roles: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
 
     // DESKTOP
-    { path: "/pengajuan-absensi", component: <PengajuanAbsensi />, roles: ["1", "4", "5", "6", "13", "20"], allowedCompanies: ["1", "4"], layout: SidebarLayout },
-    { path: "/pengajuan-absensi/:id_user", component: <DetailPengajuanAbsensi />, roles: ["1", "4", "5", "6", "13", "20"], allowedCompanies: ["1", "4"], layout: SidebarLayout },
+    { path: "/pengajuan-absensi", component: <PengajuanAbsensi />, roles: ["1", "4", "5", "6", "18", "20"], allowedCompanies: ["1", "4"], layout: SidebarLayout },
+    { path: "/pengajuan-absensi/:id_user", component: <DetailPengajuanAbsensi />, roles: ["1", "4", "5", "6", "18", "20"], allowedCompanies: ["1", "4"], layout: SidebarLayout },
     { path: "/pengajuan-lembur", component: <PengajuanLembur />, roles: ["1", "4", "5", "6", "20"], allowedCompanies: ["1", "4", "5", "6"], layout: SidebarLayout },
     { path: "/pengajuan-dinas", component: <PengajuanDinas />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-    { path: "/pengajuan-dinas/:id", component: <DetailPengajuanDinas />, roles: ["1", "4", "5", "6"], layout: SidebarLayout },
+    { path: "/pengajuan-dinas/:id", component: <DetailPengajuanDinas />, roles: ["1", "4", "5", "6","20"], layout: SidebarLayout },
     { path: "/riwayat-lembur", component: <RiwayatLembur />, roles: ["1", "4", "5", "6", "20"], allowedCompanies: ["1", "4", "5", "6"], layout: SidebarLayout },
     { path: "/lokasi-presensi", component: <LokasiPresensi />, roles: ["1", "5"], layout: SidebarLayout },
     { path: "/lokasi-presensi/edit/:id", component: <EditLokasi />, roles: ["1", "5"], layout: SidebarLayout },
@@ -279,7 +279,7 @@ const App = () => {
         <Route path="/login" element={isLoggedIn ? <Navigate to="/home" /> : <Login onLoginSuccess={() => setIsAuthenticated(true)} />} />
         <Route path="/home" element={
           <PrivateRoute allowedRoles={["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"]}>
-            {[1, 4, 5, 6, 13, 20].includes(user?.id_role) ? (
+            {[1, 4, 5, 6, 18, 20].includes(user?.id_role) ? (
               <SidebarLayout user={user} handleLogout={handleLogout}>
                 <HomeRedirect onLogout={handleLogout} />
               </SidebarLayout>

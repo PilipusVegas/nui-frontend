@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Swal from "sweetalert2";
 import { faCalendarCheck, faBell, faHistory, faSignOutAlt, faMapMarkerAlt, faArrowRight, faPenFancy, faPeopleGroup, faClockFour, faTasks, } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../utils/jwtHelper";
-import { FooterMainBar, LoadingSpinner, EmptyState, ErrorState } from "../components";
+import { FooterMainBar, LoadingSpinner, EmptyState, ErrorState, TaskCardSlider } from "../components";
 
 const HomeMobile = ({ handleLogout }) => {
   const navigate = useNavigate();
@@ -80,7 +80,6 @@ const HomeMobile = ({ handleLogout }) => {
 
   return (
     <div className="flex flex-col font-sans bg-gray-50 min-h-screen pb-40">
-      {/* Header Hero */}
       <div className="bg-gradient-to-br from-green-500 to-green-700 rounded-b-6xl px-8 pb-12 pt-4 relative shadow-xl z-10">
         <button onClick={confirmLogout} title="Logout" className="absolute top-3 right-3 text-xl text-red-500 hover:bg-white hover:text-red-600 transition-colors px-2 py-1 rounded-md bg-white/70">
           <FontAwesomeIcon icon={faSignOutAlt} />
@@ -97,13 +96,11 @@ const HomeMobile = ({ handleLogout }) => {
         </div>
       </div>
 
-      {/* === Absen Terbaru (Minimalis & Stylish) === */}
       {attendanceData.length > 0 && (
         <div className="relative z-20 scale-95">
           <div className="px-4 -mt-14">
-            <div onClick={() => navigate("/riwayat-absensi")} className="bg-white shadow-md rounded-2xl p-2 border border-gray-200 cursor-pointer hover:shadow-lg hover:ring-1 hover:ring-green-400 active:scale-[0.98] transition-all duration-300">
+            <div onClick={() => navigate("/riwayat-pengguna")} className="bg-white shadow-md rounded-2xl p-2 border border-gray-200 cursor-pointer hover:shadow-lg hover:ring-1 hover:ring-green-400 active:scale-[0.98] transition-all duration-300">
               <div className="flex items-start">
-                {/* Tanggal */}
                 <div className="flex flex-col items-center min-w-[72px]">
                   <div className="bg-green-500 text-white rounded-xl py-2 px-3 text-center w-full">
                     <div className="text-[11px] font-medium opacity-90 tracking-wider">
@@ -118,10 +115,8 @@ const HomeMobile = ({ handleLogout }) => {
                   </div>
                 </div>
 
-                {/* Detail Absen */}
                 <div className="flex-1 grid gap-2">
                   <div className="grid grid-cols-2 text-center text-sm overflow-hidden">
-                    {/* Jam Masuk */}
                     <div className="border-r border-gray-300 flex flex-col items-center">
                       <div className="text-[10px] text-gray-600 mb-1">Absen Masuk</div>
                       <div className="text-base font-semibold text-gray-800">{formatTime(attendanceData[0].jam_mulai)}</div>
@@ -135,7 +130,6 @@ const HomeMobile = ({ handleLogout }) => {
                       )}
                     </div>
 
-                    {/* Jam Pulang */}
                     <div className="flex flex-col items-center">
                       <div className="text-[10px] text-gray-600 mb-1">Absen Pulang</div>
                       <div className={`text-base font-semibold ${attendanceData[0].jam_selesai ? "text-gray-800" : "text-gray-400"}`}>
@@ -174,6 +168,8 @@ const HomeMobile = ({ handleLogout }) => {
         {/* <MainMenuButton icon={faThList} label="Lainnya" onClick={() => navigate("/menu")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-teal-600 hover:scale-105 transition" /> */}
       </div>
 
+      <TaskCardSlider />
+
       <div className="px-4 pt-4">
         <div className="flex items-center gap-2 mb-3">
           <span className="text-sm font-semibold">Menu Bantuan</span>
@@ -200,7 +196,7 @@ const HomeMobile = ({ handleLogout }) => {
         </div>
       </div>
 
-      {attendanceData.length > 1 && (
+      {/* {attendanceData.length > 1 && (
         <div className="px-4 mt-2">
           <div className="flex justify-between items-center my-4">
             <div className="flex items-center space-x-3">
@@ -211,7 +207,6 @@ const HomeMobile = ({ handleLogout }) => {
             </button>
           </div>
 
-          {/* === Riwayat Absen === */}
           <div className="grid gap-3 mt-2">
             {attendanceData.slice(1, 4).map((item) => (
               <div key={item.id_absen} className="bg-white shadow-md rounded-2xl p-3 border border-gray-200 cursor-pointer hover:shadow-lg hover:ring-1 hover:ring-green-400 active:scale-[0.98] transition-all duration-300">
@@ -230,10 +225,8 @@ const HomeMobile = ({ handleLogout }) => {
                     </div>
                   </div>
 
-                  {/* Detail Absen */}
                   <div className="flex-1 grid gap-2">
                     <div className="grid grid-cols-2 text-center text-sm overflow-hidden">
-                      {/* Jam Masuk */}
                       <div className="border-r border-gray-300 flex flex-col items-center justify-center">
                         <div className="text-[10px] text-gray-600 mb-1">Absen Masuk</div>
                         <div className="text-base font-semibold text-gray-800">{formatTime(item.jam_mulai)}</div>
@@ -247,7 +240,6 @@ const HomeMobile = ({ handleLogout }) => {
                       )}
                       </div>
 
-                      {/* Jam Pulang */}
                       <div className="flex flex-col items-center justify-center">
                         <div className="text-[10px] text-gray-600 mb-1">Absen Pulang</div>
                         <div className={`text-base font-semibold ${item.jam_selesai ? "text-gray-800" : "text-gray-400"}`}>
@@ -270,7 +262,7 @@ const HomeMobile = ({ handleLogout }) => {
           </div>
 
         </div>
-      )}
+      )} */}
 
       <FooterMainBar />
     </div>
