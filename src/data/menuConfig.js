@@ -74,7 +74,8 @@ export const menuConfig = [
                     { label: "Remark Absensi", icon: faEdit, path: "/remark-absensi", roles: [1, 4, 6] },
                 ],
             },
-            { label: "Rekap Tunjangan", icon: faGift, path: "/rekap-tunjangan", roles: [1, 4, 6], perusahaan: [1, 4], target: "_blank" },
+            // { label: "Rekap Tunjangan", icon: faGift, path: "/rekap-tunjangan", roles: [1, 4, 6], perusahaan: [1, 4], target: "_blank" },
+            { label: "Rekap Tunjangan", icon: faGift, path: "/rekap-tunjangan", roles: [1], perusahaan: [1, 4], target: "_blank" },
             { label: "Jam Kerja / Shift", icon: faClock, path: "/shift", roles: [1, 4, 6] },
             {
                 label: "Penggajian", icon: faMoneyBillWave, roles: [1, 4, 6], submenu: [

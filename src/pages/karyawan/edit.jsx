@@ -17,7 +17,6 @@ const EditKaryawan = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showShiftDetails, setShowShiftDetails] = useState(false);
 
-
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -37,7 +36,6 @@ const EditKaryawan = () => {
                 if (userData.success) {
                     const user = userData.data;
                     setCurrentUser(user);
-
                 }
             } catch (err) {
                 console.error("Gagal fetch data", err);
@@ -46,10 +44,10 @@ const EditKaryawan = () => {
         fetchData();
     }, [apiUrl, id]);
 
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         let updatedValue = value;
-
         if (name === "id_perusahaan") {
             setCurrentUser((prev) => ({
                 ...prev,
@@ -58,13 +56,12 @@ const EditKaryawan = () => {
             }));
             return;
         }
-
         if (name === "id_role" || name === "id_shift") {
             updatedValue = parseInt(value);
         }
-
         setCurrentUser((prev) => ({ ...prev, [name]: updatedValue }));
     };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -111,51 +108,44 @@ const EditKaryawan = () => {
                         </p>
                     </div>
 
-                    {/* Nama */}
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">Nama Lengkap</label>
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">Masukkan <span className="font-semibold text-gray-800">nama lengkap</span> karyawan.</p>
                         <input type="text" name="nama" value={currentUser.nama} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     </div>
 
-                    {/* NIK */}
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">NIK</label>
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">Masukkan Nomor Induk Kependudukan (NIK).</p>
                         <input type="text" name="nik" value={currentUser.nik} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     </div>
 
-                    {/* NIP */}
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">NIP</label>
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">Masukkan nomor induk pegawai.</p>
                         <input type="text" name="nip" value={currentUser.nip} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     </div>
 
-                    {/* NPWP */}
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">NPWP</label>
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">Masukkan Nomor Pokok Wajib Pajak (NPWP).</p>
                         <input type="text" name="npwp" value={currentUser.npwp} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     </div>
 
-                    {/* Telepon */}
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">No. Telepon</label>
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">Masukkan nomor telepon aktif.</p>
                         <input type="text" name="telp" value={currentUser.telp} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     </div>
 
-                    {/* No Rekening */}
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">Nomor Rekening</label>
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">Masukkan Nomor Rekening Karyawan.</p>
                         <input type="text" name="no_rek" value={currentUser.no_rek} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     </div>
 
-                    {/* STATUS NIKAH */}
                     <div>
-                        <label className="block mb-1 font-medium text-gray-700">Status Nikah</label>
+                        <label className="block mb-1 font-medium text-gray-700">Status Pernikahan</label>
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">Pilih status pernikahan karyawan.</p>
                         <select name="status_nikah" value={currentUser.status_nikah || ""} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
                             <option value="">Pilih Status</option>

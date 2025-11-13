@@ -2,15 +2,7 @@
     import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
     import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
-    const Modal = ({
-        isOpen,
-        onClose,
-        title,
-        note,
-        children,
-        size = "md",
-        footer, // <--- tambahkan properti opsional untuk footer
-    }) => {
+    const Modal = ({ isOpen, onClose, title, note, children, size = "md", footer}) => {
         if (!isOpen) return null;
 
         const sizeClass = {

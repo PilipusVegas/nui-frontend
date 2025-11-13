@@ -14,7 +14,7 @@ const TambahKaryawan = () => {
   const [shiftList, setShiftList] = useState([]);
   const [perusahaanList, setPerusahaanList] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
-  const [currentUser, setCurrentUser] = useState({ nip: "", nik: "", npwp: "", no_rek: "", nama: "", status_nikah: "", jml_anak: 0, id_perusahaan: "", id_role: "", id_shift: "", telp: "", username: "", password: "", status: 1, });
+  const [currentUser, setCurrentUser] = useState({ nip: "", nik: "", npwp: "",  no_rek: "", nama: "", status_nikah: "", jml_anak: 0, id_perusahaan: "", id_role: "", id_shift: "", telp: "", username: "", password: "", status: 1, });
   const [showShiftDetails, setShowShiftDetails] = useState(false);
 
   useEffect(() => {
@@ -96,45 +96,38 @@ const TambahKaryawan = () => {
             </p>
           </div>
 
-          {/* Nama */}
           <div>
             <label className="block mb-1 font-medium text-gray-700">Nama Lengkap</label>
             <input type="text" name="nama" value={currentUser.nama} onChange={handleChange} placeholder="Masukkan nama lengkap karyawan" required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
           </div>
 
-          {/* NIK */}
           <div>
             <label className="block mb-1 font-medium text-gray-700">NIK</label>
             <input type="text" name="nik" value={currentUser.nik} onChange={handleChange} placeholder="Masukkan Nomor Induk Kependudukan" required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
           </div>
 
-          {/* NIP */}
           <div>
             <label className="block mb-1 font-medium text-gray-700 mb-1">Nomor Induk Pegawai (NIP)</label>
             <input type="text" name="nip" value={currentUser.nip} placeholder="Masukkan NIP Karyawan" onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
           </div>
 
-          {/* NPWP */}
           <div>
             <label className="block mb-1 font-medium text-gray-700">NPWP</label>
             <input type="text" name="npwp" value={currentUser.npwp} onChange={handleChange} placeholder="Masukkan Nomor Pokok Wajib Pajak" required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
           </div>
 
-          {/* Telepon */}
           <div>
             <label className="block mb-1 font-medium text-gray-700">No. Telepon</label>
             <input type="text" name="telp" value={currentUser.telp} onChange={handleChange} placeholder="Masukkan nomor telepon aktif" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
           </div>
 
-          {/* No Rekening */}
           <div>
             <label className="block mb-1 font-medium text-gray-700">Nomor Rekening</label>
             <input type="text" name="no_rek" value={currentUser.no_rek} onChange={handleChange} placeholder="Masukkan nomor rekening karyawan" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
           </div>
 
-          {/* STATUS NIKAH */}
           <div>
-            <label className="block mb-1 font-medium text-gray-700">Status Nikah</label>
+            <label className="block mb-1 font-medium text-gray-700">Status Pernikahan</label>
             <select name="status_nikah" value={currentUser.status_nikah || ""} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
               <option value="">Pilih Status</option>
               <option value="Belum_Menikah">Belum Menikah</option>
