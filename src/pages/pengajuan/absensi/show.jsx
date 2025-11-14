@@ -139,12 +139,14 @@ const DetailAbsensi = () => {
     setIsModalOpen(false);
   };
 
+
   const handleStatusUpdate = async (id_absen) => {
     const selectedAbsen = absen.find((item) => item.id_absen === id_absen);
     const conditions = calculateConditions(selectedAbsen);
 
     try {
       setIsLoading(true);
+
       const response = await fetchWithJwt(`${apiUrl}/absen/status/${id_absen}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -156,41 +158,48 @@ const DetailAbsensi = () => {
 
       if (!response.ok) throw new Error("Gagal memperbarui status");
 
+      const result = await response.json();
+
       toast.success("Absensi disetujui.", { duration: 3000 });
 
-      // 🔹 Tampilkan Swal jika ada tunjangan
-      if (conditions && (conditions.night_shift || conditions.transport)) {
-        const tunjanganList = [];
+      const tunjangan = result?.tunjangan || {};
+      const { transport, night_shift } = tunjangan;
 
-        if (conditions.night_shift) tunjanganList.push("Tunjangan Shift Malam 🌙");
-        if (conditions.transport) tunjanganList.push("Tunjangan Transportasi 🛵");
-
-        Swal.fire({
-          title: "Absensi Disetujui ✅",
-          html: `
-          <div class="text-gray-700 leading-relaxed text-sm">
-            <p class="mb-2">Karyawan ini berhak mendapatkan:</p>
-            <ul class="text-left font-medium space-y-1">
-              ${tunjanganList.map((t) => `<li>• ${t}</li>`).join("")}
-            </ul>
-          </div>
-        `,
-          icon: "success",
-          confirmButtonText: "Oke, Lanjutkan",
-          confirmButtonColor: "#10B981",
-          showClass: {
-            popup: "animate__animated animate__fadeInDown",
-          },
-          hideClass: {
-            popup: "animate__animated animate__fadeOutUp",
-          },
-        });
+      if (!transport && !night_shift) {
+        await fetchAbsenData();
+        setIsModalOpen(false);
+        return;
       }
+
+      const tunjanganList = [];
+      if (transport) tunjanganList.push("Tunjangan Transportasi");
+      if (night_shift) tunjanganList.push("Tunjangan Shift Malam");
+
+      Swal.fire({
+        title: "Absensi Disetujui",
+        html: `
+    <div style="text-align:left; color:#374151; font-size:14px; line-height:1.5;">
+      <p style="margin-bottom:6px;">Karyawan ini berhak mendapatkan tunjangan berikut:</p>
+      <ul style="margin-left:16px; margin-top:4px;">
+        ${tunjanganList.map((t) => `<li>${t}</li>`).join("")}
+      </ul>
+    </div>
+  `,
+        icon: "success",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#10B981",
+        showClass: { popup: "animate__animated animate__fadeInDown" },
+        hideClass: { popup: "animate__animated animate__fadeOutUp" },
+      });
+
 
       await fetchAbsenData();
       setIsModalOpen(false);
+
     } catch (error) {
-      toast.error("Gagal memperbarui status. Silakan coba lagi.", { duration: 4000 });
+      toast.error("Gagal memperbarui status. Silakan coba lagi.", {
+        duration: 4000,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -270,10 +279,9 @@ const DetailAbsensi = () => {
 
     // Cek tunjangan transportasi
     // Jika status kendaraan milik pribadi dan salah satu lokasi tidak termasuk lokasi pengecualian
-    if (Number(statusKendaraan) === 1 && (!excludedLocations.includes(locStart) || !excludedLocations.includes(locEnd))) {
+    if (Number(statusKendaraan) === 1 && !excludedLocations.includes(locStart) && !excludedLocations.includes(locEnd)) {
       conditions.transport = true;
     }
-
     return Object.keys(conditions).length > 0 ? conditions : false;
   };
 
@@ -398,7 +406,7 @@ const DetailAbsensi = () => {
                       {item.keterlambatan || "--:--"}
                     </td>
                     <td className="text-center py-1 px-4">
-                      <span className={`inline-flex justify-center items-center font-semibold px-3 py-1 rounded-full text-[10px] tracking-wider ${item.status == 1 ? "bg-green-600 text-white" : item.status == 2 ? "bg-red-600 text-white" : "bg-yellow-500 text-white"}`}>
+                      <span className={`inline-flex y-center items-center font-semibold px-3 py-1 rounded-full text-[10px] tracking-wider ${item.status == 1 ? "bg-green-600 text-white" : item.status == 2 ? "bg-red-600 text-white" : "bg-yellow-500 text-white"}`}>
                         {item.status == 1 ? "Approved" : item.status == 2 ? "Rejected" : "Unapproved"}
                       </span>
                     </td>
@@ -419,7 +427,7 @@ const DetailAbsensi = () => {
           {currentItems.length > 0 ? (
             currentItems.map((item) => (
               <div key={item.id_absen} className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
-                <div className="flex justify-between items-center bg-gray-50 px-4 py-2 border-b">
+                <div className="flex justify-between items-center   bg-gray-50 px-4 py-2 border-b">
                   <div>
                     <p className="text-[13px] font-semibold text-gray-700">
                       {formatFullDate(item.jam_mulai)}

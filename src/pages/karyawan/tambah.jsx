@@ -136,7 +136,6 @@ const TambahKaryawan = () => {
             </select>
           </div>
 
-          {/* JUMLAH ANAK - Tampilkan jika Sudah Menikah */}
           {currentUser.status_nikah === "Sudah_Menikah" && (
             <div>
               <label className="block mb-1 font-medium text-gray-700">Jumlah Anak</label>
@@ -144,28 +143,22 @@ const TambahKaryawan = () => {
             </div>
           )}
 
-          {/* STATUS KENDARAAN (OPSIONAL, DEFAULT 0) */}
           <div>
             <label className="block mb-1 font-medium text-gray-700">
               Status Kendaraan <span className="text-gray-400 text-sm font-normal">(Opsional)</span>
             </label>
 
-            <select
-              name="status_kendaraan"
-              value={
-                currentUser.status_kendaraan !== undefined && currentUser.status_kendaraan !== null
-                  ? currentUser.status_kendaraan
-                  : 0
-              }
+            <select name="status_kendaraan"
+              value={ currentUser.status_kendaraan !== undefined && currentUser.status_kendaraan !== null ? currentUser.status_kendaraan : 0}
               onChange={(e) => {
                 const value = e.target.value === "" ? 0 : parseInt(e.target.value);
                 handleChange({ target: { name: "status_kendaraan", value } });
               }}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
             >
-              <option value="0">Tanpa Tunjangan Transportasi</option>
+              <option value="0">Pilih Status Kendaraan</option>
               <option value="1">Kendaraan Pribadi (Dapat Tunjangan)</option>
-              <option value="2">Kendaraan Kantor (Tanpa Tunjangan)</option>
+              <option value="2">Kendaraan Kantor (Tidak Dapat Tunjangan)</option>
             </select>
           </div>
 

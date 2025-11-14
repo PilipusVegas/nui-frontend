@@ -230,7 +230,7 @@ const DetailKelolaPresensi = () => {
                   <FontAwesomeIcon icon={faMoneyBillWave} className="text-red-500" />
                   Total Potongan:{" "}
                   <span className="font-bold text-red-600">
-                    - Rp {dataUser?.total_nominal_empty_out ?? 0}
+                    - Rp {dataUser?.total_nominal_empty_out?.toLocaleString("id-ID") ?? 0}
                   </span>
                 </p>
               </div>

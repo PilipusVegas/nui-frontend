@@ -203,23 +203,10 @@ const DataKaryawan = () => {
                     <th className="px-4 py-3 font-semibold text-center">Perusahaan</th>
                     <th className="px-4 py-3 font-semibold text-center">Shift</th>
 
-                    <th
-                      className="px-4 py-3 font-semibold text-center cursor-pointer select-none"
-                      onClick={handleSortStatus}
-                      title={`Urutkan Status (${sortOrder === "asc" ? "Aktif dulu" : "Nonaktif dulu"})`}
-                    >
+                    <th className="px-4 py-3 font-semibold text-center cursor-pointer select-none" onClick={handleSortStatus} title={`Urutkan Status (${sortOrder === "asc" ? "Aktif dulu" : "Nonaktif dulu"})`}>
                       <div className="flex items-center justify-center gap-2">
                         <span>Status</span>
-                        <FontAwesomeIcon
-                          icon={
-                            sortOrder === "asc"
-                              ? faSortUp
-                              : sortOrder === "desc"
-                                ? faSortDown
-                                : faSort
-                          }
-                          className={`text-base transition-transform duration-200 ${sortOrder ? "text-white" : "text-white/70"
-                            }`}
+                        <FontAwesomeIcon icon={ sortOrder === "asc" ? faSortUp : sortOrder === "desc" ? faSortDown : faSort} className={`text-base transition-transform duration-200 ${sortOrder ? "text-white" : "text-white/70"}`}
                         />
                       </div>
                     </th>
@@ -231,50 +218,35 @@ const DataKaryawan = () => {
                 <tbody className="text-gray-800 text-sm">
                   {Array.isArray(currentUsers) && currentUsers.length > 0 ? (
                     currentUsers.map((user, index) => (
-                      <tr
-                        key={user.id}
-                        className="hover:bg-gray-50 transition duration-150 border-b border-gray-200"
-                      >
-                        {/* Nomor */}
+                      <tr key={user.id} className="hover:bg-gray-50 transition duration-150 border-b border-gray-200">
                         <td className="px-4 py-2 text-center">{indexOfFirstUser + index + 1}</td>
 
-                        {/* NIP */}
                         <td className="px-4 py-2 text-center">
                           <span className={user.nip ? "" : "text-gray-400 italic text-xs"}>
                             {user.nip || "N/A"}
                           </span>
                         </td>
 
-                        {/* Nama */}
                         <td className="px-4 py-2 text-left font-semibold capitalize">
                           {user.nama || "Unknown Name"}
                         </td>
 
-                        {/* Divisi / Role */}
                         <td className="px-4 py-2 text-center text-sm text-gray-700">
                           {user.role || <span className="italic text-gray-400 text-xs">N/A</span>}
                         </td>
 
-                        {/* Perusahaan */}
                         <td className="px-4 py-2 text-center text-[12px] text-gray-700 uppercase">
                           {user.perusahaan || "N/A"}
                         </td>
 
-                        {/* Shift */}
                         <td className="px-4 py-2 text-center">
                           <span className={user.shift ? "" : "text-gray-400 italic text-xs"}>
                             {user.shift || "N/A"}
                           </span>
                         </td>
 
-                        {/* Status */}
                         <td className="px-4 py-2 text-center">
-                          <span
-                            className={`px-3 py-0.5 text-xs font-semibold rounded-full ${user.status === 1
-                              ? "bg-emerald-500 text-white"
-                              : "bg-gray-500 text-white"
-                              }`}
-                          >
+                          <span className={`px-3 py-0.5 text-xs font-semibold rounded-full ${user.status === 1 ? "bg-emerald-500 text-white" : "bg-gray-500 text-white"}`}>
                             {user.status === 1 ? "Aktif" : "Nonaktif"}
                           </span>
                         </td>
@@ -282,15 +254,7 @@ const DataKaryawan = () => {
                         {/* Menu */}
                         <td className="px-4 py-2 text-center">
                           <div className="flex justify-center gap-1.5">
-                            <button
-                              onClick={() => navigate(`/karyawan/show/${user.id}`)}
-                              className={`px-2.5 py-1.5 font-medium rounded text-white text-xs flex items-center justify-center ${canEditOrDelete(user)
-                                ? "bg-blue-500 hover:bg-blue-600"
-                                : "bg-gray-400 cursor-not-allowed"
-                                }`}
-                              disabled={!canEditOrDelete(user)}
-                              title="Detail"
-                            >
+                            <button onClick={() => navigate(`/karyawan/show/${user.id}`)} className={`px-2.5 py-1.5 font-medium rounded text-white text-xs flex items-center justify-center ${canEditOrDelete(user) ? "bg-blue-500 hover:bg-blue-600" : "bg-gray-400 cursor-not-allowed"}`} disabled={!canEditOrDelete(user)} title="Detail">
                               <FontAwesomeIcon icon={faInfoCircle} className="mr-1" />
                               Detail
                             </button>

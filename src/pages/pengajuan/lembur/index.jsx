@@ -7,7 +7,7 @@ import { formatFullDate } from "../../../utils/dateUtils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getDefaultPeriod } from "../../../utils/getDefaultPeriod";
 import { fetchWithJwt } from "../../../utils/jwtHelper";
-import { faCheck, faInfoCircle, faTimes, faHistory } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faInfoCircle, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { SectionHeader, Modal, LoadingSpinner, ErrorState, EmptyState, SearchBar, Pagination } from "../../../components";
 
 const PersetujuanLembur = () => {
@@ -83,58 +83,58 @@ const PersetujuanLembur = () => {
     setIsModalOpen(true);
   };
 
-const handleUpdateStatus = async (item, status) => {
-  try {
-    let endpoint = "";
-    let body = {};
+  const handleUpdateStatus = async (item, status) => {
+    try {
+      let endpoint = "";
+      let body = {};
 
-    if (item.id_absen) {
-      endpoint = `${apiUrl}/lembur/approve-kantor/${item.id_absen}`;
-      body = { status, deskripsi: item.deskripsi || "" };
-    } else if (item.id_lembur) {
-      endpoint = `${apiUrl}/lembur/approve/${item.id_lembur}`;
+      if (item.id_absen) {
+        endpoint = `${apiUrl}/lembur/approve-kantor/${item.id_absen}`;
+        body = { status, deskripsi: item.deskripsi || "" };
+      } else if (item.id_lembur) {
+        endpoint = `${apiUrl}/lembur/approve/${item.id_lembur}`;
 
-      // Kondisi lembur
-      const isLemburValid =
-        item.total_lembur > 5 && ![63, 64, 66].includes(item.id_lokasi);
-      body = {
-        status,
-        condition: { lembur: isLemburValid },
-      };
-    } else {
-      throw new Error("Data lembur tidak valid.");
-    }
+        const isLemburValid =
+          item.total_lembur >= 5 && ![63, 64, 66].includes(item.id_lokasi);
 
-    const res = await fetchWithJwt(endpoint, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-
-    if (!res.ok) throw new Error("Gagal memperbarui status.");
-
-    // Tampilkan notifikasi sesuai kondisi
-    if (status === 1) {
-      if (item.total_lembur > 5 && ![63, 64, 66].includes(item.id_lokasi)) {
-        Swal.fire({
-          icon: "success",
-          title: "Selamat!",
-          text: "Karyawan ini akan mendapatkan tunjangan lembur.",
-        });
+        body = {
+          status,
+          condition: { lembur: isLemburValid },
+        };
       } else {
-        toast.success("Pengajuan lembur berhasil disetujui.");
+        throw new Error("Data lembur tidak valid.");
       }
-    } else if (status === 2) {
-      toast.error("Pengajuan lembur ditolak.");
+
+      const res = await fetchWithJwt(endpoint, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) throw new Error("Gagal memperbarui status.");
+
+      const result = await res.json();
+
+      if (status === 1) {
+        if (result?.tunjangan === true) {
+          Swal.fire({
+            icon: "success",
+            title: "Selamat!",
+            text: "Karyawan ini mendapatkan tunjangan lembur.",
+          });
+        } else {
+          toast.success("Pengajuan lembur berhasil disetujui.");
+        }
+      } else if (status === 2) {
+        toast.error("Pengajuan lembur ditolak.");
+      }
+
+      fetchApprovalData(startDate, endDate);
+    } catch (err) {
+      setErrorMessage(err.message);
+      toast.error(err.message);
     }
-
-    fetchApprovalData(startDate, endDate);
-  } catch (err) {
-    setErrorMessage(err.message);
-    toast.error(err.message);
-  }
-};
-
+  };
 
   const handleApprove = (item) => handleUpdateStatus(item, 1);
   const handleReject = (item) => handleUpdateStatus(item, 2);
@@ -143,17 +143,11 @@ const handleUpdateStatus = async (item, status) => {
     setCurrentPage(1);
   }, [searchQuery]);
 
-
   return (
     <div className="flex flex-col">
       <SectionHeader title="Pengajuan Lembur" subtitle="Daftar pengajuan lembur berdasarkan periode" onBack={() => navigate("/home")}
         actions={
           <div className="flex gap-2">
-            <button onClick={() => navigate("/riwayat-lembur")} className="flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md font-medium">
-              <FontAwesomeIcon icon={faHistory} />
-              <span className="sm:inline hidden">Lihat Riwayat</span>
-            </button>
-
             <button onClick={() => setIsInfoModalOpen(true)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium">
               <FontAwesomeIcon icon={faInfoCircle} />
               <span className="sm:inline hidden">Informasi</span>
@@ -161,7 +155,6 @@ const handleUpdateStatus = async (item, status) => {
           </div>
         }
       />
-
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full mb-4">
         <div className="w-full sm:flex-1">
