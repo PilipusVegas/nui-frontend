@@ -1,9 +1,30 @@
 // src/data/menuConfig.js
-import { faHome, faPeopleGroup, faUsersCog, faCheckSquare, faUserCheck, faBook, faPenFancy, faLocationArrow, faBuilding, faCheckCircle, faClockRotateLeft, faKey, faTabletAlt, faCalendarDays, faUserEdit, faUserShield } from "@fortawesome/free-solid-svg-icons";
+import { faHome, faPeopleGroup, faUsersCog, faCheckSquare, faUserCheck, faClock, faBook, faPenFancy, faLocationArrow, faBuilding, faCheckCircle, faClockRotateLeft, faKey, faTabletAlt, faCalendarDays, faUserEdit, faUserShield } from "@fortawesome/free-solid-svg-icons";
 
 export const menuConfig = [
     // 1. BERANDA
-    { sectionTitle: "Beranda", items: [{ label: "Dashboard", icon: faHome, path: "/home", roles: [1, 2, 3, 4, 5, 6, 13, 20] },],},
+    {
+        sectionTitle: "Beranda",
+        items: [
+            {
+                label: "Dashboard",
+                icon: faHome,
+                path: "/home",
+                roles: [1, 2, 3, 4, 5, 6, 13, 20],
+            },
+        ],
+        
+    },
+    {sectionTitle: "Absensi",
+        items: [
+            {
+                label: "Absensi",
+                icon: faClock,
+                path: "/absensi",
+                roles: [13, 20],
+            },
+        ]
+    },
 
     // 2. MANAJEMEN ORGANISASI
     {
