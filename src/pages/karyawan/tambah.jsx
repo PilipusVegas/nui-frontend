@@ -157,8 +157,9 @@ const TambahKaryawan = () => {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
             >
               <option value="0">Pilih Status Kendaraan</option>
-              <option value="1">Kendaraan Pribadi (Dapat Tunjangan)</option>
-              <option value="2">Kendaraan Kantor (Tidak Dapat Tunjangan)</option>
+              <option value="1">Menggunakan Kendaraan Pribadi (Menerima Tunjangan)</option>
+              <option value="3">Menggunakan Kendaraan Umum (Menerima Tunjangan)</option>
+              <option value="2">Menggunakan Kendaraan Kantor (Tidak Menerima Tunjangan)</option>
             </select>
           </div>
 

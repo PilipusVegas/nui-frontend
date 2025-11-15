@@ -164,7 +164,6 @@ const EditKaryawan = () => {
                         </div>
                     )}
 
-                    {/* STATUS KENDARAAN (OPSIONAL, DEFAULT 0) */}
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">
                             Status Kendaraan <span className="text-gray-400 text-sm font-normal">(Opsional)</span>
@@ -188,6 +187,7 @@ const EditKaryawan = () => {
                         >
                             <option value="0">Tidak Menerima Tunjangan Transportasi</option>
                             <option value="1">Menggunakan Kendaraan Pribadi (Menerima Tunjangan)</option>
+                            <option value="3">Menggunakan Kendaraan Umum (Menerima Tunjangan)</option>
                             <option value="2">Menggunakan Kendaraan Kantor (Tidak Menerima Tunjangan)</option>
                         </select>
                     </div>

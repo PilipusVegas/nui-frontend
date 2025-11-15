@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { faEye, faClock, faUser, faCalendarCheck, faSort, faSortUp, faSortDown, faMotorcycle, faMoon, faFileSignature, faMoneyBillWave, faExclamationTriangle, faUserCheck, faCalendarDays } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faClock, faUser, faCalendarCheck, faSort, faSortUp, faSortDown, faBus, faMotorcycle, faMoon, faFileSignature, faMoneyBillWave, faExclamationTriangle, faUserCheck, faCalendarDays } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
@@ -144,6 +144,11 @@ const DetailAbsensi = () => {
     const selectedAbsen = absen.find((item) => item.id_absen === id_absen);
     const conditions = calculateConditions(selectedAbsen);
 
+    const mappedConditions = {
+      night_shift: conditions.night_shift,
+      transport: conditions.transport_pribadi || conditions.transport_umum,
+    };
+
     try {
       setIsLoading(true);
 
@@ -152,7 +157,7 @@ const DetailAbsensi = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status: 1,
-          condition: conditions,
+          condition: mappedConditions,
         }),
       });
 
@@ -162,36 +167,38 @@ const DetailAbsensi = () => {
 
       toast.success("Absensi disetujui.", { duration: 3000 });
 
-      const tunjangan = result?.tunjangan || {};
-      const { transport, night_shift } = tunjangan;
+      // Ambil nilai asli dari calculateConditions agar detail transportnya tetap ada
+      const { transport_pribadi, transport_umum, night_shift } = conditions;
 
-      if (!transport && !night_shift) {
+      // Tidak punya tunjangan apa pun
+      if (!transport_pribadi && !transport_umum && !night_shift) {
         await fetchAbsenData();
         setIsModalOpen(false);
         return;
       }
 
+      // Tentukan isi Swal
       const tunjanganList = [];
-      if (transport) tunjanganList.push("Tunjangan Transportasi");
+      if (transport_pribadi) tunjanganList.push("Tunjangan Transportasi (Kendaraan Pribadi)");
+      if (transport_umum) tunjanganList.push("Tunjangan Transportasi (Kendaraan Umum)");
       if (night_shift) tunjanganList.push("Tunjangan Shift Malam");
 
       Swal.fire({
         title: "Absensi Disetujui",
         html: `
-    <div style="text-align:left; color:#374151; font-size:14px; line-height:1.5;">
-      <p style="margin-bottom:6px;">Karyawan ini berhak mendapatkan tunjangan berikut:</p>
-      <ul style="margin-left:16px; margin-top:4px;">
-        ${tunjanganList.map((t) => `<li>${t}</li>`).join("")}
-      </ul>
-    </div>
-  `,
+        <div style="text-align:left; color:#374151; font-size:14px; line-height:1.5;">
+          <p style="margin-bottom:6px;">Karyawan ini berhak mendapatkan tunjangan berikut:</p>
+          <ul style="margin-left:16px; margin-top:4px;">
+            ${tunjanganList.map((t) => `<li>${t}</li>`).join("")}
+          </ul>
+        </div>
+      `,
         icon: "success",
         confirmButtonText: "OK",
         confirmButtonColor: "#10B981",
         showClass: { popup: "animate__animated animate__fadeInDown" },
         hideClass: { popup: "animate__animated animate__fadeOutUp" },
       });
-
 
       await fetchAbsenData();
       setIsModalOpen(false);
@@ -204,6 +211,7 @@ const DetailAbsensi = () => {
       setIsLoading(false);
     }
   };
+
 
 
   const formatDistance = (meters) => {
@@ -263,27 +271,27 @@ const DetailAbsensi = () => {
   };
 
   const calculateConditions = (absen) => {
-    const nightShiftIds = [2, 3]; // Shift malam
-    const excludedLocations = [63, 64, 66]; // Lokasi pengecualian
-    const conditions = {};
+    const nightShiftIds = [2, 3];
+    const excludedLocations = [63, 64, 66];
 
-    const idShift = Number(absen.id_shift);
-    const locStart = Number(absen.id_lokasi_mulai);
-    const locEnd = Number(absen.id_lokasi_selesai);
-    const statusKendaraan = Number(absen.status_kendaraan);
-    // Cek shift malam
-    // Jika shift malam dan salah satu lokasi tidak termasuk lokasi pengecualian
-    if (nightShiftIds.includes(idShift) && (!excludedLocations.includes(locStart) || !excludedLocations.includes(locEnd))) {
-      conditions.night_shift = true;
-    }
+    const idShift = +absen.id_shift;
+    const locStart = +absen.id_lokasi_mulai;
+    const locEnd = +absen.id_lokasi_selesai;
+    const statusKendaraan = +absen.status_kendaraan;
 
-    // Cek tunjangan transportasi
-    // Jika status kendaraan milik pribadi dan salah satu lokasi tidak termasuk lokasi pengecualian
-    if (Number(statusKendaraan) === 1 && !excludedLocations.includes(locStart) && !excludedLocations.includes(locEnd)) {
-      conditions.transport = true;
-    }
-    return Object.keys(conditions).length > 0 ? conditions : false;
+    const isAllowed = !excludedLocations.includes(locStart) && !excludedLocations.includes(locEnd);
+
+    return {
+      night_shift:
+        nightShiftIds.includes(idShift) &&
+        (!excludedLocations.includes(locStart) || !excludedLocations.includes(locEnd)) || false,
+
+      transport_pribadi: statusKendaraan === 1 && isAllowed || false,
+      transport_umum: statusKendaraan === 3 && isAllowed || false,
+    };
   };
+
+
 
   return (
     <div className="flex flex-col justify-start">
@@ -334,8 +342,6 @@ const DetailAbsensi = () => {
         </div>
       )}
 
-
-
       <SearchBar onSearch={handleSearch} placeholder="Cari Tanggal / Lokasi Absen..." className="my-4" />
 
       <div className="rounded-lg mb-4 overflow-hidden">
@@ -350,14 +356,12 @@ const DetailAbsensi = () => {
                   </div>
                 </th>
 
-                {/* Kolom lain yang tidak di-sort */}
                 {["Shift", "Lokasi Mulai", "Lokasi Selesai", "IN", "OUT", "LATE"].map((header, i) => (
                   <th key={i} className="py-2 px-4 font-semibold text-center">
                     {header}
                   </th>
                 ))}
 
-                {/* Kolom Status (sortable) */}
                 <th className="py-2 px-4 font-semibold text-center cursor-pointer" onClick={() => handleSort("status")}>
                   <div className="flex items-center justify-center gap-3">
                     Status
@@ -365,7 +369,6 @@ const DetailAbsensi = () => {
                   </div>
                 </th>
 
-                {/* Kolom Menu terakhir */}
                 <th className="py-2 px-4 font-semibold text-center last:rounded-tr-lg">
                   Menu
                 </th>
@@ -596,20 +599,28 @@ const DetailAbsensi = () => {
                   </h4>
 
                   <div className="grid sm:grid-cols-2 gap-3">
-                    {calculateConditions(selectedAbsen)?.transport && (
+                    {calculateConditions(selectedAbsen).transport_pribadi && (
                       <div className="flex items-center gap-2 p-3 bg-green-50 rounded border border-green-100 text-sm">
                         <FontAwesomeIcon icon={faMotorcycle} className="text-green-500" />
-                        <span className="font-medium">Mendapat Tunjangan Transportasi</span>
+                        <span className="font-medium">Tunjangan Transportasi (Kendaraan Pribadi)</span>
                       </div>
                     )}
 
-                    {calculateConditions(selectedAbsen)?.night_shift && (
+                    {calculateConditions(selectedAbsen).transport_umum && (
+                      <div className="flex items-center gap-2 p-3 bg-blue-50 rounded border border-blue-100 text-sm">
+                        <FontAwesomeIcon icon={faBus} className="text-blue-500" />
+                        <span className="font-medium">Tunjangan Transportasi (Kendaraan Umum)</span>
+                      </div>
+                    )}
+
+                    {calculateConditions(selectedAbsen).night_shift && (
                       <div className="flex items-center gap-2 p-3 bg-green-50 rounded border border-green-100 text-sm">
                         <FontAwesomeIcon icon={faMoon} className="text-green-500" />
                         <span className="font-medium">Mendapat Tunjangan Shift Malam</span>
                       </div>
                     )}
                   </div>
+
                 </section>
               )}
 

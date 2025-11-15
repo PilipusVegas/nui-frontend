@@ -105,7 +105,7 @@ export const exportExcelDetail = async ({
     [
         "• Merah pada kolom 'Terlambat' menandakan keterlambatan hadir.",
         "• Seluruh baris berwarna merah menunjukkan Hari Minggu.",
-        "• Kuning pada kolom 'Pulang' berarti karyawan pulang lebih awal."
+        "• Merah pada kolom 'Pulang' berarti karyawan pulang lebih awal."
     ].forEach(text => {
         const row = sheet.addRow([text]);
         row.getCell(1).font = { size: 10, color: { argb: "FF444444" } };
@@ -211,7 +211,7 @@ export const exportExcelDetail = async ({
                 cell.fill = {
                     type: "pattern",
                     pattern: "solid",
-                    fgColor: { argb: "FFB58900" } // kuning gelap elegan
+                    fgColor: { argb: "FFCC0000" }
                 };
                 cell.font = { bold: true, color: { argb: "FFFFFFFF" } }; // teks putih
             }

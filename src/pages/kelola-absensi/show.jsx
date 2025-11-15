@@ -112,24 +112,15 @@ const DetailKelolaPresensi = () => {
 
   return (
     <div className="flex flex-col mb-10">
-      <SectionHeader
-        title="Detail Kelola Presensi"
-        subtitle="Menampilkan rekap presensi lengkap karyawan, termasuk jam masuk, pulang, keterlambatan & Remark."
-        onBack={() => navigate("/kelola-absensi")}
+      <SectionHeader title="Detail Kelola Presensi" subtitle="Menampilkan rekap presensi lengkap karyawan, termasuk jam masuk, pulang, keterlambatan & Remark." onBack={() => navigate("/kelola-absensi")}
         actions={
           <div className="flex gap-2">
-            <button
-              onClick={handleExport}
-              className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-semibold"
-            >
+            <button onClick={handleExport} className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-semibold">
               <FontAwesomeIcon icon={faDownload} />
               <span className="hidden sm:block">Unduh Excel</span>
             </button>
 
-            <button
-              onClick={() => setIsInfoOpen(true)}
-              className="flex items-center gap-2 bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-semibold"
-            >
+            <button onClick={() => setIsInfoOpen(true)} className="flex items-center gap-2 bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-semibold">
               <FontAwesomeIcon icon={faInfo} />
               <span className="hidden sm:block">Informasi</span>
             </button>
@@ -278,7 +269,7 @@ const DetailKelolaPresensi = () => {
                     <td className={`px-4 py-2 ${isSunday ? "text-white font-bold" : rec?.late >= 1 ? "text-red-600 font-bold" : "text-gray-700"}`}>
                       {typeof rec?.late === "number" && rec.late >= 1 ? `${rec.late}` : "-"}
                     </td>
-                    <td className={`px-4 py-2 ${isSunday ? "text-white font-bold" : rec?.is_early_out ? "text-yellow-600 font-bold" : "text-gray-700"}`}>
+                    <td className={`px-4 py-2 ${isSunday ? "text-white font-bold" : rec?.is_early_out ? "text-red-600 font-bold bg-red-100" : "text-gray-700"}`}>
                       {rec?.out ? formatTime(rec.out) : "-"}
                     </td>
                     <td className="px-4 py-2">

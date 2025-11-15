@@ -76,10 +76,8 @@ const DetailKaryawan = () => {
 
         {!loading && !error && karyawan && (
           <>
-            {/* === BIODATA === */}
             <SectionTitle text="Biodata Karyawan" />
             <div className="flex flex-col md:flex-row gap-4 items-start">
-              {/* FOTO PROFIL */}
               {karyawan.foto ? (
                 <img src={karyawan.foto} alt={`Foto ${karyawan.nama || ""}`} className="w-36 h-48 sm:w-44 sm:h-56 object-cover rounded-xl shadow-md border border-gray-200"/>
               ) : (
@@ -88,7 +86,6 @@ const DetailKaryawan = () => {
                 </div>
               )}
 
-              {/* INFO BIODATA */}
               <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <BioItem label="Nama Lengkap" value={safeText(karyawan.nama)} />
                 <BioItem label="NIP" value={safeText(karyawan.nip)} />
@@ -97,7 +94,7 @@ const DetailKaryawan = () => {
                 <BioItem label="No. HP" value={safeText(karyawan.telp)} icon={faPhone} />
                 <BioItem label="Shift" value={safeText(karyawan.shift)} icon={faClock} />
                 <BioItem label="Status Karyawan" value={ karyawan.status ? <span className="text-green-600 font-semibold">Aktif</span> : <span className="text-red-500 font-semibold">Non-Aktif</span>}/>
-                <BioItem label="Status Kendaraan" value={ karyawan.status_kendaraan === 1 ? "Kendaraan Pribadi" : karyawan.status_kendaraan === 2 ? "Kendaraan Kantor" : "Belum diketahui"} icon={faCarSide}/>
+                <BioItem label="Status Kendaraan" value={ karyawan.status_kendaraan === 1 ? "Kendaraan Pribadi" : karyawan.status_kendaraan === 3 ? "Transportasi Umum" : karyawan.status_kendaraan === 2 ? "Kendaraan Kantor" : "Belum diketahui"} icon={faCarSide}/>
               </div>
             </div>
 

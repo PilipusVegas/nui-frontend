@@ -92,15 +92,17 @@ const DataPenggajian = () => {
   });
 
   const handleDownload = async () => {
-    // cari data periode yang sedang dipilih
     const selectedPeriodData = periodList.find((p) => p.id === selectedPeriod);
-
     if (!filteredData.length || !selectedPeriodData) return;
 
     const wb = new ExcelJS.Workbook();
     const ws = wb.addWorksheet("Laporan Penggajian");
 
-    // Format tanggal periode
+    // ===== SPASI ATAS =====
+    ws.addRow([]);
+    ws.addRow([]);
+
+    // Format tanggal
     const startDate = new Date(selectedPeriodData.tgl_awal).toLocaleDateString("id-ID", {
       day: "2-digit",
       month: "long",
@@ -112,43 +114,46 @@ const DataPenggajian = () => {
       year: "numeric",
     });
 
-    // ====== HEADER LAPORAN ======
-    ws.mergeCells("B1:E1");
-    ws.getCell("B1").value = "LAPORAN REKAPITULASI PENGGAJIAN KARYAWAN";
-    ws.getCell("B1").font = { bold: true, size: 16 };
-    ws.getCell("B1").alignment = { horizontal: "center", vertical: "middle" };
+    // ===== HEADER LAPORAN (dibuat center ke A–F) =====
+    ws.mergeCells("A3:F3");
+    ws.getCell("A3").value = "LAPORAN REKAPITULASI PENGGAJIAN KARYAWAN";
+    ws.getCell("A3").font = { bold: true, size: 16 };
+    ws.getCell("A3").alignment = { horizontal: "center", vertical: "middle" };
 
-    ws.mergeCells("B2:E2");
-    ws.getCell("B2").value = `Periode: ${startDate} s/d ${endDate}`;
-    ws.getCell("B2").alignment = { horizontal: "center", vertical: "middle" };
+    ws.mergeCells("A4:F4");
+    ws.getCell("A4").value = `Periode: ${startDate} s/d ${endDate}`;
+    ws.getCell("A4").alignment = { horizontal: "center", vertical: "middle" };
 
-    ws.mergeCells("B3:E3");
-    ws.getCell("B3").value = `Jumlah Karyawan: ${filteredData.length}`;
-    ws.getCell("B3").alignment = { horizontal: "center", vertical: "middle" };
+    ws.mergeCells("A5:F5");
+    ws.getCell("A5").value = `Jumlah Karyawan: ${filteredData.length} Karyawan`;
+    ws.getCell("A5").alignment = { horizontal: "center", vertical: "middle" };
 
-    // spasi sebelum header tabel
+    // ===== SPASI =====
     ws.addRow([]);
     ws.addRow([]);
 
-    // ====== DICETAK PADA ======
+    // ===== DICETAK PADA =====
     const dicetakRow = ws.addRow([]);
-    ws.mergeCells(`B${dicetakRow.number}:E${dicetakRow.number}`);
-    ws.getCell(`E${dicetakRow.number}`).value = `Dicetak pada: ${formatFullDate(new Date())}`;
-    ws.getCell(`E${dicetakRow.number}`).alignment = { horizontal: "right", vertical: "middle" };
+    ws.mergeCells(`A${dicetakRow.number}:F${dicetakRow.number}`);
+    ws.getCell(`F${dicetakRow.number}`).value = `Dicetak pada: ${formatFullDate(new Date())}`;
+    ws.getCell(`F${dicetakRow.number}`).alignment = { horizontal: "right", vertical: "middle" };
 
-    // ====== HEADER TABEL ======
+    // ===== DEFINISI KOLUMN =====
     ws.columns = [
-      { key: "blank", width: 5 },
-      { key: "nama", width: 30 },
-      { key: "total_hari_kerja", width: 20 },
-      { key: "total_keterlambatan_menit", width: 30 },
-      { key: "total_lembur_jam", width: 20 },
+      { key: "blank", width: 5 },              // A
+      { key: "nama", width: 30 },              // B
+      { key: "total_hari_kerja", width: 20 },  // C
+      { key: "total_alpha", width: 20 },       // D
+      { key: "total_keterlambatan_menit", width: 30 }, // E
+      { key: "total_lembur_jam", width: 20 },  // F
     ];
 
+    // ===== HEADER TABEL =====
     const headerRow = ws.addRow([
       "",
       "Nama Karyawan",
       "Total Hari Kerja",
+      "Total Alpha",
       "Total Keterlambatan (menit)",
       "Total Lembur (jam)"
     ]);
@@ -159,7 +164,7 @@ const DataPenggajian = () => {
       cell.fill = {
         type: "pattern",
         pattern: "solid",
-        fgColor: { argb: "228B22" }, // hijau formal
+        fgColor: { argb: "228B22" },
       };
       cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
       cell.border = {
@@ -170,18 +175,19 @@ const DataPenggajian = () => {
       };
     });
 
-    // ====== ISI DATA ======
+    // ===== DATA =====
     filteredData.forEach((row) => {
       const newRow = ws.addRow({
-        blank: "", // kolom kosong
+        blank: "",
         nama: row.nama,
         total_hari_kerja: row.total_hari_kerja,
+        total_alpha: row.total_alpha,
         total_keterlambatan_menit: row.total_keterlambatan_menit,
         total_lembur_jam: row.total_lembur_jam,
       });
 
       newRow.eachCell((cell, colNumber) => {
-        if (colNumber === 1) return; // skip border kolom kosong
+        if (colNumber === 1) return;
         cell.border = {
           top: { style: "thin" },
           left: { style: "thin" },
@@ -191,12 +197,7 @@ const DataPenggajian = () => {
       });
     });
 
-    // ====== FOOTER INFORMASI ======
-    ws.addRow([]);
-    ws.mergeCells(`B${ws.lastRow.number + 1}:E${ws.lastRow.number + 1}`);
-    ws.getCell(`B${ws.lastRow.number}`).alignment = { horizontal: "right" };
-
-    // ====== SIMPAN FILE ======
+    // ===== SAVE FILE =====
     const buffer = await wb.xlsx.writeBuffer();
     saveAs(
       new Blob([buffer], {
@@ -205,6 +206,7 @@ const DataPenggajian = () => {
       `Laporan_Penggajian_${startDate}_sd_${endDate}.xlsx`
     );
   };
+
 
   const handleSync = async () => {
     setLoading(true);
@@ -227,17 +229,16 @@ const DataPenggajian = () => {
       <SectionHeader title="Ringkasan Penggajian Periode Saat Ini" subtitle={`Menampilkan ${filteredData.length} karyawan pada periode terpilih. Lakukan sinkronisasi untuk memperbarui data.`} onBack={() => navigate("/home")}
         actions={
           <div className="flex flex-wrap gap-2">
-            <button onClick={() => setShowInfo(true)} className="flex items-center justify-center px-3 sm:px-4 py-2 rounded-md text-white bg-blue-500 hover:bg-blue-600 gap-1">
-              <FontAwesomeIcon icon={faInfo} className="mr-0 sm:mr-1" />
-              <span className="hidden sm:inline">Informasi</span>
-            </button>
-
             {canDownload && (
-              <button onClick={handleDownload} disabled={!filteredData.length} className={`flex items-center justify-center px-3 sm:px-4 py-2 rounded-md text-white ${!filteredData.length ? "bg-gray-400 cursor-not-allowed" : "bg-yellow-500 hover:bg-yellow-600"}`}>
+              <button onClick={handleDownload} disabled={!filteredData.length} className={`flex items-center justify-center px-3 sm:px-4 py-2 rounded-md text-white ${!filteredData.length ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"}`}>
                 <FontAwesomeIcon icon={faDownload} className="mr-0 sm:mr-1" />
                 <span className="hidden sm:inline">Unduh Excel</span>
               </button>
             )}
+            <button onClick={() => setShowInfo(true)} className="flex items-center justify-center px-3 sm:px-4 py-2 rounded-md text-white bg-blue-500 hover:bg-blue-600 gap-1">
+              <FontAwesomeIcon icon={faInfo} className="mr-0 sm:mr-1" />
+              <span className="hidden sm:inline">Informasi</span>
+            </button>
           </div>
         }
       />
@@ -292,6 +293,12 @@ const DataPenggajian = () => {
                     <FontAwesomeIcon icon={sortKey !== "total_hari_kerja" ? faSort : sortOrder === "asc" ? faSortDown : faSortUp} className="text-xs" />
                   </div>
                 </th>
+                <th className="px-3 py-2 cursor-pointer select-none text-center border-b" onClick={() => handleSort("total_alpha")}>
+                  <div className="flex items-center justify-center gap-1">
+                    Total Alpha
+                    <FontAwesomeIcon icon={sortKey !== "total_alpha" ? faSort : sortOrder === "asc" ? faSortDown : faSortUp} className="text-xs" />
+                  </div>
+                </th>
                 <th className="px-3 py-2 cursor-pointer select-none text-center border-b" onClick={() => handleSort("total_keterlambatan_menit")}>
                   <div className="flex items-center justify-center gap-1">
                     Total Keterlambatan
@@ -324,6 +331,7 @@ const DataPenggajian = () => {
                   </td>
 
                   <td className="px-3 py-2 text-center">{item.total_hari_kerja} Hari</td>
+                  <td className="px-3 py-2 text-center">{item.total_alpha} Hari</td>
                   <td className="px-3 py-2 text-center">{item.total_keterlambatan_menit} Menit</td>
                   <td className="px-3 py-2 text-center">{item.total_lembur_jam} Jam</td>
                 </tr>

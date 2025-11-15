@@ -42,6 +42,10 @@ const DataRekapAbsensi = () => {
           valA = a.total_days ?? 0;
           valB = b.total_days ?? 0;
           break;
+        case "alpha":
+          valA = a.total_alpha ?? 0;
+          valB = b.total_alpha ?? 0;
+          break;
         default:
           valA = (a.nama || "").toString().toLowerCase();
           valB = (b.nama || "").toString().toLowerCase();
@@ -182,7 +186,7 @@ const DataRekapAbsensi = () => {
                       <th colSpan={2} className="sticky top-0 z-10 bg-green-500 text-white border border-green-600 px-3 py-2.5 text-[14px] text-center min-w-[150px]">
                         PEGAWAI
                       </th>
-                      <th colSpan={3} className="sticky top-0 z-10 bg-green-500 text-white border border-green-600 px-3 py-2.5 text-[14px] text-center min-w-[80px]">
+                      <th colSpan={4} className="sticky top-0 z-10 bg-green-500 text-white border border-green-600 px-3 py-2.5 text-[14px] text-center min-w-[80px]">
                         JUMLAH
                       </th>
                     </tr>
@@ -195,6 +199,9 @@ const DataRekapAbsensi = () => {
                       </th>
                       <th onClick={() => toggleSort("kehadiran")} className="sticky top-[32px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-0.5 text-[11.5px] text-center min-w-[60px]">
                         HADIR
+                      </th>
+                      <th onClick={() => toggleSort("alpha")} className="sticky top-[32px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-0.5 text-[11.5px] text-center min-w-[60px]">
+                        ALPHA
                       </th>
                       <th onClick={() => toggleSort("late")} className="sticky top-[32px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-0.5 text-[11.5px] text-center min-w-[60px]">
                         TERLAMBAT
@@ -218,6 +225,7 @@ const DataRekapAbsensi = () => {
                           </td>
 
                           <td className="border border-gray-300 px-3 py-1 text-center text-xs">{item.total_days || "-"}</td>
+                          <td className="border border-gray-300 px-3 py-1 text-center text-xs">{item.total_alpha || "-"}</td>
                           <td className={`border border-gray-300 px-3 py-1 text-center text-xs ${isLate ? "text-red-700 font-bold" : ""}`}> {isLate ? item.total_late : "-"}</td>
                           <td className="border border-gray-300 px-3 py-1 text-center text-xs"> {(item.total_overtime || 0) > 0 ? item.total_overtime : "-"}</td>
                         </tr>
@@ -235,11 +243,7 @@ const DataRekapAbsensi = () => {
                       {tanggalArray.map(tgl => {
                         const m = dayMeta(tgl);
                         return (
-                          <th
-                            key={tgl}
-                            colSpan={m.isSunday ? 6 : 4}
-                            className={`sticky top-0 z-10 text-white ${m.bg} ${m.border} border px-2 py-0.5 text-center text-xs min-w-[120px]`}
-                          >
+                          <th key={tgl} colSpan={m.isSunday ? 6 : 4} className={`sticky top-0 z-10 text-white ${m.bg} ${m.border} border px-2 py-0.5 text-center text-xs min-w-[120px]`}>
                             {formatLongDate(tgl)}
                           </th>
                         );
@@ -251,11 +255,7 @@ const DataRekapAbsensi = () => {
                       {tanggalArray.map(tgl => {
                         const m = dayMeta(tgl);
                         return (
-                          <th
-                            key={`hari-${tgl}`}
-                            colSpan={m.isSunday ? 6 : 4}
-                            className={`sticky top-0 z-20 text-white ${m.bg} ${m.border} border px-2 py-0.5 text-center text-xs`}
-                          >
+                          <th key={`hari-${tgl}`} colSpan={m.isSunday ? 6 : 4} className={`sticky top-0 z-20 text-white ${m.bg} ${m.border} border px-2 py-0.5 text-center text-xs`}>
                             {m.dayName}
                           </th>
                         );
@@ -269,10 +269,7 @@ const DataRekapAbsensi = () => {
                         // hanya tampilkan LM dan LP jika hari Minggu
                         const labels = m.isSunday ? ["IN", "LATE", "OUT", "T", "LM", "LP"] : ["IN", "LATE", "OUT", "T"];
                         return labels.map(label => (
-                          <th
-                            key={`${tgl}-${label}`}
-                            className={`text-white ${m.bg} ${m.border} border px-1 py-0.5 text-[11.5px]`}
-                          >
+                          <th key={`${tgl}-${label}`} className={`text-white ${m.bg} ${m.border} border px-1 py-0.5 text-[11.5px]`}>
                             {label}
                           </th>
                         ));
@@ -303,8 +300,8 @@ const DataRekapAbsensi = () => {
 
                           // === Style dasar tiap sel ===
                           const tdBase = `border px-2 py-1 text-center text-xs min-w-[50px] ${m.isSunday
-                              ? "border-red-800 bg-red-600 text-white font-semibold group-hover:!bg-red-700 group-hover:!text-white"
-                              : `border-gray-300 ${isEvenCol ? "bg-gray-100" : "bg-white"} group-hover:!bg-gray-200`
+                            ? "border-red-800 bg-red-600 text-white font-semibold group-hover:!bg-red-700 group-hover:!text-white"
+                            : `border-gray-300 ${isEvenCol ? "bg-gray-100" : "bg-white"} group-hover:!bg-gray-200`
                             }`;
 
                           return (
