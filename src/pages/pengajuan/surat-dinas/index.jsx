@@ -222,39 +222,34 @@ const SuratDinas = () => {
             </thead>
 
             <tbody>
+              {/* JIKA ERROR */}
               {error && (
                 <tr>
-                  <th className="px-5 py-3 text-center">No.</th>
-                  <th className="px-5 py-3 text-center">Tanggal & Jam Dinas</th>
-                  <th className="px-5 py-3 text-center">Nama / Divisi</th>
-                  <th className="px-5 py-3 text-center">Status</th>
-                  <th className="px-5 py-3 text-center">Menu</th>
-                </tr>
-              </thead>
-              <tbody>
-                {!loading && error && (
-                  <tr>
-                    <td colSpan={5} className="py-12 text-center">
-                      <ErrorState message={error} onRetry={fetchData} />
-                    </td>
-                  </tr>
-                )}
-
-              {!error && currentItems.length === 0 && (
-                <tr>
                   <td colSpan={5} className="py-12 text-center">
-                    <EmptyState icon={faCalendarAlt} title="Belum ada pengajuan" description="Tidak ada pengajuan surat dinas dalam periode ini."/>
+                    <ErrorState message={error} onRetry={fetchData} />
                   </td>
                 </tr>
               )}
 
+              {/* JIKA TIDAK ERROR DAN DATA KOSONG */}
+              {!error && currentItems.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="py-12 text-center">
+                    <EmptyState
+                      icon={faCalendarAlt}
+                      title="Belum ada pengajuan"
+                      description="Tidak ada pengajuan surat dinas dalam periode ini."
+                    />
+                  </td>
+                </tr>
+              )}
+
+              {/* LIST DATA */}
               {!error &&
                 currentItems.length > 0 &&
                 currentItems.map((item, index) => {
                   const tglBerangkat = formatFullDate(item.tgl_berangkat);
-                  const tglPulang = item.tgl_pulang
-                    ? formatFullDate(item.tgl_pulang)
-                    : null;
+                  const tglPulang = item.tgl_pulang ? formatFullDate(item.tgl_pulang) : null;
                   const jamBerangkat = item.waktu ? item.waktu.substring(0, 5) : "-";
 
                   return (
@@ -269,9 +264,7 @@ const SuratDinas = () => {
                       <td className="px-4 py-3">
                         <div className="flex flex-col">
                           <span className="font-medium">
-                            {tglPulang
-                              ? `${tglBerangkat} – ${tglPulang}`
-                              : tglBerangkat}
+                            {tglPulang ? `${tglBerangkat} – ${tglPulang}` : tglBerangkat}
                           </span>
                           <span className="text-xs text-gray-600">
                             Jam Berangkat : {jamBerangkat}
@@ -305,8 +298,8 @@ const SuratDinas = () => {
                             onClick={() => handleApprove(item)}
                             disabled={approvingId === item.id}
                             className={`px-4 py-1.5 rounded-md text-sm font-medium shadow-sm transition ${approvingId === item.id
-                              ? "bg-gray-300 cursor-not-allowed"
-                              : "bg-green-600 hover:bg-green-700 text-white"
+                                ? "bg-gray-300 cursor-not-allowed"
+                                : "bg-green-600 hover:bg-green-700 text-white"
                               }`}
                           >
                             {approvingId === item.id ? (
@@ -330,8 +323,8 @@ const SuratDinas = () => {
                             onClick={() => handleReject(item)}
                             disabled={approvingId === item.id}
                             className={`px-4 py-1.5 rounded-md text-sm font-medium shadow-sm transition ${approvingId === item.id
-                              ? "bg-gray-300 cursor-not-allowed"
-                              : "bg-red-600 hover:bg-red-700 text-white"
+                                ? "bg-gray-300 cursor-not-allowed"
+                                : "bg-red-600 hover:bg-red-700 text-white"
                               }`}
                           >
                             {approvingId === item.id ? (
@@ -368,109 +361,106 @@ const SuratDinas = () => {
         </div>
       )}
 
-{/* MOBILE CARD VIEW */}
-<div className="lg:hidden space-y-4 mt-4">
-  {!error &&
-    currentItems.length > 0 &&
-    currentItems.map((item) => {
-      const tglBerangkat = formatFullDate(item.tgl_berangkat);
-      const tglPulang = item.tgl_pulang
-        ? formatFullDate(item.tgl_pulang)
-        : null;
-      const jamBerangkat = item.waktu
-        ? item.waktu.substring(0, 5)
-        : "-";
 
-      return (
-        <div
-          key={item.id}
-          className="bg-white border border-gray-200 rounded-xl shadow-md p-4"
-        >
-          {/* STATUS */}
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-xs text-gray-500">Tanggal Dinas</p>
-              <p className="font-semibold text-gray-800">
-                {tglPulang
-                  ? `${tglBerangkat} – ${tglPulang}`
-                  : tglBerangkat}
-              </p>
-              <p className="text-xs text-gray-600 mt-1">
-                Jam Berangkat:{" "}
-                <span className="font-medium">{jamBerangkat}</span>
-              </p>
-            </div>
+      {/* MOBILE CARD VIEW */}
+      <div className="lg:hidden space-y-4 mt-4">
+        {!error &&
+          currentItems.length > 0 &&
+          currentItems.map((item) => {
+            const tglBerangkat = formatFullDate(item.tgl_berangkat);
+            const tglPulang = item.tgl_pulang
+              ? formatFullDate(item.tgl_pulang)
+              : null;
+            const jamBerangkat = item.waktu
+              ? item.waktu.substring(0, 5)
+              : "-";
 
-            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500 text-white shadow">
-              Pending
-            </span>
-          </div>
+            return (
+              <div
+                key={item.id}
+                className="bg-white border border-gray-200 rounded-xl shadow-md p-4"
+              >
+                {/* STATUS */}
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-xs text-gray-500">Tanggal Dinas</p>
+                    <p className="font-semibold text-gray-800">
+                      {tglPulang
+                        ? `${tglBerangkat} – ${tglPulang}`
+                        : tglBerangkat}
+                    </p>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Jam Berangkat:{" "}
+                      <span className="font-medium">{jamBerangkat}</span>
+                    </p>
+                  </div>
 
-          {/* NAMA + DIVISI */}
-          <div className="mt-3">
-            <p className="font-bold text-gray-800 capitalize">
-              {item.nama || "-"}
-            </p>
-            <p className="text-xs text-gray-500 capitalize">
-              {item.divisi || "-"}
-            </p>
-          </div>
+                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500 text-white shadow">
+                    Pending
+                  </span>
+                </div>
 
-          {/* ACTION BAR — SEJAJAR DI BAWAH KANAN */}
-          <div className="mt-5 pt-4 border-t flex justify-end gap-2">
+                {/* NAMA + DIVISI */}
+                <div className="mt-3">
+                  <p className="font-bold text-gray-800 capitalize">
+                    {item.nama || "-"}
+                  </p>
+                  <p className="text-xs text-gray-500 capitalize">
+                    {item.divisi || "-"}
+                  </p>
+                </div>
 
-            {/* APPROVE */}
-            <button
-              onClick={() => handleApprove(item)}
-              disabled={approvingId === item.id}
-              className={`px-3 py-2 rounded-lg text-sm font-medium shadow flex items-center gap-1 transition ${
-                approvingId === item.id
-                  ? "bg-gray-300 cursor-not-allowed"
-                  : "bg-green-600 hover:bg-green-700 text-white"
-              }`}
-            >
-              {approvingId === item.id ? (
-                <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
-              ) : (
-                <FontAwesomeIcon icon={faCheck} />
-              )}
-              <span>Setujui</span>
-            </button>
+                {/* ACTION BAR — SEJAJAR DI BAWAH KANAN */}
+                <div className="mt-5 pt-4 border-t flex justify-end gap-2">
 
-            {/* REJECT */}
-            <button
-              onClick={() => handleReject(item)}
-              disabled={approvingId === item.id}
-              className={`px-3 py-2 rounded-lg text-sm font-medium shadow flex items-center gap-1 transition ${
-                approvingId === item.id
-                  ? "bg-gray-300 cursor-not-allowed"
-                  : "bg-red-600 hover:bg-red-700 text-white"
-              }`}
-            >
-              {approvingId === item.id ? (
-                <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
-              ) : (
-                <FontAwesomeIcon icon={faTimes} />
-              )}
-              <span>Tolak</span>
-            </button>
+                  {/* APPROVE */}
+                  <button
+                    onClick={() => handleApprove(item)}
+                    disabled={approvingId === item.id}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium shadow flex items-center gap-1 transition ${approvingId === item.id
+                      ? "bg-gray-300 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700 text-white"
+                      }`}
+                  >
+                    {approvingId === item.id ? (
+                      <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
+                    ) : (
+                      <FontAwesomeIcon icon={faCheck} />
+                    )}
+                    <span>Setujui</span>
+                  </button>
 
-            {/* DETAIL */}
-            <button
-              onClick={() => handleDetail(item)}
-              className="px-3 py-2 rounded-lg text-sm font-medium shadow flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white transition"
-            >
-              <FontAwesomeIcon icon={faInfoCircle} />
-              <span>Detail</span>
-            </button>
+                  {/* REJECT */}
+                  <button
+                    onClick={() => handleReject(item)}
+                    disabled={approvingId === item.id}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium shadow flex items-center gap-1 transition ${approvingId === item.id
+                      ? "bg-gray-300 cursor-not-allowed"
+                      : "bg-red-600 hover:bg-red-700 text-white"
+                      }`}
+                  >
+                    {approvingId === item.id ? (
+                      <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
+                    ) : (
+                      <FontAwesomeIcon icon={faTimes} />
+                    )}
+                    <span>Tolak</span>
+                  </button>
 
-          </div>
-        </div>
-      );
-    })}
-</div>
+                  {/* DETAIL */}
+                  <button
+                    onClick={() => handleDetail(item)}
+                    className="px-3 py-2 rounded-lg text-sm font-medium shadow flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white transition"
+                  >
+                    <FontAwesomeIcon icon={faInfoCircle} />
+                    <span>Detail</span>
+                  </button>
 
-
+                </div>
+              </div>
+            );
+          })}
+      </div>
 
 
       {/* PAGINATION */}
