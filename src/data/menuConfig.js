@@ -37,9 +37,20 @@ export const menuConfig = [
                 label: "Dashboard",
                 icon: faHome,
                 path: "/home",
-                roles: [1, 2, 3, 4, 5, 6, 18, 20],
+                roles: [1, 2, 3, 4, 5, 6, 13, 20],
             },
         ],
+        
+    },
+    {sectionTitle: "Absensi",
+        items: [
+            {
+                label: "Absensi",
+                icon: faClock,
+                path: "/absensi",
+                roles: [13, 20],
+            },
+        ]
     },
 
     // 2. MANAJEMEN SDM

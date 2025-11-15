@@ -300,15 +300,23 @@ const PersetujuanLembur = () => {
 
                 {/* Menu (Approve / Reject) */}
                 <div className="flex gap-2 pt-2">
-                  <button onClick={() => handleApprove(item.id_lembur)} className="flex-1 px-3 py-1 gap-1 font-semibold inline-flex items-center justify-center text-sm rounded-md bg-green-600 text-white hover:bg-green-700">
+                  <button
+                    onClick={() => handleApprove(item)}
+                    className="flex-1 px-3 py-1 gap-1 font-semibold inline-flex items-center justify-center text-sm rounded-md bg-green-600 text-white hover:bg-green-700"
+                  >
                     <FontAwesomeIcon icon={faCheck} />
                     Approve
                   </button>
-                  <button onClick={() => handleReject(item.id_lembur)} className="flex-1 px-3 py-1 gap-1 font-semibold inline-flex items-center justify-center text-sm rounded-md bg-red-600 text-white hover:bg-red-700">
+
+                  <button
+                    onClick={() => handleReject(item)}
+                    className="flex-1 px-3 py-1 gap-1 font-semibold inline-flex items-center justify-center text-sm rounded-md bg-red-600 text-white hover:bg-red-700"
+                  >
                     <FontAwesomeIcon icon={faTimes} />
                     Reject
                   </button>
                 </div>
+
               </div>
             );
           })

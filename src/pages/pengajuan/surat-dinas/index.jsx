@@ -224,11 +224,21 @@ const SuratDinas = () => {
             <tbody>
               {error && (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center">
-                    <ErrorState message={error} onRetry={fetchData} />
-                  </td>
+                  <th className="px-5 py-3 text-center">No.</th>
+                  <th className="px-5 py-3 text-center">Tanggal & Jam Dinas</th>
+                  <th className="px-5 py-3 text-center">Nama / Divisi</th>
+                  <th className="px-5 py-3 text-center">Status</th>
+                  <th className="px-5 py-3 text-center">Menu</th>
                 </tr>
-              )}
+              </thead>
+              <tbody>
+                {!loading && error && (
+                  <tr>
+                    <td colSpan={5} className="py-12 text-center">
+                      <ErrorState message={error} onRetry={fetchData} />
+                    </td>
+                  </tr>
+                )}
 
               {!error && currentItems.length === 0 && (
                 <tr>
