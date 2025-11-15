@@ -137,8 +137,7 @@ const EditHrdAccess = () => {
         <div className="w-full mx-auto">
             <SectionHeader title="Edit Akses HRD" subtitle="Form ini digunakan untuk mengedit perusahaan yang dapat diakses oleh HRD ini." onBack={() => navigate(-1)} />
 
-            <form onSubmit={handleSubmit} className="bg-white shadow-xl rounded-2xl border border-gray-200 p-8 mt-6 mx-auto min-h-[70vh] flex flex-col">
-                {/* Data HRD */}
+            <form onSubmit={handleSubmit} className="bg-white shadow-xl rounded-2xl border border-gray-100 p-8 mx-auto min-h-[70vh] flex flex-col">
                 <div className="flex items-center gap-4 mb-6 border-b border-gray-200 pb-4">
                     <div className="flex-shrink-0 bg-gradient-to-br from-green-200 to-green-100 text-green-700 p-4 rounded-full shadow-md flex items-center justify-center">
                         <FontAwesomeIcon icon={faUserTie} className="text-2xl" />
@@ -156,10 +155,9 @@ const EditHrdAccess = () => {
                 {/* Pilihan Perusahaan */}
                 <div className="mb-6 flex-1">
                     <label className="block text-gray-700 font-semibold mb-2 text-sm uppercase tracking-wide">
-                        Cari Perusahaan
+                        Cari & Pilih Perusahaan
                     </label>
-                    <Select isClearable isSearchable value={null}
-                        onChange={(selectedOption) => {
+                    <Select isClearable isSearchable value={null} onChange={(selectedOption) => {
                             if (selectedOption) {
                                 const alreadyExists = selectedPerusahaan.some(
                                     (p) => p.value === selectedOption.value
@@ -183,7 +181,7 @@ const EditHrdAccess = () => {
                     {selectedPerusahaan.length > 0 && (
                         <div className="mt-6">
                             <span className="block font-semibold text-gray-800 mb-3">
-                                Perusahaan yang akan dikelola oleh HRD ini:
+                                HRD ini mengelola perusahaan:
                             </span>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -200,7 +198,6 @@ const EditHrdAccess = () => {
                                             </div>
                                         </div>
 
-                                        {/* Tombol hapus */}
                                         <button type="button" onClick={() => handleRemovePerusahaan(p.value, p.label)} className="text-gray-400 hover:text-red-500 transition p-2 rounded-md">
                                             <FontAwesomeIcon icon={faTimes} />
                                         </button>
@@ -212,9 +209,8 @@ const EditHrdAccess = () => {
 
                 </div>
 
-                {/* Tombol Aksi di paling bawah justify-between */}
                 <div className="flex justify-between mt-auto pt-6 border-t border-gray-200">
-                    <button type="button" onClick={() => navigate(-1)} className="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 transition-all duration-200 flex items-center gap-2">
+                    <button type="button" onClick={() => navigate(-1)} className="px-5 py-2.5 border border-gray-300 rounded-lg text-white bg-gray-500 hover:bg-gray-100 transition-all duration-200 flex items-center gap-2">
                         <FontAwesomeIcon icon={faArrowLeft} />
                         Kembali
                     </button>

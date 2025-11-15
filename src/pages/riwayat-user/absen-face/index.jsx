@@ -38,7 +38,7 @@ export default function RiwayatFace() {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const res = await fetch(`${apiUrl}/face/karyawan`);
+                const res = await fetch(`${apiUrl}/face/users`);
                 if (res.ok) {
                     const data = await res.json();
                     if (data.success && Array.isArray(data.data)) {
@@ -127,8 +127,8 @@ export default function RiwayatFace() {
         label: c.perusahaan,
     }));
     const profileOptions = profiles.map((p) => ({
-        value: p.id,
-        label: `${p.nama} (${p.role})`,
+        value: p.id_user,
+        label: `${p.nama_user} (${p.role})`,
     }));
 
     // UI style helper
@@ -210,7 +210,7 @@ export default function RiwayatFace() {
                 </form>
 
                 {riwayat && (
-                    riwayat.data?.length > 0 ? (
+                    Object.keys(riwayat).length ? (
                         <div className="space-y-6 pt-6 border-t border-gray-200">
                             <div className="space-y-6 pt-6 border-t border-gray-200">
                                 {/* Ringkasan Riwayat */}
@@ -219,11 +219,11 @@ export default function RiwayatFace() {
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="flex flex-col items-start gap-1">
                                             <span className="text-xs text-gray-500">Nama</span>
-                                            <span className="text-sm font-semibold text-gray-800">{riwayat.data[0].nama}</span>
+                                            <span className="text-sm font-semibold text-gray-800">{riwayat.data.nama}</span>
                                         </div>
                                         <div className="flex flex-col items-start gap-1">
                                             <span className="text-xs text-gray-500">Perusahaan</span>
-                                            <span className="text-sm font-semibold text-gray-800">{riwayat.data[0].perusahaan}</span>
+                                            <span className="text-sm font-semibold text-gray-800">{riwayat.data.perusahaan}</span>
                                         </div>
                                     </div>
                                     <div className="flex flex-row justify-between items-center gap-4">
@@ -239,15 +239,15 @@ export default function RiwayatFace() {
                                     <div className="flex flex-row justify-between items-center gap-4">
                                         <div className="flex flex-col">
                                             <span className="text-xs text-gray-500">Total Terlambat</span>
-                                            <span className="text-sm font-semibold text-red-600">{riwayat.data[0].total_late ?? 0} mnt</span>
+                                            <span className="text-sm font-semibold text-red-600">{riwayat.data.total_late ?? 0} mnt</span>
                                         </div>
                                         <div className="flex flex-col">
                                             <span className="text-xs text-gray-500">Total Lembur</span>
-                                            <span className="text-sm font-semibold text-emerald-600">{formatOvertimeJamBulat(riwayat.data[0].total_overtime ?? 0)} Jam</span>
+                                            <span className="text-sm font-semibold text-emerald-600">{formatOvertimeJamBulat(riwayat.data.total_overtime ?? 0)} Jam</span>
                                         </div>
                                         <div className="flex flex-col">
                                             <span className="text-xs text-gray-500">Total Absen</span>
-                                            <span className="text-sm font-semibold text-gray-800">{riwayat.data[0].total_days ?? 0} hari</span>
+                                            <span className="text-sm font-semibold text-gray-800">{riwayat.data.total_days ?? 0} hari</span>
                                         </div>
                                     </div>
                                 </div>
@@ -266,7 +266,7 @@ export default function RiwayatFace() {
                                         </thead>
                                         <tbody>
                                             {riwayat.date_range.map((tgl) => {
-                                                const abs = riwayat.data[0].attendance[tgl];
+                                                const abs = riwayat.data.attendance[tgl];
                                                 return (
                                                     <tr key={tgl} className="odd:bg-white even:bg-gray-50 border-b border-gray-100">
                                                         <td className="px-4 py-2 font-medium text-gray-700">{formatDate(tgl)}</td>
@@ -283,19 +283,16 @@ export default function RiwayatFace() {
                                     </table>
                                 </div>
 
-                                {/* Mobile cards compact */}
                                 <div className="sm:hidden max-h-[80vh] overflow-y-auto space-y-2">
                                     {riwayat.date_range.map((tgl) => {
-                                        const abs = riwayat.data[0].attendance[tgl];
+                                        const abs = riwayat.data.attendance[tgl];
                                         return (
                                             <div key={tgl} className="rounded-lg border border-gray-100 shadow-sm overflow-hidden bg-white text-xs">
 
-                                                {/* Header Tanggal */}
                                                 <div className="bg-emerald-600 text-white text-center font-semibold py-1">
                                                     {formatFullDate(tgl)}
                                                 </div>
 
-                                                {/* Konten sejajar 4 data */}
                                                 <div className="grid grid-cols-4 divide-x divide-gray-200">
                                                     <div className="flex flex-col items-center py-2">
                                                         <span className="text-gray-500">Masuk</span>

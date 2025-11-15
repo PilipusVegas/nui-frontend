@@ -194,7 +194,6 @@ const Lembur = () => {
   const renderStepTwo = () => (
     <MobileLayout title="Detail Pengajuan">
       <form onSubmit={handleSubmitStepTwo} className="flex flex-col">
-        {/* Header */}
         <div className="flex-1 py-2 space-y-2 pb-20">
           <div className="text-center">
             <h2 className="text-xl font-bold text-gray-900 mb-1">
@@ -248,7 +247,7 @@ const Lembur = () => {
 
         {/* Footer */}
         <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 px-5 py-4 flex gap-4 shadow-md">
-          <button type="button" onClick={() => setStep("stepOne")} className="flex-1 py-3 bg-red-600 text-white rounded-xl font-semibold shadow-sm hover:bg-gray-200 transition">
+          <button type="button" onClick={() => setStep("stepOne")} className="flex-1 py-3 bg-red-600 text-white rounded-xl font-semibold shadow-sm hover:bg-red-700 transition">
             <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
             Perbaiki
           </button>

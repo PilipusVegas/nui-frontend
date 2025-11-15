@@ -1,11 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faCalendarAlt, faInfoCircle, faSpinner, faCircleInfo } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCheck,
+  faCalendarAlt,
+  faInfoCircle,
+  faSpinner,
+  faCircleInfo,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 import toast from "react-hot-toast";
 import { fetchWithJwt, getUserFromToken } from "../../../utils/jwtHelper";
 import { formatFullDate } from "../../../utils/dateUtils";
-import { SectionHeader, LoadingSpinner, SearchBar, EmptyState, ErrorState, Pagination, Modal } from "../../../components";
+import {
+  SectionHeader,
+  LoadingSpinner,
+  SearchBar,
+  EmptyState,
+  ErrorState,
+  Pagination,
+  Modal,
+} from "../../../components";
 import { getDefaultPeriod } from "../../../utils/getDefaultPeriod";
 
 const SuratDinas = () => {
@@ -25,7 +40,6 @@ const SuratDinas = () => {
   const [startDate, setStartDate] = useState(start);
   const [showInfoModal, setShowInfoModal] = useState(false);
 
-  /** ----------------- FETCH DATA ----------------- */
   const fetchData = async () => {
     setLoading(true);
     setError(null);
@@ -38,42 +52,78 @@ const SuratDinas = () => {
 
       const result = await res.json();
       setData(result.data || []);
-      // ✅ tidak ada toast success, cukup update state
     } catch (err) {
       console.error(err);
       setError(err.message);
-      toast.error(err.message || "Terjadi kesalahan saat memuat data surat dinas");
+      toast.error(
+        err.message || "Terjadi kesalahan saat memuat data surat dinas"
+      );
     } finally {
       setLoading(false);
     }
   };
-  /** ----------------- APPROVE ----------------- */
+
   const handleApprove = async (item) => {
-    setApprovingId(item.id); // tandai tombol yang sedang diproses
+    setApprovingId(item.id);
+    const isLuarKota = item.kategori === "2";
+
+    const body = {
+      status: 1,
+      condition: {
+        dinas: isLuarKota ? true : false,
+      },
+    };
+
     try {
       const res = await fetchWithJwt(`${apiUrl}/surat-dinas/${item.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: 1 }),
+        body: JSON.stringify(body),
       });
+
       if (!res.ok) throw new Error("Gagal menyetujui surat dinas");
 
-      toast.success(`Surat dinas ${item.nama} disetujui ✅`);
+      toast.success(
+        isLuarKota
+          ? `Surat dinas ${item.nama} disetujui (Luar Kota) ✈️`
+          : `Surat dinas ${item.nama} disetujui ✅`
+      );
 
-      // reload data biar update otomatis
       await fetchData();
     } catch (err) {
       console.error("Gagal menyetujui surat dinas:", err);
-      toast.error(err.message || "Terjadi kesalahan saat menyetujui surat dinas");
+      toast.error(
+        err.message || "Terjadi kesalahan saat menyetujui surat dinas"
+      );
     } finally {
-      setApprovingId(null); // reset
+      setApprovingId(null);
     }
   };
 
-  /** ----------------- FILTERING ----------------- */
+  const handleReject = async (item) => {
+    setApprovingId(item.id);
+
+    try {
+      const res = await fetchWithJwt(`${apiUrl}/surat-dinas/${item.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: 2 }),
+      });
+
+      if (!res.ok) throw new Error("Gagal menolak surat dinas");
+
+      toast.success(`Surat dinas ${item.nama} ditolak ❌`);
+      await fetchData();
+    } catch (err) {
+      console.error("Gagal menolak surat dinas:", err);
+      toast.error(err.message || "Terjadi kesalahan saat menolak data");
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
   useEffect(() => {
     fetchData();
-    // eslint-disable-next-line
   }, [startDate, endDate]);
 
   useEffect(() => {
@@ -82,60 +132,97 @@ const SuratDinas = () => {
         (item.nama || "").toLowerCase().includes(searchTerm.toLowerCase())
       )
     );
-    setCurrentPage(1); // reset halaman tiap search
+    setCurrentPage(1);
   }, [searchTerm, data]);
 
   const handleDetail = (item) => navigate(`/pengajuan-dinas/${item.id}`);
 
-  // pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
 
   return (
     <div className="w-full mx-auto">
-      <SectionHeader title="Pengajuan Surat Dinas" subtitle="Menampilkan hanya pengajuan surat dinas yang ditujukan kepada Anda sebagai kepala divisi atau Tim HRD." onBack={() => navigate(-1)}
+      <SectionHeader
+        title="Pengajuan Surat Dinas"
+        subtitle="Menampilkan hanya pengajuan surat dinas yang ditujukan kepada Anda sebagai kepala divisi atau Tim HRD."
+        onBack={() => navigate(-1)}
         actions={
-          <button onClick={() => setShowInfoModal(true)} className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md text-sm shadow flex items-center gap-2">
+          <button
+            onClick={() => setShowInfoModal(true)}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md text-sm shadow flex items-center gap-2"
+          >
             <FontAwesomeIcon icon={faCircleInfo} />
             Informasi
           </button>
         }
       />
 
-      {/* Search + Filter Bar */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 my-4">
-        <SearchBar
-          onSearch={(val) => setSearchTerm(val)}
-          placeholder="Cari nama..."
-        />
+      {/* FILTER BAR */}
+      <div className="my-4">
+        <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center">
 
+          {/* SEARCH - FLEX GROW DI DESKTOP */}
+          <div className="w-full lg:flex-1">
+            <SearchBar
+              onSearch={(val) => setSearchTerm(val)}
+              placeholder="Cari nama..."
+            />
+          </div>
 
-        <div className="flex items-center gap-2">
-          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border border-gray-300 rounded-md px-2 py-2.5 text-sm" />
-          <span>-</span>
-          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="border border-gray-300 rounded-md px-2 py-2.5 text-sm" />
+          {/* RIGHT SIDE: TANGGAL + BUTTON */}
+          <div className="w-full lg:w-auto flex flex-col lg:flex-row gap-2">
 
-          <button onClick={() => {
-            const { start, end } = getDefaultPeriod();
-            setStartDate(start);
-            setEndDate(end);
-          }}
-            className="bg-green-500 hover:bg-green-600 text-white px-3 py-2.5 rounded-md text-sm shadow"
-          >
-            Periode Saat Ini
-          </button>
+            {/* RENTANG TANGGAL */}
+            <div className="flex gap-2 w-full lg:w-auto">
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="border border-gray-300 rounded-md px-2 py-2.5 text-sm w-full lg:w-40"
+              />
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="border border-gray-300 rounded-md px-2 py-2.5 text-sm w-full lg:w-40"
+              />
+            </div>
+
+            {/* BUTTON PERIODE */}
+            <button
+              onClick={() => {
+                const { start, end } = getDefaultPeriod();
+                setStartDate(start);
+                setEndDate(end);
+              }}
+              className="bg-green-500 hover:bg-green-600 text-white px-3 py-2.5 rounded-md text-sm shadow w-full lg:w-auto"
+            >
+              Periode Saat Ini
+            </button>
+
+          </div>
         </div>
       </div>
+
 
       {loading ? (
         <LoadingSpinner />
       ) : (
-        <>
-          {/* ✅ Tampilan Desktop (Tabel) */}
-          <div className="hidden md:block overflow-x-auto rounded-lg shadow-md">
-            <table className="min-w-full text-sm bg-white">
-              <thead className="bg-green-500 text-white">
+        <div className="hidden lg:block overflow-x-auto rounded-lg shadow-md">
+          <table className="min-w-full text-sm bg-white border border-gray-200">
+            <thead className="bg-green-500 text-white text-sm">
+              <tr>
+                <th className="px-4 py-3 text-center font-semibold">No.</th>
+                <th className="px-4 py-3 text-center font-semibold">Tanggal & Jam Dinas</th>
+                <th className="px-4 py-3 text-center font-semibold">Nama / Divisi</th>
+                <th className="px-4 py-3 text-center font-semibold">Status</th>
+                <th className="px-4 py-3 text-center font-semibold">Menu</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {error && (
                 <tr>
                   <th className="px-5 py-3 text-center">No.</th>
                   <th className="px-5 py-3 text-center">Tanggal & Jam Dinas</th>
@@ -153,73 +240,73 @@ const SuratDinas = () => {
                   </tr>
                 )}
 
-                {!loading && !error && currentItems.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="py-12 text-center">
-                      <EmptyState
-                        icon={faCalendarAlt}
-                        title="Belum ada pengajuan"
-                        description="Tidak ada pengajuan surat dinas dalam periode ini."
-                      />
-                    </td>
-                  </tr>
-                )}
+              {!error && currentItems.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="py-12 text-center">
+                    <EmptyState icon={faCalendarAlt} title="Belum ada pengajuan" description="Tidak ada pengajuan surat dinas dalam periode ini."/>
+                  </td>
+                </tr>
+              )}
 
-                {!loading &&
-                  !error &&
-                  currentItems.length > 0 &&
-                  currentItems.map((item, index) => {
-                    const tglBerangkat = formatFullDate(item.tgl_berangkat);
-                    const tglPulang = item.tgl_pulang
-                      ? formatFullDate(item.tgl_pulang)
-                      : null;
-                    const jamBerangkat = item.waktu
-                      ? item.waktu.substring(0, 5)
-                      : "-";
+              {!error &&
+                currentItems.length > 0 &&
+                currentItems.map((item, index) => {
+                  const tglBerangkat = formatFullDate(item.tgl_berangkat);
+                  const tglPulang = item.tgl_pulang
+                    ? formatFullDate(item.tgl_pulang)
+                    : null;
+                  const jamBerangkat = item.waktu ? item.waktu.substring(0, 5) : "-";
 
-                    return (
-                      <tr
-                        key={item.id}
-                        className="border-b hover:bg-green-50 transition"
-                      >
-                        <td className="px-5 py-1 text-center">
-                          {indexOfFirstItem + index + 1}
-                        </td>
-                        <td className="px-5 py-1">
-                          <div className="flex flex-col">
-                            <span className="font-medium">
-                              {tglPulang
-                                ? `${tglBerangkat} – ${tglPulang}`
-                                : tglBerangkat}
-                            </span>
-                            <span className="text-sm text-gray-600 mt-1">
-                              Jam Berangkat : {jamBerangkat}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-5 py-1 text-center">
-                          <div className="flex flex-col items-center md:items-start">
-                            <span className="font-semibold capitalize">
-                              {item.nama || "-"}
-                            </span>
-                            <span className="text-xs text-gray-500 capitalize">
-                              {item.divisi || "-"}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-5 py-1 text-center">
-                          <span className="px-3 py-1 rounded-full text-sm font-medium bg-yellow-500 text-white">
-                            Pending
+                  return (
+                    <tr
+                      key={item.id}
+                      className="border-b hover:bg-green-50 transition-colors"
+                    >
+                      <td className="px-4 py-3 text-center">
+                        {indexOfFirstItem + index + 1}
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col">
+                          <span className="font-medium">
+                            {tglPulang
+                              ? `${tglBerangkat} – ${tglPulang}`
+                              : tglBerangkat}
                           </span>
-                        </td>
-                        <td className="px-5 py-1 text-center space-x-3">
+                          <span className="text-xs text-gray-600">
+                            Jam Berangkat : {jamBerangkat}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-3 text-center md:text-left">
+                        <div className="flex flex-col items-center md:items-start">
+                          <span className="font-semibold capitalize">
+                            {item.nama || "-"}
+                          </span>
+                          <span className="text-xs text-gray-500 capitalize">
+                            {item.divisi || "-"}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-3 text-center">
+                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500 text-white">
+                          Pending
+                        </span>
+                      </td>
+
+                      {/* ACTIONS */}
+                      <td className="px-4 py-3 text-center">
+                        <div className="flex flex-col md:flex-row md:justify-center gap-2">
+
+                          {/* APPROVE */}
                           <button
                             onClick={() => handleApprove(item)}
                             disabled={approvingId === item.id}
-                            className={`px-4 py-1 rounded-md text-sm font-medium shadow-sm transition  
-                        ${approvingId === item.id
-                                ? "bg-gray-300 cursor-not-allowed"
-                                : "bg-green-600 hover:bg-green-700 text-white"
+                            className={`px-4 py-1.5 rounded-md text-sm font-medium shadow-sm transition ${approvingId === item.id
+                              ? "bg-gray-300 cursor-not-allowed"
+                              : "bg-green-600 hover:bg-green-700 text-white"
                               }`}
                           >
                             {approvingId === item.id ? (
@@ -237,112 +324,156 @@ const SuratDinas = () => {
                               </>
                             )}
                           </button>
+
+                          {/* REJECT */}
+                          <button
+                            onClick={() => handleReject(item)}
+                            disabled={approvingId === item.id}
+                            className={`px-4 py-1.5 rounded-md text-sm font-medium shadow-sm transition ${approvingId === item.id
+                              ? "bg-gray-300 cursor-not-allowed"
+                              : "bg-red-600 hover:bg-red-700 text-white"
+                              }`}
+                          >
+                            {approvingId === item.id ? (
+                              <span className="flex items-center justify-center">
+                                <FontAwesomeIcon
+                                  icon={faSpinner}
+                                  className="mr-1 animate-spin"
+                                />
+                                Menyimpan...
+                              </span>
+                            ) : (
+                              <>
+                                <FontAwesomeIcon icon={faTimes} className="mr-1" />
+                                Tolak
+                              </>
+                            )}
+                          </button>
+
+                          {/* DETAIL */}
                           <button
                             onClick={() => handleDetail(item)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded-md text-sm font-medium shadow-sm transition"
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md text-sm font-medium shadow-sm transition"
                           >
                             <FontAwesomeIcon icon={faInfoCircle} className="mr-1" />
                             Detail
                           </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* ✅ Tampilan Mobile (Card List) */}
-          <div className="md:hidden space-y-3">
-            {currentItems.length === 0 && !loading && !error ? (
-              <EmptyState
-                icon={faCalendarAlt}
-                title="Belum ada pengajuan"
-                description="Tidak ada pengajuan surat dinas dalam periode ini."
-              />
-            ) : (
-              currentItems.map((item) => {
-                const tglBerangkat = formatFullDate(item.tgl_berangkat);
-                const tglPulang = item.tgl_pulang
-                  ? formatFullDate(item.tgl_pulang)
-                  : null;
-                const jamBerangkat = item.waktu
-                  ? item.waktu.substring(0, 5)
-                  : "-";
-
-                return (
-                  <div
-                    key={item.id}
-                    className="bg-white shadow-sm rounded-xl border border-gray-100 p-3 transition hover:shadow-md"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h2 className="font-semibold text-sm capitalize text-gray-800">
-                          {item.nama || "-"}
-                        </h2>
-                        <p className="text-xs text-gray-500 capitalize">
-                          {item.divisi || "-"}
-                        </p>
-                      </div>
-                      <span className="px-2 py-1 rounded-full text-xs bg-yellow-500 text-white font-medium">
-                        Pending
-                      </span>
-                    </div>
-
-                    <div className="mt-2 text-xs text-gray-700">
-                      <p>
-                        <FontAwesomeIcon
-                          icon={faCalendarAlt}
-                          className="mr-1 text-green-600"
-                        />
-                        {tglPulang
-                          ? `${tglBerangkat} – ${tglPulang}`
-                          : tglBerangkat}
-                      </p>
-                      <p className="mt-1">
-                        Jam Berangkat:{" "}
-                        <span className="font-medium">{jamBerangkat}</span>
-                      </p>
-                    </div>
-
-                    <div className="mt-3 flex justify-end gap-2">
-                      <button
-                        onClick={() => handleApprove(item)}
-                        disabled={approvingId === item.id}
-                        className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium shadow-sm transition  
-                    ${approvingId === item.id
-                            ? "bg-gray-300 cursor-not-allowed"
-                            : "bg-green-600 hover:bg-green-700 text-white"
-                          }`}
-                      >
-                        {approvingId === item.id ? (
-                          <FontAwesomeIcon
-                            icon={faSpinner}
-                            className="animate-spin"
-                          />
-                        ) : (
-                          <FontAwesomeIcon icon={faCheck} />
-                        )}
-                        {approvingId === item.id ? "Menyimpan..." : "Setujui"}
-                      </button>
-
-                      <button
-                        onClick={() => handleDetail(item)}
-                        className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-xs font-medium shadow-sm transition"
-                      >
-                        <FontAwesomeIcon icon={faInfoCircle} />
-                        Detail
-                      </button>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
+        </div>
       )}
 
-      {/* Pagination */}
+{/* MOBILE CARD VIEW */}
+<div className="lg:hidden space-y-4 mt-4">
+  {!error &&
+    currentItems.length > 0 &&
+    currentItems.map((item) => {
+      const tglBerangkat = formatFullDate(item.tgl_berangkat);
+      const tglPulang = item.tgl_pulang
+        ? formatFullDate(item.tgl_pulang)
+        : null;
+      const jamBerangkat = item.waktu
+        ? item.waktu.substring(0, 5)
+        : "-";
+
+      return (
+        <div
+          key={item.id}
+          className="bg-white border border-gray-200 rounded-xl shadow-md p-4"
+        >
+          {/* STATUS */}
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-xs text-gray-500">Tanggal Dinas</p>
+              <p className="font-semibold text-gray-800">
+                {tglPulang
+                  ? `${tglBerangkat} – ${tglPulang}`
+                  : tglBerangkat}
+              </p>
+              <p className="text-xs text-gray-600 mt-1">
+                Jam Berangkat:{" "}
+                <span className="font-medium">{jamBerangkat}</span>
+              </p>
+            </div>
+
+            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500 text-white shadow">
+              Pending
+            </span>
+          </div>
+
+          {/* NAMA + DIVISI */}
+          <div className="mt-3">
+            <p className="font-bold text-gray-800 capitalize">
+              {item.nama || "-"}
+            </p>
+            <p className="text-xs text-gray-500 capitalize">
+              {item.divisi || "-"}
+            </p>
+          </div>
+
+          {/* ACTION BAR — SEJAJAR DI BAWAH KANAN */}
+          <div className="mt-5 pt-4 border-t flex justify-end gap-2">
+
+            {/* APPROVE */}
+            <button
+              onClick={() => handleApprove(item)}
+              disabled={approvingId === item.id}
+              className={`px-3 py-2 rounded-lg text-sm font-medium shadow flex items-center gap-1 transition ${
+                approvingId === item.id
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-green-600 hover:bg-green-700 text-white"
+              }`}
+            >
+              {approvingId === item.id ? (
+                <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
+              ) : (
+                <FontAwesomeIcon icon={faCheck} />
+              )}
+              <span>Setujui</span>
+            </button>
+
+            {/* REJECT */}
+            <button
+              onClick={() => handleReject(item)}
+              disabled={approvingId === item.id}
+              className={`px-3 py-2 rounded-lg text-sm font-medium shadow flex items-center gap-1 transition ${
+                approvingId === item.id
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-red-600 hover:bg-red-700 text-white"
+              }`}
+            >
+              {approvingId === item.id ? (
+                <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
+              ) : (
+                <FontAwesomeIcon icon={faTimes} />
+              )}
+              <span>Tolak</span>
+            </button>
+
+            {/* DETAIL */}
+            <button
+              onClick={() => handleDetail(item)}
+              className="px-3 py-2 rounded-lg text-sm font-medium shadow flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white transition"
+            >
+              <FontAwesomeIcon icon={faInfoCircle} />
+              <span>Detail</span>
+            </button>
+
+          </div>
+        </div>
+      );
+    })}
+</div>
+
+
+
+
+      {/* PAGINATION */}
       {!loading && !error && filteredData.length > 0 && (
         <div className="mt-4 flex justify-center">
           <Pagination currentPage={currentPage} totalItems={filteredData.length} itemsPerPage={itemsPerPage} onPageChange={(page) => setCurrentPage(page)} />
@@ -351,19 +482,49 @@ const SuratDinas = () => {
 
       <Modal isOpen={showInfoModal} onClose={() => setShowInfoModal(false)} title="Informasi Surat Dinas" note="Panduan singkat penggunaan halaman ini" size="md">
         <div className="space-y-3 text-sm text-gray-700 leading-relaxed">
+
           <p>
-            Halaman <b>Pengajuan Surat Dinas</b> digunakan untuk memantau dan mengelola pengajuan perjalanan dinas
-            yang ditujukan kepada Anda sebagai Kepala Divisi atau Tim HRD.
+            Halaman <b>Pengajuan Surat Dinas</b> berfungsi untuk memantau, meninjau,
+            dan memproses seluruh permohonan perjalanan dinas yang diajukan karyawan.
+            Anda sebagai Kepala Divisi atau Tim HRD dapat melakukan pengecekan detail,
+            validasi data, hingga memberikan keputusan langsung melalui halaman ini.
           </p>
+
           <ul className="list-disc list-inside space-y-1">
-            <li><b>Filter Periode:</b> Pilih rentang tanggal atau gunakan tombol <i>Periode Saat Ini</i> untuk menampilkan data sesuai bulan berjalan.</li>
-            <li><b>Pencarian:</b> Gunakan kolom pencarian untuk menemukan pegawai berdasarkan nama.</li>
-            <li><b>Setujui:</b> Klik tombol <span className="text-green-600 font-semibold">Setujui</span> untuk menyetujui pengajuan yang valid.</li>
-            <li><b>Detail:</b> Tekan tombol <span className="text-blue-600 font-semibold">Detail</span> untuk melihat informasi lengkap sebelum mengambil keputusan.</li>
+            <li>
+              <b>Filter Periode:</b> Gunakan rentang tanggal untuk menampilkan data
+              pengajuan pada periode tertentu. Tombol <i>Periode Saat Ini</i> membantu
+              menampilkan pengajuan pada periode berjalan secara cepat.
+            </li>
+
+            <li>
+              <b>Pencarian Nama Pegawai:</b> Ketik nama pada kolom pencarian untuk
+              menemukan pengajuan dari pegawai tertentu dengan lebih efisien.
+            </li>
+
+            <li>
+              <b>Detail Pengajuan:</b> Tekan tombol biru <i>Detail</i> untuk melihat
+              informasi lengkap seperti tujuan perjalanan, tanggal berangkat–pulang,
+              kategori dinas (Dalam/Luar Kota), dan alasan pengajuan.
+            </li>
+
+            <li>
+              <b>Persetujuan:</b> Gunakan tombol hijau untuk menyetujui pengajuan yang
+              telah diverifikasi. Untuk pengajuan kategori <b>Luar Kota</b>, sistem
+              akan otomatis menandai bahwa karyawan berhak atas tunjangan dinas.
+            </li>
+
+            <li>
+              <b>Penolakan:</b> Gunakan tombol merah jika pengajuan tidak memenuhi
+              ketentuan atau membutuhkan revisi.
+            </li>
           </ul>
-          <p className="text-xs text-gray-500 italic">
-            *Status pengajuan yang sudah disetujui akan otomatis diperbarui pada tabel.
+
+          <p>
+            Pastikan semua informasi sudah benar sebelum memberikan keputusan guna
+            menjaga ketertiban administrasi dan akurasi data perjalanan dinas.
           </p>
+
         </div>
       </Modal>
 

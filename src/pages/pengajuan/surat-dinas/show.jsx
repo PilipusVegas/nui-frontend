@@ -56,12 +56,7 @@ const SuratDinasDetail = () => {
     html2pdf().set(opt).from(element).save();
   };
 
-  // Tentukan tanggal perjalanan
-  const tanggalPerjalanan = data.kategori === 1
-    ? formatFullDate(data.tgl_berangkat) // Dalam kota, hanya berangkat
-    : data.tgl_pulang
-      ? `${formatFullDate(data.tgl_berangkat)} s/d ${formatFullDate(data.tgl_pulang)}` // Luar kota + ada pulang
-      : formatFullDate(data.tgl_berangkat); // Luar kota tapi tgl_pulang kosong
+  const tanggalPerjalanan = data.kategori === 1 ? formatFullDate(data.tgl_berangkat) : data.tgl_pulang ? `${formatFullDate(data.tgl_berangkat)} s/d ${formatFullDate(data.tgl_pulang)}` : formatFullDate(data.tgl_berangkat);
 
   // Kategori
   const kategoriLabel = data.kategori === "1" ? "Dinas Dalam Kota" : "Dinas Luar Kota";
@@ -79,8 +74,6 @@ const SuratDinasDetail = () => {
   return (
     <div>
       <SectionHeader title="Surat Dinas" subtitle="Detail Surat Dinas jika dibutuhkan untuk mencetak" onBack={() => navigate(-1)}/>
-
-      {/* Area Cetak */}
       <div className="max-w-4xl mx-auto mt-20">
         <div id="cetak-area" className="border-y-4 border-double border-gray-700 border-x-8 p-6 rounded-lg bg-white shadow-md">
           <h2 className="text-center text-4xl font-bold mb-4 text-gray-800">
@@ -88,7 +81,6 @@ const SuratDinasDetail = () => {
           </h2>
           <div className="border-t-4 border-double border-gray-600 mb-6" />
 
-          {/* Detail Items */}
           <div className="text-base text-gray-800 space-y-3 px-5">
             {detailItems.map((item, idx) => (
               <div key={idx} className="flex flex-wrap">
@@ -105,20 +97,13 @@ const SuratDinasDetail = () => {
           </div>
         </div>
 
-        {/* Tombol */}
         <div className="flex justify-between items-center mt-4 max-w-4xl mx-auto">
-          <button
-            onClick={() => navigate(-1)}
-            className="text-white bg-green-600 hover:bg-green-700 transition rounded px-4 py-2 flex items-center"
-          >
+          <button onClick={() => navigate(-1)} className="text-white bg-green-600 hover:bg-green-700 transition rounded px-4 py-2 flex items-center">
             <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
             Kembali
           </button>
 
-          <button
-            onClick={handleCetakPDF}
-            className="text-white bg-blue-600 hover:bg-blue-700 transition rounded px-4 py-2 flex items-center"
-          >
+          <button onClick={handleCetakPDF} className="text-white bg-blue-600 hover:bg-blue-700 transition rounded px-4 py-2 flex items-center">
             <FontAwesomeIcon icon={faFileDownload} className="mr-2" />
             Cetak PDF
           </button>

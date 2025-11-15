@@ -8,7 +8,7 @@ import { faFolderOpen, faFileDownload, faExpand, faRefresh, faCircleInfo } from 
 import { LoadingSpinner, SectionHeader, EmptyState, ErrorState, SearchBar, Modal } from "../../components/";
 import { formatLongDate } from "../../utils/dateUtils";
 
-const DataRekapAbsensi  = () => {
+const DataRekapAbsensi = () => {
   const Navigate = useNavigate();
   const user = getUserFromToken();
   const [error, setError] = useState(null);
@@ -41,6 +41,10 @@ const DataRekapAbsensi  = () => {
         case "kehadiran":
           valA = a.total_days ?? 0;
           valB = b.total_days ?? 0;
+          break;
+        case "alpha":
+          valA = a.total_alpha ?? 0;
+          valB = b.total_alpha ?? 0;
           break;
         default:
           valA = (a.nama || "").toString().toLowerCase();
@@ -175,7 +179,6 @@ const DataRekapAbsensi  = () => {
         <div className="w-full overflow-x-auto rounded-lg shadow-md border border-gray-300 bg-white">
           <div className="min-w-full max-w-[30vw]">
             <div className="flex w-full">
-              {/* LEFT TABLE: Pegawai + Jumlah Kehadiran */}
               <div className="flex flex-col border-r bg-white shrink-0" style={{ borderRight: "1px solid #ccc" }}>
                 <table className="border-collapse w-full">
                   <thead>
@@ -183,7 +186,7 @@ const DataRekapAbsensi  = () => {
                       <th colSpan={2} className="sticky top-0 z-10 bg-green-500 text-white border border-green-600 px-3 py-2.5 text-[14px] text-center min-w-[150px]">
                         PEGAWAI
                       </th>
-                      <th colSpan={3} className="sticky top-0 z-10 bg-green-500 text-white border border-green-600 px-3 py-2.5 text-[14px] text-center min-w-[80px]">
+                      <th colSpan={4} className="sticky top-0 z-10 bg-green-500 text-white border border-green-600 px-3 py-2.5 text-[14px] text-center min-w-[80px]">
                         JUMLAH
                       </th>
                     </tr>
@@ -196,6 +199,9 @@ const DataRekapAbsensi  = () => {
                       </th>
                       <th onClick={() => toggleSort("kehadiran")} className="sticky top-[32px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-0.5 text-[11.5px] text-center min-w-[60px]">
                         HADIR
+                      </th>
+                      <th onClick={() => toggleSort("alpha")} className="sticky top-[32px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-0.5 text-[11.5px] text-center min-w-[60px]">
+                        ALPHA
                       </th>
                       <th onClick={() => toggleSort("late")} className="sticky top-[32px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-0.5 text-[11.5px] text-center min-w-[60px]">
                         TERLAMBAT
@@ -212,13 +218,14 @@ const DataRekapAbsensi  = () => {
                       return (
                         <tr key={idx} onMouseEnter={() => setHoveredRow(idx)}
                           onMouseLeave={() => setHoveredRow(null)}
-                          className={hoveredRow === idx ? "bg-gray-200" : ""}>
+                          className={hoveredRow === idx ? "bg-gray-200 transition-none" : "transition-none"}>
                           <td className="border border-gray-300 px-3 py-1 text-center text-xs break-words tracking-wider">{item.nip || "-"}</td>
                           <td onClick={() => { const url = `/kelola-absensi/${item.id_user}?startDate=${startDate}&endDate=${endDate}`; window.open(url, '_blank', 'noopener,noreferrer'); }} className="border border-gray-300 px-2 py-1 text-xs break-words font-semibold tracking-wider uppercase cursor-pointer hover:underline">
                             {item.nama}
                           </td>
 
                           <td className="border border-gray-300 px-3 py-1 text-center text-xs">{item.total_days || "-"}</td>
+                          <td className="border border-gray-300 px-3 py-1 text-center text-xs">{item.total_alpha || "-"}</td>
                           <td className={`border border-gray-300 px-3 py-1 text-center text-xs ${isLate ? "text-red-700 font-bold" : ""}`}> {isLate ? item.total_late : "-"}</td>
                           <td className="border border-gray-300 px-3 py-1 text-center text-xs"> {(item.total_overtime || 0) > 0 ? item.total_overtime : "-"}</td>
                         </tr>
@@ -231,29 +238,40 @@ const DataRekapAbsensi  = () => {
               <div className="overflow-x-auto" style={{ flexGrow: 1 }}>
                 <table className="border-collapse w-full min-w-max bg-white">
                   <thead>
+                    {/* Baris tanggal */}
                     <tr>
                       {tanggalArray.map(tgl => {
                         const m = dayMeta(tgl);
                         return (
-                          <th key={tgl} colSpan={4} className={`sticky top-0 z-10 text-white ${m.bg} ${m.border} border px-2 py-0.5 text-center text-xs min-w-[120px]`}>
+                          <th key={tgl} colSpan={m.isSunday ? 6 : 4} className={`sticky top-0 z-10 text-white ${m.bg} ${m.border} border px-2 py-0.5 text-center text-xs min-w-[120px]`}>
                             {formatLongDate(tgl)}
                           </th>
                         );
                       })}
                     </tr>
+
+                    {/* Baris nama hari */}
                     <tr>
                       {tanggalArray.map(tgl => {
                         const m = dayMeta(tgl);
                         return (
-                          <th key={`hari-${tgl}`} colSpan={4} className={`sticky top-0 z-20 text-white ${m.bg} ${m.border} border px-2 py-0.5 text-center text-xs`}> {m.dayName}</th>
+                          <th key={`hari-${tgl}`} colSpan={m.isSunday ? 6 : 4} className={`sticky top-0 z-20 text-white ${m.bg} ${m.border} border px-2 py-0.5 text-center text-xs`}>
+                            {m.dayName}
+                          </th>
                         );
                       })}
                     </tr>
+
+                    {/* Baris label kolom */}
                     <tr>
                       {tanggalArray.map(tgl => {
                         const m = dayMeta(tgl);
-                        return ["IN", "LATE", "OUT", "T"].map(label => (
-                          <th key={`${tgl}-${label}`} className={`text-white ${m.bg} ${m.border} border px-1 py-0.5 text-[11.5px]`}> {label}</th>
+                        // hanya tampilkan LM dan LP jika hari Minggu
+                        const labels = m.isSunday ? ["IN", "LATE", "OUT", "T", "LM", "LP"] : ["IN", "LATE", "OUT", "T"];
+                        return labels.map(label => (
+                          <th key={`${tgl}-${label}`} className={`text-white ${m.bg} ${m.border} border px-1 py-0.5 text-[11.5px]`}>
+                            {label}
+                          </th>
                         ));
                       })}
                     </tr>
@@ -261,7 +279,12 @@ const DataRekapAbsensi  = () => {
 
                   <tbody>
                     {filteredAbsenData.map((item, rowIdx) => (
-                      <tr key={rowIdx} onMouseEnter={() => setHoveredRow(rowIdx)} onMouseLeave={() => setHoveredRow(null)} className="group">
+                      <tr
+                        key={rowIdx}
+                        onMouseEnter={() => setHoveredRow(rowIdx)}
+                        onMouseLeave={() => setHoveredRow(null)}
+                        className="group"
+                      >
                         {tanggalArray.map((tgl, colIdx) => {
                           const m = dayMeta(tgl);
                           const att = item.attendance[tgl] || {};
@@ -270,18 +293,31 @@ const DataRekapAbsensi  = () => {
                           const lateMin = lateVal === null || lateVal === undefined || lateVal === 0 ? "-" : lateVal;
                           const outTime = att.out || "-";
                           const rawOt = att.overtime ?? item.overtimes?.[tgl]?.durasi;
+                          const startOvertime = item.overtimes?.[tgl]?.mulai ?? "-";
+                          const lastOvertime = item.overtimes?.[tgl]?.selesai ?? "-";
                           const overtime = rawOt === null || rawOt === undefined || rawOt === 0 ? "-" : rawOt;
                           const isEvenCol = colIdx % 2 === 0;
-                          const tdBase = `border px-2 py-1 text-center text-xs min-w-[50px] ${m.isSunday ? "border-red-800 bg-red-600 text-white font-semibold group-hover:bg-red-700" : `border-gray-300 ${isEvenCol ? "bg-gray-100" : "bg-white"} group-hover:bg-gray-200`}`;
+
+                          // === Style dasar tiap sel ===
+                          const tdBase = `border px-2 py-1 text-center text-xs min-w-[50px] ${m.isSunday
+                            ? "border-red-800 bg-red-600 text-white font-semibold group-hover:!bg-red-700 group-hover:!text-white"
+                            : `border-gray-300 ${isEvenCol ? "bg-gray-100" : "bg-white"} group-hover:!bg-gray-200`
+                            }`;
 
                           return (
                             <React.Fragment key={`${tgl}-${rowIdx}`}>
                               <td className={tdBase}>{inTime}</td>
-                              <td className={`${tdBase} ${lateVal > 0 ? "text-red-700 font-bold" : ""}`}>
-                                {lateMin}
-                              </td>
+                              <td className={`${tdBase} ${lateVal > 0 ? "text-red-700 font-bold" : ""}`}>{lateMin}</td>
                               <td className={tdBase}>{outTime}</td>
                               <td className={tdBase}>{overtime}</td>
+
+                              {/* Hanya render LM & LP jika hari Minggu */}
+                              {m.isSunday && (
+                                <>
+                                  <td className={tdBase}>{startOvertime}</td>
+                                  <td className={tdBase}>{lastOvertime}</td>
+                                </>
+                              )}
                             </React.Fragment>
                           );
                         })}
@@ -290,6 +326,7 @@ const DataRekapAbsensi  = () => {
                   </tbody>
                 </table>
               </div>
+
             </div>
           </div>
         </div>
@@ -313,23 +350,26 @@ const DataRekapAbsensi  = () => {
             <hr className="my-2 border-gray-300" />
 
             {/* Keterangan Kolom */}
-            <div className="flex items-center gap-2">
+            <div className="grid grid-cols-[50px_auto] gap-y-2 text-sm">
               <span className="font-bold text-green-700">IN</span>
-              <span>Jam kedatangan karyawan.</span>
-            </div>
-            <div className="flex items-center gap-2">
+              <span>Jam Absen Masuk Karyawan.</span>
+
               <span className="font-bold text-red-600">LATE</span>
               <span>Jumlah menit keterlambatan dibanding jam masuk.</span>
-            </div>
-            <div className="flex items-center gap-2">
+
               <span className="font-bold text-indigo-700">OUT</span>
-              <span>Jam pulang/keluar karyawan.</span>
-            </div>
-            <div className="flex items-center gap-2">
+              <span>Jam Absen Pulang karyawan.</span>
+
               <span className="font-bold text-purple-700">T</span>
               <span>Total jam lembur (Overtime) karyawan.</span>
-            </div>
 
+              <span className="font-bold text-purple-700">LM</span>
+              <span>Jam Lembur masuk karyawan.</span>
+
+              <span className="font-bold text-purple-700">LP</span>
+              <span>Jam Lembur pulang karyawan.</span>
+            </div>
+            <hr className="my-2 border-gray-300" />
             <p className="mt-2 text-xs text-gray-500">
               Pastikan rentang tanggal sudah dipilih agar data ditampilkan lengkap.
             </p>
@@ -337,7 +377,6 @@ const DataRekapAbsensi  = () => {
         </Modal>
       )}
 
-      {/* Status Messages */}
       {loading && (
         <div className="flex flex-col items-center justify-center py-8">
           <LoadingSpinner message="Memuat data absensi..." />

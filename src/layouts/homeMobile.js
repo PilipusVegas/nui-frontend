@@ -3,77 +3,16 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Swal from "sweetalert2";
-import { faCalendarCheck, faBell, faHistory, faThList, faHome, faUser, faSignOutAlt, faQuestionCircle, faMapMarkerAlt, faArrowRight, faPenFancy, faPeopleGroup, faClipboardList, faClockFour, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { faCalendarCheck, faBell, faHistory, faSignOutAlt, faMapMarkerAlt, faArrowRight, faPenFancy, faPeopleGroup, faClockFour, faTasks, } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../utils/jwtHelper";
-import { FooterMainBar, LoadingSpinner, EmptyState, ErrorState } from "../components";
+import { FooterMainBar, LoadingSpinner, EmptyState, ErrorState, TaskCardSlider } from "../components";
 
 const HomeMobile = ({ handleLogout }) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [attendanceData, setAttendanceData] = useState([]);
-  const [reminder, setReminder] = useState(null);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const user = getUserFromToken();
-  const [loading, setLoading] = useState(true);
   const [hasNewNotifications, setHasNewNotifications] = useState(false);
-
-  // === FETCH REMINDER (Cek Absen) ===
-  useEffect(() => {
-    const user = getUserFromToken();
-    const idUser = user?.id_user;
-
-    const fetchReminder = async () => {
-      try {
-        const response = await fetchWithJwt(`${apiUrl}/absen/cek/${idUser}`);
-        if (response.ok) {
-          const data = await response.json();
-
-          // Kalau kosong array => belum absen
-          if (Array.isArray(data) && data.length === 0) {
-            setReminder("Anda belum melakukan absensi hari ini.");
-          } else {
-            setReminder(null); // clear kalau sudah ada absen
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching reminder:", error);
-      }
-    };
-
-    if (idUser) fetchReminder();
-  }, [apiUrl]);
-
-
-  // useEffect(() => {
-  //   const user = getUserFromToken();
-  //   const idUser = user?.id_user;
-  //   if (idUser) {
-  //     const fetchNotifications = async () => {
-  //       try {
-  //         setLoading(true);
-  //         const response = await fetchWithJwt(`${apiUrl}/notif/user/${idUser}`, {
-  //           headers: { "Cache-Control": "no-cache" },
-  //         });
-  //         if (!response.ok) {
-  //           throw new Error("Gagal mengambil data notifikasi");
-  //         }
-  //         const data = await response.json();
-  //         const unreadNotifications = data?.data?.some((notif) => notif.is_read === 0);
-  //         setHasNewNotifications(unreadNotifications);
-  //       } catch (error) {
-  //         console.error("Terjadi kesalahan:", error);
-  //       } finally {
-  //         setLoading(false);
-  //       }
-  //     };
-  //     fetchNotifications();
-  //   } else {
-  //     setLoading(false);
-  //   }
-  //   return () => {
-  //     setLoading(false);
-  //   };
-  // }, [apiUrl]);
 
   useEffect(() => {
     const user = getUserFromToken();
@@ -140,8 +79,7 @@ const HomeMobile = ({ handleLogout }) => {
   };
 
   return (
-    <div className="flex flex-col font-sans bg-gray-50 min-h-screen">
-      {/* Header Hero */}
+    <div className="flex flex-col font-sans bg-gray-50 min-h-screen pb-40">
       <div className="bg-gradient-to-br from-green-500 to-green-700 rounded-b-6xl px-8 pb-12 pt-4 relative shadow-xl z-10">
         <button onClick={confirmLogout} title="Logout" className="absolute top-3 right-3 text-xl text-red-500 hover:bg-white hover:text-red-600 transition-colors px-2 py-1 rounded-md bg-white/70">
           <FontAwesomeIcon icon={faSignOutAlt} />
@@ -158,13 +96,11 @@ const HomeMobile = ({ handleLogout }) => {
         </div>
       </div>
 
-      {/* === Absen Terbaru (Minimalis & Stylish) === */}
       {attendanceData.length > 0 && (
         <div className="relative z-20 scale-95">
           <div className="px-4 -mt-14">
-            <div onClick={() => navigate("/riwayat-absensi")} className="bg-white shadow-md rounded-2xl p-2 border border-gray-200 cursor-pointer hover:shadow-lg hover:ring-1 hover:ring-green-400 active:scale-[0.98] transition-all duration-300">
+            <div onClick={() => navigate("/riwayat-pengguna")} className="bg-white shadow-md rounded-2xl p-2 border border-gray-200 cursor-pointer hover:shadow-lg hover:ring-1 hover:ring-green-400 active:scale-[0.98] transition-all duration-300">
               <div className="flex items-start">
-                {/* Tanggal */}
                 <div className="flex flex-col items-center min-w-[72px]">
                   <div className="bg-green-500 text-white rounded-xl py-2 px-3 text-center w-full">
                     <div className="text-[11px] font-medium opacity-90 tracking-wider">
@@ -179,10 +115,8 @@ const HomeMobile = ({ handleLogout }) => {
                   </div>
                 </div>
 
-                {/* Detail Absen */}
                 <div className="flex-1 grid gap-2">
                   <div className="grid grid-cols-2 text-center text-sm overflow-hidden">
-                    {/* Jam Masuk */}
                     <div className="border-r border-gray-300 flex flex-col items-center">
                       <div className="text-[10px] text-gray-600 mb-1">Absen Masuk</div>
                       <div className="text-base font-semibold text-gray-800">{formatTime(attendanceData[0].jam_mulai)}</div>
@@ -196,7 +130,6 @@ const HomeMobile = ({ handleLogout }) => {
                       )}
                     </div>
 
-                    {/* Jam Pulang */}
                     <div className="flex flex-col items-center">
                       <div className="text-[10px] text-gray-600 mb-1">Absen Pulang</div>
                       <div className={`text-base font-semibold ${attendanceData[0].jam_selesai ? "text-gray-800" : "text-gray-400"}`}>
@@ -226,19 +159,20 @@ const HomeMobile = ({ handleLogout }) => {
       <div className="grid grid-cols-4 gap-2 px-3">
         <MainMenuButton icon={faCalendarCheck} label="Absen" onClick={() => navigate("/absensi")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-emerald-600 hover:scale-105 transition" />
         <MainMenuButton icon={faClockFour} label="Lembur" onClick={() => navigate("/lembur")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-teal-600 hover:scale-105 transition" />
-        {/* <MainMenuButton icon={faClipboardList} label="Cuti" onClick={() => navigate("/cuti")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-indigo-600 hover:scale-105 transition" /> */}
         <MainMenuButton icon={faPenFancy} label="Dinas" onClick={() => window.open("/formulir-dinas", "_blank")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-blue-600 hover:scale-105 transition" />
+        <MainMenuButton icon={faTasks} label="Tugas" onClick={() => navigate("/tugas")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-lime-600 hover:scale-105 transition" />
         <MainMenuButton icon={faBell} label="Notifikasi" onClick={handleNotificationClick} hasNotification={hasNewNotifications} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-amber-600 hover:scale-105 transition" />
         <MainMenuButton icon={faHistory} label="Riwayat" onClick={() => navigate("/riwayat-pengguna")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-indigo-600 hover:scale-105 transition" />
         <MainMenuButton image="/NOS.png" label="NOS" onClick={() => window.open("https://nos.nicourbanindonesia.com/mypanel/maintenance", "_blank")} color="rounded-xl bg-gradient-to-br from-green-50 to-green-200 hover:scale-105 transition" />
+        {/* <MainMenuButton icon={faClipboardList} label="Cuti" onClick={() => navigate("/cuti")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-indigo-600 hover:scale-105 transition" /> */}
         {/* <MainMenuButton icon={faThList} label="Lainnya" onClick={() => navigate("/menu")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-teal-600 hover:scale-105 transition" /> */}
       </div>
 
-      {/* === MENU BANTUAN === */}
+      <TaskCardSlider />
+
       <div className="px-4 pt-4">
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-sm font-semibold">Bantuan</span>
-          <FontAwesomeIcon icon={faQuestionCircle} className="text-green-600 text-base" />
+          <span className="text-sm font-semibold">Menu Bantuan</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="group flex items-center gap-4 bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-green-500 hover:scale-[1.01] transition-all duration-300 cursor-pointer" onClick={() => window.open("https://wa.me/628980128222", "_blank")}>
@@ -262,8 +196,8 @@ const HomeMobile = ({ handleLogout }) => {
         </div>
       </div>
 
-      {attendanceData.length > 1 && (
-        <div className="px-4 mt-2 pb-40">
+      {/* {attendanceData.length > 1 && (
+        <div className="px-4 mt-2">
           <div className="flex justify-between items-center my-4">
             <div className="flex items-center space-x-3">
               <h2 className="text-sm font-semibold">Riwayat Absensi</h2>
@@ -273,12 +207,10 @@ const HomeMobile = ({ handleLogout }) => {
             </button>
           </div>
 
-          {/* === Riwayat Absen === */}
           <div className="grid gap-3 mt-2">
             {attendanceData.slice(1, 4).map((item) => (
               <div key={item.id_absen} className="bg-white shadow-md rounded-2xl p-3 border border-gray-200 cursor-pointer hover:shadow-lg hover:ring-1 hover:ring-green-400 active:scale-[0.98] transition-all duration-300">
                 <div className="flex items-start gap-3">
-                  {/* Tanggal */}
                   <div className="flex flex-col items-center min-w-[72px]">
                     <div className="bg-green-500 text-white rounded-xl py-2 px-3 text-center w-full">
                       <div className="text-[11px] font-medium opacity-90 tracking-wider">
@@ -293,10 +225,8 @@ const HomeMobile = ({ handleLogout }) => {
                     </div>
                   </div>
 
-                  {/* Detail Absen */}
                   <div className="flex-1 grid gap-2">
                     <div className="grid grid-cols-2 text-center text-sm overflow-hidden">
-                      {/* Jam Masuk */}
                       <div className="border-r border-gray-300 flex flex-col items-center justify-center">
                         <div className="text-[10px] text-gray-600 mb-1">Absen Masuk</div>
                         <div className="text-base font-semibold text-gray-800">{formatTime(item.jam_mulai)}</div>
@@ -310,7 +240,6 @@ const HomeMobile = ({ handleLogout }) => {
                       )}
                       </div>
 
-                      {/* Jam Pulang */}
                       <div className="flex flex-col items-center justify-center">
                         <div className="text-[10px] text-gray-600 mb-1">Absen Pulang</div>
                         <div className={`text-base font-semibold ${item.jam_selesai ? "text-gray-800" : "text-gray-400"}`}>
@@ -331,10 +260,10 @@ const HomeMobile = ({ handleLogout }) => {
               </div>
             ))}
           </div>
-        </div>
-      )}
 
-      {/* MENU FOOTER */}
+        </div>
+      )} */}
+
       <FooterMainBar />
     </div>
   );

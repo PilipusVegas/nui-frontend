@@ -27,9 +27,10 @@ export default function Absensi() {
                 if (!res.ok) throw new Error("Gagal memuat data absensi");
 
                 const json = await res.json();
-                const sorted = json.sort(
+                const sorted = (json.data || []).sort(
                     (a, b) => new Date(b.jam_mulai) - new Date(a.jam_mulai)
                 );
+
                 setData(sorted);
             } catch (e) {
                 // hanya error selain 404

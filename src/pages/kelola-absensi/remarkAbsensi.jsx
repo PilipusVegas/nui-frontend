@@ -332,21 +332,27 @@ const AbsenManual = () => {
                             )}
 
                             <div className="col-span-2">
-                                <label className="block text-sm font-medium mb-1">Catatan / Remark</label>
-                                <div>
-                                    <textarea className="border rounded px-3 py-2 w-full resize-y min-h-[80px]" placeholder="Tuliskan alasan, contoh: sakit, dinas luar, izin datang terlambat..." value={formData.remark} onChange={e => setFormData(f => ({ ...f, remark: e.target.value }))} disabled={!!absenData?.remark_by && !!formData.remark} />
-
-                                    {absenData?.remark_by && (
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            Data absen ini sudah diremark oleh: {absenData.remark_by}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="col-span-2">
                                 <label className="block text-sm font-medium mb-1">Status Remark</label>
-                                <Select value={formData.remark_status ? { value: formData.remark_status, label: formData.remark_status === 1 ? "Absen Manual" : formData.remark_status === 2 ? "Izin Terlambat" : formData.remark_status === 3 ? "Izin Pulang Awal" : "Cuti", } : null}
+                                <Select
+                                    value={
+                                        formData.remark_status
+                                            ? {
+                                                value: formData.remark_status,
+                                                label:
+                                                    formData.remark_status === 1
+                                                        ? "Absen Manual"
+                                                        : formData.remark_status === 2
+                                                            ? "Izin Terlambat"
+                                                            : formData.remark_status === 3
+                                                                ? "Izin Pulang Awal"
+                                                                : formData.remark_status === 4
+                                                                    ? "Cuti"
+                                                                    : formData.remark_status === 5
+                                                                        ? "Izin Sakit"
+                                                                        : "-",
+                                            }
+                                            : null
+                                    }
                                     onChange={(opt) =>
                                         setFormData((f) => ({
                                             ...f,
@@ -358,9 +364,24 @@ const AbsenManual = () => {
                                         { value: 2, label: "Izin Terlambat" },
                                         { value: 3, label: "Izin Pulang Awal" },
                                         { value: 4, label: "Cuti" },
+                                        { value: 5, label: "Izin Sakit" },
                                     ]}
                                     isDisabled={!!absenData?.remark_by && !!formData.remark_status}
                                 />
+                            </div>
+
+
+                            <div className="col-span-2">
+                                <label className="block text-sm font-medium mb-1">Catatan / Remark</label>
+                                <div>
+                                    <textarea className="border rounded px-3 py-2 w-full resize-y min-h-[80px]" placeholder="Tuliskan alasan, contoh: sakit, dinas luar, izin datang terlambat..." value={formData.remark} onChange={e => setFormData(f => ({ ...f, remark: e.target.value }))} disabled={!!absenData?.remark_by && !!formData.remark} />
+
+                                    {absenData?.remark_by && (
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Data absen ini sudah diremark oleh: {absenData.remark_by}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
@@ -446,6 +467,11 @@ const AbsenManual = () => {
                                     Contohnya seperti cuti tahunan, cuti sakit, cuti melahirkan, atau cuti
                                     penting lainnya. Dengan status ini, sistem akan menandai hari tersebut
                                     sebagai <i>hari tidak bekerja resmi</i> tanpa dianggap absen.
+                                </li>
+                                <li>
+                                    <b>Izin Sakit</b>: digunakan bila karyawan mengajukan izin sakit kepada HR
+                                    atau atasan. Status ini akan menandai absensi sebagai <i>hari tidak
+                                        bekerja resmi</i> tanpa dianggap absen.
                                 </li>
                             </ul>
                         </li>

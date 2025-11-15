@@ -1,4 +1,5 @@
 import Swal from "sweetalert2";
+import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import "sweetalert2/dist/sweetalert2.min.css";
 import { useNavigate } from "react-router-dom";
@@ -6,7 +7,7 @@ import { formatFullDate } from "../../../utils/dateUtils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getDefaultPeriod } from "../../../utils/getDefaultPeriod";
 import { fetchWithJwt } from "../../../utils/jwtHelper";
-import { faCheck, faInfoCircle, faTimes, faHistory } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faInfoCircle, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { SectionHeader, Modal, LoadingSpinner, ErrorState, EmptyState, SearchBar, Pagination } from "../../../components";
 
 const PersetujuanLembur = () => {
@@ -92,7 +93,14 @@ const PersetujuanLembur = () => {
         body = { status, deskripsi: item.deskripsi || "" };
       } else if (item.id_lembur) {
         endpoint = `${apiUrl}/lembur/approve/${item.id_lembur}`;
-        body = { status };
+
+        const isLemburValid =
+          item.total_lembur >= 5 && ![63, 64, 66].includes(item.id_lokasi);
+
+        body = {
+          status,
+          condition: { lembur: isLemburValid },
+        };
       } else {
         throw new Error("Data lembur tidak valid.");
       }
@@ -105,29 +113,29 @@ const PersetujuanLembur = () => {
 
       if (!res.ok) throw new Error("Gagal memperbarui status.");
 
-      // ✅ Notifikasi sukses
-      Swal.fire({
-        title: status === 1 ? "Disetujui!" : "Ditolak!",
-        text: `Pengajuan lembur ${status === 1 ? "berhasil disetujui" : "berhasil ditolak"}.`,
-        icon: "success",
-        confirmButtonColor: "#16a34a",
-      });
+      const result = await res.json();
 
-      // Refresh data
+      if (status === 1) {
+        if (result?.tunjangan === true) {
+          Swal.fire({
+            icon: "success",
+            title: "Selamat!",
+            text: "Karyawan ini mendapatkan tunjangan lembur.",
+          });
+        } else {
+          toast.success("Pengajuan lembur berhasil disetujui.");
+        }
+      } else if (status === 2) {
+        toast.error("Pengajuan lembur ditolak.");
+      }
+
       fetchApprovalData(startDate, endDate);
     } catch (err) {
-      // ❌ Notifikasi error
-      Swal.fire({
-        title: "Terjadi Kesalahan",
-        text: err.message,
-        icon: "error",
-        confirmButtonColor: "#dc2626",
-      });
+      setErrorMessage(err.message);
+      toast.error(err.message);
     }
   };
 
-
-  // Gunakan di tombol
   const handleApprove = (item) => handleUpdateStatus(item, 1);
   const handleReject = (item) => handleUpdateStatus(item, 2);
 
@@ -135,17 +143,11 @@ const PersetujuanLembur = () => {
     setCurrentPage(1);
   }, [searchQuery]);
 
-
   return (
     <div className="flex flex-col">
       <SectionHeader title="Pengajuan Lembur" subtitle="Daftar pengajuan lembur berdasarkan periode" onBack={() => navigate("/home")}
         actions={
           <div className="flex gap-2">
-            <button onClick={() => navigate("/riwayat-lembur")} className="flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md font-medium">
-              <FontAwesomeIcon icon={faHistory} />
-              <span className="sm:inline hidden">Lihat Riwayat</span>
-            </button>
-
             <button onClick={() => setIsInfoModalOpen(true)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium">
               <FontAwesomeIcon icon={faInfoCircle} />
               <span className="sm:inline hidden">Informasi</span>
@@ -153,8 +155,6 @@ const PersetujuanLembur = () => {
           </div>
         }
       />
-
-
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full mb-4">
         <div className="w-full sm:flex-1">
@@ -173,7 +173,6 @@ const PersetujuanLembur = () => {
         </div>
       </div>
 
-      {/* ======= Tabel Desktop ======= */}
       <div className="hidden md:block">
         <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
           <table className="min-w-full table-auto text-sm">
@@ -229,7 +228,7 @@ const PersetujuanLembur = () => {
                       </td>
                       <td className="py-2.5 px-5 text-center font-medium">
                         <div> {a.jam_mulai} – {a.jam_selesai}</div>
-                        <div className="text-gray-500 text-xs mt-0.5"> Total: {hours} jam</div>
+                        <div className="text-gray-500 text-xs mt-0.5"> Total: {a.total_lembur} jam</div>
                       </td>
 
                       <td className="py-2.5 px-5 text-center">

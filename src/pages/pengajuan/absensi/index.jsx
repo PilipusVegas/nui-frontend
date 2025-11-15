@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { faArrowLeft, faArrowRight, faCheck, faEye, faExclamationTriangle, faCalendarAlt, faCheckCircle, faSortDown, faSort, faSortUp, faSortAsc } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faEye, faExclamationTriangle, faCalendarAlt, faCheckCircle, faSortDown, faSortUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
 import { fetchWithJwt, getUserFromToken } from "../../../utils/jwtHelper";
@@ -32,10 +32,10 @@ const DataAbsensi = () => {
       const user = getUserFromToken();
       const userRole = user?.id_role;
       let filtered = [];
-      if ([1, 4, 6].includes(userRole)) filtered = data;
-      else if (userRole === 20 || userRole === 13)
-        filtered = data.filter((d) => d.id_role === 22);
-      else if (userRole === 5) filtered = data.filter((d) => d.id_role === 3);
+      if ([1, 4, 6].includes(userRole)) filtered = data.data;
+      else if (userRole === 20 || userRole === 18)
+        filtered = data.data.filter((d) => d.id_role === 22);
+      else if (userRole === 5) filtered = data.data.filter((d) => d.id_role === 3);
       setAbsenData(Array.isArray(filtered) ? filtered : []);
     } catch (err) {
       console.error("Error fetching absen data:", err);
@@ -75,10 +75,9 @@ const DataAbsensi = () => {
 
   return (
     <div className="flex flex-col justify-start">
-      <SectionHeader title="Persetujuan Absensi Lapangan" subtitle="Monitoring kehadiran karyawan lapangan secara real-time setiap hari." onBack={() => navigate(-1)} />
+      <SectionHeader title="Persetujuan Absensi Lapangan" subtitle="Monitoring kehadiran karyawan lapangan secara real-time setiap hari." onBack={() => navigate("/home")} />
       <SearchBar onSearch={(val) => { setSearchName(val); setCurrentPage(1); }} placeholder="Cari nama dan divisi..." className="mb-4"  />
 
-      {/* Tabel Desktop */}
       <div className="hidden md:block rounded-lg shadow-md overflow-hidden">
         <table className="table-auto w-full border-collapse bg-white">
           <thead>
@@ -160,22 +159,18 @@ const DataAbsensi = () => {
         </table>
       </div>
 
-      {/* Mobile Card – Minimalis & Modern */}
       <div className="md:hidden space-y-3">
         {currentItems.map((absen) => {
           const isApproved = Number(absen.unapproved) === 0;
 
           return (
             <div key={absen.id_user} onClick={() => navigate(`/pengajuan-absensi/${absen.id_user}`)} className="cursor-pointer rounded-lg bg-white shadow hover:shadow-md hover:ring-1 hover:ring-blue-200 transition-all duration-150">
-              {/* Header : Nama + Role */}
               <div className="px-4 pt-3 pb-2 border-b border-gray-100">
                 <h4 className="text-sm font-semibold text-gray-900">{absen.nama}</h4>
                 <p className="text-xs text-gray-500">{absen.role}</p>
               </div>
 
-              {/* Body : Total Hadir & Status */}
               <div className="flex justify-between items-center px-4 py-2">
-                {/* Total Kehadiran */}
                 <div className="flex items-center gap-2">
                   <div className="flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-600">
                     <FontAwesomeIcon icon={faCalendarAlt} className="text-sm" />
@@ -188,7 +183,6 @@ const DataAbsensi = () => {
                   </div>
                 </div>
 
-                {/* Status Persetujuan */}
                 <div className="flex items-center gap-2">
                   <div className={`flex items-center justify-center w-8 h-8 rounded-full ${isApproved ? "bg-blue-50 text-blue-600" : "bg-red-50 text-red-500"}`}>
                     <FontAwesomeIcon icon={isApproved ? faCheckCircle : faExclamationTriangle} className="text-sm" />

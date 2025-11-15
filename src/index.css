@@ -30,5 +30,5 @@
   /* Optional: Firefox scrollbar support */
   .scrollbar-green {
     scrollbar-width: thin;
-    scrollbar-color: rgb(255, 255, 255) transparent;
+    scrollbar-color: rgb(221, 221, 221) transparent;
   }

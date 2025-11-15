@@ -1,17 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faClock,
-  faCalendarAlt,
-  faSun,
-  faCloudSun,
-  faCloud,
-  faCloudRain,
-  faCloudShowersHeavy,
-  faBolt,
-  faSmog,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCalendarAlt, faSun, faCloudSun, faCloud, faCloudRain, faCloudShowersHeavy, faBolt, faSmog,} from "@fortawesome/free-solid-svg-icons";
 import { getUserFromToken } from "../utils/jwtHelper";
 import DashboardCard from "../components/desktop/DashboardCard";
 import { cardConfig } from "../data/menuConfig";
@@ -23,7 +13,6 @@ const HomeDesktop = () => {
   const roleId = user ? Number(user.id_role) : null;
   const perusahaanId = user ? Number(user.id_perusahaan) : null;
 
-  const [localTime, setLocalTime] = useState("");
   const [weather, setWeather] = useState({
     city: "Memuat...",
     temp: "--",
@@ -31,20 +20,6 @@ const HomeDesktop = () => {
     icon: faCloudSun,
     accent: "text-yellow-500",
   });
-
-  // Update jam lokal
-  useEffect(() => {
-    const updateLocalTime = () => {
-      const time = new Date().toLocaleTimeString("id-ID", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      setLocalTime(time);
-    };
-    updateLocalTime();
-    const intervalId = setInterval(updateLocalTime, 60000);
-    return () => clearInterval(intervalId);
-  }, []);
 
   // Fetch cuaca
   useEffect(() => {

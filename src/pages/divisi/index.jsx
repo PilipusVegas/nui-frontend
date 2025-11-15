@@ -23,13 +23,9 @@ const DivisiTable = () => {
   const [editId, setEditId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const itemsPerPage = 12;
+  const itemsPerPage = 10;
   const navigate = useNavigate();
-  const perusahaanOptions = perusahaan.map((p) => ({
-    value: p.id,
-    label: p.nama,
-  }));
-
+  const perusahaanOptions = perusahaan.map((p) => ({ value: p.id, label: p.nama,}));
 
   const fetchDivisi = async () => {
     setLoading(true);
@@ -37,8 +33,13 @@ const DivisiTable = () => {
     try {
       const res = await fetchWithJwt(`${apiUrl}/karyawan/divisi`);
       if (!res.ok) throw new Error(`Status ${res.status}`);
-      const data = await res.json();
-      setDivisi(data);
+      const json = await res.json();
+
+      // Ambil array divisi dari response
+      setDivisi(Array.isArray(json.data) ? json.data : []);
+
+      // Optional: tampilkan success/message jika mau logging
+      console.log("Success:", json.success, "Message:", json.message);
     } catch (err) {
       console.error("Gagal memuat data divisi:", err);
       setError("Gagal memuat data divisi. Silakan coba lagi.");
@@ -46,7 +47,6 @@ const DivisiTable = () => {
       setLoading(false);
     }
   };
-
   const fetchPerusahaan = async () => {
     try {
       const res = await fetchWithJwt(`${apiUrl}/perusahaan`);
@@ -71,12 +71,10 @@ const DivisiTable = () => {
   const filteredDivisi = divisi.filter((d) => {
     const term = searchTerm.trim().toLowerCase();
 
-    // jika input berupa angka murni, cek id exact match
     if (/^\d+$/.test(term)) {
       return String(d.id) === term;
     }
 
-    // selain itu, cek nama mengandung kata kunci
     return d.nama.toLowerCase().includes(term);
   });
 
