@@ -129,8 +129,10 @@ const AbsenManual = () => {
     const handleSubmit = async e => {
         e.preventDefault();
         const f = formData;
-        if (!f.id_user || !f.tipe_absensi || !f.id_shift || !f.jam_mulai || !f.remark || !f.remark_status) {
-            toast.error("Lengkapi semua field");
+
+        // Validasi wajib (jam_selesai dan remark opsional)
+        if (!f.id_user || !f.tipe_absensi || !f.id_shift || !f.jam_mulai || !f.remark_status) {
+            toast.error("Lengkapi semua field wajib: Karyawan, Tipe Absensi, Shift, Jam Masuk, Status Remark");
             return;
         }
 
@@ -138,25 +140,11 @@ const AbsenManual = () => {
         let fullJamSelesai = f.jam_selesai || null;
 
         if (f.tipe_absensi === 1) {
-            // Lapangan → jam_mulai sudah datetime-local
             fullJamMulai = f.jam_mulai;
             fullJamSelesai = f.jam_selesai || null;
         } else {
-            // Kantor → gabungkan selectedDate + jam
             fullJamMulai = `${selectedDate}T${f.jam_mulai}`;
             fullJamSelesai = f.jam_selesai ? `${selectedDate}T${f.jam_selesai}` : null;
-        }
-
-
-        // Validasi jam_mulai untuk lapangan
-        if (f.tipe_absensi === 1) {
-            const startDateTime = new Date(fullJamMulai);
-            const minDateTime = new Date(selectedDate);
-            // ijinkan jika masih dalam range ±1 hari
-            if (startDateTime.getTime() < minDateTime.getTime() - (24 * 60 * 60 * 1000)) {
-                toast.error("Jam mulai terlalu jauh sebelum tanggal yang dipilih");
-                return;
-            }
         }
 
         try {
@@ -183,12 +171,13 @@ const AbsenManual = () => {
             setAbsenData(null);
             setIsChecked(false);
             setIdUser(null);
-            setSelectedDate("");
+            setSelectedDate(new Date().toISOString().split("T")[0]);
             navigate("/remark-absensi");
         } catch {
             toast.error("Gagal menyimpan absen");
         }
     };
+
 
 
     useEffect(() => {
@@ -312,7 +301,7 @@ const AbsenManual = () => {
                                 </div>
                             )}
 
-                            {formData.tipe_absensi === 1 && absenData && formData.jam_mulai && (
+                            {formData.tipe_absensi === 1 && formData.jam_mulai && (
                                 <div>
                                     <label className="block text-sm font-medium mb-1">Lokasi Selesai</label>
                                     <Select options={lokasi.map(l => ({ value: l.id, label: l.nama }))} value={formData.id_lokasi_selesai ? { value: formData.id_lokasi_selesai, label: lokasi.find(l => l.id === formData.id_lokasi_selesai)?.nama } : null} onChange={opt => setFormData(f => ({ ...f, id_lokasi_selesai: opt.value }))} />
@@ -324,12 +313,16 @@ const AbsenManual = () => {
                                 <input lang="id" type={formData.tipe_absensi === 1 ? "datetime-local" : "time"} step="60" value={formData.jam_mulai || ""} onChange={e => setFormData(f => ({ ...f, jam_mulai: e.target.value }))} className="border rounded px-3 py-2 w-full" />
                             </div>
 
-                            {absenData && formData.jam_mulai && (
+                            {formData.jam_mulai && (
                                 <div>
                                     <label className="block text-sm font-medium mb-1">Jam Pulang</label>
-                                    <input type={formData.tipe_absensi === 1 ? "datetime-local" : "time"} className="border rounded px-3 py-2 w-full" value={formData.jam_selesai || ""} onChange={e => setFormData(f => ({ ...f, jam_selesai: e.target.value }))} />
+                                    <input type={formData.tipe_absensi === 1 ? "datetime-local" : "time"}
+                                        className="border rounded px-3 py-2 w-full"
+                                        value={formData.jam_selesai || ""}
+                                        onChange={e => setFormData(f => ({ ...f, jam_selesai: e.target.value }))} />
                                 </div>
                             )}
+
 
                             <div className="col-span-2">
                                 <label className="block text-sm font-medium mb-1">Status Remark</label>
@@ -374,7 +367,14 @@ const AbsenManual = () => {
                             <div className="col-span-2">
                                 <label className="block text-sm font-medium mb-1">Catatan / Remark</label>
                                 <div>
-                                    <textarea className="border rounded px-3 py-2 w-full resize-y min-h-[80px]" placeholder="Tuliskan alasan, contoh: sakit, dinas luar, izin datang terlambat..." value={formData.remark} onChange={e => setFormData(f => ({ ...f, remark: e.target.value }))} disabled={!!absenData?.remark_by && !!formData.remark} />
+                                    <textarea
+                                        className={`border rounded px-3 py-2 w-full resize-y min-h-[80px] 
+                        ${!!absenData?.remark_by && !!formData.remark ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700"}`}
+                                        placeholder="Tuliskan alasan, contoh: sakit, dinas luar, izin datang terlambat..."
+                                        value={formData.remark}
+                                        onChange={e => setFormData(f => ({ ...f, remark: e.target.value }))}
+                                        disabled={!!absenData?.remark_by && !!formData.remark}
+                                    />
 
                                     {absenData?.remark_by && (
                                         <p className="text-xs text-gray-500 mt-1">
@@ -383,6 +383,8 @@ const AbsenManual = () => {
                                     )}
                                 </div>
                             </div>
+
+
                         </div>
 
                         <div className="flex justify-between items-center pt-4">
