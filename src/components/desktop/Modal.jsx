@@ -20,7 +20,7 @@
                         <div className="pr-10">
                             <h2 className="text-base sm:text-lg font-semibold">{title}</h2>
                             {note && (
-                                <p className="text-[9px] sm:text-sm text-white/80 -mt-0.5 leading-relaxed">
+                                <p className="text-[10px] sm:text-sm text-white/80 mt-1 leading-relaxed">
                                     {note}
                                 </p>
                             )}
