@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrash, faPlus, faInfoCircle, faSortUp, faSortDown, faSort, faCheckCircle, faExclamationCircle, faUserCheck } from "@fortawesome/free-solid-svg-icons";
+import { faEdit, faTrash, faPlus, faInfoCircle, faSortUp, faSortDown, faSort, faCheckCircle, faExclamationCircle, faUserCheck, faEye } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { LoadingSpinner, EmptyState, ErrorState, Pagination, SearchBar, SectionHeader, Modal } from "../../components/";
 import Select from "react-select";
@@ -24,8 +24,6 @@ const DataKaryawan = () => {
   const [selectedUserInfo, setSelectedUserInfo] = useState(null);
   const [selectedRole, setSelectedRole] = useState("");
 
-
-
   const handleSortStatus = () => {
     setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     const sortedUsers = [...users].sort((a, b) => {
@@ -38,14 +36,6 @@ const DataKaryawan = () => {
     setUsers(sortedUsers);
   };
 
-  const canEditOrDelete = (user) => {
-    if (editable?.id_role === 1) return true;
-    if (editable?.id_role === 4) return true;
-    if (editable?.id_role === 6 && [5, 6, 7, 8, 9, 10, 11, 12, 13].includes(user.id_perusahaan)) {
-      return true;
-    }
-    return false;
-  };
 
   const fetchData = async (endpoint) => {
     try {
@@ -312,10 +302,8 @@ const DataKaryawan = () => {
 
                         <td className="px-4 py-2">
                           <div className="flex items-center justify-between gap-3">
-
-                            {/* Nama */}
                             <div className="flex items-center gap-2 truncate">
-                              <span className="font-semibold capitalize truncate max-w-[180px]">
+                              <span className="font-semibold capitalize truncate max-w-[250px]">
                                 {user.nama || "N/A"}
                               </span>
                             </div>
@@ -352,27 +340,17 @@ const DataKaryawan = () => {
                           </span>
                         </td>
 
-                        {/* Menu */}
                         <td className="px-4 py-2 text-center">
                           <div className="flex justify-center gap-1.5">
-                            <button onClick={() => navigate(`/karyawan/show/${user.id}`)} className={`px-2.5 py-1.5 font-medium rounded text-white text-xs flex items-center justify-center ${canEditOrDelete(user) ? "bg-blue-500 hover:bg-blue-600" : "bg-gray-400 cursor-not-allowed"}`} disabled={!canEditOrDelete(user)} title="Detail">
+                            <button onClick={() => navigate(`/karyawan/show/${user.id}`)} className="px-2.5 py-1.5 font-medium rounded text-white text-xs flex items-center justify-center bg-blue-500 hover:bg-blue-600" title="Detail">
                               <FontAwesomeIcon icon={faInfoCircle} className="mr-1" />
                               Detail
                             </button>
-
-                            <button onClick={() => navigate(`/karyawan/edit/${user.id}`)} className={`px-2.5 py-1.5 font-medium rounded text-white text-xs flex items-center justify-center ${canEditOrDelete(user) ? "bg-yellow-500 hover:bg-yellow-600" : "bg-gray-400 cursor-not-allowed"}`} disabled={!canEditOrDelete(user)} title="Edit">
+                            <button onClick={() => navigate(`/karyawan/edit/${user.id}`)} className="px-2.5 py-1.5 font-medium rounded text-white text-xs flex items-center justify-center bg-yellow-500 hover:bg-yellow-600" title="Edit">
                               <FontAwesomeIcon icon={faEdit} className="mr-1" />
                               Edit
                             </button>
-
-                            <button onClick={() => handleDelete(user.id)}
-                              className={`px-2.5 py-1.5 font-medium rounded text-white text-xs flex items-center justify-center ${canEditOrDelete(user)
-                                ? "bg-red-600 hover:bg-red-700"
-                                : "bg-gray-400 cursor-not-allowed"
-                                }`}
-                              disabled={!canEditOrDelete(user)}
-                              title="Hapus"
-                            >
+                            <button onClick={() => handleDelete(user.id)} className="px-2.5 py-1.5 font-medium rounded text-white text-xs flex items-center justify-center bg-red-600 hover:bg-red-700" title="Hapus">
                               <FontAwesomeIcon icon={faTrash} className="mr-1" />
                               Hapus
                             </button>
@@ -410,14 +388,14 @@ const DataKaryawan = () => {
                           </span>
 
                           <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 font-medium rounded-md flex items-center gap-1 border border-indigo-100">
-                            <i className="fa-solid fa-briefcase text-[9px]" />  
+                            <i className="fa-solid fa-briefcase text-[9px]" />
                             {user.role || "N/A"}
                           </span>
                         </div>
                       </div>
 
                       <span className={`ml-3 px-3 py-1.5 rounded-full text-[11px] font-semibold flex items-center gap-1 border ${user.status === 1 ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-gray-50 text-gray-500 border-gray-200"}`}>
-                        <i className={`fa-solid ${user.status === 1 ? "fa-circle-check" : "fa-circle-xmark"} text-[12px]`}/>
+                        <i className={`fa-solid ${user.status === 1 ? "fa-circle-check" : "fa-circle-xmark"} text-[12px]`} />
                         {user.status === 1 ? "Aktif" : "Nonaktif"}
                       </span>
                     </div>
@@ -445,35 +423,24 @@ const DataKaryawan = () => {
                     </div>
 
                     <div className="px-4 py-3 border-t border-gray-200 bg-white flex justify-end gap-1.5">
-                      <button onClick={() => navigate(`/karyawan/show/${user.id}`)} 
-                        className={`px-3 py-1.5 text-[12px] font-medium rounded text-white flex items-center justify-center gap-1
-                        ${[1, 4].includes(editable?.id_role) ? "bg-blue-500 hover:bg-blue-600" : "bg-gray-400 cursor-not-allowed"}`}
-                        disabled={!([1, 4].includes(editable?.id_role))}
-                      >
-                        <i className="fa-solid fa-circle-info text-[12px]" />
+
+                      <button onClick={() => navigate(`/karyawan/show/${user.id}`)} className="px-3 py-1.5 text-[12px] font-medium rounded text-white  flex items-center justify-center gap-1 bg-blue-500 hover:bg-blue-600">
+                        <FontAwesomeIcon icon={faEye} />
                         Detail
                       </button>
 
-                      <button
-                        onClick={() => [1, 4].includes(editable?.id_role) && navigate(`/karyawan/edit/${user.id}`)}
-                        className={`px-3 py-1.5 text-[12px] font-medium rounded text-white flex items-center justify-center gap-1
-                        ${[1, 4].includes(editable?.id_role) ? "bg-yellow-500 hover:bg-yellow-600" : "bg-gray-400 cursor-not-allowed" }`}
-                        disabled={!([1, 4].includes(editable?.id_role))}
-                      >
-                        <i className="fa-solid fa-pen-to-square text-[12px]" />
+                      <button onClick={() => navigate(`/karyawan/edit/${user.id}`)} className="px-3 py-1.5 text-[12px] font-medium rounded text-white  flex items-center justify-center gap-1 bg-yellow-500 hover:bg-yellow-600">
+                        <FontAwesomeIcon icon={faEdit} />
                         Edit
                       </button>
 
-                      <button
-                        onClick={() => [1, 4].includes(editable?.id_role) && handleDelete(user.id)}
-                        className={`px-3 py-1.5 text-[12px] font-medium rounded text-white flex items-center justify-center gap-1
-                        ${[1, 4].includes(editable?.id_role) ? "bg-red-600 hover:bg-red-700" : "bg-gray-400 cursor-not-allowed"}`}
-                        disabled={!([1, 4].includes(editable?.id_role))}
-                      >
-                        <i className="fa-solid fa-trash text-[12px]" />
+                      <button onClick={() => handleDelete(user.id)} className="px-3 py-1.5 text-[12px] font-medium rounded text-white  flex items-center justify-center gap-1 bg-red-600 hover:bg-red-700">
+                        <fontAwesomeIcon icon={faTrash} />
                         Hapus
                       </button>
+
                     </div>
+
                   </div>
                 ))
               ) : (
