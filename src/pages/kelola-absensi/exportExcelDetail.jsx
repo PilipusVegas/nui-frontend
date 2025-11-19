@@ -127,8 +127,8 @@ export const exportExcelDetail = async ({
         "Terlambat",
         "Pulang",
         "Total Lembur",
-        "Mulai Lembur",
-        "Selesai Lembur",
+        // "Mulai Lembur",
+        // "Selesai Lembur",
         "Potongan",
         "Remark",
     ];
@@ -175,9 +175,9 @@ export const exportExcelDetail = async ({
             rec?.in ? formatTime(rec.in) : "-",
             typeof rec?.late === "number" ? rec.late : "-",
             rec?.out ? formatTime(rec.out) : "-",
-            rec?.overtime ?? "-",
-            rec?.overtime_start ?? "-",
-            rec?.overtime_end ?? "-",
+            rec?.total_overtime  ?? "-",
+            // rec?.overtime_start ?? "-",
+            // rec?.overtime_end ?? "-",
             rec?.nominal_empty_out ? `Rp ${rec.nominal_empty_out}` : "-",
             rec?.remark ?? "-",
         ]);

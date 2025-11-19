@@ -15,6 +15,7 @@ import {
   faUserTimes,
   faExclamationCircle,
   faMoneyBillWave,
+  faInfoCircle
 } from "@fortawesome/free-solid-svg-icons";
 import { LoadingSpinner, SectionHeader, EmptyState, ErrorState, Modal } from "../../components";
 import { exportExcelDetail } from "./exportExcelDetail";
@@ -34,6 +35,7 @@ const DetailKelolaPresensi = () => {
   const [customEndDate, setCustomEndDate] = useState("");
   const [customStartDate, setCustomStartDate] = useState("");
   const [totalKehadiran, setTotalKehadiran] = useState(0);
+  const [overtimeModal, setOvertimeModal] = useState({ open: false, list: [], tanggal: "", });
   const [totalKeterlambatan, setTotalKeterlambatan] = useState("-");
   const [remarkModal, setRemarkModal] = useState({ open: false, remark: "", remarkBy: "" });
 
@@ -168,34 +170,10 @@ const DetailKelolaPresensi = () => {
             <div className="mt-4 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  {
-                    label: "Total Kehadiran",
-                    value: `${totalKehadiran} Hari`,
-                    icon: faUserCheck,
-                    color: "text-green-600",
-                    bg: "bg-green-50",
-                  },
-                  {
-                    label: "Total Lembur",
-                    value: totalLembur,
-                    icon: faBusinessTime,
-                    color: "text-amber-600",
-                    bg: "bg-amber-50",
-                  },
-                  {
-                    label: "Total Keterlambatan",
-                    value: totalKeterlambatan,
-                    icon: faClock,
-                    color: "text-red-600",
-                    bg: "bg-red-50",
-                  },
-                  {
-                    label: "Total Alpha (Tidak Masuk)",
-                    value: `${dataUser?.total_alpha ?? 0} Hari`,
-                    icon: faUserTimes,
-                    color: "text-gray-700",
-                    bg: "bg-gray-50",
-                  },
+                  { label: "Total Kehadiran", value: `${totalKehadiran} Hari`, icon: faUserCheck, color: "text-green-600", bg: "bg-green-50",},
+                  { label: "Total Lembur", value: totalLembur, icon: faBusinessTime, color: "text-amber-600", bg: "bg-amber-50",},
+                  { label: "Total Keterlambatan", value: totalKeterlambatan, icon: faClock, color: "text-red-600", bg: "bg-red-50",},
+                  { label: "Total Alpha (Tidak Masuk)", value: `${dataUser?.total_alpha ?? 0} Hari`, icon: faUserTimes, color: "text-gray-700", bg: "bg-gray-50",},
                 ].map((item, i) => (
                   <div key={i} className={`flex items-center gap-3 p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 ${item.bg}`}>
                     <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${item.color} bg-white shadow-inner`}>
@@ -238,8 +216,8 @@ const DetailKelolaPresensi = () => {
                 <th className="px-2 py-2 border-t border-b">Terlambat</th>
                 <th className="px-2 py-2 border-t border-b">Pulang</th>
                 <th className="px-2 py-2 border-t border-b">Total Lembur</th>
-                <th className="px-2 py-2 border-t border-b">Mulai Lembur</th>
-                <th className="px-2 py-2 border-t border-b">Selesai Lembur</th>
+                {/* <th className="px-2 py-2 border-t border-b">Mulai Lembur</th>
+                <th className="px-2 py-2 border-t border-b">Selesai Lembur</th> */}
                 <th className="px-2 py-2 border-t border-b">Potongan</th>
                 <th className="px-2 py-2 border-t border-b rounded-tr-xl">Remark</th>
               </tr>
@@ -250,14 +228,7 @@ const DetailKelolaPresensi = () => {
                 const isSunday = new Date(tgl).getDay() === 0;
 
                 return (
-                  <tr className={`text-center text-xs border-t border-b ${isSunday
-                    ? "bg-red-500 font-semibold [&>*]:text-white"
-                    : i % 2 === 0
-                      ? "bg-gray-50 hover:bg-gray-100"
-                      : "bg-white hover:bg-gray-100"
-                    }`}
-                  >
-
+                  <tr className={`text-center text-xs border-t border-b  ${isSunday ? "bg-red-500 font-semibold [&>*]:text-white" : i % 2 === 0 ? "bg-gray-50 hover:bg-gray-100" : "bg-white hover:bg-gray-100"}`}>
                     <td className="px-4 py-2">{i + 1}</td>
                     <td className="px-4 py-2 font-semibold text-left">
                       {formatFullDate(tgl)}
@@ -272,15 +243,35 @@ const DetailKelolaPresensi = () => {
                     <td className={`px-4 py-2 ${isSunday ? "text-white font-bold" : rec?.is_early_out ? "text-red-600 font-bold bg-red-100" : "text-gray-700"}`}>
                       {rec?.out ? formatTime(rec.out) : "-"}
                     </td>
-                    <td className="px-4 py-2">
-                      {typeof rec?.overtime === "number" ? rec.overtime : "-"}
+                    <td className="px-3 py-1">
+                      {rec?.overtimes && rec.overtimes.length > 0 ? (
+                        <div
+                          onClick={() =>
+                            setOvertimeModal({
+                              open: true,
+                              list: rec.overtimes,
+                              tanggal: tgl,
+                            })
+                          }
+                          className={`flex items-center justify-center cursor-pointer text-xs
+                          ${isSunday ? "text-white" : "text-blue-500 hover:text-blue-600"}`}
+                        >
+                          <span className={`mr-1 inline-block w-[22px] text-center font-medium ${isSunday ? "text-white" : "text-black"}`}>
+                            {rec.total_overtime}
+                          </span>
+
+                          <FontAwesomeIcon icon={faInfoCircle} className="text-sm text-blue-600 bg-white border border-white rounded-full"/>
+                        </div>
+                      ) : (
+                        "-"
+                      )}
                     </td>
-                    <td className="px-4 py-2">
+                    {/* <td className="px-4 py-2">
                       {isSunday ? rec?.overtime_start ?? "-" : "-"}
                     </td>
                     <td className="px-4 py-2">
                       {isSunday ? rec?.overtime_end ?? "-" : "-"}
-                    </td>
+                    </td> */}
                     <td className="px-4 py-2">
                       {rec?.nominal_empty_out && rec.nominal_empty_out !== 0
                         ? `- Rp ${rec.nominal_empty_out.toLocaleString("id-ID")}`
@@ -312,7 +303,6 @@ const DetailKelolaPresensi = () => {
                 );
               })}
             </tbody>
-
           </table>
         </>
       )}
@@ -331,7 +321,7 @@ const DetailKelolaPresensi = () => {
           {/* Penjelasan Fitur */}
           <div className="space-y-3">
             {/* Unduh Excel */}
-            <div className="flex items-start gap-2 border border-gray-100 bg-gray-50 p-3 rounded-lg">
+            <div className="flex items-start gap-2 border border-gray-100 p-3 rounded-lg">
               <FontAwesomeIcon icon={faDownload} className="text-blue-500 mt-1" />
               <p>
                 <span className="font-medium">Unduh Excel:</span> fitur ini digunakan untuk
@@ -342,7 +332,7 @@ const DetailKelolaPresensi = () => {
             </div>
 
             {/* Filter Tanggal */}
-            <div className="flex items-start gap-2 border border-gray-100 bg-gray-50 p-3 rounded-lg">
+            <div className="flex items-start gap-2 border border-gray-100 p-3 rounded-lg">
               <FontAwesomeIcon icon={faClock} className="text-green-500 mt-1" />
               <p>
                 <span className="font-medium">Periode Tanggal:</span> memungkinkan pengguna untuk
@@ -353,7 +343,7 @@ const DetailKelolaPresensi = () => {
             </div>
 
             {/* Hari Minggu dan Non-Kerja */}
-            <div className="flex items-start gap-2 border border-gray-100 bg-gray-50 p-3 rounded-lg">
+            <div className="flex items-start gap-2 border border-gray-100 p-3 rounded-lg">
               <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-500 mt-1" />
               <p>
                 <span className="font-medium">Warna Merah pada Baris Tabel:</span> menandakan bahwa
@@ -366,7 +356,7 @@ const DetailKelolaPresensi = () => {
             </div>
 
             {/* Statistik Ringkas */}
-            <div className="flex items-start gap-2 border border-gray-100 bg-gray-50 p-3 rounded-lg">
+            <div className="flex items-start gap-2 border border-gray-100 p-3 rounded-lg">
               <FontAwesomeIcon icon={faUserCheck} className="text-amber-500 mt-1" />
               <p>
                 <span className="font-medium">Statistik Ringkas:</span> bagian ini menampilkan
@@ -377,7 +367,7 @@ const DetailKelolaPresensi = () => {
             </div>
 
             {/* Kolom Remark */}
-            <div className="flex items-start gap-4 border border-gray-100 bg-gray-50 p-3 rounded-lg">
+            <div className="flex items-start gap-4 border border-gray-100 p-3 rounded-lg">
               <FontAwesomeIcon icon={faInfo} className="text-purple-500 mt-1" />
               <p>
                 <span className="font-medium">Kolom Remark:</span> berisi catatan tambahan yang
@@ -435,6 +425,102 @@ const DetailKelolaPresensi = () => {
               Dibuat oleh: <span className="font-medium">{remarkModal.remarkBy || "-"}</span>
             </span>
           </div>
+        </div>
+      </Modal>
+
+      <Modal isOpen={overtimeModal.open} onClose={() => setOvertimeModal({ open: false, list: [] })} title={`Detail Lembur`} size="lg" note="Rangkuman lembur pada hari yang dipilih. Gunakan daftar di bawah untuk melihat waktu mulai, selesai, dan total jam lembur.">
+        <div className="space-y-4 text-sm text-gray-700">
+
+          {/* ========================= RINGKASAN ========================= */}
+          <div className="rounded-md border border-gray-200 p-2 px-3 bg-white">
+            <p className="font-semibold text-sm mb-1 pb-1.5 border-b border-gray-200">
+              Ringkasan Lembur
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-gray-200">
+
+              <div className="py-1 text-center">
+                <p className="text-gray-600 text-xs mb-1">Total Pengajuan</p>
+                <p className="text-gray-900 font-semibold text-sm">
+                  {overtimeModal.list.length} Kali
+                </p>
+              </div>
+
+              <div className="py-1 text-center">
+                <p className="text-gray-600 text-xs mb-1">Total Jam Lembur</p>
+                <p className="text-gray-900 font-semibold text-sm">
+                  {overtimeModal.list.reduce((a, b) => a + (b.total_hour || 0), 0)} Jam
+                </p>
+              </div>
+
+              <div className="py-1 text-center">
+                <p className="text-gray-600 text-xs mb-1">Tanggal</p>
+                <p className="text-gray-900 font-semibold text-sm">
+                  {formatFullDate(overtimeModal.tanggal)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="border border-blue-200 bg-blue-50 rounded-lg p-3 mb-3">
+            <p className="flex items-center gap-2 font-semibold text-blue-700 mb-1">
+              <FontAwesomeIcon icon={faInfoCircle} className="text-blue-600 pb-0.5" />
+              Informasi
+            </p>
+            <p className="text-[13px] text-blue-900 leading-relaxed">
+              Data lembur yang tampil di bawah ini adalah data yang <span className="font-semibold">sudah diajukan oleh karyawan, disetujui, dan diverifikasi</span> oleh kepala divisi masing-masing.
+              Seluruh informasi ini <span className="font-semibold">valid</span> dan telah melewati prosedur resmi perusahaan.
+            </p>
+          </div>
+
+          {overtimeModal.list.length === 0 ? (
+            <p className="text-center text-gray-500 py-6">Tidak ada data lembur.</p>
+          ) : (
+            <div className="border border-gray-300 rounded-lg bg-white shadow-sm ">
+
+              <div className="px-4 py-3 border-b border-gray-200 sticky top-0 z-10">
+                <p className="font-semibold text-gray-900 text-sm">
+                  Histori Pengajuan Lembur Terverifikasi ({overtimeModal.list.length})
+                </p>
+              </div>
+
+              <div className="divide-y divide-gray-200 max-h-[320px] overflow-y-auto scrollbar-green">
+                {overtimeModal.list.map((item, index) => (
+                  <div key={index} className={`px-4 py-2 transition ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100`}>
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+
+                      <p className="text-gray-700 text-[13px] font-medium sm:w-1/3">
+                        Pengajuan Ke-{index + 1}
+                      </p>
+
+                      <div className="grid grid-cols-3 sm:w-2/3 text-[12px] gap-2 sm:gap-4">
+                        <div className="flex flex-col sm:border-r sm:border-gray-200 sm:pr-4">
+                          <span className="text-gray-500 font-medium">Mulai</span>
+                          <span className="text-gray-900 font-semibold mt-[2px]">
+                            {item.overtime_start ?? "-"}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-col sm:border-r sm:border-gray-200 sm:pr-4">
+                          <span className="text-gray-500 font-medium">Selesai</span>
+                          <span className="text-gray-900 font-semibold mt-[2px]">
+                            {item.overtime_end ?? "-"}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-col">
+                          <span className="text-gray-500 font-medium">Durasi</span>
+                          <span className="text-gray-900 font-semibold mt-[2px]">
+                            {item.total_hour ?? 0} Jam
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </Modal>
     </div>

@@ -1,37 +1,26 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faArrowRight, faPaperPlane } from "@fortawesome/free-solid-svg-icons";
-import { useState, useEffect, useRef } from "react";
+import { faPaperPlane, faInfoCircle, faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MobileLayout from "../../layouts/mobileLayout";
 import Select from "react-select";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
+import { formatFullDate } from "../../utils/dateUtils";
+import { format } from "date-fns";
 
 const hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, "0") + ":00");
 
 const Lembur = () => {
-  const [step, setStep] = useState("stepOne");
   const [loading, setLoading] = useState(false);
   const [locations, setLocations] = useState([]);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [lemburData, setLemburData] = useState({
-    userId: "",
-    username: "",
-    tugas: "",
-    lokasi: "",
-    nama_lokasi: "",
-    tanggal: "",
-    jamMulai: "",
-    jamSelesai: "",
-  });
-  const dropdownRef = useRef(null);
-
+  const [openInfo, setOpenInfo] = useState(false);
+  const [lemburData, setLemburData] = useState({ userId: "", username: "", tugas: "", lokasi: "", nama_lokasi: "", tanggal: "", jamMulai: "", jamSelesai: "", });
   const user = getUserFromToken();
   const navigate = useNavigate();
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
-  // Fetch lokasi & set user
   useEffect(() => {
     const userId = user.id_user;
     const username = user.nama_user;
@@ -49,19 +38,9 @@ const Lembur = () => {
     }
   };
 
-  useEffect(() => {
-    if (isSuccess) navigate("/riwayat-pengguna");
-  }, [isSuccess]);
+  const hourOptions = hours.map(h => ({ value: h, label: h }));
 
-  const getLabel = (time) => {
-    const hour = Number(time.split(":")[0]);
-    if (hour >= 5 && hour < 10) return "Pagi";
-    if (hour >= 10 && hour < 15) return "Siang";
-    if (hour >= 15 && hour < 18) return "Sore";
-    return "Malam";
-  };
-
-  const validateStepOne = () => {
+  const validateForm = () => {
     const emptyFields = [];
     if (!lemburData.tugas) emptyFields.push("Keterangan Lembur");
     if (!lemburData.lokasi) emptyFields.push("Lokasi Lembur");
@@ -80,15 +59,79 @@ const Lembur = () => {
     return true;
   };
 
-  const handleSubmitStepOne = (e) => {
-    e.preventDefault();
-    if (!validateStepOne()) return;
-    setStep("stepTwo");
-  };
+const showConfirmLembur = async () => {
+  const timeStartLabel = getTimeLabel(lemburData.jamMulai);
+  const timeEndLabel = getTimeLabel(lemburData.jamSelesai);
 
-  const handleSubmitStepTwo = async (e) => {
+  return Swal.fire({
+    title: `<strong>Konfirmasi Pengajuan</strong>`,
+
+    html: `
+      <div style="
+        text-align:left;
+        font-size:13px;
+        line-height:1.45;
+        color:#1f2937;
+      ">
+        
+        <div style="margin-bottom:6px; font-weight:600;">
+          ${formatFullDate(lemburData.tanggal)}
+        </div>
+
+        <div style="
+          background:#f3f4f6;
+          padding:8px;
+          border-radius:6px;
+          border:1px solid #e5e7eb;
+          margin-bottom:8px;
+        ">
+          <div style="font-weight:600; margin-bottom:2px;">Waktu</div>
+          <div>
+            ${lemburData.jamMulai} (${timeStartLabel}) → 
+            ${lemburData.jamSelesai} (${timeEndLabel})
+          </div>
+        </div>
+
+        <div style="margin-bottom:4px;">
+          <b>Lokasi:</b> ${lemburData.lokasi}
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <b>Tugas:</b> “${lemburData.tugas}”
+        </div>
+
+        <div style="font-size:12px; color:#4b5563;">
+          Periksa kembali sebelum mengirim.
+        </div>
+      </div>
+    `,
+
+    icon: "question",
+
+    showCancelButton: true,
+    confirmButtonText: "Kirim",
+    cancelButtonText: "Cek Lagi",
+
+    confirmButtonColor: "#2563eb",
+    cancelButtonColor: "#6b7280",
+
+    reverseButtons: true,
+  });
+};
+
+
+
+
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
+    const confirm = await showConfirmLembur();
+    if (!confirm.isConfirmed) return;
+
     setLoading(true);
+
     try {
       const response = await fetchWithJwt(`${apiUrl}/lembur/simpan`, {
         method: "POST",
@@ -102,33 +145,12 @@ const Lembur = () => {
           jam_selesai: lemburData.jamSelesai,
         }),
       });
+
       const result = await response.json();
 
       if (result.success) {
-        Swal.fire({
-          title: "Pengajuan Berhasil",
-          html: `
-          <p class="text-gray-700 text-sm">
-            Pengajuan lembur Anda telah berhasil disimpan.<br/>
-            Anda dapat kembali ke beranda atau langsung melihat riwayat.
-          </p>
-        `,
-          icon: "success",
-          showCancelButton: true,
-          confirmButtonText: "Oke Sip",
-          cancelButtonText: "Lihat Riwayat",
-          reverseButtons: true,
-          customClass: {
-            confirmButton: "bg-green-600 text-white px-4 py-2 rounded font-semibold",
-            cancelButton: "bg-blue-600 text-white px-4 py-2 rounded font-semibold ml-2",
-          },
-        }).then((res) => {
-          if (res.isConfirmed) {
-            navigate("/");
-          } else if (res.dismiss === Swal.DismissReason.cancel) {
-            navigate("/riwayat-pengguna");
-          }
-        });
+        toast.success("Pengajuan lembur berhasil!");
+        navigate("/riwayat-pengguna");
       } else {
         toast.error(result.message || "Terjadi kesalahan saat pengiriman.");
       }
@@ -139,128 +161,99 @@ const Lembur = () => {
     }
   };
 
+  const getTimeLabel = (time) => {
+    if (!time) return "";
+    const hour = parseInt(time.split(":")[0], 10);
 
-  const hourOptions = hours.map(h => ({ value: h, label: `${h} (${getLabel(h)})` }));
+    if (hour >= 4 && hour < 11) return "Pagi";
+    if (hour >= 11 && hour < 15) return "Siang";
+    if (hour >= 15 && hour < 19) return "Sore";
+    return "Malam";
+  };
 
-  const renderStepOne = () => (
+  return (
     <MobileLayout title="Formulir Lembur">
-      <div className="relative pb-20">
-        <form onSubmit={handleSubmitStepOne} className="space-y-2 p-2">
-          <div className="mb-2">
-            <label className="block text-sm font-semibold">Tanggal Lembur</label>
-            <p className="text-[10px] text-gray-500 mb-2">Tentukan tanggal pelaksanaan lembur anda.</p>
-            <input type="date" value={lemburData.tanggal} onChange={(e) => setLemburData(d => ({ ...d, tanggal: e.target.value }))} className="w-full p-2 border-2 rounded-md text-sm" />
-          </div>
-
-          <div className="mb-2">
-            <label className="block text-sm font-semibold">Jam Mulai</label>
-            <p className="text-[10px] text-gray-500 mb-2">Pilih jam dimulainya lembur.</p>
-            <Select options={hourOptions.filter(o => o.value !== lemburData.jamSelesai)} value={hourOptions.find(o => o.value === lemburData.jamMulai)} onChange={(option) => setLemburData(d => ({ ...d, jamMulai: option.value }))} placeholder="Pilih jam mulai..." className="text-sm" />
-          </div>
-
-          <div className="mb-2">
-            <label className="block text-sm font-semibold">Jam Selesai</label>
-            <p className="text-[10px] text-gray-500 mb-2">
-              Pilih jam berakhir lembur, tidak boleh sama dengan jam mulai.
-              <strong> Jika lembur selesai pukul 09:30, maka pilihlah jam 09:00 sebagai batas akhir (dibulatkan ke bawah).</strong>
+      <div className="space-y-3 p-2 pb-28">
+        <div className="border border-blue-400 rounded-md bg-blue-50">
+          <div className="flex items-center gap-1 p-2 cursor-pointer" onClick={() => setOpenInfo(prev => !prev)}>
+            <FontAwesomeIcon icon={faInfoCircle} className="text-blue-500 text-sm " />
+            <p className="text-[12px] text-blue-900 font-semibold">
+              Petunjuk Pengajuan Lembur
             </p>
-            <Select options={hourOptions.filter(o => o.value !== lemburData.jamMulai)} value={hourOptions.find(o => o.value === lemburData.jamSelesai)} onChange={(option) => setLemburData(d => ({ ...d, jamSelesai: option.value }))} placeholder="Pilih jam selesai..." className="text-sm" />
+            <FontAwesomeIcon icon={openInfo ? faChevronUp : faChevronDown} className="ml-auto text-blue-600 text-xs" />
           </div>
 
-          <div className="mb-2">
-            <label className="block text-sm font-semibold">Lokasi Lembur</label>
-            <p className="text-[10px] text-gray-500 mb-2">Pilih lokasi lembur. Anda bisa mencari lokasi dengan mengetik nama.</p>
-            <Select options={locations.map(loc => ({ value: loc.id, label: loc.nama }))} value={locations.find(loc => loc.id === lemburData.nama_lokasi) ? { value: lemburData.nama_lokasi, label: lemburData.lokasi } : null} onChange={(option) => setLemburData(d => ({ ...d, nama_lokasi: option.value, lokasi: option.label }))} placeholder="Pilih lokasi..." isSearchable className="text-sm" />
-          </div>
+          {openInfo && (
+            <div className="px-3 pb-3 text-[11px] text-blue-900 leading-relaxed space-y-2">
+              <ul className="list-disc ml-4 space-y-1.5">
+                <li>Pastikan seluruh data sudah benar sebelum mengirim.</li>
+                <li>Jam <b>Mulai</b> dan <b>Selesai</b> tidak boleh sama.</li>
+                <li>Setelah submit, data otomatis masuk ke <b>Riwayat Lembur</b>.</li>
+                <li>
+                  Jika menit tidak pas (misalnya <b>09:10</b> atau <b>09:40</b>), pilih
+                  jam bulat sebelumnya. Contoh: lewat 09 → gunakan <b>09:00</b>.
+                </li>
+                <li>
+                  Lembur pagi dan lembur setelah jam pulang dapat diajukan,
+                  namun gunakan jam yang sesuai:
+                  <br />
+                  • <b>Lembur pagi</b> → diisi pada jam sebelum mulai kerja.<br />
+                  • <b>Lembur setelah pulang</b> → diisi pada jam setelah pekerjaan selesai.
+                </li>
+                <li>
+                  Hindari mengisi jam lembur yang sama atau bertabrakan dengan pengajuan lain.
+                  Selalu cek <b>Riwayat Lembur</b> sebelum membuat permohonan baru.
+                </li>
+              </ul>
+            </div>
+          )}
+        </div>
 
-          <div className="mb-2">
-            <label className="block text-sm font-semibold">Keterangan Lembur</label>
-            <p className="text-[10px] text-gray-500 mb-2">Ringkasan tugas lembur (maks. 250 karakter).</p>
-            <textarea rows="2" value={lemburData.tugas} maxLength={250} onChange={(e) => setLemburData(d => ({ ...d, tugas: e.target.value }))} className="w-full p-2 border-2 rounded-md text-sm resize-vertical" />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold mb-1">Tanggal Lembur</label>
+            <input type="date" value={lemburData.tanggal} onChange={(e) => setLemburData(d => ({ ...d, tanggal: e.target.value }))} className="w-full p-2 py-1 border-2 border-gray-200 rounded" />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold mb-1">Jam Mulai</label>
+            <Select options={hourOptions.filter(o => o.value !== lemburData.jamSelesai)} value={hourOptions.find(o => o.value === lemburData.jamMulai)} onChange={(option) => setLemburData(d => ({ ...d, jamMulai: option.value }))}
+              formatOptionLabel={(option) => (
+                <div className="flex items-center justify-between w-full">
+                  <span>{option.label}</span>
+                  <span className="text-[11px] text-gray-500">{getTimeLabel(option.value)}</span>
+                </div>
+              )}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold mb-1">Jam Selesai</label>
+            <Select options={hourOptions.filter(o => o.value !== lemburData.jamMulai)} value={hourOptions.find(o => o.value === lemburData.jamSelesai)} onChange={(option) => setLemburData(d => ({ ...d, jamSelesai: option.value }))}
+              formatOptionLabel={(option) => (
+                <div className="flex items-center justify-between w-full">
+                  <span>{option.label}</span>
+                  <span className="text-[11px] text-gray-500">{getTimeLabel(option.value)}</span>
+                </div>
+              )}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold mb-1">Lokasi Lembur</label>
+            <Select options={locations.map(loc => ({ value: loc.id, label: loc.nama }))} value={locations.find(loc => loc.id === lemburData.nama_lokasi) ? { value: lemburData.nama_lokasi, label: lemburData.lokasi } : null} onChange={(option) => setLemburData(d => ({ ...d, nama_lokasi: option.value, lokasi: option.label }))} placeholder="Pilih lokasi..." isSearchable />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold mb-1">Keterangan Lembur</label>
+            <textarea rows="2" value={lemburData.tugas} maxLength={250} onChange={(e) => setLemburData(d => ({ ...d, tugas: e.target.value }))} className="w-full p-2 border-2 border-gray-200 rounded" />
+          </div>
+          <div className="fixed bottom-0 left-0 w-full bg-white p-3 border-t shadow-lg">
+            <button onClick={handleSubmit} disabled={loading} className={`w-full py-3 text-white rounded font-semibold ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"}`}>
+              {loading ? "Mengirim..." : "Kirim"}
+              <FontAwesomeIcon icon={faPaperPlane} className="ml-2" />
+            </button>
           </div>
         </form>
-
-        {/* Footer Button Fixed */}
-        <div className="fixed bottom-0 left-0 w-full p-4 bg-white border-t shadow-md">
-          <button type="button" onClick={handleSubmitStepOne} className="w-full py-3 bg-green-500 text-white rounded-lg font-bold flex justify-center items-center gap-2">
-            Lihat Detail
-            <FontAwesomeIcon icon={faArrowRight} />
-          </button>
-        </div>
       </div>
     </MobileLayout>
   );
-
-  const renderStepTwo = () => (
-    <MobileLayout title="Detail Pengajuan">
-      <form onSubmit={handleSubmitStepTwo} className="flex flex-col">
-        <div className="flex-1 py-2 space-y-2 pb-20">
-          <div className="text-center">
-            <h2 className="text-xl font-bold text-gray-900 mb-1">
-              Yuk, Cek Lagi Data Kamu
-            </h2>
-            <p className="text-sm text-gray-700">
-              Pastikan semua informasi sudah tepat sebelum kamu menekan tombol kirim.
-            </p>
-          </div>
-
-          {/* Kartu Data */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 divide-y divide-dashed divide-gray-200">
-            {/* Item Data */}
-            <div className="px-5 py-3 space-y-1">
-              <p className="text-gray-900 text-sm font-medium">Nama Karyawan</p>
-              <p className="text-gray-800 font-regular text-sm">
-                {user.nama_user || "Belum diisi"}
-              </p>
-            </div>
-
-            <div className="px-5 py-3 space-y-1">
-              <p className="text-gray-900 text-sm font-medium">Lokasi Lembur</p>
-              <p className="text-gray-800 font-regular text-sm">
-                {lemburData.lokasi || "Belum diisi"}
-              </p>
-            </div>
-
-            <div className="px-5 py-3 space-y-1">
-              <p className="text-gray-900 text-sm font-medium">Tanggal Lembur</p>
-              <p className="text-gray-800 font-regular text-sm">
-                {lemburData.tanggal || "Belum diisi"}
-              </p>
-            </div>
-
-            <div className="px-5 py-3 space-y-1">
-              <p className="text-gray-900 text-sm font-medium">Waktu Lembur</p>
-              <p className="text-gray-800 font-regular text-sm">
-                {lemburData.jamMulai || "—"} ({getLabel(lemburData.jamMulai)}) –{" "}
-                {lemburData.jamSelesai || "—"} ({getLabel(lemburData.jamSelesai)})
-              </p>
-            </div>
-
-            <div className="px-5 py-3 space-y-1">
-              <p className="text-gray-900 text-sm font-medium">Keterangan Lembur</p>
-              <p className="text-gray-800 font-regular text-sm">
-                {lemburData.tugas || "Belum diisi"}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 px-5 py-4 flex gap-4 shadow-md">
-          <button type="button" onClick={() => setStep("stepOne")} className="flex-1 py-3 bg-red-600 text-white rounded-xl font-semibold shadow-sm hover:bg-red-700 transition">
-            <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
-            Perbaiki
-          </button>
-          <button type="submit" disabled={loading} className={`flex-1 py-3 text-white rounded-xl font-semibold shadow-sm transition ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"}`}>
-            {loading ? "Mengirim..." : "Kirim Sekarang"}
-            <FontAwesomeIcon icon={faPaperPlane} className="ml-2" />
-          </button>
-        </div>
-      </form>
-    </MobileLayout>
-  );
-
-  return step === "stepOne" ? renderStepOne() : renderStepTwo();
 };
 
 export default Lembur;

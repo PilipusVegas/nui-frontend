@@ -30,7 +30,7 @@
                         </button>
                     </div>
 
-                    <div className="p-6 overflow-y-auto flex-1">{children}</div>
+                    <div className="p-6 overflow-y-auto scrollbar-green flex-1">{children}</div>
 
                     {footer && (
                         <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-3 rounded-b-2xl flex justify-end z-20">
