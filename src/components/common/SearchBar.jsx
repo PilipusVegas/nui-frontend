@@ -9,7 +9,6 @@ export default function SearchBar({ onSearch, placeholder = "Cari data...", clas
     const handleChange = (e) => {
         const val = e.target.value;
         setQuery(val);
-        // opsional: debounce di sini
         onSearch?.(val);
     };
 

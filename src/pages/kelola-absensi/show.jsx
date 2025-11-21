@@ -280,8 +280,7 @@ const DetailKelolaPresensi = () => {
                     <td className="px-4 py-2">
                       {rec?.remark ? (
                         <div className="flex justify-center">
-                          <button
-                            onClick={() =>
+                          <button onClick={() =>
                               setRemarkModal({
                                 open: true,
                                 remark: rec.remark,

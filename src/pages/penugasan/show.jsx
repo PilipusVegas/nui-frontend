@@ -121,11 +121,13 @@ const DetailPenugasan = () => {
     };
 
     /** === Handle Approval === */
-    const handleApproval = async (detailId, status) => {
+    const handleApproval = async (detailId, status, deskripsi) => {
         try {
             const confirm = await Swal.fire({
                 title: status === 1 ? "Setujui tugas?" : "Tolak tugas?",
-                text: status === 1 ? "Pastikan pekerjaan sudah benar sebelum disetujui." : "Tugas akan dikembalikan ke karyawan untuk diperbaiki.",
+                text: status === 1
+                    ? "Pastikan pekerjaan sudah benar sebelum disetujui."
+                    : "Tugas akan dikembalikan ke karyawan untuk diperbaiki.",
                 icon: status === 1 ? "question" : "warning",
                 showCancelButton: true,
                 confirmButtonText: status === 1 ? "Ya, setujui" : "Ya, tolak",
@@ -135,20 +137,32 @@ const DetailPenugasan = () => {
 
             if (!confirm.isConfirmed) return;
 
-            const url = `${apiUrl}/tugas/status/${detailId}?status=${status}`;
-            const res = await fetchWithJwt(url, { method: "GET" });
+            const url = `${apiUrl}/tugas/status/${detailId}`;
+
+            const body = JSON.stringify({
+                status: status,
+                deskripsi: deskripsi || ""   // tambahkan deskripsi
+            });
+
+            const res = await fetchWithJwt(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: body,
+            });
 
             if (!res.ok) throw new Error(`Gagal update status (${res.status})`);
 
             setTugas((prev) => ({
                 ...prev,
                 details: prev.details.map((item) =>
-                    item.id === detailId ? { ...item, status } : item
+                    item.id === detailId ? { ...item, status, deskripsi } : item
                 ),
             }));
 
             if (selectedDetail && selectedDetail.id === detailId) {
-                setSelectedDetail((prev) => ({ ...prev, status }));
+                setSelectedDetail((prev) => ({ ...prev, status, deskripsi }));
             }
 
             toast.success(`Tugas berhasil ${status === 1 ? "disetujui" : "ditolak"}.`);
@@ -157,6 +171,7 @@ const DetailPenugasan = () => {
             toast.error("Gagal memperbarui status tugas.");
         }
     };
+
 
 
     const handleRefresh = async () => {
@@ -230,7 +245,7 @@ const DetailPenugasan = () => {
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 mb-5">
                                     <div>
                                         <p className="text-xs uppercase text-gray-500 tracking-wide mb-1">
-                                            Judul Penugasan
+                                            TUGAS
                                         </p>
                                         <h3 className="text-md font-semibold text-gray-900 leading-snug tracking-tight break-words capitalize">
                                             {tugas.nama}
@@ -309,6 +324,19 @@ const DetailPenugasan = () => {
                                                     <p className="font-semibold text-gray-900 text-sm sm:text-base truncate">
                                                         {item.nama_user}
                                                     </p>
+
+                                                    {item.logs?.length > 0 ? (
+                                                        <div className="mt-2 ml-8 border-l-2 border-gray-200 pl-3 space-y-1">
+                                                            {item.logs.map(log => (
+                                                                <div key={log.id} className="text-xs text-gray-600">
+                                                                    <span className="font-medium">{formatFullDate(log.created_at)}</span> — {log.text}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <p className="text-xs text-gray-400 ml-8">Tidak ada aktivitas.</p>
+                                                    )}
+
 
                                                     {/* Status pekerjaan */}
                                                     {!item.finished_at ? (
