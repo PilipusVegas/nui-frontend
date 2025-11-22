@@ -17,6 +17,7 @@ export const PATTERNS = {
     SHORT_MONTH_YEAR: "MMM yy",          // "Sep 25"
     DAY: "EEEE",                         // "Kamis"
     LONG_DATE: "dd MMMM yyyy",           // 12 September 2025
+    CUSTOM_DATETIME: "dd MMM yyyy, HH:mm", // 12 Sep 2025, 08:00
 };
 
 
@@ -45,6 +46,7 @@ export const formatISODate = (date) => formatDate(date, PATTERNS.ISO_DATE);
 export const formatISODateTime = (date) => formatDate(date, PATTERNS.ISO_DATETIME);
 export const formatForDB = (date) => formatDate(date, PATTERNS.DB);
 export const formatLongDate = (date) => formatDate(date, PATTERNS.LONG_DATE);
+export const formatCustomDateTime = (date) => formatDate(date, PATTERNS.CUSTOM_DATETIME);
 
 
 /* ================== Relative Time ================== */

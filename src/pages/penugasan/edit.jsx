@@ -206,7 +206,7 @@ const EditTugas = () => {
             <SectionHeader title="Edit Penugasan" onBack={handleBack} subtitle="Silakan ubah informasi penugasan sesuai kebutuhan, lalu simpan untuk memperbarui data." />
             <form onSubmit={handleSubmit} className="flex-grow p-4 w-full mx-auto space-y-6">
                 <div>
-                    <label className="block mb-1 font-medium text-gray-700">Nama Tugas</label>
+                    <label className="block mb-1 font-medium text-gray-700">Tugas</label>
                     <input type="text" value={nama} onChange={(e) => setNama(e.target.value.slice(0, 150))} maxLength={150} required placeholder="Masukkan Nama Penugasan" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     <p className="text-xs text-gray-400 mt-1">
                         Maksimal 150 karakter ({nama.length}/150)

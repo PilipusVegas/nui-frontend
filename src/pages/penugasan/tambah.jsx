@@ -160,7 +160,7 @@ const TambahTugas = () => {
             <form onSubmit={handleSubmit} className="flex-grow p-4 w-full mx-auto space-y-4">
                 <div>
                     <label className="block font-medium text-gray-700">
-                        Nama Tugas
+                        Tugas
                     </label>
                     <p className="text-sm text-gray-500 mb-2">
                         Masukkan nama penugasan sebagai penanda secara ringkas.

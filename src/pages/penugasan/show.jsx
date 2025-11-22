@@ -4,9 +4,9 @@ import React, { useEffect, useState } from "react";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { useParams, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { formatFullDate, formatISODate } from "../../utils/dateUtils";
+import { formatFullDate, formatCustomDateTime } from "../../utils/dateUtils";
 import { LoadingSpinner, EmptyState, ErrorState, SectionHeader, Modal } from "../../components";
-import { faTasks, faTag, faCamera, faCheck, faTimes, faPause, faUserGroup, faPlay, faRotateRight, faPen, faInfoCircle, faCheckCircle, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
+import { faTasks, faCheck, faTimes, faPause, faUserGroup, faPlay, faRotateRight, faCircle, faInfoCircle, faCheckCircle, faTimesCircle, faChevronDown, faChevronUp, faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { faClock } from "@fortawesome/free-solid-svg-icons/faClock";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons/faSpinner";
 
@@ -22,6 +22,7 @@ const DetailPenugasan = () => {
     const allApproved = tugas?.details?.every((d) => d.status === 1) ?? false;
     const allFinished = tugas?.details?.every((d) => d.finished_at !== null) ?? false;
     const canMarkComplete = allApproved && allFinished;
+    const [openLogs, setOpenLogs] = useState(false);
 
     const fetchTugas = async () => {
         try {
@@ -41,45 +42,21 @@ const DetailPenugasan = () => {
         fetchTugas();
     }, [id, apiUrl]);
 
-    /** === Handle Tandai Selesai === */
+
     const handleUpdateStatus = async () => {
         if (tugas.is_complete === 1) return;
-
         try {
             const url = `${apiUrl}/tugas/complete/${id}?completed=1`;
             const res = await fetchWithJwt(url);
-
             if (!res.ok) throw new Error(`Status ${res.status}`);
-
             setTugas((prev) => ({ ...prev, is_complete: 1 }));
             toast.success("Penugasan berhasil diselesaikan.");
-
-            // === 🌿 Swal versi lebih profesional & informatif ===
-            await Swal.fire({
-                title: "Penugasan Telah Diselesaikan",
-                text: "Semua pekerjaan dalam penugasan ini telah diverifikasi dan selesai dengan baik. Anda dapat melihat detailnya di halaman riwayat penugasan.",
-                icon: "success",
-                confirmButtonText: "Lihat Riwayat",
-                confirmButtonColor: "#16A34A", // hijau khas
-                background: "#f9fafb",
-                color: "#111827",
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                customClass: {
-                    popup: "rounded-xl shadow-lg",
-                    confirmButton: "px-4 py-2 text-sm font-medium rounded-md",
-                },
-            });
-
-            // Arahkan ke halaman riwayat penugasan
             navigate("/penugasan/riwayat");
-
         } catch (err) {
             console.error("Gagal memperbarui status:", err);
             toast.error("Gagal memperbarui status penugasan.");
         }
     };
-
 
 
     /** === Handle Pause / Resume === */
@@ -120,40 +97,51 @@ const DetailPenugasan = () => {
         window.open(`${apiUrl}/uploads/img/tugas/${photoName}`, "_blank");
     };
 
-    /** === Handle Approval === */
-    const handleApproval = async (detailId, status, deskripsi) => {
+    const handleApproval = async (detailId, status) => {
         try {
-            const confirm = await Swal.fire({
-                title: status === 1 ? "Setujui tugas?" : "Tolak tugas?",
-                text: status === 1
-                    ? "Pastikan pekerjaan sudah benar sebelum disetujui."
-                    : "Tugas akan dikembalikan ke karyawan untuk diperbaiki.",
-                icon: status === 1 ? "question" : "warning",
-                showCancelButton: true,
-                confirmButtonText: status === 1 ? "Ya, setujui" : "Ya, tolak",
-                cancelButtonText: "Batal",
-                iconColor: status === 1 ? "#22C55E" : "#dc2626",
-            });
+            let deskripsi = "";
 
-            if (!confirm.isConfirmed) return;
+            if (status === 2) {
+                const { value: input } = await Swal.fire({
+                    title: "Tolak tugas?",
+                    text: "Tugas akan dikembalikan ke karyawan. Mohon berikan keterangan penolakan.",
+                    input: "textarea",
+                    inputPlaceholder: "Masukkan keterangan penolakan...",
+                    inputAttributes: {
+                        "aria-label": "Masukkan keterangan penolakan"
+                    },
+                    showCancelButton: true,
+                    confirmButtonText: "Kirim Penolakan",
+                    cancelButtonText: "Batal",
+                    icon: "warning",
+                });
+
+                if (!input) return;
+                deskripsi = input.trim();
+            } else {
+                const confirm = await Swal.fire({
+                    title: "Setujui tugas?",
+                    text: "Pastikan pekerjaan sudah benar sebelum disetujui.",
+                    icon: "question",
+                    showCancelButton: true,
+                    confirmButtonText: "Ya, setujui",
+                    cancelButtonText: "Batal",
+                });
+                if (!confirm.isConfirmed) return;
+            }
 
             const url = `${apiUrl}/tugas/status/${detailId}`;
-
-            const body = JSON.stringify({
-                status: status,
-                deskripsi: deskripsi || ""   // tambahkan deskripsi
-            });
+            const body = JSON.stringify({ status, deskripsi });
 
             const res = await fetchWithJwt(url, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: body,
+                headers: { "Content-Type": "application/json" },
+                body,
             });
 
             if (!res.ok) throw new Error(`Gagal update status (${res.status})`);
 
+            // Update state
             setTugas((prev) => ({
                 ...prev,
                 details: prev.details.map((item) =>
@@ -196,6 +184,50 @@ const DetailPenugasan = () => {
         setIsModalOpen(false);
     };
 
+    // Helper render status label
+    function renderStatusLabel(item) {
+        if (!item.finished_at) {
+            return (
+                <p className="text-xs sm:text-sm font-medium text-blue-600 flex items-center gap-1">
+                    <FontAwesomeIcon icon={faSpinner} className="w-3 h-3 animate-spin" />
+                    Sedang proses pengerjaan
+                </p>
+            );
+        }
+        switch (item.status) {
+            case 0:
+                return (
+                    <p className="text-xs sm:text-sm font-medium text-yellow-600 flex items-center gap-1">
+                        <FontAwesomeIcon icon={faClock} className="w-3 h-3" />
+                        Menunggu persetujuan
+                    </p>
+                );
+            case 1:
+                return (
+                    <p className="text-xs sm:text-sm font-medium text-green-600 flex items-center gap-1">
+                        <FontAwesomeIcon icon={faCheckCircle} className="w-3 h-3" />
+                        {`Selesai pada: ${formatFullDate(item.finished_at)}`}
+                    </p>
+                );
+            case 2:
+                return (
+                    <p className="text-xs sm:text-sm font-medium text-red-600 flex items-center gap-1">
+                        <FontAwesomeIcon icon={faTimesCircle} className="w-3 h-3" />
+                        Ditolak — perlu revisi
+                    </p>
+                );
+            case 3:
+                return (
+                    <p className="text-xs sm:text-sm font-medium text-orange-600 flex items-center gap-1">
+                        <FontAwesomeIcon icon={faPause} className="w-3 h-3" />
+                        Dipause
+                    </p>
+                );
+            default:
+                return null;
+        }
+    }
+
     return (
         <div>
             <SectionHeader title="Detail Penugasan" subtitle="Informasi lengkap penugasan dan pekerja terkait" onBack={() => navigate(-1)}
@@ -219,11 +251,11 @@ const DetailPenugasan = () => {
                 {!loading && !error && tugas && (
                     <>
                         <div>
-                            <div className="flex flex-col mb-4 border-b border-gray-200/50 pb-3">
+                            <div className="flex flex-col mb-4 border-b border-gray-200/50 pb-2">
                                 <div className="flex items-center justify-between">
-                                    <h3 className="text-lg font-bold text-green-600 flex items-center gap-2">
+                                    <h3 className="text-md font-bold text-green-600 flex items-center gap-2">
                                         <FontAwesomeIcon icon={faTasks} className="text-green-600" />
-                                        Informasi Penugasan
+                                        INFORMASI PENUGASAN
                                     </h3>
                                     <div className="mt-2 sm:mt-0">
                                         {tugas.category ? (
@@ -253,7 +285,6 @@ const DetailPenugasan = () => {
                                     </div>
                                 </div>
 
-                                {/* Detail Info */}
                                 {(() => {
                                     const progress = tugas.details && tugas.details.length > 0 ? (tugas.details.filter((d) => d.status === 1).length / tugas.details.length) * 100 : 0;
 
@@ -284,13 +315,11 @@ const DetailPenugasan = () => {
                                                         {tugas.details?.filter(d => d.status === 1).length || 0} dari {tugas.details?.length || 0} tugas diverifikasi
                                                     </p>
                                                 </div>
-
                                             </div>
                                         </div>
                                     );
                                 })()}
 
-                                {/* Tombol Aksi di kanan */}
                                 <div className="flex justify-end mt-4">
                                     <button disabled={tugas.is_complete || !canMarkComplete} onClick={handleUpdateStatus} className={`px-4 py-2 text-sm font-medium rounded-md transition-all 
                                         ${tugas.is_complete ? "bg-gray-300 text-gray-500 cursor-not-allowed" : canMarkComplete ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}
@@ -302,87 +331,98 @@ const DetailPenugasan = () => {
 
                         </div>
 
-                        {/* === Daftar Pekerja === */}
                         <div className="mt-5">
                             <h3 className="text-md font-bold text-green-600 flex items-center justify-between border-b border-gray-200 pb-2">
                                 <div className="flex items-center gap-2">
                                     <FontAwesomeIcon icon={faUserGroup} />
-                                    Daftar {tugas.details?.length || 0} Pekerjaan
+                                    DAFTAR PEKERJA
                                 </div>
                             </h3>
 
                             {tugas.details?.length > 0 ? (
                                 <div className="divide-y divide-gray-200 max-h-[50vh] overflow-y-auto scrollbar-green mt-2 px-2">
                                     {tugas.details.map((item, index) => (
-                                        <div key={item.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 hover:bg-gray-50 transition">
-                                            <div className="flex flex-1 items-start sm:items-center gap-3 w-full">
-                                                <span className="text-sm text-gray-400 font-medium w-5 flex-shrink-0 text-right mt-1 sm:mt-0">
+                                        <div key={item.id} className="flex flex-col sm:flex-row sm:items-start sm:justify-between py-2 transition">
+                                            <div className="flex items-start gap-3 w-full">
+                                                <span className="text-sm text-gray-700 font-medium flex-shrink-0 text-right flex items-start mt-3">
                                                     {index + 1}.
                                                 </span>
-
                                                 <div className="flex flex-col min-w-0 flex-1">
-                                                    <p className="font-semibold text-gray-900 text-sm sm:text-base truncate">
-                                                        {item.nama_user}
-                                                    </p>
-
-                                                    {item.logs?.length > 0 ? (
-                                                        <div className="mt-2 ml-8 border-l-2 border-gray-200 pl-3 space-y-1">
-                                                            {item.logs.map(log => (
-                                                                <div key={log.id} className="text-xs text-gray-600">
-                                                                    <span className="font-medium">{formatFullDate(log.created_at)}</span> — {log.text}
-                                                                </div>
-                                                            ))}
+                                                    <div className="flex flex-col">
+                                                        <p className="font-semibold text-gray-900 text-sm sm:text-base truncate"> {item.nama_user}</p>
+                                                        <div className="flex items-center gap-2 mt-1 cursor-pointer select-none" onClick={() => setOpenLogs(openLogs === item.id ? null : item.id)}>
+                                                            {renderStatusLabel(item)}
+                                                            <FontAwesomeIcon icon={openLogs === item.id ? faChevronUp : faChevronDown} className="text-gray-600 w-3 h-3 transition-transform duration-200" />
                                                         </div>
-                                                    ) : (
-                                                        <p className="text-xs text-gray-400 ml-8">Tidak ada aktivitas.</p>
+                                                    </div>
+
+                                                    {openLogs === item.id && (
+                                                        <div className="mt-2 relative max-h-40 overflow-y-auto -ml-0.5 scrollbar-none">
+                                                            {item.logs?.length > 0 ? (
+                                                                item.logs.map((log, index) => {
+                                                                    let icon, iconColor;
+                                                                    switch (log.status) {
+                                                                        case 0: icon = faClock; iconColor = "text-yellow-500"; break;
+                                                                        case 1: icon = faCheckCircle; iconColor = "text-green-500"; break;
+                                                                        case 2: icon = faTimesCircle; iconColor = "text-red-500"; break;
+                                                                        case 3: icon = faPause; iconColor = "text-orange-500"; break;
+                                                                        case 4: icon = faPlayCircle; iconColor = "text-blue-500"; break;
+                                                                        default: icon = faCircle; iconColor = "text-gray-400";
+                                                                    }
+
+                                                                    return (
+                                                                        <div key={log.id} className="relative flex mb-4">
+                                                                            <div className="flex-shrink-0 w-4 h-4 flex items-center justify-center bg-white z-10 relative">
+                                                                                <FontAwesomeIcon icon={icon} className={`w-3 h-3 ${iconColor}`} />
+                                                                                {index !== item.logs.length - 1 && (
+                                                                                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-[1px] h-full bg-gray-300"></div>
+                                                                                )}
+                                                                            </div>
+
+                                                                            <div className="ml-4 flex flex-col text-xs text-gray-700">
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <span className="text-gray-400">
+                                                                                        {formatCustomDateTime(log.created_at)}
+                                                                                    </span>
+                                                                                    <span className="font-medium">{log.judul || "-"}</span>
+                                                                                </div>
+                                                                                {log.text && <span className="text-gray-600 mt-1">{log.text}</span>}
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })
+                                                            ) : (
+                                                                <p className="text-xs text-gray-400">Tidak ada aktivitas.</p>
+                                                            )}
+                                                        </div>
                                                     )}
-
-
-                                                    {/* Status pekerjaan */}
-                                                    {!item.finished_at ? (
-                                                        <p className="text-xs sm:text-sm font-medium text-blue-600 flex items-center gap-1">
-                                                            <FontAwesomeIcon icon={faSpinner} className="w-3 h-3 animate-spin" />
-                                                            Sedang proses pengerjaan
-                                                        </p>
-                                                    ) : item.status === 0 ? (
-                                                        <p className="text-xs sm:text-sm font-medium text-yellow-600 flex items-center gap-1">
-                                                            <FontAwesomeIcon icon={faClock} className="w-3 h-3" />
-                                                            Menunggu persetujuan
-                                                        </p>
-                                                    ) : item.status === 1 ? (
-                                                        <p className="text-xs sm:text-sm font-medium text-green-600 flex items-center gap-1">
-                                                            <FontAwesomeIcon icon={faCheckCircle} className="w-3 h-3" />
-                                                            {`Selesai pada: ${formatFullDate(item.finished_at)}`}
-                                                        </p>
-                                                    ) : item.status === 2 ? (
-                                                        <p className="text-xs sm:text-sm font-medium text-red-600 flex items-center gap-1">
-                                                            <FontAwesomeIcon icon={faTimesCircle} className="w-3 h-3" />
-                                                            Ditolak — perlu revisi
-                                                        </p>
-                                                    ) : null}
                                                 </div>
                                             </div>
 
-                                            <div className="flex flex-row flex-wrap items-center justify-end gap-2 mt-2 sm:mt-0 sm:gap-3 sm:flex-shrink-0">
-                                                <button onClick={() => handleOpenDetail(item)} className="flex items-center justify-center gap-2 w-24 px-3 py-2 rounded-md text-sm font-medium tracking-wide bg-blue-500 text-white hover:bg-blue-600 transition" title="Lihat Detail Pekerjaan">
-                                                    <FontAwesomeIcon icon={faInfoCircle} className="w-4 h-4" />
+                                            <div className="flex flex-row flex-wrap items-center justify-end gap-2 mt-6 sm:mt-0 sm:flex-shrink-0">
+                                                <button onClick={() => handleOpenDetail(item)} className="flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs sm:text-sm font-medium bg-blue-500 text-white hover:bg-blue-600 transition" title="Lihat Detail Pekerjaan">
+                                                    <FontAwesomeIcon icon={faInfoCircle} className="w-3.5 h-3.5" />
                                                     <span>Detail</span>
                                                 </button>
 
                                                 {tugas.category === "urgent" && (
                                                     <>
                                                         {item.status === 1 ? (
-                                                            <button disabled className="flex items-center justify-center gap-2 w-24 px-3 py-2 rounded-md text-sm font-medium tracking-wide bg-gray-400 text-white cursor-not-allowed" title="Pekerjaan Tuntas">
-                                                                <FontAwesomeIcon icon={faCheckCircle} className="w-4 h-4" />
+                                                            <button disabled className="flex items-center justify-center gap-1.5 px-2 py-1.5 rounded text-xs sm:text-sm font-medium bg-gray-400 text-white cursor-not-allowed" title="Pekerjaan Tuntas">
+                                                                <FontAwesomeIcon icon={faCheckCircle} className="w-3.5 h-3.5" />
                                                                 <span>Tuntas</span>
                                                             </button>
                                                         ) : (
                                                             !tugas.is_complete && (
-                                                                <button onClick={() => handleTogglePause(item.id, item.is_paused)} className={`flex items-center justify-center gap-2 w-24 px-3 py-2 rounded-md text-sm font-medium tracking-wide transition ${item.is_paused ? "bg-green-500 text-white hover:bg-green-600" : "bg-orange-500 text-white hover:bg-orange-600"}`} title={item.is_paused ? "Lanjutkan" : "Pause"}>
-                                                                    <FontAwesomeIcon icon={item.is_paused ? faPlay : faPause} className="w-4 h-4" />
-                                                                    <span>
-                                                                        {item.is_paused ? "Lanjut" : "Tunda"}
-                                                                    </span>
+                                                                <button onClick={() => handleTogglePause(item.id, item.is_paused)}
+                                                                    className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded text-xs sm:text-sm font-medium transition ${item.is_paused
+                                                                            ? "bg-green-500 text-white hover:bg-green-600"
+                                                                            : "bg-orange-500 text-white hover:bg-orange-600"
+                                                                        }`}
+                                                                    title={item.is_paused ? "Lanjutkan" : "Pause"}
+                                                                >
+                                                                    <FontAwesomeIcon icon={item.is_paused ? faPlay : faPause} className="w-3.5 h-3.5"/>
+                                                                    <span>{item.is_paused ? "Lanjut" : "Tunda"}</span>
                                                                 </button>
                                                             )
                                                         )}
@@ -396,7 +436,6 @@ const DetailPenugasan = () => {
                             ) : (
                                 <EmptyState message="Belum ada pekerja terdaftar untuk tugas ini." />
                             )}
-
                         </div>
                     </>
                 )}
@@ -467,22 +506,12 @@ const DetailPenugasan = () => {
                             <div className="pt-3 border-t border-gray-100">
                                 {selectedDetail.status === 0 ? (
                                     <div className="flex flex-col sm:flex-row justify-end sm:gap-3 gap-2">
-                                        <button
-                                            onClick={() =>
-                                                handleApproval(selectedDetail.id, 1)
-                                            }
-                                            className="flex items-center justify-center gap-2 px-4 py-2 text-sm rounded-md bg-green-600 text-white hover:bg-green-700 transition-all shadow-sm w-full sm:w-auto"
-                                        >
+                                        <button onClick={() => handleApproval(selectedDetail.id, 1)} className="flex items-center justify-center gap-2 px-4 py-2 text-sm rounded-md bg-green-600 text-white hover:bg-green-700 transition-all shadow-sm w-full sm:w-auto">
                                             <FontAwesomeIcon icon={faCheck} />
                                             <span>Setujui</span>
                                         </button>
 
-                                        <button
-                                            onClick={() =>
-                                                handleApproval(selectedDetail.id, 2)
-                                            }
-                                            className="flex items-center justify-center gap-2 px-4 py-2 text-sm rounded-md bg-red-500 text-white hover:bg-red-600 transition-all shadow-sm w-full sm:w-auto"
-                                        >
+                                        <button onClick={() => handleApproval(selectedDetail.id, 2)} className="flex items-center justify-center gap-2 px-4 py-2 text-sm rounded-md bg-red-500 text-white hover:bg-red-600 transition-all shadow-sm w-full sm:w-auto">
                                             <FontAwesomeIcon icon={faTimes} />
                                             <span>Tolak</span>
                                         </button>
@@ -500,9 +529,7 @@ const DetailPenugasan = () => {
                                                 : "text-red-500"
                                                 }`}
                                         />
-                                        {selectedDetail.status === 1
-                                            ? "Penugasan telah disetujui dan diverifikasi"
-                                            : "Penugasan telah ditolak dan tugas dikembalikan ke karyawan"}
+                                        {selectedDetail.status === 1 ? "Penugasan telah disetujui dan diverifikasi" : "Penugasan telah ditolak dan tugas dikembalikan ke karyawan"}
                                     </div>
                                 )}
                             </div>

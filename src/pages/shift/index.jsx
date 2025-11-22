@@ -43,28 +43,28 @@ const JadwalShift = () => {
     );
 
   return (
- <div className="w-full mx-auto">
-  <SectionHeader 
-    title="Jam Kerja / Shift" 
-    subtitle="Kelola jadwal shift karyawan dengan mudah."
-    onBack={() => navigate(-1)}
-    actions={
-      <button 
-        onClick={() => navigate("/shift/tambah")} 
-        className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 
+    <div className="w-full mx-auto">
+      <SectionHeader
+        title="Jam Kerja / Shift"
+        subtitle="Kelola jadwal shift karyawan dengan mudah."
+        onBack={() => navigate(-1)}
+        actions={
+          <button
+            onClick={() => navigate("/shift/tambah")}
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 
           hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg 
           transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 
           focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
-      >
-        <FontAwesomeIcon icon={faPlus} />
-        <span className="inline sm:hidden text-sm">Tambah</span>
-        <span className="hidden sm:inline">Tambah Shift</span>
-      </button>
-    }
-  />
+          >
+            <FontAwesomeIcon icon={faPlus} />
+            <span className="inline sm:hidden text-sm">Tambah</span>
+            <span className="hidden sm:inline">Tambah Shift</span>
+          </button>
+        }
+      />
 
-  {/* GRID RESPONSIVE */}
-  <div className="
+      {/* GRID RESPONSIVE */}
+      <div className="
       grid 
       grid-cols-1 
       sm:grid-cols-2 
@@ -74,11 +74,11 @@ const JadwalShift = () => {
       gap-5 
       mt-6
     "
-  >
-    {shiftList.map((shift) => (
-      <div 
-        key={shift.id} 
-        className="
+      >
+        {shiftList.map((shift) => (
+          <div
+            key={shift.id}
+            className="
           bg-white 
           rounded-2xl 
           border 
@@ -90,18 +90,18 @@ const JadwalShift = () => {
           flex 
           flex-col
         "
-      >
-        {/* HEADER */}
-        <div className="px-4 py-3 bg-green-600 text-white font-semibold text-base text-center tracking-wide rounded-t-2xl">
-          {shift.nama}
-        </div>
+          >
+            {/* HEADER */}
+            <div className="px-4 py-3 bg-green-600 text-white font-semibold text-base text-center tracking-wide rounded-t-2xl">
+              {shift.nama}
+            </div>
 
-        {/* DETAIL (COMPACT MODE) */}
-        <div className="p-3 flex flex-col gap-2">
-          {shift.detail.map((d, idx) => (
-            <div 
-              key={idx} 
-              className="
+            {/* DETAIL (COMPACT MODE) */}
+            <div className="p-3 flex flex-col gap-2">
+              {shift.detail.map((d, idx) => (
+                <div
+                  key={idx}
+                  className="
                 flex 
                 justify-between 
                 items-center 
@@ -115,19 +115,19 @@ const JadwalShift = () => {
                 border-gray-100
                 text-sm
               "
-            >
-              <span className="font-medium text-gray-800">{d.hari}</span>
+                >
+                  <span className="font-medium text-gray-800">{d.hari}</span>
 
-              <span className="text-gray-600 text-xs sm:text-sm whitespace-nowrap">
-                {d.jam_masuk} — {d.jam_pulang}
-              </span>
+                  <span className="text-gray-600 text-xs sm:text-sm whitespace-nowrap">
+                    {d.jam_masuk} — {d.jam_pulang}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
-    ))}
-  </div>
-</div>
+    </div>
 
   );
 };
