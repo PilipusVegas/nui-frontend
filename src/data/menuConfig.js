@@ -1,4 +1,5 @@
 // src/data/menuConfig.js
+import { faDailymotion } from "@fortawesome/free-brands-svg-icons";
 import {
     faHome,
     faPeopleGroup,
@@ -24,7 +25,8 @@ import {
     faFolderOpen,
     faEdit,
     faUserGear,
-    faGift
+    faGift,
+    faCalendarCheck
 } from "@fortawesome/free-solid-svg-icons";
 import { faPenFancy } from "@fortawesome/free-solid-svg-icons/faPenFancy";
 
@@ -46,9 +48,19 @@ export const menuConfig = [
         items: [
             {
                 label: "Absensi",
-                icon: faClock,
+                icon: faCalendarCheck,
                 path: "/absensi",
-                roles: [13, 20],
+                roles: [5, 13, 20],
+            },
+        ]
+    },
+    {sectionTitle: "Lembur",
+        items: [
+            {
+                label: "Lembur",
+                icon: faClock,
+                path: "/lembur",
+                roles: [5, 13, 20],
             },
         ]
     },

@@ -241,9 +241,7 @@ const Penugasan = () => {
                                                     {progressPersen}%
                                                 </span>
                                             </div>
-
                                         </div>
-
                                     </div>
 
                                     <div className="flex justify-end gap-2 flex-wrap w-full lg:w-max">
@@ -270,18 +268,10 @@ const Penugasan = () => {
                 {/* PAGINATION */}
                 {filteredTugas.length > itemsPerPage && (
                     <div className="mt-4">
-                        <Pagination
-                            currentPage={currentPage}
-                            totalItems={filteredTugas.length}
-                            itemsPerPage={itemsPerPage}
-                            onPageChange={handlePageChange}
-                        />
+                        <Pagination currentPage={currentPage} totalItems={filteredTugas.length} itemsPerPage={itemsPerPage} onPageChange={handlePageChange}/>
                     </div>
                 )}
             </div>
-
-
-
 
             <Modal isOpen={false} onClose={() => { }} title="Detail Penugasan" note="Informasi fitur menu  penugasan lengkap akan ditampilkan di sini.">
                 <div></div>
