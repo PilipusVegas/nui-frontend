@@ -3,23 +3,16 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faCamera,
-    faChevronDown,
-    faChevronRight,
-    faCircleCheck,
-    faCircleXmark,
-    faHammer,
-    faHourglassHalf,
-    faInfoCircle,
-    faPauseCircle,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCamera, faChevronDown, faChevronRight, faCircleCheck, faCircleXmark, faHammer, faHourglassHalf, faInfoCircle, faPauseCircle, faTimes } from "@fortawesome/free-solid-svg-icons";
 import toast from "react-hot-toast";
 import MobileLayout from "../../layouts/mobileLayout";
 import { LoadingSpinner, ErrorState, EmptyState, FooterMainBar } from "../../components";
 import { fetchWithJwt } from "../../utils/jwtHelper";
-import { formatDateTime, formatFullDate, formatLongDate } from "../../utils/dateUtils";
+import { formatFullDate } from "../../utils/dateUtils";
 import Webcam from "react-webcam";
+import Zoom from "react-medium-image-zoom";
+import 'react-medium-image-zoom/dist/styles.css';
+
 
 const DetailTugasMobile = () => {
     const { id } = useParams();
@@ -73,24 +66,25 @@ const DetailTugasMobile = () => {
 
     /* === UPLOAD === */
     const handleUpload = async () => {
-        if (photos.length === 0) return toast.error("Ambil minimal 1 foto 📸");
-        if (!description.trim()) return toast.error("Deskripsi wajib diisi 📝");
+        if (photos.length === 0) return toast.error("Ambil minimal 1 foto");
+        if (!description.trim()) return toast.error("Deskripsi wajib diisi");
 
         const formData = new FormData();
 
+        // Lampirkan foto
         for (let i = 0; i < photos.length; i++) {
             const blob = await (await fetch(photos[i])).blob();
             formData.append("foto", blob, `bukti_${i}.jpg`);
         }
 
+        // Lampirkan deskripsi
         formData.append("deskripsi", description);
 
-        const method = task?.status_tugas === 2 ? "PUT" : "POST";
         setUploading(true);
 
         try {
             const response = await fetchWithJwt(`${apiUrl}/tugas/user/${id}`, {
-                method,
+                method: "POST",
                 body: formData,
             });
 
@@ -101,6 +95,7 @@ const DetailTugasMobile = () => {
                 setPhotos([]);
                 setDescription("");
                 setPhotoConfirmed(false);
+                setIsCameraOpen(false);
                 loadTaskDetail();
             } else {
                 toast.error(result.message || "Gagal mengirim data");
@@ -176,19 +171,12 @@ const DetailTugasMobile = () => {
                             </div>
                         </div>
 
-
                         {/* === STATUS & BUKTI PENGUMPULAN TUGAS === */}
                         <div className="border rounded-lg mb-4">
-                            <button
-                                onClick={() => setOpenBukti(!openBukti)}
-                                className="w-full text-left"
-                            >
+                            <button onClick={() => setOpenBukti(!openBukti)} className="w-full text-left">
                                 <div className="p-3 flex justify-between items-center">
                                     <h3 className="text-[12px] font-semibold">BUKTI PENGUMPULAN TUGAS</h3>
-                                    <FontAwesomeIcon
-                                        icon={openBukti ? faChevronDown : faChevronRight}
-                                        className="text-[12px] text-gray-600"
-                                    />
+                                    <FontAwesomeIcon icon={openBukti ? faChevronDown : faChevronRight} className="text-[12px] text-gray-600" />
                                 </div>
 
                                 {/* Status Ringkas */}
@@ -202,7 +190,7 @@ const DetailTugasMobile = () => {
                                             </span>
                                         )}
 
-                                        {!task.finished_at && task.status_tugas === 0 && task.is_paused !== 1 && (
+                                        {!task.finished_at && task.status_tugas === 0 && (
                                             <span className="flex items-center gap-1 text-blue-600">
                                                 <FontAwesomeIcon icon={faHammer} /> Belum Dikerjakan
                                             </span>
@@ -222,126 +210,231 @@ const DetailTugasMobile = () => {
 
                                         {task.finished_at && task.status_tugas === 2 && (
                                             <span className="flex items-center gap-1 text-red-600">
-                                                <FontAwesomeIcon icon={faCircleXmark} /> Ditolak
+                                                <FontAwesomeIcon icon={faCircleXmark} /> Revisi Segera
                                             </span>
                                         )}
                                     </div>
                                 </div>
                             </button>
 
-                            {/* Konten Dropdown */}
                             {openBukti && (
-                                <div className="p-3 text-[11px] border-t border-gray-100 space-y-4">
+                                <div className="p-3 text-[11px] border-t border-gray-100 space-y-5">
 
-                                    {/* ==============================
-                Jika Status Bukan Disetujui → Infobox + Foto Lama + Tombol Kirim
-            ============================== */}
-                                    {task.status_tugas !== 1 && (
-                                        <>
-                                            {/* Infobox Modern */}
-                                            <div className="flex items-start p-2 bg-green-50 border border-green-200 rounded-md space-x-2 text-[10px]">
-                                                <FontAwesomeIcon icon={faInfoCircle} className="text-green-500 mt-0.5 flex-shrink-0" />
-                                                <div className="flex-1">
-                                                    <h4 className="font-semibold text-green-700 mb-1">Informasi Pengumpulan</h4>
-                                                    <p className="text-gray-700 leading-snug">
-                                                        {task.finished_at
-                                                            ? "Tugas sudah dikirim dan menunggu verifikasi Kadiv."
-                                                            : "Silakan kirim bukti tugas sebelum deadline."}
-                                                    </p>
-                                                </div>
+                                    {/* ========================= INFOBOX STATUS ========================= */}
+                                    <div
+                                        className={`p-2 border rounded-md flex gap-2 text-[10px] ${task.status_tugas === 1
+                                            ? "bg-emerald-50 border-emerald-200"
+                                            : task.status_tugas === 2
+                                                ? "bg-red-50 border-red-200"
+                                                : "bg-blue-50 border-blue-200"
+                                            }`}
+                                    >
+                                        <FontAwesomeIcon
+                                            icon={faInfoCircle}
+                                            className={`mt-0.5 ${task.status_tugas === 1
+                                                ? "text-emerald-600"
+                                                : task.status_tugas === 2
+                                                    ? "text-red-500"
+                                                    : "text-blue-500"
+                                                }`}
+                                        />
+
+                                        <div>
+                                            <h4 className="font-semibold mb-1">
+                                                {task.status_tugas === 1 && "Tugas Disetujui"}
+                                                {task.status_tugas === 2 && "Tugas Perlu Revisi"}
+                                                {task.status_tugas === 0 && task.finished_at && "Menunggu Verifikasi"}
+                                                {!task.finished_at && "Unggah Bukti Penyelesaian"}
+                                            </h4>
+
+                                            <p className="text-gray-700 leading-snug">
+                                                {task.status_tugas === 2
+                                                    ? "Tugas ditolak. Silakan kirim ulang foto revisi disertai perbaikan."
+                                                    : task.status_tugas === 1
+                                                        ? "Tugas telah disetujui oleh kepala divisi."
+                                                        : task.finished_at
+                                                            ? "Tugas sudah dikirim dan sedang menunggu verifikasi."
+                                                            : "Kirim bukti hasil pekerjaan sebelum deadline."}
+                                            </p>
+                                        </div>
+                                    </div>
+
+
+                                    {/* ========================= DESKRIPSI PENOLAKAN ========================= */}
+                                    {task.status_tugas === 2 && task.deskripsi_penolakan && (
+                                        <div className="p-2 bg-red-50 border border-red-200 rounded-md">
+                                            <p className="font-semibold text-red-700 mb-1">Alasan Penolakan:</p>
+                                            <p className="text-[10px] text-red-700 leading-snug whitespace-pre-wrap">
+                                                {task.deskripsi_penolakan}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* ========================= FOTO LAMA ========================= */}
+                                    {task.submission?.length > 0 && photos.length === 0 && (
+                                        <div>
+                                            <h5 className="font-semibold text-gray-700 mb-2">
+                                                {task.status_tugas === 2
+                                                    ? "Foto Lama (Sebelum Revisi)"
+                                                    : "Foto yang Sudah Dikirim"}
+                                            </h5>
+
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {task.submission.map((file, i) => (
+                                                    <Zoom>
+                                                        <img
+                                                            key={i}
+                                                            src={`${apiUrl}/uploads/img/tugas/${file}`}
+                                                            className="w-full h-24 object-cover rounded-md border cursor-pointer"
+                                                        />
+                                                    </Zoom>
+
+                                                ))}
                                             </div>
 
-                                            {/* Foto Lama */}
-                                            {task.submission?.length > 0 && (
-                                                <div>
-                                                    <h5 className="font-semibold text-gray-700 mb-1">Foto yang Sudah Dikirim</h5>
-                                                    <div className="grid grid-cols-3 gap-2">
-                                                        {task.submission.map((file, i) => (
-                                                            <img
-                                                                key={i}
-                                                                src={`${apiUrl}/uploads/img/tugas/${file}`}
-                                                                className="w-full h-24 object-cover rounded-md border"
-                                                            />
-                                                        ))}
-                                                    </div>
+                                            {/* Detail Submisi Lama */}
+                                            {task.deskripsi_pengajuan && (
+                                                <div className="mt-3 p-2 bg-gray-50 border rounded-md">
+                                                    <p className="font-semibold text-gray-700 mb-1">Deskripsi Pengumpulan Lama:</p>
+                                                    <p className="text-[10px] text-gray-600 leading-snug whitespace-pre-wrap">
+                                                        {task.deskripsi_pengajuan}
+                                                    </p>
                                                 </div>
                                             )}
+                                        </div>
+                                    )}
 
-                                            {/* Tombol Ambil Foto */}
-                                            {!isCameraOpen && (
+
+                                    {/* ========================= KAMERA ========================= */}
+                                    {isCameraOpen && (
+                                        <div className="p-2 border rounded-md bg-gray-50">
+                                            <div className="w-full aspect-[4/3] bg-black rounded-md overflow-hidden">
+                                                <Webcam
+                                                    ref={webcamRef}
+                                                    screenshotFormat="image/jpeg"
+                                                    videoConstraints={{ facingMode }}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+
+                                            <div className="flex gap-2 mt-3">
+                                                <button
+                                                    onClick={switchCamera}
+                                                    className="flex-1 py-2 bg-gray-200 rounded-md"
+                                                >
+                                                    Ganti Kamera
+                                                </button>
+
+                                                <button
+                                                    onClick={() => {
+                                                        capturePhoto();      // ⬅ foto ditambahkan ke array
+                                                    }}
+                                                    className="flex-1 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md"
+                                                >
+                                                    Ambil Foto
+                                                </button>
+                                            </div>
+
+                                            <button
+                                                onClick={() => setIsCameraOpen(false)}
+                                                className="w-full mt-3 py-2 bg-gray-100 rounded-md"
+                                            >
+                                                Selesai Ambil Foto
+                                            </button>
+                                        </div>
+                                    )}
+
+
+                                    {/* ========================= PREVIEW FOTO BARU ========================= */}
+                                    {photos.length > 0 && (
+                                        <div>
+                                            <h5 className="font-semibold text-gray-700 mb-2">
+                                                {task.status_tugas === 2 ? "Foto Baru (Revisi)" : "Foto Baru"}
+                                            </h5>
+
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {photos.map((img, i) => (
+                                                    <div key={i} className="relative">
+                                                        <Zoom>
+                                                            <img src={img} className="w-full h-24 object-cover rounded-md border cursor-pointer" />
+                                                        </Zoom>
+
+
+                                                        {/* Tombol X */}
+                                                        <button onClick={() => { const updated = photos.filter((_, index) => index !== i); setPhotos(updated); }}
+                                                            className="absolute top-1 right-1 bg-black/50 hover:bg-black/70 text-white w-5 h-5 flex items-center justify-center rounded-full"
+                                                        >
+                                                            <FontAwesomeIcon icon={faTimes} className="text-[10px]" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+
+                                    {/* ========================= DESKRIPSI + SUBMIT ========================= */}
+                                    {photos.length > 0 && (
+                                        <div className="mt-2">
+
+                                            <label className="block mb-1 text-sm font-semibold text-gray-700">
+                                                {task.status_tugas === 2
+                                                    ? "Deskripsi Perbaikan / Revisi"
+                                                    : "Deskripsi Hasil Pekerjaan"}
+                                            </label>
+
+                                            <textarea
+                                                value={description}
+                                                onChange={(e) => setDescription(e.target.value)}
+                                                rows={3}
+                                                placeholder={
+                                                    task.status_tugas === 2
+                                                        ? "Jelaskan perbaikan atau revisi yang dilakukan..."
+                                                        : "Tuliskan deskripsi singkat hasil pekerjaan..."
+                                                }
+                                                className="w-full p-2 border rounded-md"
+                                            />
+
+                                            <button
+                                                onClick={handleUpload}
+                                                disabled={uploading}
+                                                className={`w-full mt-3 py-2 rounded-md text-white ${uploading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
+                                                    }`}
+                                            >
+                                                {uploading
+                                                    ? "Mengirim..."
+                                                    : task.status_tugas === 2
+                                                        ? "Kirim Revisi ke Kadiv"
+                                                        : "Kirim Ke Kadiv"}
+                                            </button>
+                                        </div>
+                                    )}
+
+
+
+                                    {/* ========================= BUTTON BUKA KAMERA ========================= */}
+                                    {!isCameraOpen &&
+                                        photos.length === 0 &&
+                                        (task.status_tugas === 2 || !task.finished_at) && (
+                                            <div className="pt-2">
                                                 <button
                                                     onClick={() => setIsCameraOpen(true)}
-                                                    className="w-full py-2 bg-green-600 text-white rounded-md"
+                                                    className="w-full py-2 bg-green-600 hover:bg-green-700 text-white rounded-md"
                                                 >
                                                     <FontAwesomeIcon icon={faCamera} className="mr-1" />
-                                                    Ambil / Kirim Foto
+                                                    {task.status_tugas === 2
+                                                        ? "Ambil Foto Revisi"
+                                                        : "Ambil / Kirim Foto"}
                                                 </button>
-                                            )}
-
-                                            {/* Kamera */}
-                                            {isCameraOpen && (
-                                                <div className="p-2 border rounded-md bg-gray-50">
-                                                    <div className="w-full aspect-[4/3] bg-black rounded-md overflow-hidden">
-                                                        <Webcam
-                                                            ref={webcamRef}
-                                                            screenshotFormat="image/jpeg"
-                                                            videoConstraints={{ facingMode }}
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                    </div>
-
-                                                    <div className="flex gap-2 mt-2">
-                                                        <button onClick={switchCamera} className="flex-1 py-2 bg-gray-200 rounded-md">
-                                                            Ganti Kamera
-                                                        </button>
-                                                        <button
-                                                            onClick={() => { capturePhoto(); setIsCameraOpen(false); }}
-                                                            className="flex-1 py-2 bg-green-600 text-white rounded-md"
-                                                        >
-                                                            Ambil Foto
-                                                        </button>
-                                                    </div>
-
-                                                    <button
-                                                        onClick={() => setIsCameraOpen(false)}
-                                                        className="w-full mt-2 py-2 bg-gray-100 rounded-md"
-                                                    >
-                                                        Batal
-                                                    </button>
-                                                </div>
-                                            )}
-
-                                            {/* Deskripsi + Kirim */}
-                                            {photos.length > 0 && (
-                                                <div className="mt-2">
-                                                    <textarea
-                                                        value={description}
-                                                        onChange={(e) => setDescription(e.target.value)}
-                                                        rows={3}
-                                                        placeholder="Tuliskan deskripsi singkat hasil pekerjaan..."
-                                                        className="w-full p-2 border rounded-md"
-                                                    />
-                                                    <button
-                                                        onClick={handleUpload}
-                                                        disabled={uploading}
-                                                        className={`w-full mt-2 py-2 rounded-md text-white ${uploading ? "bg-gray-400" : "bg-blue-600"
-                                                            }`}
-                                                    >
-                                                        {uploading ? "Mengirim..." : "Kirim Ke Kadiv"}
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </>
-                                    )}
+                                            </div>
+                                        )}
                                 </div>
                             )}
+
                         </div>
-
-
                     </>
                 )}
             </div>
-
             <FooterMainBar />
         </MobileLayout>
     );

@@ -50,7 +50,7 @@ export const menuConfig = [
                 label: "Absensi",
                 icon: faCalendarCheck,
                 path: "/absensi",
-                roles: [5, 13, 20],
+                roles: [5, 20],
             },
         ]
     },
@@ -60,7 +60,17 @@ export const menuConfig = [
                 label: "Lembur",
                 icon: faClock,
                 path: "/lembur",
-                roles: [5, 13, 20],
+                roles: [5, 20],
+            },
+        ]
+    },
+    {sectionTitle: "Dinas",
+        items: [
+            {
+                label: "Form Dinas",
+                icon: faPlaneDeparture,
+                path: "/formulir-dinas",
+                roles: [5, 20],
             },
         ]
     },

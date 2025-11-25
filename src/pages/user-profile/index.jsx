@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import MobileLayout from "../../layouts/mobileLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBuilding, faPhone, faUser, faPen, faUserCircle, faIdCard, faPeopleGroup,} from "@fortawesome/free-solid-svg-icons";
+import { faBuilding, faPhone, faUser, faPen, faUserCircle, faIdCard, faPeopleGroup, } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { FooterMainBar, LoadingSpinner, EmptyState, ErrorState } from "../../components";
@@ -59,11 +59,16 @@ const Profile = () => {
 
   return (
     <MobileLayout title="Profil Karyawan">
+      {isLoading && (
+        <div className="absolute inset-0 bg-white/70 flex justify-center items-center z-10 rounded-xl">
+          <LoadingSpinner message="Memuat data..." />
+        </div>
+      )}
       <div className="p-3 min-w-full mx-auto space-y-4">
         <div className="flex flex-col justify-center items-center mb-5">
           <div className="relative w-24 h-24 mb-4">
             {profileData?.foto ? (
-              <img src={profileData.foto} alt="User Avatar" className="w-full h-full rounded-full object-cover shadow-lg border-4 border-white"/>
+              <img src={profileData.foto} alt="User Avatar" className="w-full h-full rounded-full object-cover shadow-lg border-4 border-white" />
             ) : (
               <div className="w-full h-full rounded-full bg-white flex items-center justify-center shadow-lg border-4 border-white">
                 <FontAwesomeIcon icon={faUserCircle} className="text-gray-400 text-5xl" />
@@ -83,18 +88,14 @@ const Profile = () => {
 
         {/* Data Profil */}
         <div className="relative">
-          {isLoading && (
-            <div className="absolute inset-0 bg-white/70 flex justify-center items-center z-10 rounded-xl">
-              <LoadingSpinner message="Memuat data..." />
-            </div>
-          )}
+
 
           {!error && profileData && (
             <div className="space-y-3">
               {profileFields.map((field, idx) => (
                 <div key={idx} className="flex items-center gap-3 px-1 py-2 border-b border-gray-300 last:border-none">
                   <div className="flex-shrink-0 flex items-center justify-center w-6 h-6">
-                    <FontAwesomeIcon icon={field.icon} className="text-green-600 text-[1.05rem]"/>
+                    <FontAwesomeIcon icon={field.icon} className="text-green-600 text-[1.05rem]" />
                   </div>
                   <div className="flex flex-col">
                     <span className="text-gray-500 text-xs font-medium uppercase tracking-wide leading-tight">

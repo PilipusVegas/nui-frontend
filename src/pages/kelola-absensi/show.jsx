@@ -170,10 +170,10 @@ const DetailKelolaPresensi = () => {
             <div className="mt-4 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { label: "Total Kehadiran", value: `${totalKehadiran} Hari`, icon: faUserCheck, color: "text-green-600", bg: "bg-green-50",},
-                  { label: "Total Lembur", value: totalLembur, icon: faBusinessTime, color: "text-amber-600", bg: "bg-amber-50",},
-                  { label: "Total Keterlambatan", value: totalKeterlambatan, icon: faClock, color: "text-red-600", bg: "bg-red-50",},
-                  { label: "Total Alpha (Tidak Masuk)", value: `${dataUser?.total_alpha ?? 0} Hari`, icon: faUserTimes, color: "text-gray-700", bg: "bg-gray-50",},
+                  { label: "Total Kehadiran", value: `${totalKehadiran} Hari`, icon: faUserCheck, color: "text-green-600", bg: "bg-green-50", },
+                  { label: "Total Lembur", value: totalLembur, icon: faBusinessTime, color: "text-amber-600", bg: "bg-amber-50", },
+                  { label: "Total Keterlambatan", value: totalKeterlambatan, icon: faClock, color: "text-red-600", bg: "bg-red-50", },
+                  { label: "Total Alpha (Tidak Masuk)", value: `${dataUser?.total_alpha ?? 0} Hari`, icon: faUserTimes, color: "text-gray-700", bg: "bg-gray-50", },
                 ].map((item, i) => (
                   <div key={i} className={`flex items-center gap-3 p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 ${item.bg}`}>
                     <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${item.color} bg-white shadow-inner`}>
@@ -260,7 +260,7 @@ const DetailKelolaPresensi = () => {
                             {rec.total_overtime}
                           </span>
 
-                          <FontAwesomeIcon icon={faInfoCircle} className="text-sm text-blue-600 bg-white border border-white rounded-full"/>
+                          <FontAwesomeIcon icon={faInfoCircle} className="text-sm text-blue-600 bg-white border border-white rounded-full" />
                         </div>
                       ) : (
                         "-"
@@ -281,13 +281,13 @@ const DetailKelolaPresensi = () => {
                       {rec?.remark ? (
                         <div className="flex justify-center">
                           <button onClick={() =>
-                              setRemarkModal({
-                                open: true,
-                                remark: rec.remark,
-                                remarkBy: rec.remark_by || "-",
-                                remarkStatus: rec.remark_status ?? null,
-                              })
-                            }
+                            setRemarkModal({
+                              open: true,
+                              remark: rec.remark,
+                              remarkBy: rec.remark_by || "-",
+                              remarkStatus: rec.remark_status ?? null,
+                            })
+                          }
                             className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-2 py-1 rounded"
                           >
                             <FontAwesomeIcon icon={faInfo} className="w-3 h-3" />
@@ -404,7 +404,9 @@ const DetailKelolaPresensi = () => {
                       ? "bg-green-100 text-green-700"
                       : remarkModal.remarkStatus === 5
                         ? "bg-pink-100 text-pink-700"
-                        : "bg-gray-100 text-gray-500"
+                        : remarkModal.remarkStatus === 6
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-gray-100 text-gray-500"
                 }`}
             >
               {remarkModal.remarkStatus === 1
@@ -417,7 +419,9 @@ const DetailKelolaPresensi = () => {
                       ? "Cuti"
                       : remarkModal.remarkStatus === 5
                         ? "Izin Sakit"
-                        : "Tidak Ada Status"}
+                        : remarkModal.remarkStatus === 6
+                          ? "Lupa Absen"
+                          : "Tidak Ada Status"}
             </span>
 
             <span className="italic text-gray-500">

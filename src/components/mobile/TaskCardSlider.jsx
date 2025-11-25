@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { formatLongDate } from "../../utils/dateUtils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRight, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
 const TaskCardSlider = () => {
     const navigate = useNavigate();
@@ -21,7 +21,11 @@ const TaskCardSlider = () => {
                 const data = await res.json();
                 if (data.success) {
                     const filtered = data.data
-                        .filter((t) => t.status_tugas === 0 || t.status_tugas === 2)
+                        .filter((t) =>
+                            t.is_paused !== 1 &&
+                            t.status_tugas !== 1 &&
+                            !(t.status_tugas === 0 && t.finished_at) // pending → hide
+                        )
                         .sort((a, b) => {
                             // 1️⃣ Prioritaskan yang ditolak (perlu revisi)
                             if (a.status_tugas === 2 && b.status_tugas !== 2) return -1;
@@ -79,6 +83,15 @@ const TaskCardSlider = () => {
         return "";
     };
 
+    const getDaysLeft = (deadline) => {
+        const now = new Date();
+        const end = new Date(deadline);
+        const diff = end - now;
+        const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+        return days <= 0 ? "Lewat Tenggat" : `${days} hari lagi`;
+    };
+
+
 
     return (
         <div className="px-4 mt-4">
@@ -95,47 +108,64 @@ const TaskCardSlider = () => {
             <div className="relative">
                 <div ref={sliderRef} onScroll={handleScroll} className="flex space-x-3 overflow-x-auto scrollbar-hide py-2 scroll-smooth snap-x snap-mandatory">
                     {tasks.map((task) => (
-                        <div key={task.id} onClick={() => navigate(`/tugas/${task.id}`)} className="min-w-[250px] max-w-[250px] bg-white rounded-xl shadow-sm p-3 border cursor-pointer hover:shadow-md hover:ring-1 hover:ring-green-300 transition-all duration-300 flex-shrink-0 flex flex-col justify-between border-gray-200 snap-start">
-                            {/* Badge & Status */}
-                            <div className="flex justify-between items-center mb-1">
-                                <span className={`text-[9px] font-semibold px-2 py-0.5 rounded-full ${task.category === "urgent" ? "bg-red-500 text-white animate-pulse" : "bg-green-500 text-white"}`}>
-                                    {task.category.toUpperCase()}
-                                </span>
-                                <span className={`text-[9px] font-medium px-2 py-0.5 rounded ${getStatusColor(task)}`}>
-                                    {getStatusLabel(task)}
-                                </span>
+                        <div key={task.id} className="relative">
+
+                            {/* Card utama ramping */}
+                            <div onClick={() => navigate(`/tugas/${task.id}`)}
+                                className="w-[210px] bg-white rounded-lg border border-gray-200 shadow-sm p-2.5 
+            cursor-pointer hover:shadow-md transition-all duration-200 flex flex-col gap-1.5 relative"
+                            >
+
+                                {/* Kategori + Status */}
+                                <div className="flex justify-between items-center">
+                                    <span className={`text-[9px] font-semibold px-1.5 py-[1px] rounded
+                        ${task.category === 'urgent'
+                                                ? 'bg-red-500 text-white'
+                                                : 'bg-green-600 text-white'}`}
+                                    >
+                                        {task.category.toUpperCase()}
+                                    </span>
+
+                                    <span className={`text-[9px] px-1.5 py-[1px] rounded ${getStatusColor(task)}`}>
+                                        {getStatusLabel(task)}
+                                    </span>
+                                </div>
+
+                                {/* Judul */}
+                                <h4 className="text-[11px] font-semibold text-gray-800 leading-snug line-clamp-1">
+                                    {task.nama_tugas}
+                                </h4>
+
+                                {/* Deadline + Badge Revisi sejajar */}
+                                <div className="flex justify-between items-center">
+
+                                    {/* Countdown */}
+                                    <p className="text-[10px] font-bold text-red-600">
+                                        {getDaysLeft(task.deadline_at)}
+                                    </p>
+
+                                    {/* Badge Revisi (lebih terbaca) */}
+                                    {task.status_tugas === 2 && (
+                                        <span className="bg-red-500 text-white text-[9px] px-2 py-[1.5px] rounded-full shadow-sm font-medium">
+                                            Perlu Revisi !
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* Tanggal */}
+                                <div className="text-[9.5px] text-gray-700 leading-tight space-y-[1px]">
+                                    <p><span className="font-semibold">Mulai:</span> {formatLongDate(task.start_date)}</p>
+                                    <p><span className="font-semibold">Deadline:</span> {formatLongDate(task.deadline_at)}</p>
+                                </div>
+
                             </div>
-
-                            {/* Judul satu baris */}
-                            <h4 className="text-[13px] font-semibold text-gray-700 truncate mb-1">
-                                {task.nama_tugas}
-                            </h4>
-
-                            {/* Info tanggal */}
-                            <div className="text-[11px] text-gray-600 flex flex-col gap-0.5">
-                                <div>
-                                    <span className="font-semibold">Mulai Tugas:</span>{" "}
-                                    {formatLongDate(task.start_date)}
-                                </div>
-                                <div>
-                                    <span className="font-semibold">Tenggat Waktu:</span>{" "}
-                                    {formatLongDate(task.deadline_at)}
-                                </div>
-                            </div>
-
-                            {/* Revisi */}
-                            {task.status_tugas === 2 && (
-                                <div className="text-[11px] text-red-700 bg-red-100 px-2 py-1 rounded mt-1 font-medium">
-                                    Perlu Revisi
-                                </div>
-                            )}
                         </div>
                     ))}
                 </div>
 
                 {/* Slider indikator */}
                 <div className="flex justify-center mt-2 space-x-1.5">
-                    {activeTasks.map((_, idx) => (
+                    {tasks.map((_, idx) => (
                         <button key={idx} onClick={() => scrollToIndex(idx)} className={`w-2 h-2 rounded-full transition-all ${idx === activeIndex ? "bg-green-500" : "bg-gray-300"}`} />
                     ))}
                 </div>

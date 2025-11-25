@@ -8,6 +8,8 @@ import { formatFullDate, formatCustomDateTime } from "../../utils/dateUtils";
 import { LoadingSpinner, EmptyState, ErrorState, SectionHeader, Modal } from "../../components";
 import { faTasks, faCheck, faTimes, faPause, faUserGroup, faPlay, faRotateRight, faCircle, faInfoCircle, faCheckCircle, faTimesCircle, faChevronDown, faChevronUp, faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { faClock } from "@fortawesome/free-solid-svg-icons/faClock";
+import Zoom from "react-medium-image-zoom";
+import "react-medium-image-zoom/dist/styles.css";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons/faSpinner";
 
 const DetailPenugasan = () => {
@@ -59,14 +61,11 @@ const DetailPenugasan = () => {
     };
 
 
-    /** === Handle Pause / Resume === */
     const handleTogglePause = async (detailId, isPaused) => {
         try {
             const url = `${apiUrl}/tugas/pause/${detailId}?paused=${isPaused ? 0 : 1}`;
             const res = await fetchWithJwt(url);
-
             if (!res.ok) throw new Error(`Status ${res.status}`);
-
             setTugas((prev) => ({
                 ...prev,
                 details: prev.details.map((w) =>
@@ -91,11 +90,6 @@ const DetailPenugasan = () => {
         }
     };
 
-    /** === Handle Lihat Foto === */
-    const handleViewPhoto = (photoName) => {
-        if (!photoName) return toast.error("Tidak ada foto tersedia.");
-        window.open(`${apiUrl}/uploads/img/tugas/${photoName}`, "_blank");
-    };
 
     const handleApproval = async (detailId, status) => {
         try {
@@ -159,7 +153,6 @@ const DetailPenugasan = () => {
             toast.error("Gagal memperbarui status tugas.");
         }
     };
-
 
 
     const handleRefresh = async () => {
@@ -357,40 +350,64 @@ const DetailPenugasan = () => {
                                                     </div>
 
                                                     {openLogs === item.id && (
-                                                        <div className="mt-2 relative max-h-40 overflow-y-auto -ml-0.5 scrollbar-none">
+                                                        <div className="mt-4 relative max-h-[60vh] overflow-y-auto scrollbar-none">
                                                             {item.logs?.length > 0 ? (
-                                                                item.logs.map((log, index) => {
-                                                                    let icon, iconColor;
-                                                                    switch (log.status) {
-                                                                        case 0: icon = faClock; iconColor = "text-yellow-500"; break;
-                                                                        case 1: icon = faCheckCircle; iconColor = "text-green-500"; break;
-                                                                        case 2: icon = faTimesCircle; iconColor = "text-red-500"; break;
-                                                                        case 3: icon = faPause; iconColor = "text-orange-500"; break;
-                                                                        case 4: icon = faPlayCircle; iconColor = "text-blue-500"; break;
-                                                                        default: icon = faCircle; iconColor = "text-gray-400";
-                                                                    }
+                                                                <div className="relative">
 
-                                                                    return (
-                                                                        <div key={log.id} className="relative flex mb-4">
-                                                                            <div className="flex-shrink-0 w-4 h-4 flex items-center justify-center bg-white z-10 relative">
-                                                                                <FontAwesomeIcon icon={icon} className={`w-3 h-3 ${iconColor}`} />
+                                                                    {item.logs.map((log, index) => {
+                                                                        let icon, iconColor;
+                                                                        switch (log.status) {
+                                                                            case 0:
+                                                                                icon = faClock;
+                                                                                iconColor = "text-yellow-500";
+                                                                                break;
+                                                                            case 1:
+                                                                                icon = faCheckCircle;
+                                                                                iconColor = "text-green-500";
+                                                                                break;
+                                                                            case 2:
+                                                                                icon = faTimesCircle;
+                                                                                iconColor = "text-red-500";
+                                                                                break;
+                                                                            case 3:
+                                                                                icon = faPause;
+                                                                                iconColor = "text-orange-500";
+                                                                                break;
+                                                                            case 4:
+                                                                                icon = faPlayCircle;
+                                                                                iconColor = "text-blue-500";
+                                                                                break;
+                                                                            default:
+                                                                                icon = faCircle;
+                                                                                iconColor = "text-gray-400";
+                                                                        }
+
+                                                                        return (
+                                                                            <div key={log.id} className="relative mb-10">
+                                                                                <div className="absolute left-3 top-0">
+                                                                                    <div className="w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-md border border-gray-200">
+                                                                                        <FontAwesomeIcon icon={icon} className={`w-4 h-4 ${iconColor}`} />
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                <div className="ml-16 text-xs text-gray-700">
+                                                                                    <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                                                                                        <span className="text-gray-400 text-xs sm:text-sm">{formatCustomDateTime(log.created_at)}</span>
+                                                                                        ●
+                                                                                        <span className="font-semibold">{log.judul || "-"}</span>
+                                                                                    </div>
+                                                                                    {log.text && (
+                                                                                        <p className="text-gray-600 mt-1 text-xs">{log.text}</p>
+                                                                                    )}
+                                                                                </div>
+
                                                                                 {index !== item.logs.length - 1 && (
-                                                                                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-[1px] h-full bg-gray-300"></div>
+                                                                                    <div className="absolute left-7 top-8 w-px h-full bg-gray-300"></div>
                                                                                 )}
                                                                             </div>
-
-                                                                            <div className="ml-4 flex flex-col text-xs text-gray-700">
-                                                                                <div className="flex items-center gap-2">
-                                                                                    <span className="text-gray-400">
-                                                                                        {formatCustomDateTime(log.created_at)}
-                                                                                    </span>
-                                                                                    <span className="font-medium">{log.judul || "-"}</span>
-                                                                                </div>
-                                                                                {log.text && <span className="text-gray-600 mt-1">{log.text}</span>}
-                                                                            </div>
-                                                                        </div>
-                                                                    );
-                                                                })
+                                                                        );
+                                                                    })}
+                                                                </div>
                                                             ) : (
                                                                 <p className="text-xs text-gray-400">Tidak ada aktivitas.</p>
                                                             )}
@@ -416,12 +433,12 @@ const DetailPenugasan = () => {
                                                             !tugas.is_complete && (
                                                                 <button onClick={() => handleTogglePause(item.id, item.is_paused)}
                                                                     className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded text-xs sm:text-sm font-medium transition ${item.is_paused
-                                                                            ? "bg-green-500 text-white hover:bg-green-600"
-                                                                            : "bg-orange-500 text-white hover:bg-orange-600"
+                                                                        ? "bg-green-500 text-white hover:bg-green-600"
+                                                                        : "bg-orange-500 text-white hover:bg-orange-600"
                                                                         }`}
                                                                     title={item.is_paused ? "Lanjutkan" : "Pause"}
                                                                 >
-                                                                    <FontAwesomeIcon icon={item.is_paused ? faPlay : faPause} className="w-3.5 h-3.5"/>
+                                                                    <FontAwesomeIcon icon={item.is_paused ? faPlay : faPause} className="w-3.5 h-3.5" />
                                                                     <span>{item.is_paused ? "Lanjut" : "Tunda"}</span>
                                                                 </button>
                                                             )
@@ -441,26 +458,51 @@ const DetailPenugasan = () => {
                 )}
             </main>
 
-            {/* === Modal Detail Pekerja === */}
-            <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="Detail Pekerjaan" note={selectedDetail ? selectedDetail.nama_user : ""} size="lg">
+            <Modal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                title="Detail Pekerjaan"
+                note={selectedDetail ? selectedDetail.nama_user : ""}
+                size="lg"
+                footer={selectedDetail?.finished_at && (
+                    selectedDetail.status === 0 ? (
+                        <div className="flex flex-col sm:flex-row justify-end gap-2">
+                            <button
+                                onClick={() => handleApproval(selectedDetail.id, 1)}
+                                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-md"
+                            >
+                                Setujui
+                            </button>
+
+                            <button
+                                onClick={() => handleApproval(selectedDetail.id, 2)}
+                                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm rounded-md"
+                            >
+                                Tolak
+                            </button>
+                        </div>
+                    ) : (
+                        <p className="text-sm text-center w-full">
+                            {selectedDetail.status === 1
+                                ? "Penugasan telah disetujui"
+                                : "Penugasan telah ditolak"}
+                        </p>
+                    )
+                )}
+            >
                 {selectedDetail ? (
-                    <div className="space-y-5 text-gray-700">
-                        {/* === Informasi Utama === */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
-                            <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 shadow-sm">
-                                <p className="text-[11px] font-medium text-gray-500 uppercase mb-1">
-                                    Nama Karyawan
-                                </p>
-                                <p className="font-semibold text-gray-900 text-sm sm:text-base">
-                                    {selectedDetail.nama_user}
-                                </p>
+                    <div className="text-gray-700 space-y-4 p-1">
+
+                        {/* ================= INFO UTAMA ================= */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <p className="text-[11px] uppercase font-semibold text-gray-500">Nama Karyawan</p>
+                                <p className="text-[14px] font-semibold">{selectedDetail.nama_user}</p>
                             </div>
 
-                            <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 shadow-sm">
-                                <p className="text-[11px] font-medium text-gray-500 uppercase mb-1">
-                                    Waktu Penyelesaian
-                                </p>
-                                <p className="font-medium text-sm sm:text-base text-gray-800">
+                            <div>
+                                <p className="text-[11px] uppercase font-semibold text-gray-500">Waktu Penyelesaian</p>
+                                <p className="text-[14px]">
                                     {selectedDetail.finished_at
                                         ? formatFullDate(selectedDetail.finished_at)
                                         : "Belum selesai"}
@@ -468,81 +510,58 @@ const DetailPenugasan = () => {
                             </div>
                         </div>
 
-                        {/* === Deskripsi Tugas === */}
+                        <div className="border-t border-gray-200"></div>
+
+                        {/* ================= DESKRIPSI TUGAS ================= */}
                         <div>
-                            <p className="text-[11px] font-medium text-gray-500 uppercase mb-1.5">
-                                Deskripsi Tugas
-                            </p>
-                            <div className="p-4 rounded-lg bg-white border border-gray-200 text-sm text-gray-800 leading-relaxed max-h-[250px] overflow-y-auto shadow-sm">
+                            <h3 className="text-[12px] font-semibold text-gray-600 uppercase mb-1">Deskripsi Tugas</h3>
+                            <div className="max-h-[220px] overflow-y-auto text-[13px] whitespace-pre-line">
                                 {selectedDetail.deskripsi?.trim()
                                     ? selectedDetail.deskripsi
                                     : "Tidak ada deskripsi yang diberikan."}
                             </div>
                         </div>
 
-                        {/* === Bukti Foto === */}
+                        <div className="border-t border-gray-200"></div>
+
+                        {/* ================= FOTO ================= */}
                         <div>
-                            <p className="text-[11px] font-medium text-gray-500 uppercase mb-1.5">
-                                Bukti Foto Penyelesaian
-                            </p>
-                            {selectedDetail.bukti_foto ? (
-                                <div className="flex justify-center">
-                                    <img
-                                        src={`${apiUrl}/uploads/img/tugas/${selectedDetail.bukti_foto}`}
-                                        alt="Bukti pekerjaan"
-                                        className="rounded-lg shadow-md border border-gray-200 w-full max-w-sm sm:max-w-xs object-cover transition-transform duration-300 hover:scale-[1.02] cursor-pointer"
-                                        onClick={() => handleViewPhoto(selectedDetail.bukti_foto)}
-                                    />
+                            <h3 className="text-[12px] font-semibold text-gray-600 uppercase mb-2">Bukti Foto</h3>
+
+                            {selectedDetail?.submission?.length > 0 ? (
+                                <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                                    {selectedDetail.submission.map((sub) => (
+                                        <Zoom key={sub.id}>
+                                            <img
+                                                src={`${apiUrl}/uploads/img/tugas/${sub.bukti_foto}`}
+                                                alt="Bukti"
+                                                className="w-full h-24 object-cover rounded-md"
+                                            />
+                                        </Zoom>
+                                    ))}
                                 </div>
                             ) : (
-                                <p className="text-gray-500 text-sm italic">
-                                    Tidak ada bukti foto tersedia.
-                                </p>
+                                <p className="text-gray-500 italic text-[13px]">Tidak ada bukti foto.</p>
                             )}
                         </div>
 
-                        {/* === Status / Aksi === */}
-                        {selectedDetail.finished_at && (
-                            <div className="pt-3 border-t border-gray-100">
-                                {selectedDetail.status === 0 ? (
-                                    <div className="flex flex-col sm:flex-row justify-end sm:gap-3 gap-2">
-                                        <button onClick={() => handleApproval(selectedDetail.id, 1)} className="flex items-center justify-center gap-2 px-4 py-2 text-sm rounded-md bg-green-600 text-white hover:bg-green-700 transition-all shadow-sm w-full sm:w-auto">
-                                            <FontAwesomeIcon icon={faCheck} />
-                                            <span>Setujui</span>
-                                        </button>
+                        <div className="border-t border-gray-200"></div>
 
-                                        <button onClick={() => handleApproval(selectedDetail.id, 2)} className="flex items-center justify-center gap-2 px-4 py-2 text-sm rounded-md bg-red-500 text-white hover:bg-red-600 transition-all shadow-sm w-full sm:w-auto">
-                                            <FontAwesomeIcon icon={faTimes} />
-                                            <span>Tolak</span>
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center justify-center bg-gray-50 text-gray-700 font-medium rounded-md py-2 mt-2 text-sm border border-gray-200 shadow-inner">
-                                        <FontAwesomeIcon
-                                            icon={
-                                                selectedDetail.status === 1
-                                                    ? faCheckCircle
-                                                    : faTimesCircle
-                                            }
-                                            className={`w-4 h-4 mr-2 ${selectedDetail.status === 1
-                                                ? "text-green-600"
-                                                : "text-red-500"
-                                                }`}
-                                        />
-                                        {selectedDetail.status === 1 ? "Penugasan telah disetujui dan diverifikasi" : "Penugasan telah ditolak dan tugas dikembalikan ke karyawan"}
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                        {/* ================= DESKRIPSI PENGAJUAN ================= */}
+                        <div>
+                            <h3 className="text-[12px] font-semibold text-gray-600 uppercase mb-1">Deskripsi Pengajuan</h3>
+                            <p className="text-[13px] whitespace-pre-line">
+                                {selectedDetail.deskripsi_pengajuan?.trim()
+                                    ? selectedDetail.deskripsi_pengajuan
+                                    : "Tidak ada deskripsi pengajuan."}
+                            </p>
+                        </div>
+
                     </div>
                 ) : (
                     <p className="text-gray-500">Tidak ada detail yang dipilih.</p>
                 )}
             </Modal>
-
-
-
-
         </div>
     );
 };

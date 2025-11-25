@@ -323,7 +323,6 @@ const AbsenManual = () => {
                                 </div>
                             )}
 
-
                             <div className="col-span-2">
                                 <label className="block text-sm font-medium mb-1">Status Remark</label>
                                 <Select
@@ -342,7 +341,9 @@ const AbsenManual = () => {
                                                                     ? "Cuti"
                                                                     : formData.remark_status === 5
                                                                         ? "Izin Sakit"
-                                                                        : "-",
+                                                                        : formData.remark_status === 6
+                                                                            ? "Lupa Absen"
+                                                                            : "-",
                                             }
                                             : null
                                     }
@@ -358,18 +359,18 @@ const AbsenManual = () => {
                                         { value: 3, label: "Izin Pulang Awal" },
                                         { value: 4, label: "Cuti" },
                                         { value: 5, label: "Izin Sakit" },
+                                        { value: 6, label: "Lupa Absen" },
                                     ]}
                                     isDisabled={!!absenData?.remark_by && !!formData.remark_status}
                                 />
                             </div>
-
 
                             <div className="col-span-2">
                                 <label className="block text-sm font-medium mb-1">Catatan / Remark</label>
                                 <div>
                                     <textarea
                                         className={`border rounded px-3 py-2 w-full resize-y min-h-[80px] 
-                        ${!!absenData?.remark_by && !!formData.remark ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700"}`}
+                                        ${!!absenData?.remark_by && !!formData.remark ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700"}`}
                                         placeholder="Tuliskan alasan, contoh: sakit, dinas luar, izin datang terlambat..."
                                         value={formData.remark}
                                         onChange={e => setFormData(f => ({ ...f, remark: e.target.value }))}
@@ -383,8 +384,6 @@ const AbsenManual = () => {
                                     )}
                                 </div>
                             </div>
-
-
                         </div>
 
                         <div className="flex justify-between items-center pt-4">
