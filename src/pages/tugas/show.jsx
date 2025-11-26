@@ -3,16 +3,17 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCamera, faChevronDown, faChevronRight, faCircleCheck, faCircleXmark, faHammer, faHourglassHalf, faInfoCircle, faPauseCircle, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faCamera, faChevronDown, faChevronRight, faCircleCheck, faCircleXmark, faExclamationTriangle, faHammer, faHourglassHalf, faInfoCircle, faPauseCircle, faTimes } from "@fortawesome/free-solid-svg-icons";
 import toast from "react-hot-toast";
 import MobileLayout from "../../layouts/mobileLayout";
 import { LoadingSpinner, ErrorState, EmptyState, FooterMainBar } from "../../components";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { formatFullDate } from "../../utils/dateUtils";
 import Webcam from "react-webcam";
-import Zoom from "react-medium-image-zoom";
-import 'react-medium-image-zoom/dist/styles.css';
-
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
+import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
+import "yet-another-react-lightbox/plugins/thumbnails.css";
 
 const DetailTugasMobile = () => {
     const { id } = useParams();
@@ -28,6 +29,15 @@ const DetailTugasMobile = () => {
     const webcamRef = useRef(null);
     const [facingMode, setFacingMode] = useState("environment");
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
+    const [lightboxOpen, setLightboxOpen] = useState(false);
+    const [lightboxImages, setLightboxImages] = useState([]);
+    const [lightboxIndex, setLightboxIndex] = useState(0);
+
+    const openLightbox = (images, index) => {
+        setLightboxImages(images);
+        setLightboxIndex(index);
+        setLightboxOpen(true);
+    };
 
     /* === LOAD DETAIL TUGAS === */
     const loadTaskDetail = () => {
@@ -54,11 +64,16 @@ const DetailTugasMobile = () => {
         loadTaskDetail();
     }, [id]);
 
-    /* === FOTO === */
     const capturePhoto = () => {
+        if (photos.length >= 5) {
+            toast.error("Maksimal 5 foto");
+            return;
+        }
+
         const screenshot = webcamRef.current?.getScreenshot();
         if (screenshot) setPhotos((prev) => [...prev, screenshot]);
     };
+
 
     const switchCamera = () => {
         setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
@@ -77,7 +92,6 @@ const DetailTugasMobile = () => {
             formData.append("foto", blob, `bukti_${i}.jpg`);
         }
 
-        // Lampirkan deskripsi
         formData.append("deskripsi", description);
 
         setUploading(true);
@@ -91,7 +105,7 @@ const DetailTugasMobile = () => {
             const result = await response.json();
 
             if (result.success) {
-                toast.success("Pengumpulan tugas berhasil ✓");
+                toast.success("Pengumpulan tugas berhasil");
                 setPhotos([]);
                 setDescription("");
                 setPhotoConfirmed(false);
@@ -183,31 +197,26 @@ const DetailTugasMobile = () => {
                                 <div className="px-3 pb-3">
                                     <div className="flex justify-between items-center text-[10px]">
                                         <span className="font-semibold text-gray-700">Status</span>
-
                                         {task.is_paused === 1 && (
                                             <span className="flex items-center gap-1 text-amber-600">
                                                 <FontAwesomeIcon icon={faPauseCircle} /> Ditunda
                                             </span>
                                         )}
-
                                         {!task.finished_at && task.status_tugas === 0 && (
                                             <span className="flex items-center gap-1 text-blue-600">
                                                 <FontAwesomeIcon icon={faHammer} /> Belum Dikerjakan
                                             </span>
                                         )}
-
                                         {task.finished_at && task.status_tugas === 0 && (
                                             <span className="flex items-center gap-1 text-gray-600">
                                                 <FontAwesomeIcon icon={faHourglassHalf} /> Menunggu Verifikasi
                                             </span>
                                         )}
-
                                         {task.finished_at && task.status_tugas === 1 && (
                                             <span className="flex items-center gap-1 text-emerald-600">
                                                 <FontAwesomeIcon icon={faCircleCheck} /> Disetujui
                                             </span>
                                         )}
-
                                         {task.finished_at && task.status_tugas === 2 && (
                                             <span className="flex items-center gap-1 text-red-600">
                                                 <FontAwesomeIcon icon={faCircleXmark} /> Revisi Segera
@@ -221,54 +230,57 @@ const DetailTugasMobile = () => {
                                 <div className="p-3 text-[11px] border-t border-gray-100 space-y-5">
 
                                     {/* ========================= INFOBOX STATUS ========================= */}
-                                    <div
-                                        className={`p-2 border rounded-md flex gap-2 text-[10px] ${task.status_tugas === 1
-                                            ? "bg-emerald-50 border-emerald-200"
-                                            : task.status_tugas === 2
-                                                ? "bg-red-50 border-red-200"
-                                                : "bg-blue-50 border-blue-200"
-                                            }`}
-                                    >
-                                        <FontAwesomeIcon
-                                            icon={faInfoCircle}
-                                            className={`mt-0.5 ${task.status_tugas === 1
-                                                ? "text-emerald-600"
+                                    <div className={`p-3 rounded-md border text-[11px] leading-relaxed
+                                            ${task.status_tugas === 1
+                                                ? "bg-emerald-50 border-emerald-200 text-emerald-700"
                                                 : task.status_tugas === 2
-                                                    ? "text-red-500"
-                                                    : "text-blue-500"
-                                                }`}
-                                        />
+                                                    ? "bg-red-50 border-red-200 text-red-700"
+                                                    : "bg-blue-50 border-blue-200 text-blue-700"
+                                            }
+    `}
+                                    >
+                                        {/* Header Status */}
+                                        <div className="flex items-start gap-2 mb-2">
+                                            <FontAwesomeIcon
+                                                icon={faInfoCircle}
+                                                className={`mt-0.5 text-[12px] ${task.status_tugas === 1
+                                                    ? "text-emerald-600"
+                                                    : task.status_tugas === 2
+                                                        ? "text-red-500"
+                                                        : "text-blue-500"
+                                                    }`}
+                                            />
 
-                                        <div>
-                                            <h4 className="font-semibold mb-1">
+                                            <h4 className="font-semibold text-[12px]">
                                                 {task.status_tugas === 1 && "Tugas Disetujui"}
                                                 {task.status_tugas === 2 && "Tugas Perlu Revisi"}
                                                 {task.status_tugas === 0 && task.finished_at && "Menunggu Verifikasi"}
                                                 {!task.finished_at && "Unggah Bukti Penyelesaian"}
                                             </h4>
-
-                                            <p className="text-gray-700 leading-snug">
-                                                {task.status_tugas === 2
-                                                    ? "Tugas ditolak. Silakan kirim ulang foto revisi disertai perbaikan."
-                                                    : task.status_tugas === 1
-                                                        ? "Tugas telah disetujui oleh kepala divisi."
-                                                        : task.finished_at
-                                                            ? "Tugas sudah dikirim dan sedang menunggu verifikasi."
-                                                            : "Kirim bukti hasil pekerjaan sebelum deadline."}
-                                            </p>
                                         </div>
+
+                                        {/* Penjelasan Singkat */}
+                                        <p className="mb-2">
+                                            {task.status_tugas === 2
+                                                ? "Tugas ditolak. Silakan kirim ulang bukti dengan perbaikan yang diperlukan."
+                                                : task.status_tugas === 1
+                                                    ? "Tugas telah disetujui oleh kepala divisi."
+                                                    : task.finished_at
+                                                        ? "Tugas sudah dikirim dan sedang menunggu verifikasi."
+                                                        : "Kirim bukti hasil pekerjaan sebelum deadline."}
+                                        </p>
+
+                                        {/* Alasan Penolakan (inline, tidak ada card tambahan) */}
+                                        {task.status_tugas === 2 && task.deskripsi_penolakan && (
+                                            <div className="mt-2 pl-4 border-l-2 border-red-300">
+                                                <p className="font-semibold mb-1 text-[11px]">Alasan Penolakan</p>
+                                                <p className="text-[10px] whitespace-pre-wrap break-all">
+                                                    {task.deskripsi_penolakan}
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
 
-
-                                    {/* ========================= DESKRIPSI PENOLAKAN ========================= */}
-                                    {task.status_tugas === 2 && task.deskripsi_penolakan && (
-                                        <div className="p-2 bg-red-50 border border-red-200 rounded-md">
-                                            <p className="font-semibold text-red-700 mb-1">Alasan Penolakan:</p>
-                                            <p className="text-[10px] text-red-700 leading-snug whitespace-pre-wrap">
-                                                {task.deskripsi_penolakan}
-                                            </p>
-                                        </div>
-                                    )}
 
                                     {/* ========================= FOTO LAMA ========================= */}
                                     {task.submission?.length > 0 && photos.length === 0 && (
@@ -280,23 +292,27 @@ const DetailTugasMobile = () => {
                                             </h5>
 
                                             <div className="grid grid-cols-3 gap-2">
-                                                {task.submission.map((file, i) => (
-                                                    <Zoom>
-                                                        <img
-                                                            key={i}
-                                                            src={`${apiUrl}/uploads/img/tugas/${file}`}
+                                                {task.submission.map((file, i) => {
+                                                    const imageUrl = `${apiUrl}/uploads/img/tugas/${file}`;
+                                                    return (
+                                                        <img key={i} src={imageUrl}
+                                                            onClick={() =>
+                                                                openLightbox(
+                                                                    task.submission.map(f => ({ src: `${apiUrl}/uploads/img/tugas/${f}` })),
+                                                                    i
+                                                                )
+                                                            }
                                                             className="w-full h-24 object-cover rounded-md border cursor-pointer"
                                                         />
-                                                    </Zoom>
-
-                                                ))}
+                                                    );
+                                                })}
                                             </div>
 
-                                            {/* Detail Submisi Lama */}
+
                                             {task.deskripsi_pengajuan && (
                                                 <div className="mt-3 p-2 bg-gray-50 border rounded-md">
-                                                    <p className="font-semibold text-gray-700 mb-1">Deskripsi Pengumpulan Lama:</p>
-                                                    <p className="text-[10px] text-gray-600 leading-snug whitespace-pre-wrap">
+                                                    <p className="font-semibold text-gray-700 mb-1">Deskripsi Pengumpulan :</p>
+                                                    <p className="text-[10px] text-gray-600 leading-snug whitespace-pre-wrap break-words break-all">
                                                         {task.deskripsi_pengajuan}
                                                     </p>
                                                 </div>
@@ -309,60 +325,51 @@ const DetailTugasMobile = () => {
                                     {isCameraOpen && (
                                         <div className="p-2 border rounded-md bg-gray-50">
                                             <div className="w-full aspect-[4/3] bg-black rounded-md overflow-hidden">
-                                                <Webcam
-                                                    ref={webcamRef}
-                                                    screenshotFormat="image/jpeg"
-                                                    videoConstraints={{ facingMode }}
-                                                    className="w-full h-full object-cover"
-                                                />
+                                                <Webcam ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode }} className="w-full h-full object-cover" />
                                             </div>
 
                                             <div className="flex gap-2 mt-3">
-                                                <button
-                                                    onClick={switchCamera}
-                                                    className="flex-1 py-2 bg-gray-200 rounded-md"
-                                                >
+                                                <button onClick={switchCamera} className="flex-1 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition">
                                                     Ganti Kamera
                                                 </button>
 
-                                                <button
-                                                    onClick={() => {
-                                                        capturePhoto();      // ⬅ foto ditambahkan ke array
-                                                    }}
-                                                    className="flex-1 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md"
-                                                >
+                                                <button onClick={() => { capturePhoto(); }} className="flex-1 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">
                                                     Ambil Foto
                                                 </button>
                                             </div>
 
-                                            <button
-                                                onClick={() => setIsCameraOpen(false)}
-                                                className="w-full mt-3 py-2 bg-gray-100 rounded-md"
-                                            >
+                                            <button onClick={() => setIsCameraOpen(false)} className="w-full mt-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition">
                                                 Selesai Ambil Foto
                                             </button>
                                         </div>
                                     )}
 
 
+
                                     {/* ========================= PREVIEW FOTO BARU ========================= */}
                                     {photos.length > 0 && (
                                         <div>
-                                            <h5 className="font-semibold text-gray-700 mb-2">
-                                                {task.status_tugas === 2 ? "Foto Baru (Revisi)" : "Foto Baru"}
-                                            </h5>
+                                            <div className="flex justify-between items-center mb-2">
+                                                <h5 className="font-semibold text-gray-700">
+                                                    {task.status_tugas === 2 ? "Foto Baru (Revisi)" : "Foto Baru"}
+                                                </h5>
+
+                                                {/* === Indikator jumlah foto === */}
+                                                <span className="text-[10px] text-gray-600">
+                                                    {photos.length}/5 foto
+                                                </span>
+                                            </div>
 
                                             <div className="grid grid-cols-3 gap-2">
                                                 {photos.map((img, i) => (
                                                     <div key={i} className="relative">
-                                                        <Zoom>
-                                                            <img src={img} className="w-full h-24 object-cover rounded-md border cursor-pointer" />
-                                                        </Zoom>
+                                                        <img src={img} onClick={() => openLightbox(photos.map(p => ({ src: p })), i)} className="w-full h-24 object-cover rounded-md border cursor-pointer" />
 
-
-                                                        {/* Tombol X */}
-                                                        <button onClick={() => { const updated = photos.filter((_, index) => index !== i); setPhotos(updated); }}
-                                                            className="absolute top-1 right-1 bg-black/50 hover:bg-black/70 text-white w-5 h-5 flex items-center justify-center rounded-full"
+                                                        <button
+                                                            onClick={() =>
+                                                                setPhotos(prev => prev.filter((_, index) => index !== i))
+                                                            }
+                                                            className="absolute top-1 right-1 bg-black/50 text-white w-5 h-5 flex items-center justify-center rounded-full"
                                                         >
                                                             <FontAwesomeIcon icon={faTimes} className="text-[10px]" />
                                                         </button>
@@ -371,6 +378,7 @@ const DetailTugasMobile = () => {
                                             </div>
                                         </div>
                                     )}
+
 
 
                                     {/* ========================= DESKRIPSI + SUBMIT ========================= */}
@@ -398,14 +406,14 @@ const DetailTugasMobile = () => {
                                             <button
                                                 onClick={handleUpload}
                                                 disabled={uploading}
-                                                className={`w-full mt-3 py-2 rounded-md text-white ${uploading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
+                                                className={`w-full mt-3 py-2 rounded-md font-medium text-white text-lg ${uploading ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"
                                                     }`}
                                             >
                                                 {uploading
                                                     ? "Mengirim..."
                                                     : task.status_tugas === 2
-                                                        ? "Kirim Revisi ke Kadiv"
-                                                        : "Kirim Ke Kadiv"}
+                                                        ? "Kirim Revisi Pekerjaan"
+                                                        : "Kirim Hasil Pekerjaan"}
                                             </button>
                                         </div>
                                     )}
@@ -435,6 +443,8 @@ const DetailTugasMobile = () => {
                     </>
                 )}
             </div>
+            <Lightbox open={lightboxOpen} close={() => setLightboxOpen(false)} slides={lightboxImages} index={lightboxIndex} plugins={[Thumbnails]} />
+
             <FooterMainBar />
         </MobileLayout>
     );

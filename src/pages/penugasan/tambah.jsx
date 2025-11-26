@@ -197,55 +197,76 @@ const TambahTugas = () => {
                 </div>
 
                 <div className="pt-5">
-                    <div className="flex items-center justify-between mb-4">
+                    {/* HEADER */}
+                    <div className="flex items-center justify-between mb-5">
                         <div>
                             <h2 className="text-xl font-semibold text-gray-900">Daftar Penugasan Pekerja</h2>
                             <p className="text-sm text-gray-600">
                                 Kelola daftar pekerja dan tugas dengan mudah, termasuk menyalin data untuk mempercepat proses input.
                             </p>
                         </div>
-                        <button type="button" onClick={handleAddWorker} className="bg-green-600 hover:bg-green-700 text-white px-3.5 py-2 rounded-md text-sm flex items-center gap-2 shadow-md transition-all hover:scale-105">
+
+                        <button
+                            type="button"
+                            onClick={handleAddWorker}
+                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 shadow transition-all hover:scale-105"
+                        >
                             <FontAwesomeIcon icon={faPlus} />
                             Tambah Baru
                         </button>
                     </div>
-                    <div className="max-h-[70vh] overflow-y-auto pr-1 scrollbar-green space-y-3">
+
+                    {/* LIST CONTAINER */}
+                    <div className="max-h-[70vh] overflow-y-auto pr-1 space-y-4 scrollbar-green">
+
                         {workerList.map((worker, index) => (
-                            <div key={index} className="relative border border-green-400/40 rounded-lg bg-white/80 shadow-sm hover:shadow-md transition-all duration-200">
-                                <div className="flex justify-between items-center px-3 py-2 border-b border-green-300/40 bg-green-50">
+                            <div
+                                key={index}
+                                className="border border-green-500/50 bg-white rounded-xl shadow-sm hover:shadow-md transition-all p-4"
+                            >
+                                {/* CARD HEADER */}
+                                <div className="flex justify-between items-center pb-3 border-b border-green-200">
                                     <h3 className="text-sm font-semibold text-green-700">
                                         Penugasan {index + 1}
                                     </h3>
+
                                     <div className="flex items-center gap-2">
-                                        <button type="button" onClick={() => {
-                                            const copied = { ...worker };
-                                            setWorkerList((prev) => {
-                                                const updated = [...prev];
-                                                updated.splice(index + 1, 0, copied);
-                                                return updated;
-                                            });
-                                            toast.success("Penugasan berhasil disalin");
-                                        }}
-                                            className="flex items-center justify-center gap-1 px-3 py-1 rounded text-[10px] font-medium text-white bg-blue-500 hover:bg-blue-600 transition-all shadow-sm"
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const copied = { ...worker };
+                                                setWorkerList((prev) => {
+                                                    const updated = [...prev];
+                                                    updated.splice(index + 1, 0, copied);
+                                                    return updated;
+                                                });
+                                                toast.success("Penugasan berhasil disalin");
+                                            }}
+                                            className="px-3 py-1 rounded-md bg-blue-500 hover:bg-blue-600 text-[11px] text-white flex items-center gap-1 shadow-sm transition"
                                         >
                                             <FontAwesomeIcon icon={faCopy} className="w-3 h-3" />
-                                            <span>Salin</span>
+                                            Salin
                                         </button>
 
                                         {workerList.length > 1 && (
-                                            <button type="button" onClick={() => handleRemoveWorker(index)} className="flex items-center justify-center gap-1 px-3 py-1 rounded text-[10px] font-medium text-white bg-red-500 hover:bg-red-600 transition-all shadow-sm">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveWorker(index)}
+                                                className="px-3 py-1 rounded-md bg-red-500 hover:bg-red-600 text-[11px] text-white flex items-center gap-1 shadow-sm transition"
+                                            >
                                                 <FontAwesomeIcon icon={faTrash} className="w-3 h-3" />
-                                                <span>Hapus</span>
+                                                Hapus
                                             </button>
                                         )}
                                     </div>
                                 </div>
 
-                                <div className="divide-y divide-gray-200 text-sm">
-                                    <div className="grid grid-cols-3 sm:grid-cols-4 items-center px-3 py-1.5">
-                                        <span className="text-gray-700 font-medium col-span-1">
-                                            Divisi
-                                        </span>
+                                {/* CARD CONTENT */}
+                                <div className="mt-3 space-y-4 text-sm">
+
+                                    {/* DIVISI */}
+                                    <div className="grid grid-cols-3 sm:grid-cols-4 items-center gap-3">
+                                        <label className="font-medium text-gray-700">Divisi</label>
                                         <div className="col-span-2 sm:col-span-3">
                                             <Select
                                                 value={divisiList
@@ -270,15 +291,15 @@ const TambahTugas = () => {
                                                     .map((div) => ({ value: div.id, label: div.nama }))}
                                                 placeholder="Pilih Divisi..."
                                                 classNamePrefix="react-select"
-                                                required
                                                 menuPortalTarget={document.body}
+                                                required
                                                 styles={{
                                                     control: (base) => ({
                                                         ...base,
-                                                        borderColor: "#d1d5db",
-                                                        borderRadius: "0.375rem",
-                                                        minHeight: "32px",
-                                                        fontSize: "0.85rem",
+                                                        borderColor: "#86efac",
+                                                        minHeight: "36px",
+                                                        fontSize: "0.88rem",
+                                                        borderRadius: "0.5rem",
                                                         boxShadow: "none",
                                                         "&:hover": { borderColor: "#16a34a" },
                                                     }),
@@ -291,11 +312,9 @@ const TambahTugas = () => {
                                         </div>
                                     </div>
 
-                                    {/* Karyawan */}
-                                    <div className="grid grid-cols-3 sm:grid-cols-4 items-center px-3 py-1.5">
-                                        <span className="text-gray-700 font-medium col-span-1">
-                                            Karyawan
-                                        </span>
+                                    {/* KARYAWAN */}
+                                    <div className="grid grid-cols-3 sm:grid-cols-4 items-center gap-3">
+                                        <label className="font-medium text-gray-700">Karyawan</label>
                                         <div className="col-span-2 sm:col-span-3">
                                             <Select
                                                 value={(worker.filteredUsers || [])
@@ -325,11 +344,11 @@ const TambahTugas = () => {
                                                 styles={{
                                                     control: (base, state) => ({
                                                         ...base,
-                                                        borderColor: state.isDisabled ? "#e5e7eb" : "#d1d5db",
-                                                        borderRadius: "0.375rem",
-                                                        minHeight: "32px",
-                                                        fontSize: "0.85rem",
+                                                        borderColor: state.isDisabled ? "#e5e7eb" : "#86efac",
+                                                        minHeight: "36px",
+                                                        fontSize: "0.88rem",
                                                         backgroundColor: state.isDisabled ? "#f3f4f6" : "white",
+                                                        borderRadius: "0.5rem",
                                                         boxShadow: "none",
                                                         "&:hover": { borderColor: "#16a34a" },
                                                     }),
@@ -342,24 +361,30 @@ const TambahTugas = () => {
                                         </div>
                                     </div>
 
-                                    {/* Deskripsi */}
-                                    <div className="grid grid-cols-3 sm:grid-cols-4 items-start px-3 py-1.5">
-                                        <span className="text-gray-700 font-medium col-span-1">
+                                    {/* DESKRIPSI */}
+                                    <div className="grid grid-cols-3 sm:grid-cols-4 items-start gap-3">
+                                        <label className="font-medium text-gray-700">
                                             Deskripsi Pekerjaan
-                                        </span>
+                                        </label>
                                         <div className="col-span-2 sm:col-span-3">
-                                            <textarea placeholder="Tuliskan deskripsi penugasan..." value={worker.deskripsi} onChange={(e) => handleWorkerChange(index, "deskripsi", e.target.value)} rows="3"
-                                                className="w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-green-500 outline-none resize-none"
+                                            <textarea
+                                                placeholder="Tuliskan deskripsi penugasan..."
+                                                value={worker.deskripsi}
+                                                onChange={(e) => handleWorkerChange(index, "deskripsi", e.target.value)}
+                                                rows="3"
+                                                className="w-full border border-green-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none resize-none"
                                                 required
                                             />
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
                         ))}
-                    </div>
 
+                    </div>
                 </div>
+
 
                 <div className="flex justify-between space-x-4 pt-4">
                     <button type="button" onClick={handleBack} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center shadow">

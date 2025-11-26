@@ -205,7 +205,6 @@ const DataAbsensi = () => {
         })}
       </div>
 
-      {/* Pagination Component */}
       <Pagination currentPage={currentPage} totalItems={filteredAbsenData.length} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} />
     </div>
   );

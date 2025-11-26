@@ -143,22 +143,13 @@ const DetailAbsensi = () => {
   const handleStatusUpdate = async (id_absen) => {
     const selectedAbsen = absen.find((item) => item.id_absen === id_absen);
     const conditions = calculateConditions(selectedAbsen);
-
-    const mappedConditions = {
-      night_shift: conditions.night_shift,
-      transport: conditions.transport_pribadi || conditions.transport_umum,
-    };
-
     try {
       setIsLoading(true);
 
       const response = await fetchWithJwt(`${apiUrl}/absen/status/${id_absen}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          status: 1,
-          condition: mappedConditions,
-        }),
+        body: JSON.stringify({ status: 1, }),
       });
 
       if (!response.ok) throw new Error("Gagal memperbarui status");
@@ -185,19 +176,10 @@ const DetailAbsensi = () => {
 
       Swal.fire({
         title: "Absensi Disetujui",
-        html: `
-        <div style="text-align:left; color:#374151; font-size:14px; line-height:1.5;">
-          <p style="margin-bottom:6px;">Karyawan ini berhak mendapatkan tunjangan berikut:</p>
-          <ul style="margin-left:16px; margin-top:4px;">
-            ${tunjanganList.map((t) => `<li>${t}</li>`).join("")}
-          </ul>
-        </div>
-      `,
+        text: "Absensi karyawan telah disetujui.",
         icon: "success",
         confirmButtonText: "OK",
         confirmButtonColor: "#10B981",
-        showClass: { popup: "animate__animated animate__fadeInDown" },
-        hideClass: { popup: "animate__animated animate__fadeOutUp" },
       });
 
       await fetchAbsenData();
@@ -211,8 +193,6 @@ const DetailAbsensi = () => {
       setIsLoading(false);
     }
   };
-
-
 
   const formatDistance = (meters) => {
     if (meters == null) return "-";
@@ -279,18 +259,14 @@ const DetailAbsensi = () => {
     const locEnd = +absen.id_lokasi_selesai;
     const statusKendaraan = +absen.status_kendaraan;
 
-    const isAllowed = !excludedLocations.includes(locStart) && !excludedLocations.includes(locEnd);
+    const transportAllowed = !(excludedLocations.includes(locStart) && excludedLocations.includes(locEnd));
 
     return {
-      night_shift:
-        nightShiftIds.includes(idShift) &&
-        (!excludedLocations.includes(locStart) || !excludedLocations.includes(locEnd)) || false,
-
-      transport_pribadi: statusKendaraan === 1 && isAllowed || false,
-      transport_umum: statusKendaraan === 3 && isAllowed || false,
+      night_shift: nightShiftIds.includes(idShift),
+      transport_pribadi: statusKendaraan === 1 && transportAllowed,
+      transport_umum: statusKendaraan === 3 && transportAllowed,
     };
   };
-
 
 
   return (
@@ -486,12 +462,7 @@ const DetailAbsensi = () => {
                     </div>
                     <div>
                       <p className="text-[11px] text-gray-500 font-medium uppercase">Terlambat</p>
-                      <p
-                        className={`text-[13px] font-semibold ${item.keterlambatan && item.keterlambatan !== "00:00"
-                          ? "text-red-600"
-                          : "text-gray-700"
-                          }`}
-                      >
+                      <p className={`text-[13px] font-semibold ${item.keterlambatan && item.keterlambatan !== "00:00" ? "text-red-600" : "text-gray-700"}`}>
                         {item.keterlambatan || "--:--"}
                       </p>
                     </div>
@@ -591,38 +562,46 @@ const DetailAbsensi = () => {
               </section>
 
               {/* 🔸 SECTION 3 — Tunjangan & Shift */}
-              {(calculateConditions(selectedAbsen)?.transport || calculateConditions(selectedAbsen)?.night_shift) && (
-                <section className="p-5 border-b border-gray-100">
-                  <h4 className="flex items-center gap-2 text-base font-semibold text-green-700 mb-3">
-                    <FontAwesomeIcon icon={faMoneyBillWave} className="text-green-500" />
-                    Informasi Tunjangan & Shift
-                  </h4>
+              {(() => {
+                const conditions = calculateConditions(selectedAbsen);
 
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    {calculateConditions(selectedAbsen).transport_pribadi && (
-                      <div className="flex items-center gap-2 p-3 bg-green-50 rounded border border-green-100 text-sm">
-                        <FontAwesomeIcon icon={faMotorcycle} className="text-green-500" />
-                        <span className="font-medium">Tunjangan Transportasi (Kendaraan Pribadi)</span>
+                if (conditions.transport_pribadi || conditions.transport_umum || conditions.night_shift) {
+                  return (
+                    <section className="p-5 border-b border-gray-100">
+                      <h4 className="flex items-center gap-2 text-base font-semibold text-green-700 mb-3">
+                        <FontAwesomeIcon icon={faMoneyBillWave} className="text-green-500" />
+                        Informasi Tunjangan & Shift
+                      </h4>
+
+                      <div className="grid sm:grid-cols-2 gap-3">
+                        {conditions.transport_pribadi && (
+                          <div className="flex items-center gap-2 p-3 bg-green-50 rounded border border-green-100 text-sm">
+                            <FontAwesomeIcon icon={faMotorcycle} className="text-green-500" />
+                            <span className="font-medium">Tunjangan Transportasi (Kendaraan Pribadi)</span>
+                          </div>
+                        )}
+
+                        {conditions.transport_umum && (
+                          <div className="flex items-center gap-2 p-3 bg-blue-50 rounded border border-blue-100 text-sm">
+                            <FontAwesomeIcon icon={faBus} className="text-blue-500" />
+                            <span className="font-medium">Tunjangan Transportasi (Kendaraan Umum)</span>
+                          </div>
+                        )}
+
+                        {conditions.night_shift && (
+                          <div className="flex items-center gap-2 p-3 bg-green-50 rounded border border-green-100 text-sm">
+                            <FontAwesomeIcon icon={faMoon} className="text-green-500" />
+                            <span className="font-medium">Mendapat Tunjangan Shift Malam</span>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </section>
+                  );
+                }
 
-                    {calculateConditions(selectedAbsen).transport_umum && (
-                      <div className="flex items-center gap-2 p-3 bg-blue-50 rounded border border-blue-100 text-sm">
-                        <FontAwesomeIcon icon={faBus} className="text-blue-500" />
-                        <span className="font-medium">Tunjangan Transportasi (Kendaraan Umum)</span>
-                      </div>
-                    )}
+                return null;
+              })()}
 
-                    {calculateConditions(selectedAbsen).night_shift && (
-                      <div className="flex items-center gap-2 p-3 bg-green-50 rounded border border-green-100 text-sm">
-                        <FontAwesomeIcon icon={faMoon} className="text-green-500" />
-                        <span className="font-medium">Mendapat Tunjangan Shift Malam</span>
-                      </div>
-                    )}
-                  </div>
-
-                </section>
-              )}
 
 
               {/* 🔸 SECTION 4 — Absen Masuk & Pulang */}

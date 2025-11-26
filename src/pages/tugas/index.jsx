@@ -45,7 +45,7 @@ const Tugas = () => {
 
     const getStatusLabel = (task) => {
         if (task.is_paused === 1) return "Ditunda";
-        if (task.status_tugas === 2) return "Ditolak";
+        if (task.status_tugas === 2) return "Ditolak, Revisi Segera !";
         if (task.status_tugas === 0 && task.finished_at) return "Pending";
         if (task.status_tugas === 0 && !task.finished_at) return "Belum Selesai";
         return "Selesai";
@@ -61,9 +61,9 @@ const Tugas = () => {
 
     const getCategoryColor = (category) => {
         const c = category?.toLowerCase();
-        if (c === "urgent") return "bg-red-100 text-red-700";
-        if (c === "daily") return "bg-green-100 text-green-700";
-        return "bg-gray-100 text-gray-700";
+        if (c === "urgent") return "bg-red-600 text-white";
+        if (c === "daily") return "bg-green-600 text-white";
+        return "bg-gray-600 text-white";
     };
 
     const filteredTasks = tasks.filter((t) => {
@@ -112,12 +112,11 @@ const Tugas = () => {
                         </div>
                     </div>
 
-                    <span className={`text-[8.5px] px-2 py-0.5 rounded-full font-medium tracking-wide whitespace-nowrap uppercase ${getCategoryColor(t.category)}`}>
+                    <span className={`text-[8.5px] px-2 py-0.5 rounded font-medium tracking-wide whitespace-nowrap uppercase ${getCategoryColor(t.category)}`}>
                         {t.category}
                     </span>
                 </div>
 
-                {/* Info Detail */}
                 <div className="text-[9.5px] text-gray-700 space-y-1">
                     <div className="flex items-center gap-1.5">
                         <FontAwesomeIcon icon={faClock} className="text-[9px] text-green-500" />
@@ -126,7 +125,6 @@ const Tugas = () => {
                         </span>
                     </div>
 
-                    {/* Info Tenggat - hanya tampil jika belum selesai */}
                     {t.status_tugas !== 1 && (
                         <div className="flex items-center gap-1.5">
                             <FontAwesomeIcon icon={faCalendarAlt} className="text-[9px] text-green-500" />
@@ -136,21 +134,6 @@ const Tugas = () => {
                                     ({deadlineInfo})
                                 </span>
                             </span>
-                        </div>
-                    )}
-
-
-                    {/* ✅ Jika Ditolak → tampilkan kotak revisi */}
-                    {t.status_tugas === 2 && (
-                        <div className="mt-2 p-2 bg-gray-50 border border-gray-200 rounded-md">
-                            <div className="flex items-start gap-2">
-                                <FontAwesomeIcon icon={faClipboardList} className="text-gray-500 text-[10px] mt-[2px]" />
-                                <div className="flex-1">
-                                    <p className="text-[8.5px] text-gray-700 font-medium leading-snug">
-                                        Tugas ini telah ditolak. Harap segera melakukan revisi agar dapat disetujui kembali.
-                                    </p>
-                                </div>
-                            </div>
                         </div>
                     )}
 

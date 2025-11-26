@@ -59,65 +59,60 @@ const Lembur = () => {
     return true;
   };
 
-const showConfirmLembur = async () => {
-  const timeStartLabel = getTimeLabel(lemburData.jamMulai);
-  const timeEndLabel = getTimeLabel(lemburData.jamSelesai);
+  const showConfirmLembur = async () => {
+    const timeStartLabel = getTimeLabel(lemburData.jamMulai);
+    const timeEndLabel = getTimeLabel(lemburData.jamSelesai);
 
-  return Swal.fire({
-    title: `<strong>Konfirmasi Pengajuan</strong>`,
-
-    html: `
+    return Swal.fire({
+      title: "<strong>Konfirmasi Pengajuan Lembur</strong>",
+      html: `
       <div style="
         text-align:left;
         font-size:13px;
-        line-height:1.45;
-        color:#1f2937;
+        line-height:1.55;
+        color:#374151;
       ">
-        
-        <div style="margin-bottom:6px; font-weight:600;">
-          ${formatFullDate(lemburData.tanggal)}
+
+        <div style="margin-bottom:12px;">
+          <div style="font-weight:600; margin-bottom:2px;">Tanggal</div>
+          <div>${formatFullDate(lemburData.tanggal)}</div>
         </div>
 
-        <div style="
-          background:#f3f4f6;
-          padding:8px;
-          border-radius:6px;
-          border:1px solid #e5e7eb;
-          margin-bottom:8px;
-        ">
+        <div style="margin-bottom:12px;">
           <div style="font-weight:600; margin-bottom:2px;">Waktu</div>
           <div>
-            ${lemburData.jamMulai} (${timeStartLabel}) → 
-            ${lemburData.jamSelesai} (${timeEndLabel})
+            Mulai: ${lemburData.jamMulai} (${timeStartLabel}) <br/>
+            Selesai: ${lemburData.jamSelesai} (${timeEndLabel})
           </div>
         </div>
 
-        <div style="margin-bottom:4px;">
-          <b>Lokasi:</b> ${lemburData.lokasi}
+        <div style="margin-bottom:12px;">
+          <div style="font-weight:600; margin-bottom:2px;">Lokasi</div>
+          <div>${lemburData.lokasi}</div>
         </div>
 
-        <div style="margin-bottom:10px;">
-          <b>Tugas:</b> “${lemburData.tugas}”
+        <div style="margin-bottom:18px;">
+          <div style="font-weight:600; margin-bottom:2px;">Tugas</div>
+          <div>“${lemburData.tugas}”</div>
         </div>
 
-        <div style="font-size:12px; color:#4b5563;">
-          Periksa kembali sebelum mengirim.
-        </div>
       </div>
     `,
 
-    icon: "question",
+      icon: "question",
 
-    showCancelButton: true,
-    confirmButtonText: "Kirim",
-    cancelButtonText: "Cek Lagi",
+      showCancelButton: true,
+      confirmButtonText: "Kirim Pengajuan",
+      cancelButtonText: "Periksa Lagi",
 
-    confirmButtonColor: "#2563eb",
-    cancelButtonColor: "#6b7280",
+      confirmButtonColor: "#2563eb",
+      cancelButtonColor: "#9ca3af",
+      reverseButtons: true,
+    });
+  };
 
-    reverseButtons: true,
-  });
-};
+
+
 
 
   const handleSubmit = async (e) => {

@@ -98,7 +98,7 @@ const TaskCardSlider = () => {
             {/* Header sejajar */}
             <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-semibold">Penugasan</h3>
-                <button onClick={() => navigate("/tugas")} className="flex items-center gap-1 text-[13px] font-medium text-green-600 hover:text-green-700 transition-all">
+                <button onClick={() => navigate("/tugas")} className="flex items-center gap-1 text-[13px] font-medium text-green-600 hover:text-green-700 hover:underline transition-all">
                     <span>Lihat Semua</span>
                     <FontAwesomeIcon icon={faArrowRight} className="w-3 h-3" />
                 </button>

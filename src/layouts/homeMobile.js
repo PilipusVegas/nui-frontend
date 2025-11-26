@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Swal from "sweetalert2";
-import { faCalendarCheck, faBell, faHistory, faSignOutAlt, faMapMarkerAlt, faArrowRight, faPenFancy, faPeopleGroup, faClockFour, faTasks, } from "@fortawesome/free-solid-svg-icons";
+import { faCalendarCheck, faBell, faHistory, faSignOutAlt, faMapMarkerAlt, faPenFancy, faPeopleGroup, faClockFour, faTasks, } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../utils/jwtHelper";
-import { FooterMainBar, LoadingSpinner, EmptyState, ErrorState, TaskCardSlider } from "../components";
+import { FooterMainBar, TaskCardSlider } from "../components";
 
 const HomeMobile = ({ handleLogout }) => {
   const navigate = useNavigate();
@@ -20,15 +20,18 @@ const HomeMobile = ({ handleLogout }) => {
     const fetchAttendance = async () => {
       try {
         const response = await fetchWithJwt(`${apiUrl}/absen/riwayat/${idUser}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch attendance data");
-        }
-        const data = await response.json();
-        setAttendanceData(data);
+        if (!response.ok) throw new Error("Failed to fetch attendance data");
+
+        const json = await response.json();
+        console.log("RIWAYAT ABSEN:", json);
+
+        // Pastikan selalu array
+        setAttendanceData(Array.isArray(json.data) ? json.data : []);
       } catch (error) {
         console.error("Error fetching attendance:", error);
       }
     };
+
     if (idUser) fetchAttendance();
   }, [apiUrl]);
 

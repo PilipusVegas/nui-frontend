@@ -90,7 +90,7 @@ const RiwayatLembur = () => {
             ) : isLoading ? (
                 <LoadingSpinner text="Memuat data lembur..." />
             ) : filteredData.length === 0 ? (
-                <ErrorState icon={faTriangleExclamation} text="Tidak ada permohonan lembur." />
+                <EmptyState icon={faTriangleExclamation} text="Tidak ada riwayat lembur pada periode ini."/>
             ) : (
                 <div className="overflow-x-auto rounded-lg shadow-md border border-gray-200">
                     <table className="min-w-full text-sm border-collapse">
@@ -102,7 +102,6 @@ const RiwayatLembur = () => {
                             </tr>
                         </thead>
 
-                        {/* Body */}
                         <tbody>
                             {paginatedData.map((user, idx) => (
                                 <React.Fragment key={user.id_user}>
@@ -122,7 +121,6 @@ const RiwayatLembur = () => {
                                             <td colSpan={6} className="p-5">
                                                 <div className="overflow-x-auto">
                                                     <table className="min-w-full text-xs border-collapse">
-                                                        {/* Detail Header */}
                                                         <thead className="bg-green-500 text-white font-semibold uppercase">
                                                             <tr>
                                                                 {["Tanggal", "Lokasi", "Jam", "Total Jam", "Keterangan", "Status"].map((h, idx, arr) => (
