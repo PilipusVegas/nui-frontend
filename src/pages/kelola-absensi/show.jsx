@@ -317,9 +317,7 @@ const DetailKelolaPresensi = () => {
             lembur, serta catatan tambahan dari HRD atau sistem absensi otomatis.
           </p>
 
-          {/* Penjelasan Fitur */}
           <div className="space-y-3">
-            {/* Unduh Excel */}
             <div className="flex items-start gap-2 border border-gray-100 p-3 rounded-lg">
               <FontAwesomeIcon icon={faDownload} className="text-blue-500 mt-1" />
               <p>
@@ -330,7 +328,6 @@ const DetailKelolaPresensi = () => {
               </p>
             </div>
 
-            {/* Filter Tanggal */}
             <div className="flex items-start gap-2 border border-gray-100 p-3 rounded-lg">
               <FontAwesomeIcon icon={faClock} className="text-green-500 mt-1" />
               <p>
@@ -341,7 +338,6 @@ const DetailKelolaPresensi = () => {
               </p>
             </div>
 
-            {/* Hari Minggu dan Non-Kerja */}
             <div className="flex items-start gap-2 border border-gray-100 p-3 rounded-lg">
               <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-500 mt-1" />
               <p>
@@ -354,7 +350,6 @@ const DetailKelolaPresensi = () => {
               </p>
             </div>
 
-            {/* Statistik Ringkas */}
             <div className="flex items-start gap-2 border border-gray-100 p-3 rounded-lg">
               <FontAwesomeIcon icon={faUserCheck} className="text-amber-500 mt-1" />
               <p>
@@ -365,7 +360,6 @@ const DetailKelolaPresensi = () => {
               </p>
             </div>
 
-            {/* Kolom Remark */}
             <div className="flex items-start gap-4 border border-gray-100 p-3 rounded-lg">
               <FontAwesomeIcon icon={faInfo} className="text-purple-500 mt-1" />
               <p>
@@ -489,35 +483,55 @@ const DetailKelolaPresensi = () => {
 
               <div className="divide-y divide-gray-200 max-h-[320px] overflow-y-auto scrollbar-green">
                 {overtimeModal.list.map((item, index) => (
-                  <div key={index} className={`px-4 py-2 transition ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100`}>
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                  <div key={index} className={`px-4 py-3 transition ${index % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-gray-100`}>
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
 
-                      <p className="text-gray-700 text-[13px] font-medium sm:w-1/3">
-                        Pengajuan Ke-{index + 1}
-                      </p>
+                      <div className="sm:w-1/3">
+                        <p className="text-gray-800 text-[13px] font-semibold">
+                          Pengajuan Ke-{index + 1}
+                        </p>
+                      </div>
 
-                      <div className="grid grid-cols-3 sm:w-2/3 text-[12px] gap-2 sm:gap-4">
+                      <div className="grid grid-cols-3 sm:w-2/3 gap-3 sm:gap-5 text-[12px]">
                         <div className="flex flex-col sm:border-r sm:border-gray-200 sm:pr-4">
                           <span className="text-gray-500 font-medium">Mulai</span>
-                          <span className="text-gray-900 font-semibold mt-[2px]">
+                          <span className="text-gray-900 font-semibold">
                             {item.overtime_start ?? "-"}
                           </span>
                         </div>
 
                         <div className="flex flex-col sm:border-r sm:border-gray-200 sm:pr-4">
                           <span className="text-gray-500 font-medium">Selesai</span>
-                          <span className="text-gray-900 font-semibold mt-[2px]">
+                          <span className="text-gray-900 font-semibold">
                             {item.overtime_end ?? "-"}
                           </span>
                         </div>
 
                         <div className="flex flex-col">
                           <span className="text-gray-500 font-medium">Durasi</span>
-                          <span className="text-gray-900 font-semibold mt-[2px]">
+                          <span className="text-gray-900 font-semibold">
                             {item.total_hour ?? 0} Jam
                           </span>
                         </div>
                       </div>
+                    </div>
+
+                    <div className="mt-3 pt-2 border-t border-gray-200 text-[11px] text-gray-600">
+                      <span>
+                        Disetujui oleh{" "}
+                        <span className="font-semibold text-gray-800">
+                          {item.approved_by ?? "-"}
+                        </span>
+                      </span>
+                      <span className="mx-2">•</span>
+                      <span>
+                        Pada{" "}
+                        <span className="font-semibold text-gray-800">
+                          {item.approved_at
+                            ? new Date(item.approved_at).toLocaleString("id-ID")
+                            : "-"}
+                        </span>
+                      </span>
                     </div>
                   </div>
                 ))}

@@ -192,10 +192,12 @@ const AbsenManual = () => {
             <SectionHeader title="Remark Absensi" subtitle="Cek dan kelola absensi karyawan. Jika belum absen, buat baru; jika sudah, perbarui datanya." onBack={() => navigate("/")}
                 actions={
                     <button type="button" onClick={() => setShowInfo(true)} className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded flex items-center rounded-md">
-                        <FontAwesomeIcon icon={faInfoCircle} className="mr-2" />
-                        Informasi Fitur Remark
-                    </button>}
-            />
+                        <FontAwesomeIcon icon={faInfoCircle} className="md:mr-2" />
+                        <span className="hidden md:inline font-semibold">
+                            Info
+                        </span>
+                    </button>
+                }/>
 
             <div className="p-4 space-y-6 mb-20">
                 {selectedUser && (
@@ -398,31 +400,24 @@ const AbsenManual = () => {
                 )}
             </div>
 
-            <Modal isOpen={showInfo} onClose={() => setShowInfo(false)} title="Informasi Absensi Manual" note="Panduan lengkap penggunaan fitur Absensi Manual" size="xl">
+            <Modal isOpen={showInfo} onClose={() => setShowInfo(false)} title="Informasi Absensi Manual" note="Panduan penggunaan fitur Remark Absensi" size="xl">
                 <div className="text-sm text-gray-700 leading-relaxed space-y-3">
                     <p>
-                        Fitur <b>Remark Absensi</b> disediakan sebagai solusi darurat ketika
-                        absensi otomatis melalui kamera dan GPS tidak dapat dilakukan
-                        (misalnya karena kendala teknis, perangkat bermasalah, atau kondisi
-                        force majeure lainnya). Dengan fitur ini, admin/HR dapat
-                        <b> mengecek</b>, <b>menambahkan</b>, atau <b>memperbarui</b> data
-                        absensi karyawan secara langsung.
+                        Fitur <b>Remark Absensi</b> memungkinkan admin/HR menambahkan atau memperbarui data absensi secara manual saat absensi otomatis gagal (misal kendala teknis, perangkat bermasalah, atau force majeure).
                     </p>
 
                     <h3 className="font-semibold text-green-600">1. Pemilihan Awal</h3>
                     <ul className="list-disc pl-5 space-y-1">
-                        <li>Pilih <b>Nama Karyawan</b> dari daftar.</li>
-                        <li>Tentukan <b>Tanggal Absensi</b> yang ingin diperiksa atau dibuat.</li>
-                        <li>Klik tombol <b>Cek Absensi</b>:
+                        <li>Pilih <b>Nama Karyawan</b> dan <b>Tanggal Absensi</b>.</li>
+                        <li>Klik <b>Cek Absensi</b>:
                             <ul className="list-circle pl-6">
-                                <li>Jika data sudah ada → form otomatis terisi, siap untuk diperbarui.</li>
-                                <li>Jika belum ada → form kosong, siap untuk dibuat baru.</li>
+                                <li>Data ada → form terisi otomatis, siap diperbarui.</li>
+                                <li>Data belum ada → form kosong, siap dibuat baru.</li>
                             </ul>
                         </li>
                     </ul>
 
                     <h3 className="font-semibold text-green-600">2. Tipe Karyawan</h3>
-                    <p>Pilih tipe karyawan sesuai penempatan:</p>
                     <ul className="list-disc pl-5">
                         <li><b>Karyawan Lapangan</b>: wajib mengisi <b>Lokasi Mulai</b> dan <b>Lokasi Selesai</b>.</li>
                         <li><b>Karyawan Kantor</b>: cukup memilih shift dan jam kerja.</li>
@@ -431,67 +426,38 @@ const AbsenManual = () => {
                     <h3 className="font-semibold text-green-600">3. Data Shift & Jam Kerja</h3>
                     <ul className="list-disc pl-5">
                         <li>Pilih <b>Shift</b> sesuai jadwal karyawan.</li>
-                        <li>Isi <b>Jam Masuk</b> (wajib) dan <b>Jam Pulang</b> (opsional, bila karyawan sudah pulang namun lupa absen).</li>
+                        <li>Isi <b>Jam Masuk</b> (wajib) dan <b>Jam Pulang</b> (opsional bila lupa absen).</li>
                     </ul>
 
                     <h3 className="font-semibold text-green-600">4. Remark & Status</h3>
                     <ul className="list-disc pl-5">
-                        <li>
-                            Tambahkan <b>Remark</b> bila ada catatan khusus
-                            (contoh: "lupa absen pulang", "izin terlambat karena macet", "kendala sinyal").
-                        </li>
-                        <li>
-                            Pilih <b>Status Remark</b> sesuai dengan kondisi aktual karyawan:
+                        <li>Isi <b>Remark</b> bila ada catatan khusus (misal: "lupa absen pulang", "terlambat macet").</li>
+                        <li>Pilih <b>Status Remark</b> sesuai kondisi:
                             <ul className="list-circle pl-6">
-                                <li>
-                                    <b>Absen Manual</b>: digunakan apabila data absensi harus dibuat secara
-                                    manual karena kendala teknis seperti perangkat rusak, sistem error,
-                                    atau keadaan darurat (*force majeure*). Meskipun dibuat manual, data ini
-                                    tetap tercatat sebagai absensi resmi dan sah.
-                                </li>
-                                <li>
-                                    <b>Izin Terlambat</b>: digunakan jika karyawan telah memberi
-                                    pemberitahuan sebelumnya kepada HR atau atasan terkait keterlambatan
-                                    (contoh: kemacetan, keperluan keluarga, urusan pribadi mendesak, dll.).
-                                    Dengan status ini, waktu keterlambatan tidak akan dihitung sehingga tidak
-                                    memengaruhi rekap keterlambatan karyawan.
-                                </li>
-                                <li>
-                                    <b>Izin Pulang Awal</b>: digunakan bila karyawan harus meninggalkan
-                                    pekerjaan lebih awal dengan izin dari HR atau atasan (contoh: urusan
-                                    keluarga, keadaan darurat, keperluan pribadi, dll.). Status ini akan
-                                    menandai absensi sebagai <i>setengah hari kerja</i> (half-day).
-                                </li>
-                                <li>
-                                    <b>Cuti</b>: digunakan bila karyawan tidak masuk kerja selama satu hari
-                                    penuh atau lebih karena telah mengajukan cuti resmi kepada HR/atasan.
-                                    Contohnya seperti cuti tahunan, cuti sakit, cuti melahirkan, atau cuti
-                                    penting lainnya. Dengan status ini, sistem akan menandai hari tersebut
-                                    sebagai <i>hari tidak bekerja resmi</i> tanpa dianggap absen.
-                                </li>
-                                <li>
-                                    <b>Izin Sakit</b>: digunakan bila karyawan mengajukan izin sakit kepada HR
-                                    atau atasan. Status ini akan menandai absensi sebagai <i>hari tidak
-                                        bekerja resmi</i> tanpa dianggap absen.
-                                </li>
+                                <li><b>Absen Manual</b>: data dibuat karena kendala teknis; tetap sah.</li>
+                                <li><b>Izin Terlambat</b>: keterlambatan yang sudah dikonfirmasi, tidak memengaruhi rekap.</li>
+                                <li><b>Izin Pulang Awal</b>: meninggalkan kerja lebih awal; dihitung half-day.</li>
+                                <li><b>Cuti</b>: hari tidak bekerja resmi, tidak dianggap absen.</li>
+                                <li><b>Izin Sakit</b>: hari tidak bekerja resmi, tidak dianggap absen.</li>
+                                <li><b>Lupa Absen</b>: akan tetap tercatat sebagai absensi resmi, namun karyawan akan dikenakan potongan Rp10.000.</li>
                             </ul>
                         </li>
                     </ul>
 
                     <h3 className="font-semibold text-green-600">5. Simpan & Kelola</h3>
                     <ul className="list-disc pl-5">
-                        <li><b>Simpan Absen</b>: membuat data absensi baru.</li>
-                        <li><b>Perbarui Absen</b>: memperbarui data absensi yang sudah ada.</li>
-                        <li><b>Kosongkan Input</b>: mereset form agar bisa diisi ulang.</li>
-                        <li><b>Batal</b>: keluar tanpa menyimpan perubahan.</li>
+                        <li><b>Simpan Absen</b>: buat data baru.</li>
+                        <li><b>Perbarui Absen</b>: ubah data yang sudah ada.</li>
+                        <li><b>Kosongkan Input</b>: reset form.</li>
+                        <li><b>Batal</b>: keluar tanpa menyimpan.</li>
                     </ul>
 
                     <p className="italic text-gray-600">
-                        ⚠️ Wajib diisi: Tipe Karyawan, Shift, Jam Masuk, Remark, dan Status Remark.
-                        Gunakan fitur ini hanya bila absensi otomatis tidak dapat dilakukan.
+                        ⚠️ Wajib diisi: Tipe Karyawan, Shift, Jam Masuk, Remark, dan Status Remark. Gunakan hanya jika absensi otomatis tidak bisa dilakukan.
                     </p>
                 </div>
             </Modal>
+
 
         </div>
     );

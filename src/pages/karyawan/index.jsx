@@ -36,7 +36,6 @@ const DataKaryawan = () => {
     setUsers(sortedUsers);
   };
 
-
   const fetchData = async (endpoint) => {
     try {
       const res = await fetchWithJwt(`${apiUrl}${endpoint}`);
@@ -63,7 +62,6 @@ const DataKaryawan = () => {
       setIsLoading(false);
     }
   };
-
 
   useEffect(() => {
     fetchKaryawan();
@@ -152,25 +150,21 @@ const DataKaryawan = () => {
     Object.keys(requiredFields).forEach((key) => {
       const value = user[key];
 
-      // Shift wajib > 0
       if (key === "id_shift") {
         if (!value || value <= 0) missing.push(requiredFields[key]);
         return;
       }
 
-      // Field string wajib tidak "-" atau kosong/null
       if (typeof value === "string") {
         if (!value.trim() || value.trim() === "-") missing.push(requiredFields[key]);
         return;
       }
 
-      // Field numeric wajib tidak 0
       if (typeof value === "number") {
         if (value <= 0) missing.push(requiredFields[key]);
         return;
       }
 
-      // Field lain (misal null)
       if (value === null || value === undefined) {
         missing.push(requiredFields[key]);
       }
@@ -379,7 +373,6 @@ const DataKaryawan = () => {
               {Array.isArray(currentUsers) && currentUsers.length > 0 ? (
                 currentUsers.map((user) => (
                   <div key={user.id} className="bg-white border border-gray-200 rounded-2xl shadow-sm mb-5 overflow-hidden">
-                    {/* Header: Nama + Status + Peringatan */}
                     <div className="px-4 pt-5 pb-3 flex justify-between items-start">
                       <div className="flex-1 min-w-0 space-y-1">
                         <div className="flex items-center justify-between">
@@ -387,7 +380,6 @@ const DataKaryawan = () => {
                             {user.nama || "Tanpa Nama"}
                           </h3>
 
-                          {/* Mobile warning: hanya untuk karyawan aktif */}
                           {user.status === 1 && !isDataComplete(user) && (
                             <FontAwesomeIcon icon={faExclamationCircle} className="text-red-500 text-lg animate-bounce ml-2 cursor-pointer"
                               onClick={() => {
@@ -414,7 +406,6 @@ const DataKaryawan = () => {
                         </div>
                       </div>
 
-                      {/* Status */}
                       <span className={`ml-3 px-3 py-1.5 rounded-full text-[11px] font-semibold flex items-center gap-1 border ${user.status === 1 ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-gray-50 text-gray-500 border-gray-200"}`}>
                         <i
                           className={`fa-solid ${user.status === 1 ? "fa-circle-check" : "fa-circle-xmark"
@@ -424,7 +415,6 @@ const DataKaryawan = () => {
                       </span>
                     </div>
 
-                    {/* Body: Perusahaan & Shift */}
                     <div className="px-4 pb-3 text-[14px] text-gray-800 space-y-3">
                       <div className="flex justify-between items-center">
                         <span className="text-gray-500 flex items-center gap-1">

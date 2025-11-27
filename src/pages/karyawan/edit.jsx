@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash, faInfoCircle, faSave, faTimes, faChevronDown, } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
-import { fetchWithJwt } from "../../utils/jwtHelper";
+import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { SectionHeader } from "../../components";
 
 const EditKaryawan = () => {
@@ -24,23 +24,33 @@ const EditKaryawan = () => {
                     fetchWithJwt(`${apiUrl}/karyawan/divisi`),
                     fetchWithJwt(`${apiUrl}/shift`),
                     fetchWithJwt(`${apiUrl}/profil/${id}`),
-                    fetchWithJwt(`${apiUrl}/perusahaan`),
+                    fetchWithJwt(`${apiUrl}/perusahaan`), // fetch semua perusahaan
                 ]);
+
                 const divisiData = await divisiRes.json();
                 const shiftData = await shiftRes.json();
                 const userData = await userRes.json();
                 const perusahaanData = await perusahaanRes.json();
+
                 setDivisiList(divisiData.data);
                 setShiftList(shiftData.data);
-                setPerusahaanList(perusahaanData.data);
+
                 if (userData.success) {
-                    const user = userData.data;
-                    setCurrentUser(user);
+                    setCurrentUser(userData.data);
                 }
+
+                // Ambil perusahaan yang bisa dikelola dari token
+                const tokenUser = getUserFromToken();
+                const filteredPerusahaan = perusahaanData.data.filter(p =>
+                    (tokenUser.perusahaan_dikelola || []).includes(p.id)
+                );
+
+                setPerusahaanList(filteredPerusahaan);
             } catch (err) {
                 console.error("Gagal fetch data", err);
             }
         };
+
         fetchData();
     }, [apiUrl, id]);
 

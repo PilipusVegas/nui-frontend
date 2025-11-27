@@ -7,6 +7,19 @@ import {
     formatFullDate,
 } from "../../utils/dateUtils";
 
+const getKategoriRemark = (remarkStatus) => {
+    switch (remarkStatus) {
+        case 1: return "Absen Manual";
+        case 2: return "Izin Terlambat";
+        case 3: return "Izin Pulang Cepat";
+        case 4: return "Cuti";
+        case 5: return "Izin Sakit";
+        case 6: return "Lupa Absen";
+        default: return "";
+    }
+};
+
+
 export const exportExcelDetail = async ({
     dataUser,
     attendance,
@@ -46,10 +59,10 @@ export const exportExcelDetail = async ({
 
     // DATA INFORMASI KARYAWAN — lebih rapih
     const infoBlock = [
-        ["Nama", dataUser?.nama || "-"],
-        ["NIP", dataUser?.nip || "-"],
-        ["Divisi", dataUser?.role || "-"],
-        ["Perusahaan", dataUser?.perusahaan || "-"],
+        ["Nama", dataUser?.nama || ""],
+        ["NIP", dataUser?.nip || ""],
+        ["Divisi", dataUser?.role || ""],
+        ["Perusahaan", dataUser?.perusahaan || ""],
         ["Total Hadir", `${totalKehadiran} Hari`],
         ["Total Terlambat", `${totalKeterlambatan}`],
         ["Total Lembur", `${totalLembur}`],
@@ -130,6 +143,7 @@ export const exportExcelDetail = async ({
         // "Mulai Lembur",
         // "Selesai Lembur",
         "Potongan",
+        "Kategori Remark",
         "Remark",
     ];
 
@@ -171,15 +185,14 @@ export const exportExcelDetail = async ({
         const row = sheet.addRow([
             i + 1,
             formatFullDate(tgl),
-            rec?.shift || "-",
-            rec?.in ? formatTime(rec.in) : "-",
-            typeof rec?.late === "number" ? rec.late : "-",
-            rec?.out ? formatTime(rec.out) : "-",
-            rec?.total_overtime  ?? "-",
-            // rec?.overtime_start ?? "-",
-            // rec?.overtime_end ?? "-",
-            rec?.nominal_empty_out ? `Rp ${rec.nominal_empty_out}` : "-",
-            rec?.remark ?? "-",
+            rec?.shift || "",
+            rec?.in ? formatTime(rec.in) : "",
+            typeof rec?.late === "number" ? rec.late : "",
+            rec?.out ? formatTime(rec.out) : "",
+            rec?.total_overtime ?? "",
+            rec?.nominal_empty_out ? `Rp ${rec.nominal_empty_out}` : "",
+            getKategoriRemark(rec?.remark_status),
+            rec?.remark ?? "",
         ]);
 
         row.eachCell((cell, col) => {
@@ -223,18 +236,17 @@ export const exportExcelDetail = async ({
     // =====================================================================
     // LEBAR KOLOM — lebih proporsional & compact
     // =====================================================================
+    sheet.getColumn(1).width = 6;   // No
+    sheet.getColumn(2).width = 28;  // Tanggal
+    sheet.getColumn(3).width = 14;  // Shift
+    sheet.getColumn(4).width = 12;  // Masuk
+    sheet.getColumn(5).width = 18;  // Terlambat
+    sheet.getColumn(6).width = 12;  // Pulang
+    sheet.getColumn(7).width = 16;  // Overtime
+    sheet.getColumn(8).width = 16;  // Potongan
+    sheet.getColumn(9).width = 22;  // Kategori Remark (dibuat lebih lebar)
+    sheet.getColumn(10).width = 45; // Remark (dibuat lebih lebar)
 
-    sheet.getColumn(1).width = 6;  // No
-    sheet.getColumn(2).width = 28; // Tanggal (lebih lebar)
-    sheet.getColumn(3).width = 14; // Shift
-    sheet.getColumn(4).width = 12; // Masuk
-    sheet.getColumn(5).width = 18; // Terlambat
-    sheet.getColumn(6).width = 12; // Pulang
-    sheet.getColumn(7).width = 16; // Overtime
-    sheet.getColumn(8).width = 16; // Mulai
-    sheet.getColumn(9).width = 16; // Selesai
-    sheet.getColumn(10).width = 16; // Potongan
-    sheet.getColumn(11).width = 20; // Remark
 
     // =====================================================================
     // SIMPAN FILE

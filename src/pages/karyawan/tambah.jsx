@@ -14,12 +14,13 @@ const TambahKaryawan = () => {
   const [shiftList, setShiftList] = useState([]);
   const [perusahaanList, setPerusahaanList] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
-  const [currentUser, setCurrentUser] = useState({ nip: "", nik: "", npwp: "",  no_rek: "", nama: "", status_nikah: "", jml_anak: 0, id_perusahaan: "", id_role: "", id_shift: "", telp: "", username: "", password: "", status: 1, });
+  const [currentUser, setCurrentUser] = useState({ nip: "", nik: "", npwp: "", no_rek: "", nama: "", status_nikah: "", jml_anak: 0, id_perusahaan: "", id_role: "", id_shift: "", telp: "", username: "", password: "", status: 1, });
   const [showShiftDetails, setShowShiftDetails] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const userToken = getUserFromToken(); // Ambil data user dari JWT
         const [divisiRes, shiftRes, perusahaanRes] = await Promise.all([
           fetchWithJwt(`${apiUrl}/karyawan/divisi`),
           fetchWithJwt(`${apiUrl}/shift`),
@@ -28,7 +29,13 @@ const TambahKaryawan = () => {
         const divisiData = await divisiRes.json();
         const shiftData = await shiftRes.json();
         const perusahaanData = await perusahaanRes.json();
-        setPerusahaanList(perusahaanData.data);
+
+        // Filter perusahaan hanya yang ada di perusahaan_dikelola
+        const filteredPerusahaan = perusahaanData.data.filter(p =>
+          userToken.perusahaan_dikelola.includes(p.id)
+        );
+
+        setPerusahaanList(filteredPerusahaan);
         setDivisiList(divisiData.data);
         setShiftList(shiftData.data);
       } catch (err) {
@@ -37,6 +44,7 @@ const TambahKaryawan = () => {
     };
     fetchData();
   }, [apiUrl]);
+
 
   const handleAdd = async () => {
     if (!currentUser.nip || !currentUser.nama || !currentUser.id_perusahaan || !currentUser.id_role || !currentUser.id_shift) {
@@ -149,7 +157,7 @@ const TambahKaryawan = () => {
             </label>
 
             <select name="status_kendaraan"
-              value={ currentUser.status_kendaraan !== undefined && currentUser.status_kendaraan !== null ? currentUser.status_kendaraan : 0}
+              value={currentUser.status_kendaraan !== undefined && currentUser.status_kendaraan !== null ? currentUser.status_kendaraan : 0}
               onChange={(e) => {
                 const value = e.target.value === "" ? 0 : parseInt(e.target.value);
                 handleChange({ target: { name: "status_kendaraan", value } });
@@ -178,7 +186,10 @@ const TambahKaryawan = () => {
 
           <div className="mb-4">
             <label className="block mb-1 font-medium text-gray-700">Perusahaan</label>
-            <Select placeholder="Pilih Perusahaan" isClearable classNamePrefix="react-select"
+            <Select
+              placeholder="Pilih Perusahaan"
+              isClearable
+              classNamePrefix="react-select"
               options={perusahaanList.map((item) => ({
                 value: item.id,
                 label: item.nama,
@@ -192,6 +203,7 @@ const TambahKaryawan = () => {
                 handleChange({ target: { name: "id_perusahaan", value: selected?.value || "" } })
               }
             />
+
 
             {/* Keterangan jumlah shift */}
             {currentUser.id_perusahaan && (
@@ -344,7 +356,6 @@ const TambahKaryawan = () => {
             </div>
 
 
-            {/* Username & Password */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div>
                 <label className="block mb-1 font-medium text-gray-700">Username</label>

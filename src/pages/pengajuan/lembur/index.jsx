@@ -93,14 +93,7 @@ const PersetujuanLembur = () => {
         body = { status, deskripsi: item.deskripsi || "" };
       } else if (item.id_lembur) {
         endpoint = `${apiUrl}/lembur/approve/${item.id_lembur}`;
-
-        const isLemburValid =
-          item.total_lembur >= 5 && ![63, 64, 66].includes(item.id_lokasi);
-
-        body = {
-          status,
-          condition: { lembur: isLemburValid },
-        };
+        body = { status }; // hanya kirim status
       } else {
         throw new Error("Data lembur tidak valid.");
       }
@@ -113,18 +106,9 @@ const PersetujuanLembur = () => {
 
       if (!res.ok) throw new Error("Gagal memperbarui status.");
 
-      const result = await res.json();
-
+      // Hanya pakai toast
       if (status === 1) {
-        if (result?.tunjangan === true) {
-          Swal.fire({
-            icon: "success",
-            title: "Selamat!",
-            text: "Karyawan ini mendapatkan tunjangan lembur.",
-          });
-        } else {
-          toast.success("Pengajuan lembur berhasil disetujui.");
-        }
+        toast.success("Pengajuan lembur berhasil disetujui.");
       } else if (status === 2) {
         toast.error("Pengajuan lembur ditolak.");
       }
@@ -135,7 +119,6 @@ const PersetujuanLembur = () => {
       toast.error(err.message);
     }
   };
-
   const handleApprove = (item) => handleUpdateStatus(item, 1);
   const handleReject = (item) => handleUpdateStatus(item, 2);
 
@@ -300,23 +283,16 @@ const PersetujuanLembur = () => {
 
                 {/* Menu (Approve / Reject) */}
                 <div className="flex gap-2 pt-2">
-                  <button
-                    onClick={() => handleApprove(item)}
-                    className="flex-1 px-3 py-1 gap-1 font-semibold inline-flex items-center justify-center text-sm rounded-md bg-green-600 text-white hover:bg-green-700"
-                  >
+                  <button onClick={() => handleApprove(item)} className="flex-1 px-3 py-1 gap-1 font-semibold inline-flex items-center justify-center text-sm rounded-md bg-green-600 text-white hover:bg-green-700">
                     <FontAwesomeIcon icon={faCheck} />
                     Approve
                   </button>
 
-                  <button
-                    onClick={() => handleReject(item)}
-                    className="flex-1 px-3 py-1 gap-1 font-semibold inline-flex items-center justify-center text-sm rounded-md bg-red-600 text-white hover:bg-red-700"
-                  >
+                  <button onClick={() => handleReject(item)} className="flex-1 px-3 py-1 gap-1 font-semibold inline-flex items-center justify-center text-sm rounded-md bg-red-600 text-white hover:bg-red-700">
                     <FontAwesomeIcon icon={faTimes} />
                     Reject
                   </button>
                 </div>
-
               </div>
             );
           })
@@ -356,8 +332,6 @@ const PersetujuanLembur = () => {
           </p>
         </div>
       </Modal>
-
-
 
     </div>
   );

@@ -5,8 +5,8 @@ import { fetchWithJwt } from "../../utils/jwtHelper";
 import { getDefaultPeriod } from "../../utils/getDefaultPeriod";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { SectionHeader, Modal, EmptyState, Pagination, SearchBar, LoadingSpinner, ErrorState } from "../../components/";
-import { faInfoCircle, faMapMarkerAlt, faTriangleExclamation, faSpinner, faChevronUp, faChevronDown } from "@fortawesome/free-solid-svg-icons";
-import { formatFullDate, formatTime } from "../../utils/dateUtils";
+import { faInfoCircle, faMapMarkerAlt, faTriangleExclamation, } from "@fortawesome/free-solid-svg-icons";
+import { formatFullDate } from "../../utils/dateUtils";
 
 const RiwayatLembur = () => {
     const itemsPerPage = 10;
@@ -19,10 +19,12 @@ const RiwayatLembur = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [startDate, setStartDate] = useState();
     const [endDate, setEndDate] = useState();
-    const [expandedUserId, setExpandedUserId] = useState(null);
     const [modalDescription, setModalDescription] = useState("");
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+    const [modalSearchQuery, setModalSearchQuery] = useState("");
 
-    // --- Fetch data ---
+
     const fetchApprovalData = async () => {
         if (!startDate || !endDate) return;
         setIsLoading(true);
@@ -48,24 +50,29 @@ const RiwayatLembur = () => {
     useEffect(() => { fetchApprovalData(); }, [apiUrl, startDate, endDate]);
     useEffect(() => { setCurrentPage(1); }, [searchQuery, startDate, endDate]);
 
-    // --- Filtering per search ---
     const filteredData = approvalData.filter(u =>
         u.nama_user.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const filteredRiwayat = selectedUser?.riwayat.filter(item => {
+        const tanggalFull = formatFullDate(item.tanggal); // "Minggu, 21 September 2025"
+        const tanggalLower = tanggalFull.toLowerCase();   // "minggu, 21 september 2025"
+        const lokasi = (item.lokasi ?? "").toLowerCase();
+        const query = modalSearchQuery.toLowerCase();
+
+        return tanggalLower.includes(query) || lokasi.includes(query);
+    }) || [];
+
     const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-    const openModalWithDescription = (desc) => { setModalDescription(desc); setIsModalOpen(true); };
-    const closeModal = () => { setModalDescription(""); setIsModalOpen(false); };
-
-    const calculateHours = (start, end) => {
-        if (!start || !end) return 0;
-        const [sh, sm] = start.split(":").map(Number);
-        const [eh, em] = end.split(":").map(Number);
-        let diff = (new Date(0, 0, 0, eh, em) - new Date(0, 0, 0, sh, sm)) / 3600000;
-        if (diff < 0) diff += 24;
-        return diff;
+    const openDetailModal = (user) => {
+        setSelectedUser(user);
+        setModalSearchQuery(""); // reset search setiap kali modal dibuka
+        setIsDetailModalOpen(true);
     };
+
+
+    const closeModal = () => { setModalDescription(""); setIsModalOpen(false); };
 
     return (
         <div className="flex flex-col">
@@ -90,92 +97,83 @@ const RiwayatLembur = () => {
             ) : isLoading ? (
                 <LoadingSpinner text="Memuat data lembur..." />
             ) : filteredData.length === 0 ? (
-                <EmptyState icon={faTriangleExclamation} text="Tidak ada riwayat lembur pada periode ini."/>
+                <EmptyState icon={faTriangleExclamation} text="Tidak ada riwayat lembur pada periode ini." />
             ) : (
-                <div className="overflow-x-auto rounded-lg shadow-md border border-gray-200">
-                    <table className="min-w-full text-sm border-collapse">
-                        <thead className="bg-green-500 text-white uppercase text-sm tracking-wide sticky top-0 z-10">
+                <div>
+
+                    {/* ===== TABLE UNTUK DESKTOP ===== */}
+                    <table className="min-w-full text-sm border-collapse hidden sm:table">
+                        <thead className="bg-green-600 text-white uppercase text-sm tracking-wide sticky top-0 z-10">
                             <tr>
                                 {["Nama Karyawan", "Total Riwayat", "Disetujui", "Ditolak", "Total Jam", "Detail"].map((h) => (
-                                    <th key={h} className="px-5 py-3 text-center font-semibold">{h}</th>
+                                    <th key={h} className="px-4 py-2 text-center font-semibold">{h}</th>
                                 ))}
                             </tr>
                         </thead>
 
                         <tbody>
                             {paginatedData.map((user, idx) => (
-                                <React.Fragment key={user.id_user}>
-                                    <tr className={`cursor-pointer transition-all duration-200 ${idx % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-green-50`} onClick={() => setExpandedUserId(prev => (prev === user.id_user ? null : user.id_user))}>
-                                        <td className="px-5 py-3 font-medium text-left">{user.nama_user}</td>
-                                        <td className="px-5 py-3 text-center">{user.riwayat.length}</td>
-                                        <td className="px-5 py-3 text-center">{user.total_approved} Disetujui</td>
-                                        <td className="px-5 py-3 text-center">{user.total_rejected} Ditolak</td>
-                                        <td className="px-5 py-3 text-center">{user.total_jam_approved} Jam Disetujui</td>
-                                        <td className="px-5 py-3 text-center">
-                                            <FontAwesomeIcon icon={expandedUserId === user.id_user ? faChevronUp : faChevronDown} className="text-gray-500" />
-                                        </td>
-                                    </tr>
-
-                                    {expandedUserId === user.id_user && (
-                                        <tr>
-                                            <td colSpan={6} className="p-5">
-                                                <div className="overflow-x-auto">
-                                                    <table className="min-w-full text-xs border-collapse">
-                                                        <thead className="bg-green-500 text-white font-semibold uppercase">
-                                                            <tr>
-                                                                {["Tanggal", "Lokasi", "Jam", "Total Jam", "Keterangan", "Status"].map((h, idx, arr) => (
-                                                                    <th key={h} className={`px-4 py-2 text-center ${idx === 0 ? "rounded-l-md" : idx === arr.length - 1 ? "rounded-r-md" : ""}`}>
-                                                                        {h}
-                                                                    </th>
-                                                                ))}
-                                                            </tr>
-                                                        </thead>
-
-                                                        <tbody>
-                                                            {user.riwayat.map((item, jdx) => {
-                                                                const durasi = calculateHours(item.jam_mulai, item.jam_selesai);
-                                                                return (
-                                                                    <tr key={item.id_lembur} className={`${jdx % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-green-100 transition-colors`}>
-                                                                        <td className="px-4 py-2 font-medium text-left">{formatFullDate(item.tanggal)}</td>
-                                                                        <td className="px-4 py-2 flex items-start justify-start gap-1 text-green-900">
-                                                                            <FontAwesomeIcon icon={faMapMarkerAlt} className="text-green-600" />
-                                                                            {item.lokasi || "-"}
-                                                                        </td>
-                                                                        <td className="px-4 py-2 text-center">
-                                                                            {[item.jam_mulai, item.jam_selesai].map(t => {
-                                                                                const [h, m] = t.split(":");
-                                                                                return `${h.padStart(2, "0")}:${m.padStart(2, "0")}`;
-                                                                            }).join(" - ")}
-                                                                        </td>
-                                                                        <td className="px-4 py-2 text-center">{durasi.toFixed(0)} jam</td>
-
-                                                                        <td className="px-4 py-2 text-center">
-                                                                            <button onClick={() => openModalWithDescription(item.deskripsi)} className="inline-flex items-center justify-center gap-1 px-3 py-1 rounded-lg border border-green-300 text-green-700 hover:bg-green-100 transition">
-                                                                                <FontAwesomeIcon icon={faInfoCircle} className="text-green-600 text-sm" />
-                                                                                Lihat
-                                                                            </button>
-                                                                        </td>
-
-                                                                        <td className="px-4 py-2 text-center font-semibold">
-                                                                            {item.status_lembur === 1 ? (
-                                                                                <span className="text-green-700">Disetujui: {item.approved_by || "N/A"}</span>
-                                                                            ) : (
-                                                                                <span className="text-red-700">Ditolak: {item.approved_by || "N/A"}</span>
-                                                                            )}
-                                                                        </td>
-                                                                    </tr>
-                                                                );
-                                                            })}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    )}
-                                </React.Fragment>
+                                <tr key={user.id_user} className={`transition-all duration-200 ${idx % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-blue-50`}>
+                                    <td className="px-4 py-2 font-medium text-left">{user.nama_user}</td>
+                                    <td className="px-4 py-2 text-center">{user.riwayat.length}</td>
+                                    <td className="px-4 py-2 text-center">{user.total_approved} Disetujui</td>
+                                    <td className="px-4 py-2 text-center">{user.total_rejected} Ditolak</td>
+                                    <td className="px-4 py-2 text-center">{user.total_jam_approved} Jam</td>
+                                    <td className="px-4 py-2 text-center">
+                                        <button onClick={() => openDetailModal(user)} className="inline-flex items-center text-xs justify-center gap-1 px-2 py-1 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 transition">
+                                            <FontAwesomeIcon icon={faInfoCircle} className="text-white" />
+                                            Detail
+                                        </button>
+                                    </td>
+                                </tr>
                             ))}
                         </tbody>
                     </table>
+
+                    {/* ===== CARD UNTUK MOBILE/TABLET VERTICAL RAPI ===== */}
+                    <div className="grid gap-3 sm:hidden mt-3">
+                        {paginatedData.map((user) => (
+                            <div
+                                key={user.id_user}
+                                className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 hover:shadow-md transition flex flex-col"
+                            >
+                                {/* Nama Karyawan */}
+                                <p className="text-base font-semibold text-gray-900 mb-3 truncate">{user.nama_user}</p>
+
+                                {/* Statistik lembur vertikal */}
+                                <div className="flex flex-col divide-y divide-gray-100 text-gray-700 text-sm mb-3">
+                                    <div className="flex justify-between py-1">
+                                        <span className="font-medium text-gray-600">Riwayat</span>
+                                        <span className="font-semibold text-gray-900">{user.riwayat.length}</span>
+                                    </div>
+                                    <div className="flex justify-between py-1">
+                                        <span className="font-medium text-gray-600">Disetujui</span>
+                                        <span className="font-semibold text-gray-900">{user.total_approved}</span>
+                                    </div>
+                                    <div className="flex justify-between py-1">
+                                        <span className="font-medium text-gray-600">Ditolak</span>
+                                        <span className="font-semibold text-gray-900">{user.total_rejected}</span>
+                                    </div>
+                                    <div className="flex justify-between py-1">
+                                        <span className="font-medium text-gray-600">Total Jam</span>
+                                        <span className="font-semibold text-gray-900">{user.total_jam_approved} Jam</span>
+                                    </div>
+                                </div>
+
+                                {/* Tombol Detail */}
+                                <div className="flex justify-end">
+                                    <button
+                                        onClick={() => openDetailModal(user)}
+                                        className="inline-flex items-center justify-center gap-1 px-3 py-1 rounded-md bg-blue-600 text-white font-medium hover:bg-blue-700 transition text-xs shadow-sm"
+                                    >
+                                        <FontAwesomeIcon icon={faInfoCircle} className="text-white" />
+                                        Detail
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
                 </div>
             )}
 
@@ -183,10 +181,88 @@ const RiwayatLembur = () => {
                 <Pagination currentPage={currentPage} totalItems={filteredData.length} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} />
             )}
 
+            <Modal isOpen={isDetailModalOpen} onClose={() => setIsDetailModalOpen(false)} title={`Detail Riwayat Lembur ${selectedUser?.nama_user}`} note="Data riwayat lembur karyawan akan ditampilkan disini berdasarkan rentang tanggal yang dipilih." size="xl">
+
+                {selectedUser && (
+                    <div className="space-y-4">
+
+                        <div className="bg-white p-3 rounded-lg border border-black/10 shadow-sm">
+                            <h3 className="text-sm font-semibold text-black mb-2">Informasi Lembur</h3>
+                            <p className="text-sm text-black/70 leading-relaxed">
+                                Riwayat lembur yang diajukan karyawan pada periode terpilih.
+                                Setiap entri memuat tanggal, durasi, lokasi, status, dan informasi persetujuan.
+                                Tampilan ini dirancang agar ringkas, mudah dibaca, dan nyaman digunakan.
+                            </p>
+                        </div>
+
+                        <SearchBar onSearch={setModalSearchQuery} placeholder="Cari riwayat berdasarkan tanggal atau lokasi..." className="w-full" />
+
+                        <div className="max-h-[360px] overflow-y-auto scrollbar-green px-1">
+                            <div className="space-y-3">
+
+                                {filteredRiwayat.map((item, idx) => {
+                                    const tanggal = formatFullDate(item.tanggal);
+                                    const approvedAt = item.approved_at ? formatFullDate(item.approved_at) : "-";
+
+                                    return (
+                                        <div key={idx} className="bg-white border border-black/10 rounded-lg p-3 shadow-sm hover:shadow transition-all duration-150 space-y-2">
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <div>
+                                                    <p className="text-[10px] text-black/50 font-medium">Tanggal</p>
+                                                    <p className="text-[12px] font-semibold text-black">{tanggal}</p>
+                                                </div>
+
+                                                <div>
+                                                    <p className="text-[10px] text-black/50 font-medium">Lokasi</p>
+                                                    <p className="text-[12px] font-semibold text-black">{item.lokasi ?? "-"}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-3 gap-2">
+                                                <div>
+                                                    <p className="text-[10px] text-black/50 font-medium">Mulai</p>
+                                                    <p className="text-[12px] font-semibold text-black">{item.jam_mulai || "-"}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] text-black/50 font-medium">Selesai</p>
+                                                    <p className="text-[12px] font-semibold text-black">{item.jam_selesai || "-"}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] text-black/50 font-medium">Total</p>
+                                                    <p className="text-[12px] font-semibold text-black">{item.total_hour ?? 0} Jam</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex justify-between items-center pt-1 border-t border-black/10">
+                                                <p className="text-[10px] text-black/70 leading-tight">
+                                                    Disetujui oleh{" "}
+                                                    <span className="font-semibold text-black">{item.approved_by ?? "N/A"}</span>{" "}
+                                                    pada <span className="font-semibold text-black">{approvedAt}</span>
+                                                </p>
+
+                                                <p className="text-[11px] font-semibold text-black">
+                                                    {item.status_lembur === 1
+                                                        ? "Disetujui"
+                                                        : item.status_lembur === 0
+                                                            ? "Menunggu"
+                                                            : "Ditolak"}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </Modal>
+
+
             <Modal isOpen={isModalOpen} onClose={closeModal} title="Detail Deskripsi" note="Keterangan tambahan dari pengajuan lembur" size="md">
                 <p className="text-gray-700 whitespace-pre-line leading-relaxed">{modalDescription || "Tidak ada deskripsi."}</p>
             </Modal>
-        </div>
+        </div >
     );
 };
 
