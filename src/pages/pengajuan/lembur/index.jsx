@@ -24,6 +24,52 @@ const PersetujuanLembur = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [modalDescription, setModalDescription] = useState("");
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const toggleSelect = (id) => {
+    setSelectedItems((prev) =>
+      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectAll) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(paginatedData.data.map((a) => a.id_lembur || a.id_absen));
+    }
+    setSelectAll(!selectAll);
+  };
+
+  const handleBulkAction = async (status) => {
+    if (selectedItems.length === 0) {
+      toast.error("Tidak ada data yang dipilih.");
+      return;
+    }
+
+    try {
+      for (let id of selectedItems) {
+        const item = approvalData.find(
+          (a) => a.id_lembur === id || a.id_absen === id
+        );
+
+        if (item) {
+          await handleUpdateStatus(item, status);
+        }
+      }
+
+      toast.success("Aksi massal berhasil diproses.");
+      setSelectedItems([]);
+      setSelectAll(false);
+
+      fetchApprovalData(startDate, endDate);
+    } catch (error) {
+      toast.error("Terjadi kesalahan saat proses massal.");
+    }
+  };
+
+
 
   const paginatedData = (() => {
     const filtered = approvalData.filter((a) =>
@@ -139,6 +185,29 @@ const PersetujuanLembur = () => {
         }
       />
 
+      {selectedItems.length > 0 && (
+        <div className="flex gap-2 mb-3 bg-yellow-50 border border-yellow-200 p-3 rounded-lg items-center">
+          <span className="font-medium text-sm text-gray-700">
+            {selectedItems.length} data dipilih
+          </span>
+
+          <button
+            onClick={() => handleBulkAction(1)}
+            className="px-3 py-1 bg-green-600 text-white rounded-md text-sm hover:bg-green-700"
+          >
+            Approve Massal
+          </button>
+
+          <button
+            onClick={() => handleBulkAction(2)}
+            className="px-3 py-1 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
+          >
+            Reject Massal
+          </button>
+        </div>
+      )}
+
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full mb-4">
         <div className="w-full sm:flex-1">
           <SearchBar value={searchQuery} onSearch={(val) => setSearchQuery(val)} placeholder="Cari Nama Karyawan..." className="w-full" />
@@ -161,13 +230,28 @@ const PersetujuanLembur = () => {
           <table className="min-w-full table-auto text-sm">
             <thead>
               <tr className="bg-green-500 text-white text-xs md:text-sm uppercase tracking-wider">
-                {["No.", "Tanggal & Lokasi", "Nama Karyawan", "Waktu Lembur & Total", "Detail", "Menu",].map((h) => (
-                  <th key={h} className="py-3 px-5 text-center font-semibold whitespace-nowrap">
+
+                {/* Kolom checkbox untuk select all */}
+                <th className="py-3 px-5 text-center whitespace-nowrap">
+                  <input
+                    type="checkbox"
+                    checked={selectAll}
+                    onChange={toggleSelectAll}
+                  />
+                </th>
+
+                {/* Header lainnya */}
+                {["No.", "Tanggal & Lokasi", "Nama Karyawan", "Waktu Lembur & Total", "Detail", "Menu"].map((h, i) => (
+                  <th
+                    key={i}
+                    className="py-3 px-5 text-center font-semibold whitespace-nowrap"
+                  >
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
+
 
             <tbody className="divide-y divide-gray-200 text-gray-700">
               {isLoading ? (
@@ -198,6 +282,14 @@ const PersetujuanLembur = () => {
 
                   return (
                     <tr key={a.id_lembur} className="hover:bg-gray-50 transition-colors">
+                      <td className="py-2.5 px-5 text-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedItems.includes(a.id_lembur || a.id_absen)}
+                          onChange={() => toggleSelect(a.id_lembur || a.id_absen)}
+                        />
+                      </td>
+
                       <td className="py-2.5 px-5 text-center font-medium">
                         {idx}
                       </td>
@@ -267,7 +359,6 @@ const PersetujuanLembur = () => {
 
                 <hr className="border-gray-100" />
 
-                {/* Jam + Total */}
                 <div className="text-gray-700">
                   <p className="font-medium">
                     {item.jam_mulai} - {item.jam_selesai}
@@ -275,13 +366,11 @@ const PersetujuanLembur = () => {
                   <p className="text-xs text-gray-500">Total: {hours} jam</p>
                 </div>
 
-                {/* Detail */}
                 <button onClick={() => openModalWithDescription(item.deskripsi)} className="text-xs font-medium text-blue-600 hover:underline">
                   <FontAwesomeIcon icon={faInfoCircle} className="mr-1" />
                   Lihat Deskripsi
                 </button>
 
-                {/* Menu (Approve / Reject) */}
                 <div className="flex gap-2 pt-2">
                   <button onClick={() => handleApprove(item)} className="flex-1 px-3 py-1 gap-1 font-semibold inline-flex items-center justify-center text-sm rounded-md bg-green-600 text-white hover:bg-green-700">
                     <FontAwesomeIcon icon={faCheck} />
@@ -301,7 +390,6 @@ const PersetujuanLembur = () => {
         )}
       </div>
 
-      {/* Pagination */}
       {paginatedData.total > itemsPerPage && (
         <Pagination currentPage={currentPage} totalItems={paginatedData.total} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} className="mt-6" />
       )}
