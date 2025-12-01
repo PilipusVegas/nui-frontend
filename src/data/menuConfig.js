@@ -1,5 +1,4 @@
 // src/data/menuConfig.js
-import { faDailymotion } from "@fortawesome/free-brands-svg-icons";
 import {
     faHome,
     faPeopleGroup,
@@ -26,9 +25,10 @@ import {
     faEdit,
     faUserGear,
     faGift,
-    faCalendarCheck
+    faCalendarCheck,
+    faUserGroup,
+    faPenFancy
 } from "@fortawesome/free-solid-svg-icons";
-import { faPenFancy } from "@fortawesome/free-solid-svg-icons/faPenFancy";
 
 export const menuConfig = [
     // 1. BERANDA
@@ -162,6 +162,7 @@ export const menuConfig = [
             { label: "Manajemen Menu", icon: faKey, path: "/manajemen-menu", roles: [1] },
             { label: "Akses HRD", icon: faUserShield, path: "/akses-hrd", roles: [1] },
             { label: "Role App", icon: faUserGear, path: "/role-app", roles: [1] },
+            { label: "Kadiv Member", icon: faUserGroup, path: "/kadiv-member", roles: [1] },
         ],
     },
 ];

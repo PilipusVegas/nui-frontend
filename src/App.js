@@ -10,6 +10,7 @@ import Lembur from "./pages/lembur";
 import Tugas from "./pages/tugas";
 import DetailTugas from "./pages/tugas/show";
 import Cuti from "./pages/cuti";
+import FormulirDinas from "./pages/dinas";
 import PermohonanCuti from "./pages/cuti/formCuti";
 import Profile from "./pages/user-profile";
 import EditProfile from "./pages/user-profile/edit";
@@ -25,11 +26,11 @@ import ShowKaryawan from "./pages/karyawan/show";
 import Shift from "./pages/shift/";
 import TambahShift from "./pages/shift/tambah";
 import EditShift from "./pages/shift/edit";
-import RiwayatLembur from "./pages/riwayat-lembur";
+import RiwayatLembur from "./pages/pengajuan/lembur/riwayat";
 import DataPenggajian from "./pages/penggajian";
 import RiwayatPenggajian from "./pages/penggajian/riwayat";
 import RiwayatFace from "./pages/riwayat-user/absen-face";
-import RiwayatSuratDinas from "./pages/riwayatSuratDinas";
+import RiwayatSuratDinas from "./pages/pengajuan/surat-dinas/riwayat";
 import Divisi from "./pages/divisi";
 import KelolaAbsensi from "./pages/kelola-absensi";
 import DetailKelolaAbsensi from "./pages/kelola-absensi/show";
@@ -41,7 +42,6 @@ import Header from "./layouts/header";
 import ManajemenMenu from "./pages/menu-management";
 import PerangkatAbsensi from "./pages/perangkat-absensi";
 import ManajemenHariLibur from "./pages/manajemen-libur";
-import FormulirDinas from "./pages/form/formDinas";
 import RemarkAbsensi from "./pages/kelola-absensi/remarkAbsensi";
 import PengajuanLembur from "./pages/pengajuan/lembur";
 import PengajuanAbsensi from "./pages/pengajuan/absensi";
@@ -51,13 +51,14 @@ import DetailPengajuanDinas from "./pages/pengajuan/surat-dinas/show";
 import HrdAccess from "./pages/hrd-akses";
 import TambahHrdAccess from "./pages/hrd-akses/tambah";
 import EditHrdAccess from "./pages/hrd-akses/edit";
+import KadivMember from "./pages/kadiv-member";
+import DetailKadivMember from "./pages/kadiv-member/show";
 import Penugasan from "./pages/penugasan";
 import TambahPenugasan from "./pages/penugasan/tambah";
 import EditPenugasan from "./pages/penugasan/edit";
 import DetailPenugasan from "./pages/penugasan/show";
 import RiwayatPenugasan from "./pages/penugasan/riwayat";
 import RekapTunjangan from "./pages/tunjangan/";
-
 import RoleApp from "./pages/role-app";
 
 
@@ -264,6 +265,8 @@ const App = () => {
     { path: "/akses-hrd", component: <HrdAccess />, roles: ["1"], layout: SidebarLayout },
     { path: "/akses-hrd/tambah", component: <TambahHrdAccess />, roles: ["1"], layout: SidebarLayout },
     { path: "/akses-hrd/edit/:id_user", component: <EditHrdAccess />, roles: ["1"], layout: SidebarLayout },
+    { path: "/kadiv-member", component: <KadivMember />, roles: ["1"], layout: SidebarLayout },
+    { path: "/kadiv-member/show/:id_user", component: <DetailKadivMember />, roles: ["1"], layout: SidebarLayout },
     { path: "/role-app", component: <RoleApp />, roles: ["1"], layout: SidebarLayout },
     { path: "/penugasan", component: <Penugasan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
     { path: "/penugasan/tambah", component: <TambahPenugasan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },

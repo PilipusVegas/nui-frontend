@@ -91,7 +91,6 @@ const EditProfile = () => {
       });
   };
 
-  // ✅ Loading hanya muncul di bawah MobileLayout
   return (
     <MobileLayout title="Edit Profil">
       {isLoading ? (
@@ -101,7 +100,6 @@ const EditProfile = () => {
       ) : (
         <div className="px-3 py-4">
           <form onSubmit={handleSubmit} className="space-y-6 max-w-md mx-auto">
-            {/* ====== DATA DIRI ====== */}
             <section className="space-y-2">
               {[
                 { label: "Nama Lengkap", name: "nama", value: formData.nama },
@@ -134,7 +132,6 @@ const EditProfile = () => {
               </div>
             </section>
 
-            {/* ====== AKUN ====== */}
             <section className="pt-6 border-t border-gray-200 space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -151,7 +148,6 @@ const EditProfile = () => {
               </div>
             </section>
 
-            {/* ====== ACTION BUTTON ====== */}
             <button type="submit" className="w-full flex items-center justify-center gap-2 rounded-xl bg-green-500 px-5 py-3 font-medium text-white shadow hover:bg-green-600 active:scale-[0.98] transition-all duration-200">
               <FontAwesomeIcon icon={faSave} />
               Simpan Perubahan

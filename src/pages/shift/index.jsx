@@ -44,83 +44,43 @@ const JadwalShift = () => {
 
   return (
     <div className="w-full mx-auto">
-      <SectionHeader
-        title="Jam Kerja / Shift"
-        subtitle="Kelola jadwal shift karyawan dengan mudah."
-        onBack={() => navigate(-1)}
+      <SectionHeader title="Jam Kerja / Shift" subtitle="Kelola jadwal shift karyawan dengan mudah." onBack={() => navigate(-1)}
         actions={
-          <button
-            onClick={() => navigate("/shift/tambah")}
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 
-          hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg 
-          transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 
-          focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
-          >
-            <FontAwesomeIcon icon={faPlus} />
+          <button onClick={() => navigate("/shift/tambah")} className=" flex items-center justify-center gap-2 px-3 py-2 sm:px-5 sm:py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 ease-in-out active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
+            <FontAwesomeIcon icon={faPlus} className="text-sm sm:text-base" />
             <span className="inline sm:hidden text-sm">Tambah</span>
             <span className="hidden sm:inline">Tambah Shift</span>
           </button>
         }
       />
 
-      {/* GRID RESPONSIVE */}
-      <div className="
-      grid 
-      grid-cols-1 
-      sm:grid-cols-2 
-      md:grid-cols-3 
-      lg:grid-cols-4 
-      xl:grid-cols-5 
-      gap-5 
-      mt-6
-    "
-      >
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-8">
         {shiftList.map((shift) => (
-          <div
-            key={shift.id}
-            className="
-          bg-white 
-          rounded-2xl 
-          border 
-          border-gray-200 
-          shadow-sm 
-          hover:shadow-md 
-          transition-all 
-          duration-300 
-          flex 
-          flex-col
-        "
-          >
-            {/* HEADER */}
-            <div className="px-4 py-3 bg-green-600 text-white font-semibold text-base text-center tracking-wide rounded-t-2xl">
-              {shift.nama}
+          <div key={shift.id} className="bg-white border border-gray-100 rounded-2xl  shadow-md  hover:shadow-xl  transition-all  duration-300  overflow-hidden">
+            <div className="px-4 py-4 bg-gradient-to-r from-green-600 to-green-500 flex items-center justify-between">
+              <h3 className="text-base font-semibold text-white tracking-wide">
+                {shift.nama}
+              </h3>
+
+              <p className="text-white text-sm font-medium opacity-90">
+                {shift.id}
+              </p>
             </div>
 
-            {/* DETAIL (COMPACT MODE) */}
-            <div className="p-3 flex flex-col gap-2">
+            <div className="p-4 py-2">
               {shift.detail.map((d, idx) => (
-                <div
-                  key={idx}
-                  className="
-                flex 
-                justify-between 
-                items-center 
-                bg-gray-50 
-                hover:bg-green-50 
-                transition 
-                rounded-lg 
-                px-3 
-                py-2
-                border 
-                border-gray-100
-                text-sm
-              "
-                >
-                  <span className="font-medium text-gray-800">{d.hari}</span>
-
-                  <span className="text-gray-600 text-xs sm:text-sm whitespace-nowrap">
-                    {d.jam_masuk} — {d.jam_pulang}
-                  </span>
+                <div key={idx}>
+                  <div className="flex justify-between items-center py-1">
+                    <span className="font-semibold text-gray-800 text-sm">
+                      {d.hari}
+                    </span>
+                    <span className="text-gray-700 text-sm whitespace-nowrap font-medium">
+                      {d.jam_masuk} — {d.jam_pulang}
+                    </span>
+                  </div>
+                  {idx !== shift.detail.length - 1 && (
+                    <div className="border-b border-gray-200 my-1"></div>
+                  )}
                 </div>
               ))}
             </div>

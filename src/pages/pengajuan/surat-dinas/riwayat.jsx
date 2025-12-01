@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
-import { fetchWithJwt } from "../../utils/jwtHelper";
-import { formatFullDate } from "../../utils/dateUtils";
-import { getDefaultPeriod } from "../../utils/getDefaultPeriod";
+import { fetchWithJwt } from "../../../utils/jwtHelper";
+import { formatFullDate } from "../../../utils/dateUtils";
+import { getDefaultPeriod } from "../../../utils/getDefaultPeriod";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarAlt, faEye } from "@fortawesome/free-solid-svg-icons";
-import { SectionHeader, LoadingSpinner, SearchBar, Pagination, EmptyState, ErrorState, Modal } from "../../components";
+import { SectionHeader, LoadingSpinner, SearchBar, Pagination, EmptyState, ErrorState, Modal } from "../../../components";
 
 const RiwayatSuratDinas = () => {
     const { start: defaultStart, end: defaultEnd } = getDefaultPeriod();

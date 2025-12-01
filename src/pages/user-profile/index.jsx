@@ -35,7 +35,7 @@ const Profile = () => {
           role_name: data.role_name || "N/A",
           perusahaan: data.perusahaan || "N/A",
           telp: data.telp || "N/A",
-          foto: data.foto ? `${apiUrl}${data.foto}` : null,
+          foto: null,
         });
       } catch (err) {
         setError(err.message);
@@ -67,13 +67,9 @@ const Profile = () => {
       <div className="p-3 min-w-full mx-auto space-y-4">
         <div className="flex flex-col justify-center items-center mb-5">
           <div className="relative w-24 h-24 mb-4">
-            {profileData?.foto ? (
-              <img src={profileData.foto} alt="User Avatar" className="w-full h-full rounded-full object-cover shadow-lg border-4 border-white" />
-            ) : (
-              <div className="w-full h-full rounded-full bg-white flex items-center justify-center shadow-lg border-4 border-white">
-                <FontAwesomeIcon icon={faUserCircle} className="text-gray-400 text-5xl" />
-              </div>
-            )}
+            <div className=" w-full h-full rounded-full bg-white flex items-center justify-center border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
+              <FontAwesomeIcon icon={faUserCircle} className="text-green-500 text-6xl opacity-90"/>
+            </div>
           </div>
 
           <button onClick={() => navigate(`/profile/edit/${user?.id_user}`)} className="flex items-center gap-2 border border-green-500 text-green-600 hover:bg-green-600 hover:text-white px-5 py-2 rounded-full shadow-md text-xs transition-all duration-300">
@@ -88,8 +84,6 @@ const Profile = () => {
 
         {/* Data Profil */}
         <div className="relative">
-
-
           {!error && profileData && (
             <div className="space-y-3">
               {profileFields.map((field, idx) => (

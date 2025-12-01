@@ -105,7 +105,7 @@ const HrdAccess = () => {
                                                 {hrd.perusahaan?.length || 0}{" "}
                                                 <span className="text-gray-500">Perusahaan</span>
                                             </td>
-                                            <td className="py-3 px-4 text-center text-center">
+                                            <td className="py-3 px-4 text-center">
                                                 <div className="flex justify-center gap-2 flex-wrap">
                                                     <button onClick={() => navigate(`/akses-hrd/edit/${hrd.id_user}`)} className="px-3 py-1.5 rounded-md bg-amber-400 hover:bg-amber-500 text-white text-sm flex items-center gap-1.5 shadow-sm transition-all duration-200">
                                                         <FontAwesomeIcon icon={faEdit} />
@@ -131,10 +131,7 @@ const HrdAccess = () => {
                                                     <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                                                         {hrd.perusahaan.length > 0 ? (
                                                             hrd.perusahaan.map((p, index) => (
-                                                                <div
-                                                                    key={p.id}
-                                                                    className="bg-white border border-emerald-100 rounded-xl p-4 shadow-[0_1px_4px_rgba(0,0,0,0.04)] hover:shadow-[0_3px_10px_rgba(0,0,0,0.06)] transition-all duration-200 hover:-translate-y-[2px]"
-                                                                >
+                                                                <div key={p.id} className="bg-white border border-emerald-100 rounded-xl p-4 shadow-[0_1px_4px_rgba(0,0,0,0.04)] hover:shadow-[0_3px_10px_rgba(0,0,0,0.06)] transition-all duration-200 hover:-translate-y-[2px]">
                                                                     <div className="flex items-center gap-3">
                                                                         <div className="bg-emerald-100 text-emerald-600 p-2 rounded-lg">
                                                                             <FontAwesomeIcon icon={faBuilding} className="text-base" />

@@ -1,12 +1,12 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { fetchWithJwt } from "../../utils/jwtHelper";
-import { getDefaultPeriod } from "../../utils/getDefaultPeriod";
+import { fetchWithJwt } from "../../../utils/jwtHelper";
+import { getDefaultPeriod } from "../../../utils/getDefaultPeriod";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { SectionHeader, Modal, EmptyState, Pagination, SearchBar, LoadingSpinner, ErrorState } from "../../components/";
+import { SectionHeader, Modal, EmptyState, Pagination, SearchBar, LoadingSpinner, ErrorState } from "../../../components";
 import { faInfoCircle, faMapMarkerAlt, faTriangleExclamation, } from "@fortawesome/free-solid-svg-icons";
-import { formatFullDate } from "../../utils/dateUtils";
+import { formatFullDate } from "../../../utils/dateUtils";
 
 const RiwayatLembur = () => {
     const itemsPerPage = 10;
@@ -133,14 +133,9 @@ const RiwayatLembur = () => {
                     {/* ===== CARD UNTUK MOBILE/TABLET VERTICAL RAPI ===== */}
                     <div className="grid gap-3 sm:hidden mt-3">
                         {paginatedData.map((user) => (
-                            <div
-                                key={user.id_user}
-                                className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 hover:shadow-md transition flex flex-col"
-                            >
-                                {/* Nama Karyawan */}
+                            <div key={user.id_user} className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 hover:shadow-md transition flex flex-col">
                                 <p className="text-base font-semibold text-gray-900 mb-3 truncate">{user.nama_user}</p>
 
-                                {/* Statistik lembur vertikal */}
                                 <div className="flex flex-col divide-y divide-gray-100 text-gray-700 text-sm mb-3">
                                     <div className="flex justify-between py-1">
                                         <span className="font-medium text-gray-600">Riwayat</span>

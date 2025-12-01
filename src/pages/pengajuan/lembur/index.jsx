@@ -24,52 +24,6 @@ const PersetujuanLembur = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [modalDescription, setModalDescription] = useState("");
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [selectAll, setSelectAll] = useState(false);
-
-  const toggleSelect = (id) => {
-    setSelectedItems((prev) =>
-      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]
-    );
-  };
-
-  const toggleSelectAll = () => {
-    if (selectAll) {
-      setSelectedItems([]);
-    } else {
-      setSelectedItems(paginatedData.data.map((a) => a.id_lembur || a.id_absen));
-    }
-    setSelectAll(!selectAll);
-  };
-
-  const handleBulkAction = async (status) => {
-    if (selectedItems.length === 0) {
-      toast.error("Tidak ada data yang dipilih.");
-      return;
-    }
-
-    try {
-      for (let id of selectedItems) {
-        const item = approvalData.find(
-          (a) => a.id_lembur === id || a.id_absen === id
-        );
-
-        if (item) {
-          await handleUpdateStatus(item, status);
-        }
-      }
-
-      toast.success("Aksi massal berhasil diproses.");
-      setSelectedItems([]);
-      setSelectAll(false);
-
-      fetchApprovalData(startDate, endDate);
-    } catch (error) {
-      toast.error("Terjadi kesalahan saat proses massal.");
-    }
-  };
-
-
 
   const paginatedData = (() => {
     const filtered = approvalData.filter((a) =>
@@ -185,29 +139,6 @@ const PersetujuanLembur = () => {
         }
       />
 
-      {selectedItems.length > 0 && (
-        <div className="flex gap-2 mb-3 bg-yellow-50 border border-yellow-200 p-3 rounded-lg items-center">
-          <span className="font-medium text-sm text-gray-700">
-            {selectedItems.length} data dipilih
-          </span>
-
-          <button
-            onClick={() => handleBulkAction(1)}
-            className="px-3 py-1 bg-green-600 text-white rounded-md text-sm hover:bg-green-700"
-          >
-            Approve Massal
-          </button>
-
-          <button
-            onClick={() => handleBulkAction(2)}
-            className="px-3 py-1 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
-          >
-            Reject Massal
-          </button>
-        </div>
-      )}
-
-
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full mb-4">
         <div className="w-full sm:flex-1">
           <SearchBar value={searchQuery} onSearch={(val) => setSearchQuery(val)} placeholder="Cari Nama Karyawan..." className="w-full" />
@@ -230,16 +161,6 @@ const PersetujuanLembur = () => {
           <table className="min-w-full table-auto text-sm">
             <thead>
               <tr className="bg-green-500 text-white text-xs md:text-sm uppercase tracking-wider">
-
-                {/* Kolom checkbox untuk select all */}
-                <th className="py-3 px-5 text-center whitespace-nowrap">
-                  <input
-                    type="checkbox"
-                    checked={selectAll}
-                    onChange={toggleSelectAll}
-                  />
-                </th>
-
                 {/* Header lainnya */}
                 {["No.", "Tanggal & Lokasi", "Nama Karyawan", "Waktu Lembur & Total", "Detail", "Menu"].map((h, i) => (
                   <th
@@ -282,13 +203,6 @@ const PersetujuanLembur = () => {
 
                   return (
                     <tr key={a.id_lembur} className="hover:bg-gray-50 transition-colors">
-                      <td className="py-2.5 px-5 text-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedItems.includes(a.id_lembur || a.id_absen)}
-                          onChange={() => toggleSelect(a.id_lembur || a.id_absen)}
-                        />
-                      </td>
 
                       <td className="py-2.5 px-5 text-center font-medium">
                         {idx}

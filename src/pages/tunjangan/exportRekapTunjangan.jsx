@@ -2,11 +2,7 @@ import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import { formatLongDate } from "../../utils/dateUtils";
 
-export const exportRekapTunjangan = async (
-  dataTunjangan,
-  tanggalArray,
-  namaUser
-) => {
+export const exportRekapTunjangan = async ( dataTunjangan, tanggalArray, namaUser) => {
   try {
     if (!dataTunjangan?.length) {
       alert("Tidak ada data untuk diekspor!");
@@ -54,7 +50,7 @@ export const exportRekapTunjangan = async (
     sheet.getCell("D7").value = "JUMLAH";
 
     // Merge header tanggal
-    let colIndex = 8; // kolom setelah G
+    let colIndex = 9; // kolom setelah G
     tanggalArray.forEach((tgl) => {
       const formattedDate = formatLongDate(tgl);
       sheet.mergeCells(7, colIndex, 7, colIndex + 2);
@@ -70,8 +66,9 @@ export const exportRekapTunjangan = async (
       "TKP",
       "TUM",
       "TSM",
+      "TDP",
       "Nominal",
-      ...tanggalArray.flatMap(() => ["TKP", "TUM", "TSM"]),
+      ...tanggalArray.flatMap(() => ["TKP", "TUM", "TSM", "TDP"]),
     ];
     sheet.addRow(subHeader);
 
@@ -107,12 +104,13 @@ export const exportRekapTunjangan = async (
         item.total?.id_tunjangan_1 ?? "-",
         item.total?.id_tunjangan_2 ?? "-",
         item.total?.id_tunjangan_3 ?? "-",
+        item.total?.id_tunjangan_4 ?? "-",
         item.total?.tunjangan ?? 0,
       ];
 
       const detailData = tanggalArray.flatMap((tgl) => {
         const tunjanganHari = item.tunjangan[tgl] || [];
-        const typeIds = [3, 1, 2]; // TKP, TUM, TSM
+        const typeIds = [4, 3, 1, 2]; // TKP, TUM, TSM
         return typeIds.map((id) =>
           tunjanganHari.some((t) => t.id === id) ? "✓" : "-"
         );

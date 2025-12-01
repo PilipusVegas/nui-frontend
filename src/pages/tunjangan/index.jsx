@@ -83,7 +83,7 @@ const DataRekapTunjangan = () => {
 
     const handleMouseEnter = (e, data) => {
         const rect = e.target.getBoundingClientRect();
-        setTooltipPos({ x: rect.x + rect.width / 2, y: rect.y - 10 }); 
+        setTooltipPos({ x: rect.x + rect.width / 2, y: rect.y - 10 });
         setHoveredData(data);
     };
 
@@ -149,13 +149,13 @@ const DataRekapTunjangan = () => {
                                         <th colSpan={2} className="sticky top-0 z-20 bg-green-500 text-white border px-4 py-2 text-[13px] text-center rounded-tl-lg">
                                             PEGAWAI
                                         </th>
-                                        <th colSpan={4} className="sticky top-0 z-20 bg-green-500 text-white border px-4 py-2 text-[13px] text-center">
+                                        <th colSpan={5} className="sticky top-0 z-20 bg-green-500 text-white border px-4 py-2 text-[13px] text-center">
                                             JUMLAH
                                         </th>
                                     </tr>
 
                                     <tr>
-                                        {["NIP", "Nama", "TKP", "TUM", "TSM", "Nominal"].map((header) => {
+                                        {["NIP", "Nama", "TKP", "TUM", "TSM", "TDP", "Nominal"].map((header) => {
                                             let widthStyle = {};
                                             let textAlign = "text-center";
 
@@ -194,6 +194,9 @@ const DataRekapTunjangan = () => {
                                             <td className="border px-3 py-2 text-center text-gray-700">
                                                 {item.total?.id_tunjangan_3 ?? "-"}
                                             </td>
+                                            <td className="border px-3 py-2 text-center text-gray-700">
+                                                {item.total?.id_tunjangan_4 ?? "-"}
+                                            </td>
                                             <td className="border px-4 py-2 text-right font-bold text-green-700 whitespace-nowrap">
                                                 {item.total?.tunjangan ? new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0, }).format(item.total.tunjangan) : "-"}
                                             </td>
@@ -209,14 +212,14 @@ const DataRekapTunjangan = () => {
                                     <thead>
                                         <tr>
                                             {tanggalArray.map((tgl) => (
-                                                <th key={tgl} colSpan={3} className="sticky top-0 z-20 bg-green-500 text-white border px-3 py-2 font-medium text-center">
+                                                <th key={tgl} colSpan={4} className="sticky top-0 z-20 bg-green-500 text-white border px-3 py-2 font-medium text-center">
                                                     {formatLongDate(tgl)}
                                                 </th>
                                             ))}
                                         </tr>
                                         <tr>
                                             {tanggalArray.map((tgl) =>
-                                                ["TKP", "TUM", "TSM"].map((label) => (
+                                                ["TKP", "TUM", "TSM", "TDP"].map((label) => (
                                                     <th key={`${tgl}-${label}`} className="sticky top-[38px] z-20 bg-green-500 text-white border px-3 py-2 font-normal text-center">
                                                         {label}
                                                     </th>
@@ -230,7 +233,7 @@ const DataRekapTunjangan = () => {
                                             <tr key={rowIdx}>
                                                 {tanggalArray.map((tgl) => {
                                                     const tunjanganHari = item.tunjangan[tgl] || [];
-                                                    const typeIds = [1, 2, 3];
+                                                    const typeIds = [1, 2, 3, 4];
                                                     return typeIds.map((id) => {
                                                         const data = tunjanganHari.find((t) => t.id === id);
                                                         return (
@@ -323,6 +326,16 @@ const DataRekapTunjangan = () => {
                                 <li>Diberikan jika karyawan <b>menggunakan kendaraan pribadi</b> saat <b>shift malam di gerai</b>.</li>
                                 <li>Berlaku untuk divisi: <b>Installer</b>, <b>Helper</b>, <b>Supir</b>, dan <b>Operasional</b>.</li>
                                 <li><b>Tidak diberikan</b> jika menggunakan kendaraan kantor.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <span className="font-bold text-blue-700">TDP – Tunjangan Perjalanan Dinas</span>
+                            <ul className="list-disc list-inside ml-2">
+                                <li>Diberikan kepada karyawan yang menjalankan <b>tugas dinas luar kota</b> atau perjalanan kerja sesuai penugasan perusahaan.</li>
+                                <li>Diperuntukkan untuk menutup kebutuhan perjalanan seperti <b>transportasi, konsumsi, dan biaya terkait dinas</b>.</li>
+                                <li>Berlaku untuk seluruh divisi yang menerima <b>surat tugas resmi</b> atau instruksi perjalanan dari atasan.</li>
+                                <li><b>Besaran tunjangan</b> menyesuaikan kebijakan perusahaan berdasarkan area tujuan dan durasi perjalanan.</li>
+                                <li><b>Tidak diberikan</b> apabila perjalanan dilakukan tanpa penugasan resmi atau bersifat pribadi.</li>
                             </ul>
                         </div>
                         <hr className="my-2 border-gray-300" />
