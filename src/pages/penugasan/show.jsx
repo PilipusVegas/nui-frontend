@@ -26,12 +26,26 @@ const DetailPenugasan = () => {
     const canMarkComplete = allApproved && allFinished;
     const [openLogs, setOpenLogs] = useState(false);
     const [openLightbox, setOpenLightbox] = useState(false);
+    const [lightboxIndex, setLightboxIndex] = useState(0);
     const [lightboxImages, setLightboxImages] = useState([]);
 
-    const handleOpenLightbox = (imageUrl) => {
-        setLightboxImages([{ src: imageUrl }]);
+    const handleOpenLightbox = (clickedImage, submissionList) => {
+        if (!submissionList || !Array.isArray(submissionList) || submissionList.length === 0) {
+            toast.error("Tidak ada gambar untuk ditampilkan.");
+            return;
+        }
+
+        const images = submissionList.map((s) => ({
+            src: `${apiUrl}/uploads/img/tugas/${s.bukti_foto}`, // path disamakan
+        }));
+
+        const index = images.findIndex((img) => img.src === clickedImage);
+
+        setLightboxImages(images);
+        setLightboxIndex(index !== -1 ? index : 0);
         setOpenLightbox(true);
     };
+
 
     const fetchTugas = async () => {
         try {
@@ -305,12 +319,7 @@ const DetailPenugasan = () => {
                                 </div>
 
                                 {(() => {
-                                    const progress =
-                                        tugas.details && tugas.details.length > 0
-                                            ? (tugas.details.filter((d) => d.status === 1).length /
-                                                tugas.details.length) *
-                                            100
-                                            : 0;
+                                    const progress = tugas.details && tugas.details.length > 0 ? (tugas.details.filter((d) => d.status === 1).length / tugas.details.length) * 100 : 0;
 
                                     return (
                                         <div className="grid grid-cols-1 sm:grid-cols-4 gap-5 text-sm text-gray-700">
@@ -351,12 +360,7 @@ const DetailPenugasan = () => {
 
                                 <div className="flex justify-end mt-4">
                                     <button disabled={tugas.is_complete || !canMarkComplete} onClick={handleUpdateStatus} className={`px-4 py-2 text-sm font-medium rounded-md transition-all 
-                                        ${tugas.is_complete
-                                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                            : canMarkComplete
-                                                ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                                                : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                                        }`}
+                                        ${tugas.is_complete ? "bg-gray-300 text-gray-500 cursor-not-allowed" : canMarkComplete ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}
                                     >
                                         {tugas.is_complete ? "Terselesaikan" : "Tandai Selesai"}
                                     </button>
@@ -575,12 +579,24 @@ const DetailPenugasan = () => {
                             {selectedDetail?.submission?.length > 0 ? (
                                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
                                     {selectedDetail.submission.map((sub) => (
-                                        <img src={`${apiUrl}/uploads/img/tugas/${sub.bukti_foto}`} alt="Bukti" className="w-full h-24 object-cover rounded-md cursor-pointer" onClick={() => handleOpenLightbox(`${apiUrl}/uploads/img/tugas/${sub.bukti_foto}`)} />
+                                        <img
+                                            key={sub.id}
+                                            src={`${apiUrl}/uploads/img/tugas/${sub.bukti_foto}`}
+                                            alt="Bukti"
+                                            className="w-full h-24 object-cover rounded-md cursor-pointer"
+                                            onClick={() =>
+                                                handleOpenLightbox(
+                                                    `${apiUrl}/uploads/img/tugas/${sub.bukti_foto}`, // gambar yang diklik
+                                                    selectedDetail.submission // list lengkap untuk navigasi lightbox
+                                                )
+                                            }
+                                        />
                                     ))}
                                 </div>
                             ) : (
                                 <p className="text-gray-500 italic text-[13px]">Tidak ada bukti foto.</p>
                             )}
+
                         </div>
 
                         <div className="border-t border-gray-200"></div>
@@ -601,7 +617,15 @@ const DetailPenugasan = () => {
                 )}
             </Modal>
 
-            <Lightbox open={openLightbox} close={() => setOpenLightbox(false)} slides={lightboxImages} plugins={[Captions]} />
+            {/* <Lightbox open={openLightbox} close={() => setOpenLightbox(false)} slides={lightboxImages} plugins={[Captions]} /> */}
+
+            <Lightbox
+                open={openLightbox}
+                close={() => setOpenLightbox(false)}
+                slides={lightboxImages}
+                index={lightboxIndex}
+            />
+
 
         </div>
     );

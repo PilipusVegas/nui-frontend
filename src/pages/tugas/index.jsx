@@ -46,7 +46,7 @@ const Tugas = () => {
     const getStatusLabel = (task) => {
         if (task.is_paused === 1) return "Ditunda";
         if (task.status_tugas === 2) return "Ditolak, Revisi Segera !";
-        if (task.status_tugas === 0 && task.finished_at) return "Pending";
+        if (task.status_tugas === 0 && task.finished_at) return "Menunggu Verifikasi";
         if (task.status_tugas === 0 && !task.finished_at) return "Belum Selesai";
         return "Selesai";
     };
@@ -98,95 +98,204 @@ const Tugas = () => {
         const deadlineInfo = getDeadlineStatus(t.deadline_at);
 
         return (
-            <div onClick={() => navigate(`/tugas/${t.id}`)} className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm hover:shadow-md transition-all duration-200 active:scale-[0.99] cursor-pointer">
-                <div className="flex justify-between items-start mb-2 gap-3">
-                    <div className="flex-1 min-w-0">
-                        <h2 className="font-semibold text-[10.5px] text-gray-900 leading-tight truncate uppercase">
-                            {t.nama_tugas}
-                        </h2>
-                        <div className="flex items-center gap-1 mt-1">
-                            <FontAwesomeIcon icon={faClipboardList} className="text-[9px] text-green-500" />
-                            <span className={`text-[9px] font-semibold px-2 py-0.5 rounded ${getStatusColor(t)}`}>
-                                {getStatusLabel(t)}
-                            </span>
-                        </div>
-                    </div>
-
-                    <span className={`text-[8.5px] px-2 py-0.5 rounded font-medium tracking-wide whitespace-nowrap uppercase ${getCategoryColor(t.category)}`}>
+            <div
+                onClick={() => navigate(`/tugas/${t.id}`)}
+                className="
+                bg-white border border-gray-200 rounded-xl p-4
+                shadow-sm hover:shadow-md 
+                transition-all duration-200 
+                active:scale-[0.97] cursor-pointer
+            "
+            >
+                {/* Header: Category & Status */}
+                <div className="flex justify-between items-start mb-3">
+                    {/* Category */}
+                    <span
+                        className={`
+                        text-[11px] px-2 py-[4px] rounded-md font-semibold 
+                        uppercase tracking-wide
+                        ${getCategoryColor(t.category)}
+                    `}
+                    >
                         {t.category}
+                    </span>
+
+                    {/* Status */}
+                    <span
+                        className={`
+                        text-[11px] px-2 py-[4px] rounded-md font-semibold 
+                        uppercase flex items-center gap-1.5
+                        ${getStatusColor(t)}
+                    `}
+                    >
+                        <FontAwesomeIcon icon={faClipboardList} className="text-[10px]" />
+                        {getStatusLabel(t)}
                     </span>
                 </div>
 
-                <div className="text-[9.5px] text-gray-700 space-y-1">
-                    <div className="flex items-center gap-1.5">
-                        <FontAwesomeIcon icon={faClock} className="text-[9px] text-green-500" />
+                {/* Title */}
+                <h2 className="font-semibold text-[14px] text-gray-900 leading-snug mb-2 line-clamp-2">
+                    {t.nama_tugas}
+                </h2>
+
+                {/* Deadline */}
+                {t.status_tugas !== 1 && (
+                    <div className="flex items-center gap-2 mb-3">
+                        <FontAwesomeIcon icon={faCalendarAlt} className="text-[12px] text-green-600" />
+                        <span className="text-[12px] text-gray-700">
+                            <span className="font-medium text-gray-900">Tenggat:</span> {formatLongDate(t.deadline_at)}
+                            <span
+                                className={`
+                                ml-1 font-semibold
+                                ${deadlineInfo.includes("Terlambat")
+                                        ? "text-red-600"
+                                        : deadlineInfo.includes("hari ini")
+                                            ? "text-amber-600"
+                                            : "text-green-600"
+                                    }
+                            `}
+                            >
+                                ({deadlineInfo})
+                            </span>
+                        </span>
+                    </div>
+                )}
+
+                {/* Body Info */}
+                <div className="text-[12px] text-gray-700 space-y-2">
+
+                    {/* Start Date */}
+                    <div className="flex items-center gap-2">
+                        <FontAwesomeIcon icon={faClock} className="text-[12px] text-green-500" />
                         <span>
-                            <span className="font-medium text-gray-800">Mulai:</span> {formatLongDate(t.start_date)}
+                            <span className="font-medium text-gray-900">Mulai:</span> {formatLongDate(t.start_date)}
                         </span>
                     </div>
 
-                    {t.status_tugas !== 1 && (
-                        <div className="flex items-center gap-1.5">
-                            <FontAwesomeIcon icon={faCalendarAlt} className="text-[9px] text-green-500" />
-                            <span>
-                                <span className="font-medium text-gray-800">Tenggat:</span> {formatLongDate(t.deadline_at)}{" "}
-                                <span className={`ml-1 font-medium ${deadlineInfo.includes("Terlambat") ? "text-red-600" : deadlineInfo.includes("hari ini") ? "text-amber-600" : "text-green-600"}`}>
-                                    ({deadlineInfo})
-                                </span>
+                    {/* Finish */}
+                    {t.finished_at && (
+                        <div className="flex items-center gap-2 text-gray-600 italic">
+                            <FontAwesomeIcon icon={faCircleCheck} className="text-green-500 text-[12px]" />
+                            <span className="not-italic">
+                                <span className="font-medium text-gray-900">Selesai:</span>{" "}
+                                {formatLongDate(t.finished_at)}
                             </span>
                         </div>
                     )}
-
-                    {t.finished_at && (
-                        <div>
-                            <p className="text-[9px] text-gray-600 italic flex items-center gap-1.5">
-                                <FontAwesomeIcon icon={faCircleCheck} className="text-green-500 text-[9px]" />
-                                <span>
-                                    <span className="font-medium text-gray-800">Selesai:</span>{" "}
-                                    {formatLongDate(t.finished_at)}
-                                </span>
-                            </p>
-                        </div>
-                    )}
                 </div>
-
             </div>
         );
     };
 
-    const tabs = [
-        { key: "all", label: "Semua" },
-        { key: "urgent", label: "Darurat" },
-        { key: "daily", label: "Harian" },
-        { key: "history", label: "Riwayat" },
-    ];
+
+    const countAll = tasks.filter((t) => {
+        const category = t.category?.toLowerCase();
+        const isFinished = !!t.finished_at;
+        const isPending = isFinished && t.status_persetujuan === 0;
+        const isRevision = t.status_tugas === 2;
+
+        return (
+            (category === "urgent" || category === "daily") &&
+            (!isFinished || isPending || isRevision)
+        );
+    }).length;
+
+    const countUrgent = tasks.filter((t) => t.category?.toLowerCase() === "urgent" && t.status_tugas !== 1).length;
+    const countDaily = tasks.filter((t) => t.category?.toLowerCase() === "daily" && t.status_tugas !== 1).length;
+
 
     return (
         <MobileLayout title="Daftar Tugas">
-            {/* Tab Filter */}
-            <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
-                <div className="flex justify-between gap-2 px-3 py-2">
-                    {tabs.map((tab) => {
-                        const isActive = activeTab === tab.key;
-                        return (
-                            <button
-                                key={tab.key}
-                                onClick={() => setActiveTab(tab.key)}
-                                className={`flex-1 text-center px-3 py-1.5 rounded-full text-[9.5px] font-medium transition-all duration-200
-                                    ${isActive
-                                        ? "bg-green-500 text-white shadow-sm scale-[1.03]"
-                                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                                    }`}
+            <div className="sticky top-0 z-20 bg-white border-b border-gray-200">
+                <div className="flex justify-between px-3 py-1.5">
+
+                    {/* Semua */}
+                    <button onClick={() => setActiveTab("all")} className="flex-1 flex flex-col items-center">
+                        <div className="flex items-center gap-1.5">
+                            <span className={`text-[13px] font-semibold transition-colors ${activeTab === "all" ? "text-green-600" : "text-gray-600"}`}>
+                                Semua
+                            </span>
+
+                            {countAll > 0 && (
+                                <span className={`text-[8.5px] font-semibold px-2 py-[2px] rounded-md min-w-min transition-all whitespace-nowrap
+                                    ${activeTab === "all" ? "bg-green-50 text-green-700 border border-green-200" : "bg-gray-100 text-gray-600 border border-gray-200"}`}
+                                >
+                                    {countAll}
+                                </span>
+                            )}
+
+                        </div>
+
+                        <div className={`h-[2px] mt-1 rounded-full transition-all duration-200 w-10
+                            ${activeTab === "all" ? "bg-green-600" : "bg-transparent"}`}
+                        ></div>
+                    </button>
+
+                    {/* Urgent */}
+                    <button onClick={() => setActiveTab("urgent")} className="flex-1 flex flex-col items-center">
+                        <div className="flex items-center gap-1.5">
+                            <span className={`text-[13px] font-semibold transition-colors
+                                ${activeTab === "urgent" ? "text-red-600" : "text-gray-600"}`}
                             >
-                                {tab.label}
-                            </button>
-                        );
-                    })}
+                                Urgent
+                            </span>
+
+                            {countUrgent > 0 && (
+                                <span className={`text-[8.5px] font-semibold px-2 py-[2px] rounded-md min-w-min transition-all whitespace-nowrap
+                                    ${activeTab === "urgent" ? "bg-red-50 text-red-600 border border-red-200" : "bg-gray-100 text-gray-600 border border-gray-200"}`}
+                                >
+                                    {countUrgent}
+                                </span>
+                            )}
+
+                        </div>
+
+                        <div className={`h-[2px] mt-1 rounded-full transition-all duration-200 w-10
+                            ${activeTab === "urgent" ? "bg-red-500" : "bg-transparent"}`}
+                        ></div>
+                    </button>
+
+                    {/* Daily */}
+                    <button onClick={() => setActiveTab("daily")} className="flex-1 flex flex-col items-center">
+                        <div className="flex items-center gap-1.5">
+                            <span className={`text-[13px] font-semibold transition-colors
+                                ${activeTab === "daily" ? "text-green-700" : "text-gray-600"}`}
+                            >
+                                Daily
+                            </span>
+
+                            {countDaily > 0 && (
+                                <span className={`text-[8.5px] font-semibold px-2 py-[2px] rounded-md min-w-min transition-all whitespace-nowrap
+                                    ${activeTab === "daily" ? "bg-green-50 text-green-700 border border-green-200" : "bg-gray-100 text-gray-600 border border-gray-200"}`}
+                                >
+                                    {countDaily}
+                                </span>
+                            )}
+
+                        </div>
+
+                        <div className={`h-[2px] mt-1 rounded-full transition-all duration-200 w-10 ${activeTab === "daily" ? "bg-green-700" : "bg-transparent"}`}></div>
+                    </button>
+
+                    {/* Riwayat */}
+                    <button onClick={() => setActiveTab("history")} className="flex-1 flex flex-col items-center">
+                        <span className={`text-[13px] font-semibold transition-colors
+                            ${activeTab === "history" ? "text-gray-800" : "text-gray-600"}`}
+                        >
+                            Riwayat
+                        </span>
+
+                        <div className={`h-[2px] mt-1 rounded-full transition-all duration-200 w-10
+                            ${activeTab === "history" ? "bg-gray-800" : "bg-transparent"}`}
+                        ></div>
+                    </button>
+
                 </div>
             </div>
 
+
             {/* Daftar Tugas */}
-            <div className="overflow-y-auto pb-24 pt-3 space-y-2" style={{ maxHeight: "calc(100vh - 120px)" }}>
+            <div className="overflow-y-auto scrollbar-none pb-24 pt-3 space-y-2" style={{ maxHeight: "calc(100vh - 120px)" }}>
                 {loading ? (
                     <LoadingSpinner message="Memuat daftar tugas..." />
                 ) : error ? (

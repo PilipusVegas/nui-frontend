@@ -22,6 +22,8 @@ const KadivMember = () => {
     const [editKadiv, setEditKadiv] = useState(null);
     const [addMemberModalOpen, setAddMemberModalOpen] = useState(false);
     const [currentKadivId, setCurrentKadivId] = useState(null);
+    const [currentKadivName, setCurrentKadivName] = useState("");
+
 
     const toggleDetail = async (id) => {
         try {
@@ -133,7 +135,7 @@ const KadivMember = () => {
                                             </td>
                                             <td className="py-2 px-4 text-center">
                                                 <div className="flex justify-center gap-2 flex-wrap">
-                                                    <button onClick={() => { setCurrentKadivId(kadiv.id); setAddMemberModalOpen(true); }} className="px-3 py-1.5 rounded bg-green-500 hover:bg-green-600 text-white text-sm flex items-center gap-1.5 shadow-sm transition-all duration-200 active:scale-95">
+                                                    <button onClick={() => { setCurrentKadivId(kadiv.id); setCurrentKadivName(kadiv.nama); setAddMemberModalOpen(true); }} className="px-3 py-1.5 rounded bg-green-500 hover:bg-green-600 text-white text-sm flex items-center gap-1.5 shadow-sm transition-all duration-200 active:scale-95">
                                                         <FontAwesomeIcon icon={faPlus} className="text-xs" />
                                                         Anggota
                                                     </button>
@@ -160,7 +162,7 @@ const KadivMember = () => {
                 <DetailKadiv data={selectedKadiv} />
             </Modal>
             <FormAccessKadiv isOpen={formModalOpen} onClose={() => setFormModalOpen(false)} onSuccess={fetchKadivAccess} editData={editKadiv} />
-            <AddMemberModal isOpen={addMemberModalOpen} onClose={() => setAddMemberModalOpen(false)} idKadiv={currentKadivId} onSuccess={fetchKadivAccess} />
+            <AddMemberModal isOpen={addMemberModalOpen} onClose={() => setAddMemberModalOpen(false)} idKadiv={currentKadivId}  kadivName={currentKadivName} onSuccess={fetchKadivAccess} />
         </div>
     );
 };

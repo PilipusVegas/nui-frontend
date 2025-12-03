@@ -5,6 +5,7 @@ import { faEye, faEyeSlash, faInfoCircle, faSave, faTimes, faChevronDown, } from
 import Swal from "sweetalert2";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { SectionHeader } from "../../components";
+import Select from "react-select";
 
 const EditKaryawan = () => {
     const { id } = useParams();
@@ -16,6 +17,7 @@ const EditKaryawan = () => {
     const [perusahaanList, setPerusahaanList] = useState([]);
     const [showPassword, setShowPassword] = useState(false);
     const [showShiftDetails, setShowShiftDetails] = useState(false);
+    const [kadivList, setKadivList] = useState([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -53,6 +55,19 @@ const EditKaryawan = () => {
 
         fetchData();
     }, [apiUrl, id]);
+
+    useEffect(() => {
+        const fetchKadiv = async () => {
+            try {
+                const res = await fetchWithJwt(`${apiUrl}/profil/kadiv-access`);
+                const data = await res.json();
+                if (data.success) setKadivList(data.data);
+            } catch (err) {
+                console.error("Gagal fetch Kadiv", err);
+            }
+        };
+        fetchKadiv();
+    }, [apiUrl]);
 
 
     const handleChange = (e) => {
@@ -105,7 +120,6 @@ const EditKaryawan = () => {
             <SectionHeader title="Edit Karyawan" onBack={() => navigate(-1)} subtitle="Formulir untuk mengedit data karyawan" />
             <form onSubmit={handleSubmit} className="flex-grow pb-5 px-3 w-full mx-auto space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* === Biodata Karyawan === */}
                     <div className="col-span-full flex flex-col">
                         <div className="flex items-center">
                             <h3 className="text-lg font-bold text-green-600">
@@ -165,7 +179,6 @@ const EditKaryawan = () => {
                         </select>
                     </div>
 
-                    {/* JUMLAH ANAK - Tampilkan jika Sudah Menikah */}
                     {currentUser.status_nikah === "Sudah_Menikah" && (
                         <div>
                             <label className="block mb-1 font-medium text-gray-700">Jumlah Anak</label>
@@ -202,7 +215,7 @@ const EditKaryawan = () => {
                         </select>
                     </div>
 
-                    {/* === PENEMPATAN KERJA & DIVISI === */}
+                    {/* === PENEMPATAN KERJA & DIVISI === */}   
                     <div className="col-span-full flex flex-col mt-4">
                         <div className="flex items-center">
                             <h3 className="text-lg font-bold text-green-600">
@@ -265,6 +278,29 @@ const EditKaryawan = () => {
                                 ))}
                         </select>
                     </div>
+
+                    {/* Select Kepala Divisi */}
+                    {parseInt(currentUser.id_perusahaan) === 1 && !currentUser.is_kadiv && (
+                        <div className="mb-4">
+                            <label className="block mb-1 font-medium text-gray-700">
+                                Pilih Kepala Divisi <span className="text-red-500">*</span>
+                            </label>
+                            <Select
+                                options={kadivList.map((k, index) => ({ value: k.id, label: k.nama }))} // pakai 'id' index
+                                value={
+                                    currentUser.id_kadiv
+                                        ? { value: currentUser.id_kadiv, label: kadivList.find(k => k.id === currentUser.id_kadiv)?.nama }
+                                        : null
+                                }
+                                onChange={(selected) =>
+                                    setCurrentUser(prev => ({ ...prev, id_kadiv: selected?.value || "" }))
+                                }
+                                placeholder="Pilih Kepala Divisi"
+                                isClearable
+                                classNamePrefix="react-select"
+                            />
+                        </div>
+                    )}
 
                     <div className="col-span-full flex flex-col mt-4">
                         <div className="flex items-center">

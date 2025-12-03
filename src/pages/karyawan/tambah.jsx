@@ -16,6 +16,7 @@ const TambahKaryawan = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [currentUser, setCurrentUser] = useState({ nip: "", nik: "", npwp: "", no_rek: "", nama: "", status_nikah: "", jml_anak: 0, id_perusahaan: "", id_role: "", id_shift: "", telp: "", username: "", password: "", status: 1, });
   const [showShiftDetails, setShowShiftDetails] = useState(false);
+  const [kadivList, setKadivList] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,14 +46,35 @@ const TambahKaryawan = () => {
     fetchData();
   }, [apiUrl]);
 
+  useEffect(() => {
+    const fetchKadiv = async () => {
+      try {
+        const res = await fetchWithJwt(`${apiUrl}/profil/kadiv-access`);
+        const data = await res.json();
+        if (data.success) setKadivList(data.data);
+      } catch (err) {
+        console.error("Gagal fetch Kadiv", err);
+      }
+    };
+    fetchKadiv();
+  }, [apiUrl]);
 
+
+  // Validasi sebelum submit
   const handleAdd = async () => {
     if (!currentUser.nip || !currentUser.nama || !currentUser.id_perusahaan || !currentUser.id_role || !currentUser.id_shift) {
       return Swal.fire("Peringatan", "Kolom nama, perusahaan, role, dan shift harus diisi.", "warning");
     }
 
+    if (!currentUser.is_kadiv && !currentUser.id_kadiv) {
+      return Swal.fire("Peringatan", "Harap pilih Kepala Divisi jika bukan Kadiv.", "warning");
+    }
+
     try {
-      const payload = { ...currentUser };
+      const payload = {
+        ...currentUser,
+        id_kadiv: currentUser.is_kadiv ? null : currentUser.id_kadiv
+      };
       const res = await fetchWithJwt(`${apiUrl}/profil`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -186,10 +208,7 @@ const TambahKaryawan = () => {
 
           <div className="mb-4">
             <label className="block mb-1 font-medium text-gray-700">Perusahaan</label>
-            <Select
-              placeholder="Pilih Perusahaan"
-              isClearable
-              classNamePrefix="react-select"
+            <Select placeholder="Pilih Perusahaan" isClearable classNamePrefix="react-select"
               options={perusahaanList.map((item) => ({
                 value: item.id,
                 label: item.nama,
@@ -204,8 +223,6 @@ const TambahKaryawan = () => {
               }
             />
 
-
-            {/* Keterangan jumlah shift */}
             {currentUser.id_perusahaan && (
               (() => {
                 const idPerusahaan = parseInt(currentUser.id_perusahaan);
@@ -229,7 +246,6 @@ const TambahKaryawan = () => {
             )}
           </div>
 
-          {/* Divisi */}
           <div className="mb-4">
             <label className="block mb-1 font-medium text-gray-700">Divisi</label>
             <Select
@@ -252,6 +268,31 @@ const TambahKaryawan = () => {
           </div>
 
 
+          {/* Select Kepala Divisi */}
+          {parseInt(currentUser.id_perusahaan) === 1 && !currentUser.is_kadiv && (
+            <div className="mb-4">
+              <label className="block mb-1 font-medium text-gray-700">
+                Pilih Kepala Divisi <span className="text-red-500">*</span>
+              </label>
+              <Select
+                options={kadivList.map((k, index) => ({ value: k.id, label: k.nama }))} // pakai 'id' index
+                value={
+                  currentUser.id_kadiv
+                    ? { value: currentUser.id_kadiv, label: kadivList.find(k => k.id === currentUser.id_kadiv)?.nama }
+                    : null
+                }
+                onChange={(selected) =>
+                  setCurrentUser(prev => ({ ...prev, id_kadiv: selected?.value || "" }))
+                }
+                placeholder="Pilih Kepala Divisi"
+                isClearable
+                classNamePrefix="react-select"
+              />
+            </div>
+          )}
+
+
+
           <div className="col-span-full flex flex-col mt-4">
             <div className="flex items-center">
               <h3 className="text-lg font-bold text-green-600">
@@ -265,7 +306,6 @@ const TambahKaryawan = () => {
             </p>
           </div>
 
-          {/* Shift */}
           <div>
             <label className="block mb-1 font-medium text-gray-700">Shift / Jadwal Kerja Karyawan</label>
             <select name="id_shift" value={currentUser.id_shift || ""} disabled={!currentUser.id_perusahaan} className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none ${!currentUser.id_perusahaan ? "bg-gray-100 cursor-not-allowed" : "bg-white"}`}

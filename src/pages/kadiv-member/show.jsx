@@ -2,27 +2,11 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faUserTie,
-    faBuilding,
-    faUsers,
-    faTrash,
-    faPen,
-    faPencil,
-} from "@fortawesome/free-solid-svg-icons";
-
+import { faUserTie, faBuilding, faUsers, faTrash, faPencil, } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { toast } from "react-hot-toast";
 import Swal from "sweetalert2";
-
-// COMPONENTS
-import {
-    LoadingSpinner,
-    ErrorState,
-    EmptyState,
-    SearchBar,
-} from "../../components";
-import { id } from "date-fns/locale";
+import { LoadingSpinner, ErrorState, EmptyState, SearchBar } from "../../components";
 
 const DetailKadiv = ({ data, onRefresh }) => {
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -110,23 +94,43 @@ const DetailKadiv = ({ data, onRefresh }) => {
         }
     };
 
-    const handleUpdate = async (id_member, id_user) => {
-        // Dropdown → ambil ID (primary key) dari Kadiv
+    const handleUpdate = async (id_member) => {
+        const member = members.find(m => m.id_member === id_member);
+        if (!member) return;
+
         const kadivOptions = listKadiv
+            .filter(k => k.id !== member.id_kadiv) // exclude Kadiv member saat ini
             .map(k => `<option value="${k.id}">${k.nama} - ${k.nip}</option>`)
             .join("");
+
+        if (!kadivOptions) {
+            toast.error("Tidak ada Kadiv lain untuk dipindahkan.");
+            return;
+        }
 
         const { value: selectedKadiv } = await Swal.fire({
             title: "Pindahkan ke Kadiv lain",
             html: `
-            <select id="kadivSelect" class="swal2-select" style="width:100%; padding:8px;">
-                ${kadivOptions}
-            </select>
+            <div style="text-align:left; margin-top:10px;">
+                <label for="kadivSelect" style="display:block; margin-bottom:5px; font-weight:500;">Pilih Kadiv tujuan:</label>
+                <select id="kadivSelect" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:6px; font-size:14px;">
+                    <option value="" disabled selected>Pilih Kadiv...</option>
+                    ${kadivOptions}
+                </select>
+            </div>
         `,
-            preConfirm: () => document.getElementById("kadivSelect").value,
             showCancelButton: true,
             confirmButtonText: "Pindahkan",
             cancelButtonText: "Batal",
+            focusConfirm: false,
+            preConfirm: () => {
+                const val = document.getElementById("kadivSelect").value;
+                if (!val) {
+                    Swal.showValidationMessage("Silakan pilih Kadiv tujuan!");
+                    return false;
+                }
+                return val;
+            },
         });
 
         if (!selectedKadiv) return;
@@ -141,15 +145,16 @@ const DetailKadiv = ({ data, onRefresh }) => {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         id_kadiv: Number(selectedKadiv),
-                        id_user: members.find(m => m.id_member === id_member).id_user,
+                        id_user: member.id_user,
                     }),
                 }
             );
 
             const json = await res.json();
             if (json.success) {
+                // Hapus member yang dipindahkan dari list current Kadiv
+                setMembers(prev => prev.filter(m => m.id_member !== id_member));
                 toast.success("Kadiv member berhasil dipindahkan!");
-                onRefresh?.();
             } else {
                 toast.error(json.message || "Gagal update");
             }
@@ -158,10 +163,7 @@ const DetailKadiv = ({ data, onRefresh }) => {
         } finally {
             setLoadingAction(false);
         }
-    };
-
-
-
+    };  
 
 
     const toggleSelect = (id) => {

@@ -102,28 +102,17 @@ const FormAccessKadiv = ({ isOpen, onClose, onSuccess, editData }) => {
     };
 
     return (
-        <Modal
-            isOpen={isOpen}
-            onClose={onClose}
-            title={editData ? "Edit Kadiv Access" : "Tambah Kadiv Access"}
-            note="Pilih pengguna yang akan dijadikan Kadiv."
-        >
+        <Modal isOpen={isOpen} onClose={onClose} title={editData ? "Edit Akses Kadiv" : "Tambah Akses Kadiv"} note={editData  ? "Ganti kepala divisi sambil mempertahankan anggota yang ada."  : "Tambahkan kepala divisi baru."}>
+
             <form onSubmit={handleSubmit} className="grid gap-4 text-sm text-gray-700">
 
                 <div>
                     <label className="block mb-1 font-medium">Pilih User</label>
-
-                    <Select
-                        value={selectedUser}
-                        onChange={setSelectedUser}
-                        options={listUser}
-                        placeholder="Cari nama user..."
-                        required
-                        menuPortalTarget={document.body}
+                    <Select value={selectedUser} onChange={setSelectedUser} options={listUser} placeholder="Cari nama user..." required menuPortalTarget={document.body}
                         styles={{
                             menuPortal: (base) => ({
                                 ...base,
-                                zIndex: 999999,   // <—— ini kunci utamanya
+                                zIndex: 999999,
                             }),
                             menu: (base) => ({
                                 ...base,
@@ -140,15 +129,11 @@ const FormAccessKadiv = ({ isOpen, onClose, onSuccess, editData }) => {
 
                 </div>
 
-                <button
-                    type="submit"
-                    disabled={loading || !selectedUser}
-                    className="w-full px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg shadow active:scale-95 transition-all"
-                >
+                <button type="submit" disabled={loading || !selectedUser} className="w-full px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg shadow active:scale-95 transition-all">
                     {loading ? "Menyimpan..." : editData ? "Perbarui" : "Tambah"}
                 </button>
             </form>
-        </Modal>
+        </Modal >
     );
 };
 

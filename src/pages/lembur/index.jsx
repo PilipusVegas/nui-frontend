@@ -167,17 +167,17 @@ const Lembur = () => {
     <MobileLayout title="Formulir Lembur">
       <div className="space-y-3 p-2 pb-28">
         <div className="border border-blue-400 rounded-md bg-blue-50">
-          <div className="flex items-center gap-1 p-2 cursor-pointer" onClick={() => setOpenInfo(prev => !prev)}>
-            <FontAwesomeIcon icon={faInfoCircle} className="text-blue-500 text-sm " />
-            <p className="text-[12px] text-blue-900 font-semibold">
+          <div className="flex items-center gap-2 p-3 cursor-pointer" onClick={() => setOpenInfo(prev => !prev)}>
+            <FontAwesomeIcon icon={faInfoCircle} className="text-blue-500 text-md " />
+            <p className="text-[14px] text-blue-900 font-semibold">
               Petunjuk Pengajuan Lembur
             </p>
-            <FontAwesomeIcon icon={openInfo ? faChevronUp : faChevronDown} className="ml-auto text-blue-600 text-xs" />
+            <FontAwesomeIcon icon={openInfo ? faChevronUp : faChevronDown} className="ml-auto text-blue-600 text-md" />
           </div>
 
           {openInfo && (
-            <div className="px-3 pb-3 text-[11px] text-blue-900 leading-relaxed space-y-2">
-              <ul className="list-disc ml-4 space-y-1.5">
+            <div className="px-3 pb-3 text-[13px] text-blue-900 leading-relaxed space-y-2">
+              <ul className="list-disc ml-9 space-y-1.5">
                 <li>Pastikan seluruh data sudah benar sebelum mengirim.</li>
                 <li>Jam <b>Mulai</b> dan <b>Selesai</b> tidak boleh sama.</li>
                 <li>Setelah submit, data otomatis masuk ke <b>Riwayat Lembur</b>.</li>
@@ -201,10 +201,10 @@ const Lembur = () => {
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-semibold mb-1">Tanggal Lembur</label>
-            <input type="date" value={lemburData.tanggal} onChange={(e) => setLemburData(d => ({ ...d, tanggal: e.target.value }))} className="w-full p-2 py-1 border-2 border-gray-200 rounded" />
+            <input type="date" value={lemburData.tanggal} onChange={(e) => setLemburData(d => ({ ...d, tanggal: e.target.value }))} className="w-full p-1.5 border-2 border-gray-200 rounded" />
           </div>
           <div>
             <label className="block text-sm font-semibold mb-1">Jam Mulai</label>
@@ -234,7 +234,7 @@ const Lembur = () => {
           </div>
           <div>
             <label className="block text-sm font-semibold mb-1">Keterangan Lembur</label>
-            <textarea rows="2" value={lemburData.tugas} maxLength={250} onChange={(e) => setLemburData(d => ({ ...d, tugas: e.target.value }))} className="w-full p-2 border-2 border-gray-200 rounded" />
+            <textarea rows="3" value={lemburData.tugas} maxLength={250} onChange={(e) => setLemburData(d => ({ ...d, tugas: e.target.value }))} className="w-full p-2 border-2 border-gray-200 rounded" />
           </div>
           <div className="fixed bottom-0 left-0 w-full bg-white p-3 border-t shadow-lg">
             <button onClick={handleSubmit} disabled={loading} className={`w-full py-3 text-white rounded font-semibold ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"}`}>
