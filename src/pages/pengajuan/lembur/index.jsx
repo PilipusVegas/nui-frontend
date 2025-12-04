@@ -13,8 +13,6 @@ import { SectionHeader, Modal, LoadingSpinner, ErrorState, EmptyState, SearchBar
 const PersetujuanLembur = () => {
   const itemsPerPage = 10;
   const navigate = useNavigate();
-  const [endDate, setEndDate] = useState("");
-  const [startDate, setStartDate] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -36,13 +34,11 @@ const PersetujuanLembur = () => {
     };
   })();
 
-  const fetchApprovalData = async (s = startDate, e = endDate) => {
-    if (!s || !e) return;
+  const fetchApprovalData = async () => {
     try {
       setIsLoading(true);
       setErrorMessage("");
-      const qs = `?startDate=${s}&endDate=${e}`;
-      const res = await fetchWithJwt(`${apiUrl}/lembur/approve${qs}`);
+      const res = await fetchWithJwt(`${apiUrl}/lembur/approve`);
       if (!res.ok) throw new Error("Gagal mengambil data.");
       const result = await res.json();
       if (Array.isArray(result.data)) {
@@ -59,24 +55,9 @@ const PersetujuanLembur = () => {
   };
 
   useEffect(() => {
-    const { start, end } = getDefaultPeriod();
-    setStartDate(start);
-    setEndDate(end);
-    fetchApprovalData(start, end);
+    fetchApprovalData();
   }, [apiUrl]);
 
-  useEffect(() => {
-    if (startDate && endDate) {
-      fetchApprovalData(startDate, endDate);
-    }
-  }, [startDate, endDate]);
-
-  const handleUseDefaultPeriod = () => {
-    const { start, end } = getDefaultPeriod();
-    setStartDate(start);
-    setEndDate(end);
-    fetchApprovalData(start, end);
-  };
 
   const openModalWithDescription = (desc) => {
     setModalDescription(desc);
@@ -113,7 +94,7 @@ const PersetujuanLembur = () => {
         toast.error("Pengajuan lembur ditolak.");
       }
 
-      fetchApprovalData(startDate, endDate);
+      fetchApprovalData();
     } catch (err) {
       setErrorMessage(err.message);
       toast.error(err.message);
@@ -131,7 +112,7 @@ const PersetujuanLembur = () => {
       <SectionHeader title="Pengajuan Lembur" subtitle="Daftar pengajuan lembur berdasarkan periode" onBack={() => navigate("/home")}
         actions={
           <div className="flex gap-2">
-            <button onClick={() => setIsInfoModalOpen(true)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium">
+            <button onClick={() => setIsInfoModalOpen(true)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-2 rounded-md font-medium">
               <FontAwesomeIcon icon={faInfoCircle} />
               <span className="sm:inline hidden">Informasi</span>
             </button>
@@ -143,36 +124,18 @@ const PersetujuanLembur = () => {
         <div className="w-full sm:flex-1">
           <SearchBar value={searchQuery} onSearch={(val) => setSearchQuery(val)} placeholder="Cari Nama Karyawan..." className="w-full" />
         </div>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
-          <div className="flex items-center gap-2 flex-wrap">
-            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border rounded-lg px-3 py-2 text-sm" />
-            <span className="font-medium">-</span>
-            <input type="date" value={endDate} min={startDate} onChange={(e) => setEndDate(e.target.value)} className="border rounded-lg px-3 py-2 text-sm" />
-          </div>
-
-          <button onClick={handleUseDefaultPeriod} className="px-4 py-2 text-sm text-white bg-green-500 rounded-md hover:bg-green-600">
-            Periode Saat Ini
-          </button>
-        </div>
       </div>
 
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
           <table className="min-w-full table-auto text-sm">
             <thead>
-              <tr className="bg-green-500 text-white text-xs md:text-sm uppercase tracking-wider">
-                {/* Header lainnya */}
+              <tr className="bg-green-500 text-white text-xs md:text-sm uppercase tracking-wide">
                 {["No.", "Tanggal & Lokasi", "Nama Karyawan", "Waktu Lembur & Total", "Detail", "Menu"].map((h, i) => (
-                  <th
-                    key={i}
-                    className="py-3 px-5 text-center font-semibold whitespace-nowrap"
-                  >
-                    {h}
-                  </th>
+                  <th key={i} className="py-2 px-4 text-center font-semibold whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
-
 
             <tbody className="divide-y divide-gray-200 text-gray-700">
               {isLoading ? (
@@ -184,7 +147,7 @@ const PersetujuanLembur = () => {
               ) : errorMessage ? (
                 <tr>
                   <td colSpan={6} className="py-16">
-                    <ErrorState message={errorMessage} onRetry={() => fetchApprovalData(startDate, endDate)} />
+                    <ErrorState message={errorMessage} onRetry={fetchApprovalData} />
                   </td>
                 </tr>
               ) : paginatedData.data.length === 0 ? (
@@ -195,49 +158,41 @@ const PersetujuanLembur = () => {
                 </tr>
               ) : (
                 paginatedData.data.map((a, i) => {
-                  const start = new Date(`1970-01-01T${a.jam_mulai}`);
-                  const end = new Date(`1970-01-01T${a.jam_selesai}`);
-                  const duration = ((end - start) / 1000 / 60).toFixed(0);
-                  const hours = Math.floor(duration / 60);
                   const idx = (currentPage - 1) * itemsPerPage + i + 1;
 
                   return (
                     <tr key={a.id_lembur} className="hover:bg-gray-50 transition-colors">
 
-                      <td className="py-2.5 px-5 text-center font-medium">
-                        {idx}
-                      </td>
-                      <td className="py-2.5 px-5">
-                        <div className="font-medium"> {formatFullDate(a.tanggal)}</div>
-                        <div className="text-gray-500 text-xs mt-0.5"> {a.lokasi}</div>
-                      </td>
-                      <td className="py-2.5 px-5">
-                        <div className="font-medium"> {(a.nama_user)}</div>
-                        <div className="text-gray-500 text-xs mt-0.5"> {a.role}</div>
-                      </td>
-                      <td className="py-2.5 px-5 text-center font-medium">
-                        <div> {a.jam_mulai} – {a.jam_selesai}</div>
-                        <div className="text-gray-500 text-xs mt-0.5"> Total: {a.total_lembur} jam</div>
+                      <td className="py-2 px-4 text-center font-medium">{idx}</td>
+
+                      <td className="py-2 px-4 text-left">
+                        <div className="font-medium">{formatFullDate(a.tanggal)}</div>
+                        <div className="text-gray-500 text-xs mt-0.5">{a.lokasi}</div>
                       </td>
 
-                      <td className="py-2.5 px-5 text-center">
-                        <button onClick={() => openModalWithDescription(a.deskripsi)} className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-sm font-medium bg-blue-500 text-white hover:bg-blue-600">
-                          <FontAwesomeIcon icon={faInfoCircle} />
-                          Detail
+                      <td className="py-2 px-4 text-left">
+                        <div className="font-medium">{a.nama_user}</div>
+                        <div className="text-gray-500 text-xs mt-0.5">{a.role}</div>
+                      </td>
+
+                      <td className="py-2 px-4 text-left font-medium">
+                        <div>{a.jam_mulai} – {a.jam_selesai}</div>
+                        <div className="text-gray-500 text-xs mt-0.5">Total: {a.total_lembur} jam</div>
+                      </td>
+
+                      <td className="py-1 px-4 text-center">
+                        <button onClick={() => openModalWithDescription(a.deskripsi)} className="inline-flex items-center gap-1 px-3 py-1.5 rounded text-xs font-medium bg-blue-500 text-white hover:bg-blue-600 transition">
+                          <FontAwesomeIcon icon={faInfoCircle} /> Detail
                         </button>
                       </td>
 
-                      <td className="py-2.5 px-5 text-center">
-                        <div className="flex justify-center gap-2">
-                          <button onClick={() => handleApprove(a)} className="px-3 py-1 gap-1 font-semibold inline-flex items-center text-sm rounded-md bg-green-500 text-white hover:bg-green-600">
-                            <FontAwesomeIcon icon={faCheck} />
-                            Approve
-                          </button>
-                          <button onClick={() => handleReject(a)} className="px-3 py-1 gap-1 font-semibold inline-flex items-center text-sm rounded-md bg-red-600 text-white hover:bg-red-700">
-                            <FontAwesomeIcon icon={faTimes} />
-                            Reject
-                          </button>
-                        </div>
+                      <td className="py-3 px-4 flex justify-center gap-2">
+                        <button onClick={() => handleApprove(a)} className="inline-flex items-center gap-1 px-2 py-1.5 text-xs font-semibold rounded bg-green-500 text-white hover:bg-green-600 transition">
+                          <FontAwesomeIcon icon={faCheck} /> Approve
+                        </button>
+                        <button onClick={() => handleReject(a)} className="inline-flex items-center gap-1 px-2 py-1.5 text-xs font-semibold rounded bg-red-600 text-white hover:bg-red-700 transition">
+                          <FontAwesomeIcon icon={faTimes} /> Reject
+                        </button>
                       </td>
                     </tr>
                   );
@@ -248,61 +203,71 @@ const PersetujuanLembur = () => {
         </div>
       </div>
 
+
       {/* ======= Mobile Card ======= */}
-      <div className="md:hidden space-y-4 mb-10">
+      <div className="lg:hidden space-y-3 mb-10">
         {paginatedData.data.length > 0 ? (
-          paginatedData.data.map((item, i) => {
-            const start = new Date(`1970-01-01T${item.jam_mulai}`);
-            const end = new Date(`1970-01-01T${item.jam_selesai}`);
-            const duration = ((end - start) / 1000 / 60).toFixed(0);
-            const hours = Math.floor(duration / 60);
-
-            return (
-              <div key={item.id_lembur} className="border-l-4 border-yellow-400 bg-white rounded-lg shadow-sm p-4 space-y-3 text-sm">
-                {/* Header */}
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-semibold text-gray-800">{item.nama_user}</p>
-                    <p className="text-[11px] text-gray-500">{item.role}</p>
-                    <p className="text-[11px] text-gray-500">{item.lokasi}</p>
-                  </div>
-                  <span className="text-[11px] text-gray-400">
-                    {formatFullDate(item.tanggal)}
-                  </span>
+          paginatedData.data.map((item) => (
+            <div
+              key={item.id_lembur}
+              className="bg-white rounded-lg shadow-sm border border-gray-100 p-3 text-sm"
+            >
+              {/* Header */}
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <p className="font-semibold text-gray-800">{item.nama_user}</p>
+                  <p className="text-[11px] text-gray-500">{item.role}</p>
+                  <p className="text-[11px] text-gray-500">{item.lokasi}</p>
                 </div>
+                <span className="text-[11px] text-gray-400">{formatFullDate(item.tanggal)}</span>
+              </div>
 
-                <hr className="border-gray-100" />
+              {/* Lembur Info */}
+              <div className="text-gray-700 mb-2">
+                <p className="font-medium">{item.jam_mulai} – {item.jam_selesai}</p>
+                <p className="text-xs text-gray-500">Total: {item.total_lembur} jam</p>
+              </div>
 
-                <div className="text-gray-700">
-                  <p className="font-medium">
-                    {item.jam_mulai} - {item.jam_selesai}
-                  </p>
-                  <p className="text-xs text-gray-500">Total: {hours} jam</p>
-                </div>
+              <hr className="border-gray-100 mb-2" />
 
-                <button onClick={() => openModalWithDescription(item.deskripsi)} className="text-xs font-medium text-blue-600 hover:underline">
-                  <FontAwesomeIcon icon={faInfoCircle} className="mr-1" />
-                  Lihat Deskripsi
+              {/* Footer: Detail + Actions */}
+              <div className="flex justify-between items-center">
+                {/* Detail Button */}
+                <button
+                  onClick={() => openModalWithDescription(item.deskripsi)}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:underline"
+                >
+                  <FontAwesomeIcon icon={faInfoCircle} />
+                  Detail
                 </button>
 
-                <div className="flex gap-2 pt-2">
-                  <button onClick={() => handleApprove(item)} className="flex-1 px-3 py-1 gap-1 font-semibold inline-flex items-center justify-center text-sm rounded-md bg-green-600 text-white hover:bg-green-700">
+                {/* Approve / Reject Buttons */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleApprove(item)}
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-md bg-green-600 text-white hover:bg-green-700 transition"
+                  >
                     <FontAwesomeIcon icon={faCheck} />
                     Approve
                   </button>
 
-                  <button onClick={() => handleReject(item)} className="flex-1 px-3 py-1 gap-1 font-semibold inline-flex items-center justify-center text-sm rounded-md bg-red-600 text-white hover:bg-red-700">
+                  <button
+                    onClick={() => handleReject(item)}
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-md bg-red-600 text-white hover:bg-red-700 transition"
+                  >
                     <FontAwesomeIcon icon={faTimes} />
                     Reject
                   </button>
                 </div>
               </div>
-            );
-          })
+            </div>
+          ))
         ) : (
           <p className="text-center text-gray-400 text-sm">Tidak ada data lembur.</p>
         )}
       </div>
+
+
 
       {paginatedData.total > itemsPerPage && (
         <Pagination currentPage={currentPage} totalItems={paginatedData.total} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} className="mt-6" />

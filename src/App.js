@@ -60,6 +60,7 @@ import DetailPenugasan from "./pages/penugasan/show";
 import RiwayatPenugasan from "./pages/penugasan/riwayat";
 import RekapTunjangan from "./pages/tunjangan/";
 import RoleApp from "./pages/role-app";
+import BatchApproval from "./pages/pengajuan/absensi/batchApproval"
 
 
 // ===================== MOBILE USERS ========================
@@ -235,6 +236,7 @@ const App = () => {
     // DESKTOP
     { path: "/pengajuan-absensi", component: <PengajuanAbsensi />, roles: ["1", "4", "5", "6", "18", "20"], allowedCompanies: ["1", "4"], layout: SidebarLayout },
     { path: "/pengajuan-absensi/:id_user", component: <DetailPengajuanAbsensi />, roles: ["1", "4", "5", "6", "18", "20"], allowedCompanies: ["1", "4"], layout: SidebarLayout },
+    { path: "/pengajuan-absensi/batch", component: <BatchApproval />, roles: ["1", "4", "5", "6", "18", "20"], allowedCompanies: ["1", "4"], layout: SidebarLayout },
     { path: "/pengajuan-lembur", component: <PengajuanLembur />, roles: ["1", "4", "5", "6", "20"], allowedCompanies: ["1", "4", "5", "6"], layout: SidebarLayout },
     { path: "/pengajuan-dinas", component: <PengajuanDinas />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
     { path: "/pengajuan-dinas/:id", component: <DetailPengajuanDinas />, roles: ["1", "4", "5", "6","20"], layout: SidebarLayout },

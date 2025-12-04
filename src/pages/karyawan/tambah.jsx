@@ -14,7 +14,7 @@ const TambahKaryawan = () => {
   const [shiftList, setShiftList] = useState([]);
   const [perusahaanList, setPerusahaanList] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
-  const [currentUser, setCurrentUser] = useState({ nip: "", nik: "", npwp: "", no_rek: "", nama: "", status_nikah: "", jml_anak: 0, id_perusahaan: "", id_role: "", id_shift: "", telp: "", username: "", password: "", status: 1, });
+  const [currentUser, setCurrentUser] = useState({ nip: "", nik: "", npwp: "", no_rek: "", id_kadiv: null, nama: "", status_nikah: "", jml_anak: 0, id_perusahaan: "", id_role: "", id_shift: "", telp: "", username: "", password: "", status: 1, });
   const [showShiftDetails, setShowShiftDetails] = useState(false);
   const [kadivList, setKadivList] = useState([]);
 
@@ -66,14 +66,14 @@ const TambahKaryawan = () => {
       return Swal.fire("Peringatan", "Kolom nama, perusahaan, role, dan shift harus diisi.", "warning");
     }
 
-    if (!currentUser.is_kadiv && !currentUser.id_kadiv) {
-      return Swal.fire("Peringatan", "Harap pilih Kepala Divisi jika bukan Kadiv.", "warning");
-    }
+    // if (!currentUser.is_kadiv && !currentUser.id_kadiv) {
+    //   return Swal.fire("Peringatan", "Harap pilih Kepala Divisi jika bukan Kadiv.", "warning");
+    // }
 
     try {
       const payload = {
         ...currentUser,
-        id_kadiv: currentUser.is_kadiv ? null : currentUser.id_kadiv
+        id_kadiv: currentUser.is_kadiv ? null : currentUser.id_kadiv ?? null
       };
       const res = await fetchWithJwt(`${apiUrl}/profil`, {
         method: "POST",
@@ -275,19 +275,19 @@ const TambahKaryawan = () => {
                 Pilih Kepala Divisi <span className="text-red-500">*</span>
               </label>
               <Select
-                options={kadivList.map((k, index) => ({ value: k.id, label: k.nama }))} // pakai 'id' index
+                options={kadivList.map((k) => ({ value: k.id, label: k.nama }))}
                 value={
                   currentUser.id_kadiv
                     ? { value: currentUser.id_kadiv, label: kadivList.find(k => k.id === currentUser.id_kadiv)?.nama }
                     : null
                 }
                 onChange={(selected) =>
-                  setCurrentUser(prev => ({ ...prev, id_kadiv: selected?.value || "" }))
+                  setCurrentUser(prev => ({ ...prev, id_kadiv: selected?.value ?? null }))
                 }
                 placeholder="Pilih Kepala Divisi"
                 isClearable
                 classNamePrefix="react-select"
-              />
+              />  
             </div>
           )}
 

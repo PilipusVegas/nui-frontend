@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
 import { fetchWithJwt, getUserFromToken } from "../../../utils/jwtHelper";
 import SectionHeader from "../../../components/desktop/SectionHeader";
-import { LoadingSpinner, ErrorState, SearchBar, Pagination, EmptyState } from "../../../components";
+import { LoadingSpinner, ErrorState, SearchBar, Pagination, EmptyState, SummaryCard } from "../../../components";
 
 const DataAbsensi = () => {
   const itemsPerPage = 15;
@@ -76,7 +76,13 @@ const DataAbsensi = () => {
   return (
     <div className="flex flex-col justify-start">
       <SectionHeader title="Persetujuan Absensi Lapangan" subtitle="Monitoring kehadiran karyawan lapangan secara real-time setiap hari." onBack={() => navigate("/home")} />
-      <SearchBar onSearch={(val) => { setSearchName(val); setCurrentPage(1); }} placeholder="Cari nama dan divisi..." className="mb-4"  />
+
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <SummaryCard icon={faCheckCircle} title="Total Karyawan Lapangan" value={absenData.length}/>
+        <SummaryCard icon={faExclamationTriangle} title="Total Belum Disetujui" value={absenData.reduce((sum, d) => sum + Number(d.unapproved || 0), 0)} note="Lihat semua pengajuan" onClick={() => navigate("/pengajuan-absensi/batch")}/>
+      </div>
+
+      <SearchBar onSearch={(val) => { setSearchName(val); setCurrentPage(1); }} placeholder="Cari nama dan divisi..." className="mb-4" />
 
       <div className="hidden md:block rounded-lg shadow-md overflow-hidden">
         <table className="table-auto w-full border-collapse bg-white">

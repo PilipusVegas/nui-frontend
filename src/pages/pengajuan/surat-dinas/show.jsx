@@ -73,7 +73,7 @@ const SuratDinasDetail = () => {
 
   return (
     <div>
-      <SectionHeader title="Surat Dinas" subtitle="Detail Surat Dinas jika dibutuhkan untuk mencetak" onBack={() => navigate(-1)}/>
+      <SectionHeader title="Detail Surat Dinas" subtitle="Detail Surat Dinas jika dibutuhkan untuk mencetak" onBack={() => navigate(-1)}/>
       <div className="max-w-4xl mx-auto mt-20">
         <div id="cetak-area" className="border-y-4 border-double border-gray-700 border-x-8 p-6 rounded-lg bg-white shadow-md">
           <h2 className="text-center text-4xl font-bold mb-4 text-gray-800">

@@ -79,18 +79,17 @@ const RiwayatLembur = () => {
             <SectionHeader title="Riwayat Lembur" subtitle="Halaman ini menampilkan riwayat lembur yang sudah disetujui dan ditolak." onBack={() => Navigate("/")} />
 
             <div className="mb-4 w-full flex flex-col sm:flex-row sm:items-center gap-2">
-                <div className="flex-grow flex gap-2">
-                    <SearchBar onSearch={setSearchQuery} placeholder="Cari nama user..." className="flex-grow" />
+                <div className="w-full sm:flex-grow">
+                    <SearchBar onSearch={setSearchQuery} placeholder="Cari nama user..." className="w-full sm:w-auto" />
                 </div>
-                <div className="flex gap-2 flex-wrap items-center">
-                    <input type="date" className="border border-gray-300 rounded-lg p-2" value={startDate || ""} onChange={(e) => setStartDate(e.target.value)} />
-                    <span className="text-gray-500">-</span>
-                    <input type="date" className="border border-gray-300 rounded-lg p-2" value={endDate || ""} onChange={(e) => setEndDate(e.target.value)} />
-                    <button onClick={() => { const { start, end } = getDefaultPeriod(); setStartDate(start); setEndDate(end); }} className="p-3 rounded-lg bg-green-600 text-white text-xs font-semibold hover:bg-green-700">
-                        Periode Saat Ini
-                    </button>
+
+                <div className="flex w-full sm:w-auto gap-2 items-center">
+                    <input type="date" className="border border-gray-300 rounded-lg p-2 w-full sm:w-auto sm:min-w-[150px]" value={startDate || ""} onChange={(e) => setStartDate(e.target.value)} />
+                    <span className="text-gray-500 whitespace-nowrap">s/d</span>
+                    <input type="date" className="border border-gray-300 rounded-lg p-2 w-full sm:w-auto sm:min-w-[150px]" value={endDate || ""} onChange={(e) => setEndDate(e.target.value)} />
                 </div>
             </div>
+
 
             {!startDate || !endDate ? (
                 <EmptyState icon={faTriangleExclamation} text="Silakan pilih rentang tanggal terlebih dahulu." />
@@ -102,72 +101,82 @@ const RiwayatLembur = () => {
                 <div>
 
                     {/* ===== TABLE UNTUK DESKTOP ===== */}
-                    <table className="min-w-full text-sm border-collapse hidden sm:table">
-                        <thead className="bg-green-600 text-white uppercase text-sm tracking-wide sticky top-0 z-10">
-                            <tr>
-                                {["Nama Karyawan", "Total Riwayat", "Disetujui", "Ditolak", "Total Jam", "Detail"].map((h) => (
-                                    <th key={h} className="px-4 py-2 text-center font-semibold">{h}</th>
-                                ))}
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            {paginatedData.map((user, idx) => (
-                                <tr key={user.id_user} className={`transition-all duration-200 ${idx % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-blue-50`}>
-                                    <td className="px-4 py-2 font-medium text-left">{user.nama_user}</td>
-                                    <td className="px-4 py-2 text-center">{user.riwayat.length}</td>
-                                    <td className="px-4 py-2 text-center">{user.total_approved} Disetujui</td>
-                                    <td className="px-4 py-2 text-center">{user.total_rejected} Ditolak</td>
-                                    <td className="px-4 py-2 text-center">{user.total_jam_approved} Jam</td>
-                                    <td className="px-4 py-2 text-center">
-                                        <button onClick={() => openDetailModal(user)} className="inline-flex items-center text-xs justify-center gap-1 px-2 py-1 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 transition">
-                                            <FontAwesomeIcon icon={faInfoCircle} className="text-white" />
-                                            Detail
-                                        </button>
-                                    </td>
+                    <div className="hidden sm:block overflow-hidden rounded-xl shadow border border-gray-200">
+                        <table className="min-w-full text-sm">
+                            <thead className="bg-green-500 text-white uppercase text-sm tracking-wide sticky top-0 z-10">
+                                <tr>
+                                    {["Nama Karyawan", "Total Riwayat", "Disetujui", "Ditolak", "Total Jam", "Detail"].map((h) => (
+                                        <th key={h} className="px-4 py-2 text-center font-semibold">{h}</th>
+                                    ))}
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {paginatedData.map((user, idx) => (
+                                    <tr key={user.id_user} className={`${idx % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-blue-50 transition-all duration-200`}>
+                                        <td className="px-4 py-2 font-medium text-left">
+                                            <div className="flex flex-col leading-tight">
+                                                <span className="font-semibold text-gray-900">{user.nama_user}</span>
+                                                <span className="text-xs text-gray-500">{user.role}</span>
+                                            </div>
+                                        </td>
 
-                    {/* ===== CARD UNTUK MOBILE/TABLET VERTICAL RAPI ===== */}
-                    <div className="grid gap-3 sm:hidden mt-3">
+                                        <td className="px-4 py-2 text-center">{user.riwayat.length}x Pengajuan</td>
+                                        <td className="px-4 py-2 text-center text-green-700 font-semibold">{user.total_approved} Disetujui</td>
+                                        <td className="px-4 py-2 text-center text-red-600 font-semibold">{user.total_rejected} Ditolak</td>
+                                        <td className="px-4 py-2 text-center">{user.total_jam_approved} Jam</td>
+                                        <td className="px-4 py-2 text-center">
+                                            <button onClick={() => openDetailModal(user)} className="inline-flex items-center justify-center gap-1 px-2 py-1 rounded bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition">
+                                                <FontAwesomeIcon icon={faInfoCircle} />
+                                                Detail
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+
+                    {/* ===== SUMMARY CARD MOBILE/TABLET ===== */}
+                    <div className="grid gap-4 sm:hidden mt-4">
                         {paginatedData.map((user) => (
-                            <div key={user.id_user} className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 hover:shadow-md transition flex flex-col">
-                                <p className="text-base font-semibold text-gray-900 mb-3 truncate">{user.nama_user}</p>
-
-                                <div className="flex flex-col divide-y divide-gray-100 text-gray-700 text-sm mb-3">
-                                    <div className="flex justify-between py-1">
-                                        <span className="font-medium text-gray-600">Riwayat</span>
-                                        <span className="font-semibold text-gray-900">{user.riwayat.length}</span>
+                            <div key={user.id_user} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition hover:shadow-lg hover:translate-y-1">
+                                <div className="flex justify-between items-center mb-3">
+                                    <div>
+                                        <p className="text-base font-semibold text-gray-900 truncate">{user.nama_user}</p>
+                                        <p className="text-sm text-gray-400">{user.role || "Role tidak tersedia"}</p>
                                     </div>
-                                    <div className="flex justify-between py-1">
-                                        <span className="font-medium text-gray-600">Disetujui</span>
-                                        <span className="font-semibold text-gray-900">{user.total_approved}</span>
-                                    </div>
-                                    <div className="flex justify-between py-1">
-                                        <span className="font-medium text-gray-600">Ditolak</span>
-                                        <span className="font-semibold text-gray-900">{user.total_rejected}</span>
-                                    </div>
-                                    <div className="flex justify-between py-1">
-                                        <span className="font-medium text-gray-600">Total Jam</span>
-                                        <span className="font-semibold text-gray-900">{user.total_jam_approved} Jam</span>
-                                    </div>
-                                </div>
-
-                                {/* Tombol Detail */}
-                                <div className="flex justify-end">
-                                    <button
-                                        onClick={() => openDetailModal(user)}
-                                        className="inline-flex items-center justify-center gap-1 px-3 py-1 rounded-md bg-blue-600 text-white font-medium hover:bg-blue-700 transition text-xs shadow-sm"
-                                    >
-                                        <FontAwesomeIcon icon={faInfoCircle} className="text-white" />
+                                    <button onClick={() => openDetailModal(user)} className="inline-flex items-center gap-1 px-3 py-2 rounded  bg-blue-500 text-white text-xs font-medium hover:bg-blue-600 transition">
+                                        <FontAwesomeIcon icon={faInfoCircle} />
                                         Detail
                                     </button>
+                                </div>
+
+                                {/* Summary Horizontal */}
+                                <div className="flex justify-between text-sm text-gray-700 mt-2">
+                                    <div className="flex-1 flex flex-col items-center p-2 bg-gray-50 rounded-lg mx-1">
+                                        <span className="font-medium text-gray-500">Riwayat</span>
+                                        <span className="font-semibold text-gray-900">{user.riwayat.length}</span>
+                                    </div>
+                                    <div className="flex-1 flex flex-col items-center p-2 bg-green-50 rounded-lg mx-1">
+                                        <span className="font-medium text-green-700">Disetujui</span>
+                                        <span className="font-semibold text-green-900">{user.total_approved}</span>
+                                    </div>
+                                    <div className="flex-1 flex flex-col items-center p-2 bg-red-50 rounded-lg mx-1">
+                                        <span className="font-medium text-red-700">Ditolak</span>
+                                        <span className="font-semibold text-red-900">{user.total_rejected}</span>
+                                    </div>
+                                    <div className="flex-1 flex flex-col items-center p-2 bg-gray-50 rounded-lg mx-1">
+                                        <span className="font-medium text-gray-500">Total Jam</span>
+                                        <span className="font-semibold text-gray-900">{user.total_jam_approved} Jam</span>
+                                    </div>
                                 </div>
                             </div>
                         ))}
                     </div>
+
+
+
 
                 </div>
             )}
