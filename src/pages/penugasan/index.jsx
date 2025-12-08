@@ -125,7 +125,8 @@ const Penugasan = () => {
                 <SearchBar className="max-w-lg sm:max-w-full" placeholder="Cari nama tugas..." onSearch={(val) => { setSearchTerm(val); setCurrentPage(1); }} />
             </div>
 
-            <div className="space-y-3 mt-4">
+            <div className="space-y-4 mt-4">
+
                 {loading && (
                     <div className="text-center py-10">
                         <LoadingSpinner text="Memuat data penugasan..." />
@@ -138,137 +139,137 @@ const Penugasan = () => {
                     <EmptyState message="Belum ada data penugasan." />
                 )}
 
-                {!loading &&
-                    !error &&
-                    currentTugas.map((item, index) => {
-                        const totalPekerja = item.details?.length || 0;
-                        const selesai = item.details?.filter(d => d.finished_at && [0, 1].includes(d.status))?.length || 0;
-                        const progressPersen = totalPekerja > 0 ? Math.round((selesai / totalPekerja) * 100) : 0;
+                {!loading && !error && currentTugas.map((item, index) => {
+                    const totalPekerja = item.details?.length || 0;
+                    const selesai = item.details?.filter(d => d.finished_at && [0, 1].includes(d.status))?.length || 0;
+                    const progressPersen = totalPekerja > 0 ? Math.round((selesai / totalPekerja) * 100) : 0;
 
-                        const pendingCount = item.details?.filter(d => d.finished_at && d.status === 0)?.length || 0;
-                        const disetujuiCount = item.details?.filter(d => d.status === 1)?.length || 0;
-                        const ditolakCount = item.details?.filter(d => d.status === 2)?.length || 0;
-                        const ditundaCount = item.details?.filter(d => d.is_paused === 1)?.length || 0;
+                    const pendingCount = item.details?.filter(d => d.finished_at && d.status === 0)?.length || 0;
+                    const disetujuiCount = item.details?.filter(d => d.status === 1)?.length || 0;
+                    const ditolakCount = item.details?.filter(d => d.status === 2)?.length || 0;
+                    const ditundaCount = item.details?.filter(d => d.is_paused === 1)?.length || 0;
 
-                        const now = new Date();
-                        const deadline = new Date(item.deadline_at);
-                        const diffHari = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
-                        const waktuStatus = diffHari > 0 ? `Tersisa ${diffHari} hari` : diffHari === 0 ? "Hari terakhir" : `Terlambat ${Math.abs(diffHari)} hari`;
-                        const warnaStatus = diffHari > 0 ? "text-green-600" : diffHari === 0 ? "text-amber-600" : "text-red-600";
+                    const now = new Date();
+                    const deadline = new Date(item.deadline_at);
+                    const diffHari = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+                    const waktuStatus = diffHari > 0 ? `Tersisa ${diffHari} hari` : diffHari === 0 ? "Hari terakhir" : `Terlambat ${Math.abs(diffHari)} hari`;
+                    const warnaStatus = diffHari > 0 ? "text-green-600" : diffHari === 0 ? "text-amber-600" : "text-red-600";
 
-                        return (
-                            <div key={item.id} className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-3 flex flex-col gap-4">
+                    return (
+                        <div key={item.id} className="bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-all p-5 flex flex-col gap-4 md:gap-3">
+                            {/* ===================== HEADER ===================== */}
+                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-3">
 
-                                {/* ===================== ROW 1 — HEADER + COUNTERS ===================== */}
-                                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                                        <span className="flex-shrink-0 px-2 py-[3px] rounded-md bg-green-100 text-green-600 border border-green-200 text-xs font-semibold">
-                                            {indexOfFirstItem + index + 1}
-                                        </span>
-                                        <h2 className="text-sm sm:text-md font-semibold text-gray-900 leading-tight min-w-0 flex-1 line-clamp-2">
-                                            {item.nama}
-                                        </h2>
-                                    </div>
+                                {/* Nomor + Nama */}
+                                <div className="flex items-center gap-3 min-w-0 flex-1">
+                                    <span className="px-2 py-[3px] rounded-lg bg-emerald-200 text-emerald-900 border border-emerald-300 text-xs font-bold min-w-[28px] text-center">
+                                        {indexOfFirstItem + index + 1}
+                                    </span>
 
-                                    {/* RIGHT: STATUS COUNTERS */}
-                                    <div className="grid grid-cols-4 gap-3 text-[11px] sm:text-[12px] flex-shrink-0">
+                                    <h2 className="text-base font-semibold text-gray-900 leading-tight line-clamp-1">
+                                        {item.nama}
+                                    </h2>
+                                </div>
+
+                                {/* STATUS & PROGRESS */}
+                                <div className="w-full md:w-auto flex flex-col md:flex-row md:items-center justify-between gap-5 md:gap-4">
+                                    <div className="w-full flex justify-around md:justify-center md:w-auto gap-5 md:gap-4">
                                         <div className="text-center">
-                                            <p className="text-blue-600 font-semibold leading-tight">Pending</p>
+                                            <p className="text-xs text-blue-700 font-semibold">Pending</p>
                                             <p className="font-bold text-blue-800">{pendingCount}</p>
                                         </div>
                                         <div className="text-center">
-                                            <p className="text-green-600 font-semibold leading-tight">Setuju</p>
+                                            <p className="text-xs text-green-700 font-semibold">Setuju</p>
                                             <p className="font-bold text-green-800">{disetujuiCount}</p>
                                         </div>
                                         <div className="text-center">
-                                            <p className="text-red-600 font-semibold leading-tight">Tolak</p>
+                                            <p className="text-xs text-red-700 font-semibold">Tolak</p>
                                             <p className="font-bold text-red-800">{ditolakCount}</p>
                                         </div>
-                                        {item.category === "urgent" ? (
+                                        {item.category === "urgent" && (
                                             <div className="text-center">
-                                                <p className="text-amber-600 font-semibold leading-tight">Tunda</p>
+                                                <p className="text-xs text-amber-700 font-semibold">Tunda</p>
                                                 <p className="font-bold text-amber-800">{ditundaCount}</p>
                                             </div>
-                                        ) : (
-                                            <div></div>
                                         )}
                                     </div>
-                                </div>
 
-                                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 flex-1 text-gray-700">
-                                        <div className="flex flex-col items-center gap-[2px]">
-                                            <span className="text-[11px] text-gray-500 leading-none">Mulai</span>
-                                            <span className="text-[13px] font-medium leading-tight">{formatDate(item.start_date)}</span>
-                                        </div>
-                                        <div className="flex flex-col items-center gap-[2px]">
-                                            <span className="text-[11px] text-gray-500 leading-none">Tenggat</span>
-                                            <span className="text-[13px] font-medium leading-tight">{formatDate(item.deadline_at)}</span>
-                                            <span className={`text-[10px] font-semibold leading-tight ${warnaStatus}`}>
-                                                ({waktuStatus})
+                                    {/* PROGRESS */}
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-[11px] text-gray-600 font-medium">Progress</span>
+                                        <div className="relative h-9 w-9 mt-1">
+                                            <svg className="h-9 w-9">
+                                                <circle cx="18" cy="18" r="13" stroke="#d1d5db" strokeWidth="3" fill="none" />
+                                                <circle cx="18" cy="18" r="13" stroke="#ea580c"  strokeWidth="3" fill="none" strokeDasharray={2 * Math.PI * 13} strokeDashoffset={(2 * Math.PI * 13) * (1 - progressPersen / 100)} strokeLinecap="round"/>
+                                            </svg>
+                                            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-gray-800">
+                                                {progressPersen}%
                                             </span>
                                         </div>
-                                        <div className="flex flex-col items-center gap-[3px]">
-                                            <span className="text-[11px] text-gray-500 leading-none">Penugasan</span>
-                                            <span className="text-sm font-semibold leading-tight">{totalPekerja} Tugas</span>
-                                        </div>
-                                        <div className="flex flex-col items-center gap-[6px]">
-                                            <span className="text-[11px] text-gray-500 leading-none">Kategori</span>
-                                            <span className={`px-2 py-[1px] text-[10px] rounded border font-semibold capitalize leading-tight ${item.category === "urgent" ? "bg-red-100 text-red-700 border-red-200" : "bg-green-100 text-green-700 border-green-200"}`}>
-                                                {item.category}
-                                            </span>
-                                        </div>
-                                        <div className="flex flex-col items-center gap-[2px]">
-                                            <span className="text-[11px] text-gray-500 leading-none">Progress</span>
-
-                                            <div className="relative h-9 w-9">
-                                                <svg className="h-9 w-9">
-                                                    <circle cx="18" cy="18" r="14" stroke="#e5e7eb" strokeWidth="3" fill="none" />
-                                                    <circle
-                                                        cx="18"
-                                                        cy="18"
-                                                        r="14"
-                                                        stroke="#f59e0b"
-                                                        strokeWidth="3"
-                                                        fill="none"
-                                                        strokeDasharray={2 * Math.PI * 14}
-                                                        strokeDashoffset={(2 * Math.PI * 14) * (1 - progressPersen / 100)}
-                                                        strokeLinecap="round"
-                                                    />
-                                                </svg>
-
-                                                <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-gray-700">
-                                                    {progressPersen}%
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex justify-end gap-2 flex-wrap w-full lg:w-max">
-                                        <button onClick={() => navigate(`/penugasan/show/${item.id}`)} className="flex items-center gap-1 px-3 py-1.5 rounded bg-blue-600 text-white text-xs hover:bg-blue-700">
-                                            <FontAwesomeIcon icon={faEye} />
-                                            <span>Lihat</span>
-                                        </button>
-
-                                        <button onClick={() => navigate(`/penugasan/edit/${item.id}`)} className="flex items-center gap-1 px-3 py-1.5 rounded bg-amber-500 text-white text-xs hover:bg-amber-600">
-                                            <FontAwesomeIcon icon={faPen} />
-                                            <span>Edit</span>
-                                        </button>
-
-                                        <button onClick={() => handleDelete(item.id)} className="flex items-center gap-1 px-3 py-1.5 rounded bg-red-600 text-white text-xs hover:bg-red-700">
-                                            <FontAwesomeIcon icon={faTrash} />
-                                            <span>Hapus</span>
-                                        </button>
                                     </div>
                                 </div>
                             </div>
-                        );
-                    })}
 
-                {/* PAGINATION */}
+                            {/* ===================== INFO GRID ===================== */}
+                            <div className="w-full py-1 md:py-0.5">
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 md:gap-3 text-slate-900">
+
+                                    <div className="flex flex-col">
+                                        <span className="text-[11px] text-slate-500">Mulai Penugasan</span>
+                                        <span className="text-sm font-semibold">{formatDate(item.start_date)}</span>
+                                    </div>
+
+                                    <div className="flex flex-col">
+                                        <span className="text-[11px] text-slate-500">Tenggat Waktu</span>
+                                        <span className="text-sm font-semibold">{formatDate(item.deadline_at)}</span>
+                                        <span className={`text-[10px] font-semibold ${warnaStatus}`}>{waktuStatus}</span>
+                                    </div>
+
+                                    <div className="flex flex-col">
+                                        <span className="text-[11px] text-slate-500">Total Penugasan</span>
+                                        <span className="text-sm font-semibold">{totalPekerja} Tugas</span>
+                                    </div>
+
+                                    <div className="flex flex-col">
+                                        <span className="text-[11px] text-slate-500">Kategori Penugasan</span>
+                                        <span className={`px-1.5 py-[2px] text-[10px] rounded font-semibold border capitalize w-fit ${item.category === "urgent"
+                                                ? "bg-red-100 text-red-700 border-red-300"
+                                                : "bg-emerald-100 text-emerald-700 border-emerald-300"
+                                            }`}>
+                                            {item.category}
+                                        </span>
+                                    </div>
+
+                                    <div className="hidden lg:flex flex-col"></div>
+                                    <div className="hidden lg:flex flex-col"></div>
+                                </div>
+                            </div>
+
+                            {/* ===================== ACTION BUTTON ===================== */}
+                            <div className="flex justify-end gap-2 flex-wrap mt-1 md:mt-0">
+                                <button onClick={() => navigate(`/penugasan/show/${item.id}`)} className="flex items-center gap-1 px-3 py-1.5 rounded bg-blue-600 text-white text-xs hover:bg-blue-700 font-semibold shadow-sm">
+                                    <FontAwesomeIcon icon={faEye} />
+                                    <span>Lihat</span>
+                                </button>
+
+                                <button onClick={() => navigate(`/penugasan/edit/${item.id}`)} className="flex items-center gap-1 px-3 py-1.5 rounded bg-amber-500 text-white text-xs hover:bg-amber-600 font-semibold shadow-sm">
+                                    <FontAwesomeIcon icon={faPen} />
+                                    <span>Edit</span>
+                                </button>
+
+                                <button onClick={() => handleDelete(item.id)} className="flex items-center gap-1 px-3 py-1.5 rounded bg-red-600 text-white text-xs hover:bg-red-700 font-semibold shadow-sm">
+                                    <FontAwesomeIcon icon={faTrash} />
+                                    <span>Hapus</span>
+                                </button>
+                            </div>
+                        </div>
+                    );
+
+                })}
+
                 {filteredTugas.length > itemsPerPage && (
                     <div className="mt-4">
-                        <Pagination currentPage={currentPage} totalItems={filteredTugas.length} itemsPerPage={itemsPerPage} onPageChange={handlePageChange}/>
+                        <Pagination currentPage={currentPage} totalItems={filteredTugas.length} itemsPerPage={itemsPerPage} onPageChange={handlePageChange} />
                     </div>
                 )}
             </div>

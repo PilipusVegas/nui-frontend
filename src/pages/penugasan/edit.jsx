@@ -19,7 +19,6 @@ const EditTugas = () => {
     const [workers, setWorkers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [divisiList, setDivisiList] = useState([]);
     const [idTugas, setIdTugas] = useState(null);
     const [profilList, setProfilList] = useState([]);
     const [saving, setSaving] = useState(false);
@@ -30,21 +29,19 @@ const EditTugas = () => {
             try {
                 setLoading(true);
 
-                const [divisiRes, userRes, tugasRes] = await Promise.all([
-                    fetchWithJwt(`${apiUrl}/karyawan/divisi`),
+                const [userRes, tugasRes] = await Promise.all([
                     fetchWithJwt(`${apiUrl}/tugas/profil`),
                     fetchWithJwt(`${apiUrl}/tugas/${id}`),
                 ]);
 
-                const divisiData = await divisiRes.json();
                 const userData = await userRes.json();
                 const tugasData = await tugasRes.json();
 
-                if (divisiData.success) setDivisiList(divisiData.data || []);
                 if (userData.success) setProfilList(userData.data || []);
 
                 if (tugasData.success && tugasData.data) {
                     const tugas = tugasData.data;
+
                     setIdTugas(tugas.id);
                     setNama(tugas.nama || "");
                     setStartDate(tugas.start_date?.split("T")[0] || "");
@@ -52,21 +49,11 @@ const EditTugas = () => {
                     setCategory(tugas.category || "daily");
 
                     setWorkers(
-                        tugas.details?.map((d) => {
-                            const user = userData.data.find((u) => u.id_user === d.id_user);
-                            const divisiId = user ? user.id_role : "";
-                            const filtered = userData.data.filter(
-                                (u) => String(u.id_role) === String(divisiId)
-                            );
-
-                            return {
-                                id: divisiId,
-                                id_user: d.id_user,
-                                deskripsi: d.deskripsi,
-                                filteredUsers: filtered,
-                                id_detail: d.id,
-                            };
-                        }) || []
+                        tugas.details?.map((d) => ({
+                            id_user: d.id_user,
+                            deskripsi: d.deskripsi,
+                            id_detail: d.id,
+                        })) || []
                     );
                 }
             } catch (err) {
@@ -78,7 +65,6 @@ const EditTugas = () => {
 
         fetchAllData();
     }, [apiUrl, id]);
-
 
 
     const handleAddWorker = () => {
@@ -213,7 +199,6 @@ const EditTugas = () => {
                     </p>
                 </div>
 
-
                 <div>
                     <label className="block mb-1 font-medium text-gray-700">Kategori</label>
                     <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
@@ -261,10 +246,7 @@ const EditTugas = () => {
                         )}
 
                         {workers.map((worker, index) => (
-                            <div
-                                key={index}
-                                className="border border-green-500/50 bg-white rounded-xl shadow-sm hover:shadow-md transition-all p-4"
-                            >
+                            <div key={index} className="border border-green-500/50 bg-white rounded-xl shadow-sm hover:shadow-md transition-all p-4">
                                 {/* CARD HEADER */}
                                 <div className="flex justify-between items-center pb-3 border-b border-green-200">
                                     <h3 className="text-sm font-semibold text-green-700">
@@ -307,31 +289,26 @@ const EditTugas = () => {
                                 {/* CARD CONTENT */}
                                 <div className="mt-3 space-y-4 text-sm">
 
-                                    {/* DIVISI */}
+                                    {/* KARYAWAN */}
                                     <div className="grid grid-cols-3 sm:grid-cols-4 items-center gap-3">
-                                        <label className="font-medium text-gray-700">Divisi</label>
+                                        <label className="font-medium text-gray-700">Karyawan</label>
 
                                         <div className="col-span-2 sm:col-span-3">
                                             <Select
-                                                value={divisiList
-                                                    .filter((d) => d.id !== 1)
-                                                    .map((d) => ({ value: d.id, label: d.nama }))
-                                                    .find((opt) => opt.value === worker.id) || null}
-                                                onChange={(opt) => {
-                                                    const divisiId = opt ? opt.value : "";
-                                                    handleWorkerChange(index, "id", divisiId);
-                                                    handleWorkerChange(
-                                                        index,
-                                                        "filteredUsers",
-                                                        divisiId
-                                                            ? profilList.filter((u) => String(u.id_role) === String(divisiId))
-                                                            : []
-                                                    );
-                                                }}
-                                                options={divisiList
-                                                    .filter((d) => d.id !== 1)
-                                                    .map((d) => ({ value: d.id, label: d.nama }))}
-                                                placeholder="Pilih Divisi..."
+                                                value={profilList
+                                                    .map((u) => ({
+                                                        value: u.id_user,
+                                                        label: u.nama_user,
+                                                    }))
+                                                    .find((opt) => opt.value === worker.id_user) || null}
+                                                onChange={(opt) =>
+                                                    handleWorkerChange(index, "id_user", opt ? opt.value : "")
+                                                }
+                                                options={profilList.map((u) => ({
+                                                    value: u.id_user,
+                                                    label: u.nama_user,
+                                                }))}
+                                                placeholder="Pilih Karyawan..."
                                                 classNamePrefix="react-select"
                                                 menuPortalTarget={document.body}
                                                 styles={{
@@ -346,49 +323,7 @@ const EditTugas = () => {
                                                     }),
                                                 }}
                                             />
-                                        </div>
-                                    </div>
 
-                                    {/* KARYAWAN */}
-                                    <div className="grid grid-cols-3 sm:grid-cols-4 items-center gap-3">
-                                        <label className="font-medium text-gray-700">Karyawan</label>
-
-                                        <div className="col-span-2 sm:col-span-3">
-                                            <Select
-                                                value={(worker.filteredUsers || [])
-                                                    .map((u) => ({
-                                                        value: u.id_user,
-                                                        label: u.nama_user,
-                                                    }))
-                                                    .find((opt) => opt.value === worker.id_user) || null}
-                                                onChange={(opt) =>
-                                                    handleWorkerChange(
-                                                        index,
-                                                        "id_user",
-                                                        opt ? opt.value : ""
-                                                    )
-                                                }
-                                                options={(worker.filteredUsers || []).map((u) => ({
-                                                    value: u.id_user,
-                                                    label: u.nama_user,
-                                                }))}
-                                                placeholder={worker.id ? "Pilih Karyawan..." : "Pilih divisi dahulu"}
-                                                isDisabled={!worker.id}
-                                                classNamePrefix="react-select"
-                                                menuPortalTarget={document.body}
-                                                styles={{
-                                                    control: (base, state) => ({
-                                                        ...base,
-                                                        borderColor: state.isDisabled ? "#e5e7eb" : "#86efac",
-                                                        minHeight: "36px",
-                                                        fontSize: "0.88rem",
-                                                        backgroundColor: state.isDisabled ? "#f3f4f6" : "white",
-                                                        borderRadius: "0.5rem",
-                                                        boxShadow: "none",
-                                                        "&:hover": { borderColor: "#16a34a" },
-                                                    }),
-                                                }}
-                                            />
                                         </div>
                                     </div>
 

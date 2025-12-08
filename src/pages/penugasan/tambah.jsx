@@ -4,7 +4,14 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { fetchWithJwt } from "../../utils/jwtHelper";
-import { faSave, faTimes, faPlus, faTrash, faCopy, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import {
+    faSave,
+    faTimes,
+    faPlus,
+    faTrash,
+    faCopy,
+    faSpinner,
+} from "@fortawesome/free-solid-svg-icons";
 import { SectionHeader } from "../../components";
 import Select from "react-select";
 
@@ -12,27 +19,19 @@ const TambahTugas = () => {
     const navigate = useNavigate();
     const [nama, setNama] = useState("");
     const [startDate, setStartDate] = useState("");
-    const [divisiList, setDivisiList] = useState([]);
     const [deadlineAt, setDeadlineAt] = useState("");
+    const [workerList, setWorkerList] = useState([{ id_user: "", deskripsi: "" }]);
+
     const [profilList, setProfilList] = useState([]);
     const [category, setCategory] = useState("daily");
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
-    const [workerList, setWorkerList] = useState([{ id_user: "", deskripsi: "", filteredUsers: [] }]);
     const [loading, setLoading] = useState(false);
-
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [divRes, profilRes] = await Promise.all([
-                    fetchWithJwt(`${apiUrl}/karyawan/divisi`),
-                    fetchWithJwt(`${apiUrl}/profil`)
-                ]);
-
-                const divData = await divRes.json();
+                const profilRes = await fetchWithJwt(`${apiUrl}/tugas/profil`);
                 const profilData = await profilRes.json();
-
-                setDivisiList(divData?.data || []);
                 setProfilList(profilData?.data || []);
             } catch (error) {
                 console.error("Gagal memuat data:", error);
@@ -54,7 +53,6 @@ const TambahTugas = () => {
         });
         if (confirm.isConfirmed) navigate("/penugasan");
     };
-
 
     const handleAddWorker = () => setWorkerList([...workerList, { id_user: "", deskripsi: "" }]);
     const handleRemoveWorker = async (index) => {
@@ -152,47 +150,71 @@ const TambahTugas = () => {
         }
     };
 
-
     return (
         <div className="min-h-screen flex flex-col">
-            <SectionHeader title="Tambah Penugasan" onBack={handleBack} subtitle="Tambah penugasan baru" />
+            <SectionHeader
+                title="Tambah Penugasan"
+                onBack={handleBack}
+                subtitle="Tambah penugasan baru"
+            />
 
             <form onSubmit={handleSubmit} className="flex-grow p-4 w-full mx-auto space-y-4">
                 <div>
-                    <label className="block font-medium text-gray-700">
-                        Tugas
-                    </label>
+                    <label className="block font-medium text-gray-700">Tugas</label>
                     <p className="text-sm text-gray-500 mb-2">
                         Masukkan nama penugasan sebagai penanda secara ringkas.
                     </p>
-                    <input type="text" value={nama} onChange={(e) => setNama(e.target.value.slice(0, 150))} maxLength={150} required placeholder="Masukkan Nama Penugasan" className="w-full px-4 py-2 border border-gray-300/50 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
-                    <p className="text-xs text-gray-400 mt-1">
-                        Maksimal 150 karakter ({nama.length}/150)
-                    </p>
-
+                    <input
+                        type="text"
+                        value={nama}
+                        onChange={(e) => setNama(e.target.value.slice(0, 150))}
+                        maxLength={150}
+                        required
+                        placeholder="Masukkan Nama Penugasan"
+                        className="w-full px-4 py-2 border border-gray-300/50 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">Maksimal 150 karakter ({nama.length}/150)</p>
                 </div>
 
                 <div>
                     <label className="block mb-1 font-medium text-gray-700">Kategori Tugas</label>
-                    <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full border border-gray-300/50 px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                    <select
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        className="w-full border border-gray-300/50 px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                    >
                         <option value="daily">Daily – untuk tugas rutin atau kegiatan harian.</option>
-                        <option value="urgent">Urgent – untuk tugas yang bersifat mendesak dan perlu segera diselesaikan.</option>
+                        <option value="urgent">
+                            Urgent – untuk tugas yang bersifat mendesak dan perlu segera diselesaikan.
+                        </option>
                     </select>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label className="block mb-1 font-medium text-gray-700">
-                            Tanggal Mulai Penugasan
-                        </label>
-                        <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required min={new Date().toISOString().split("T")[0]} className="w-full border border-gray-300/50 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                        <label className="block mb-1 font-medium text-gray-700">Tanggal Mulai Penugasan</label>
+                        <input
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            required
+                            min={new Date().toISOString().split("T")[0]}
+                            className="w-full border border-gray-300/50 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                        />
                     </div>
 
                     <div>
-                        <label className="block mb-1 font-medium text-gray-700">
-                            Tenggat Waktu Penugasan
-                        </label>
-                        <input type="date" value={deadlineAt} onChange={(e) => setDeadlineAt(e.target.value)} required min={startDate || new Date().toISOString().split("T")[0]} disabled={!startDate} className={`w-full border border-gray-300/50 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none ${!startDate ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}`} />
+                        <label className="block mb-1 font-medium text-gray-700">Tenggat Waktu Penugasan</label>
+                        <input
+                            type="date"
+                            value={deadlineAt}
+                            onChange={(e) => setDeadlineAt(e.target.value)}
+                            required
+                            min={startDate || new Date().toISOString().split("T")[0]}
+                            disabled={!startDate}
+                            className={`w-full border border-gray-300/50 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none ${!startDate ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""
+                                }`}
+                        />
                     </div>
                 </div>
 
@@ -202,7 +224,8 @@ const TambahTugas = () => {
                         <div>
                             <h2 className="text-xl font-semibold text-gray-900">Daftar Penugasan Pekerja</h2>
                             <p className="text-sm text-gray-600">
-                                Kelola daftar pekerja dan tugas dengan mudah, termasuk menyalin data untuk mempercepat proses input.
+                                Kelola daftar pekerja dan tugas dengan mudah, termasuk menyalin data untuk
+                                mempercepat proses input.
                             </p>
                         </div>
 
@@ -218,7 +241,6 @@ const TambahTugas = () => {
 
                     {/* LIST CONTAINER */}
                     <div className="max-h-[70vh] overflow-y-auto pr-1 space-y-4 scrollbar-green">
-
                         {workerList.map((worker, index) => (
                             <div
                                 key={index}
@@ -226,9 +248,7 @@ const TambahTugas = () => {
                             >
                                 {/* CARD HEADER */}
                                 <div className="flex justify-between items-center pb-3 border-b border-green-200">
-                                    <h3 className="text-sm font-semibold text-green-700">
-                                        Penugasan {index + 1}
-                                    </h3>
+                                    <h3 className="text-sm font-semibold text-green-700">Penugasan {index + 1}</h3>
 
                                     <div className="flex items-center gap-2">
                                         <button
@@ -263,66 +283,19 @@ const TambahTugas = () => {
 
                                 {/* CARD CONTENT */}
                                 <div className="mt-3 space-y-4 text-sm">
-
-                                    {/* DIVISI */}
-                                    <div className="grid grid-cols-3 sm:grid-cols-4 items-center gap-3">
-                                        <label className="font-medium text-gray-700">Divisi</label>
-                                        <div className="col-span-2 sm:col-span-3">
-                                            <Select
-                                                value={divisiList
-                                                    .filter((div) => div.id !== 1)
-                                                    .map((div) => ({ value: div.id, label: div.nama }))
-                                                    .find((option) => option.value === worker.id) || null}
-                                                onChange={(selectedOption) => {
-                                                    const divisiId = selectedOption ? selectedOption.value : "";
-                                                    handleWorkerChange(index, "id", divisiId);
-
-                                                    if (divisiId) {
-                                                        const filtered = profilList.filter(
-                                                            (user) => String(user.id_role) === String(divisiId)
-                                                        );
-                                                        handleWorkerChange(index, "filteredUsers", filtered);
-                                                    } else {
-                                                        handleWorkerChange(index, "filteredUsers", []);
-                                                    }
-                                                }}
-                                                options={divisiList
-                                                    .filter((div) => div.id !== 1)
-                                                    .map((div) => ({ value: div.id, label: div.nama }))}
-                                                placeholder="Pilih Divisi..."
-                                                classNamePrefix="react-select"
-                                                menuPortalTarget={document.body}
-                                                required
-                                                styles={{
-                                                    control: (base) => ({
-                                                        ...base,
-                                                        borderColor: "#86efac",
-                                                        minHeight: "36px",
-                                                        fontSize: "0.88rem",
-                                                        borderRadius: "0.5rem",
-                                                        boxShadow: "none",
-                                                        "&:hover": { borderColor: "#16a34a" },
-                                                    }),
-                                                    menuPortal: (base) => ({
-                                                        ...base,
-                                                        zIndex: 9999,
-                                                    }),
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-
                                     {/* KARYAWAN */}
                                     <div className="grid grid-cols-3 sm:grid-cols-4 items-center gap-3">
                                         <label className="font-medium text-gray-700">Karyawan</label>
                                         <div className="col-span-2 sm:col-span-3">
                                             <Select
-                                                value={(worker.filteredUsers || [])
-                                                    .map((user) => ({
-                                                        value: user.id,
-                                                        label: user.nama,
-                                                    }))
-                                                    .find((option) => option.value === worker.id_user) || null}
+                                                value={
+                                                    profilList
+                                                        .map((user) => ({
+                                                            value: user.id_user,
+                                                            label: user.nama_user,
+                                                        }))
+                                                        .find((option) => option.value === worker.id_user) || null
+                                                }
                                                 onChange={(selectedOption) =>
                                                     handleWorkerChange(
                                                         index,
@@ -330,32 +303,26 @@ const TambahTugas = () => {
                                                         selectedOption ? selectedOption.value : ""
                                                     )
                                                 }
-                                                options={(worker.filteredUsers || []).map((user) => ({
-                                                    value: user.id,
-                                                    label: user.nama,
+                                                options={profilList.map((user) => ({
+                                                    value: user.id_user,
+                                                    label: user.nama_user,
                                                 }))}
-                                                placeholder={
-                                                    worker.id ? "Pilih Karyawan..." : "Pilih divisi dahulu"
-                                                }
-                                                isDisabled={!worker.id}
+                                                placeholder="Pilih Karyawan..."
                                                 required
                                                 classNamePrefix="react-select"
                                                 menuPortalTarget={document.body}
                                                 styles={{
-                                                    control: (base, state) => ({
+                                                    control: (base) => ({
                                                         ...base,
-                                                        borderColor: state.isDisabled ? "#e5e7eb" : "#86efac",
+                                                        borderColor: "#86efac",
                                                         minHeight: "36px",
                                                         fontSize: "0.88rem",
-                                                        backgroundColor: state.isDisabled ? "#f3f4f6" : "white",
+                                                        backgroundColor: "white",
                                                         borderRadius: "0.5rem",
                                                         boxShadow: "none",
                                                         "&:hover": { borderColor: "#16a34a" },
                                                     }),
-                                                    menuPortal: (base) => ({
-                                                        ...base,
-                                                        zIndex: 9999,
-                                                    }),
+                                                    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
                                                 }}
                                             />
                                         </div>
@@ -363,9 +330,7 @@ const TambahTugas = () => {
 
                                     {/* DESKRIPSI */}
                                     <div className="grid grid-cols-3 sm:grid-cols-4 items-start gap-3">
-                                        <label className="font-medium text-gray-700">
-                                            Deskripsi Pekerjaan
-                                        </label>
+                                        <label className="font-medium text-gray-700">Deskripsi Pekerjaan</label>
                                         <div className="col-span-2 sm:col-span-3">
                                             <textarea
                                                 placeholder="Tuliskan deskripsi penugasan..."
@@ -377,21 +342,27 @@ const TambahTugas = () => {
                                             />
                                         </div>
                                     </div>
-
                                 </div>
                             </div>
                         ))}
-
                     </div>
                 </div>
 
-
                 <div className="flex justify-between space-x-4 pt-4">
-                    <button type="button" onClick={handleBack} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center shadow">
+                    <button
+                        type="button"
+                        onClick={handleBack}
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center shadow"
+                    >
                         <FontAwesomeIcon icon={faTimes} className="mr-2" />
                         Batal
                     </button>
-                    <button type="submit" disabled={loading} className={`${loading ? "bg-green-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"} text-white px-4 py-2 rounded flex items-center shadow transition-all`}>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className={`${loading ? "bg-green-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"
+                            } text-white px-4 py-2 rounded flex items-center shadow transition-all`}
+                    >
                         {loading ? (
                             <>
                                 <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
@@ -404,8 +375,6 @@ const TambahTugas = () => {
                             </>
                         )}
                     </button>
-
-
                 </div>
             </form>
         </div>
