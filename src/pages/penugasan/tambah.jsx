@@ -220,32 +220,32 @@ const TambahTugas = () => {
 
                 <div className="pt-5">
                     {/* HEADER */}
-                    <div className="flex items-center justify-between mb-5">
-                        <div>
-                            <h2 className="text-xl font-semibold text-gray-900">Daftar Penugasan Pekerja</h2>
-                            <p className="text-sm text-gray-600">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
+
+                        {/* Title & Description */}
+                        <div className="space-y-1">
+                            <h2 className="text-xl font-semibold text-gray-900">
+                                Daftar Penugasan Pekerja
+                            </h2>
+
+                            <p className="text-sm text-gray-600 leading-relaxed max-w-md">
                                 Kelola daftar pekerja dan tugas dengan mudah, termasuk menyalin data untuk
                                 mempercepat proses input.
                             </p>
                         </div>
 
-                        <button
-                            type="button"
-                            onClick={handleAddWorker}
-                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 shadow transition-all hover:scale-105"
-                        >
+                        {/* Button */}
+                        <button type="button" onClick={handleAddWorker} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg  text-sm flex items-center justify-center gap-2 shadow transition-all hover:scale-105 w-full md:w-auto">
                             <FontAwesomeIcon icon={faPlus} />
                             Tambah Baru
                         </button>
                     </div>
 
+
                     {/* LIST CONTAINER */}
-                    <div className="max-h-[70vh] overflow-y-auto pr-1 space-y-4 scrollbar-green">
+                    <div className="max-h-[70vh] overflow-y-auto pr-1 space-y-4 scrollbar-green pb-20">
                         {workerList.map((worker, index) => (
-                            <div
-                                key={index}
-                                className="border border-green-500/50 bg-white rounded-xl shadow-sm hover:shadow-md transition-all p-4"
-                            >
+                            <div key={index} className="border border-green-500/50 bg-white rounded-xl shadow-sm hover:shadow-md transition-all p-4">
                                 {/* CARD HEADER */}
                                 <div className="flex justify-between items-center pb-3 border-b border-green-200">
                                     <h3 className="text-sm font-semibold text-green-700">Penugasan {index + 1}</h3>
@@ -269,11 +269,7 @@ const TambahTugas = () => {
                                         </button>
 
                                         {workerList.length > 1 && (
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveWorker(index)}
-                                                className="px-3 py-1 rounded-md bg-red-500 hover:bg-red-600 text-[11px] text-white flex items-center gap-1 shadow-sm transition"
-                                            >
+                                            <button type="button" onClick={() => handleRemoveWorker(index)} className="px-3 py-1 rounded-md bg-red-500 hover:bg-red-600 text-[11px] text-white flex items-center gap-1 shadow-sm transition">
                                                 <FontAwesomeIcon icon={faTrash} className="w-3 h-3" />
                                                 Hapus
                                             </button>
@@ -283,82 +279,100 @@ const TambahTugas = () => {
 
                                 {/* CARD CONTENT */}
                                 <div className="mt-3 space-y-4 text-sm">
-                                    {/* KARYAWAN */}
-                                    <div className="grid grid-cols-3 sm:grid-cols-4 items-center gap-3">
-                                        <label className="font-medium text-gray-700">Karyawan</label>
-                                        <div className="col-span-2 sm:col-span-3">
-                                            <Select
-                                                value={
-                                                    profilList
-                                                        .map((user) => ({
-                                                            value: user.id_user,
-                                                            label: user.nama_user,
-                                                        }))
-                                                        .find((option) => option.value === worker.id_user) || null
-                                                }
-                                                onChange={(selectedOption) =>
-                                                    handleWorkerChange(
-                                                        index,
-                                                        "id_user",
-                                                        selectedOption ? selectedOption.value : ""
-                                                    )
-                                                }
-                                                options={profilList.map((user) => ({
+
+                                    <Select
+                                        value={
+                                            profilList
+                                                .map((user) => ({
                                                     value: user.id_user,
                                                     label: user.nama_user,
-                                                }))}
-                                                placeholder="Pilih Karyawan..."
-                                                required
-                                                classNamePrefix="react-select"
-                                                menuPortalTarget={document.body}
-                                                styles={{
-                                                    control: (base) => ({
-                                                        ...base,
-                                                        borderColor: "#86efac",
-                                                        minHeight: "36px",
-                                                        fontSize: "0.88rem",
-                                                        backgroundColor: "white",
-                                                        borderRadius: "0.5rem",
-                                                        boxShadow: "none",
-                                                        "&:hover": { borderColor: "#16a34a" },
-                                                    }),
-                                                    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
+                                                    role: user.role,
+                                                }))
+                                                .find((option) => option.value === worker.id_user) || null
+                                        }
+                                        onChange={(selectedOption) =>
+                                            handleWorkerChange(
+                                                index,
+                                                "id_user",
+                                                selectedOption ? selectedOption.value : ""
+                                            )
+                                        }
+                                        options={profilList.map((user) => ({
+                                            value: user.id_user,
+                                            label: user.nama_user,
+                                            role: user.role,
+                                        }))}
+                                        placeholder="Pilih karyawan yang akan ditugaskan..."
+                                        required
+                                        classNamePrefix="react-select"
+                                        menuPortalTarget={document.body}
+                                        formatOptionLabel={(option) => (
+                                            <div className="flex justify-between w-full items-center">
+                                                <span>{option.label}</span>
+                                                <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-md">
+                                                    {option.role}
+                                                </span>
+                                            </div>
+                                        )}
+                                        styles={{
+                                            control: (base) => ({
+                                                ...base,
+                                                borderColor: "#86efac",
+                                                minHeight: "38px",
+                                                fontSize: "0.9rem",
+                                                backgroundColor: "white",
+                                                borderRadius: "0.6rem",
+                                                boxShadow: "none",
+                                                "&:hover": { borderColor: "#16a34a" },
+                                            }),
+                                            menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                            option: (provided, state) => ({
+                                                ...provided,
+                                                paddingTop: 8,
+                                                paddingBottom: 8,
+                                                fontSize: "0.9rem",
+                                                backgroundColor: state.isSelected
+                                                    ? "#16a34a"
+                                                    : state.isFocused
+                                                        ? "#dcfce7"
+                                                        : "white",
+                                                color: state.isSelected ? "white" : "#1f2937",
+                                                cursor: "pointer",
+                                            }),
+                                        }}
+                                    />
+
 
                                     {/* DESKRIPSI */}
-                                    <div className="grid grid-cols-3 sm:grid-cols-4 items-start gap-3">
+                                    <div className="flex flex-col gap-1">
                                         <label className="font-medium text-gray-700">Deskripsi Pekerjaan</label>
-                                        <div className="col-span-2 sm:col-span-3">
-                                            <textarea
-                                                placeholder="Tuliskan deskripsi penugasan..."
-                                                value={worker.deskripsi}
-                                                onChange={(e) => handleWorkerChange(index, "deskripsi", e.target.value)}
-                                                rows="3"
-                                                className="w-full border border-green-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none resize-none"
-                                                required
-                                            />
-                                        </div>
+                                        <textarea placeholder="Tuliskan deskripsi penugasan dengan detail dan jelas..." value={worker.deskripsi}
+                                            onChange={(e) =>
+                                                handleWorkerChange(
+                                                    index,
+                                                    "deskripsi",
+                                                    e.target.value
+                                                )
+                                            }
+                                            rows="3"
+                                            className="w-full border border-green-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none resize-none"
+                                            required
+                                        />
                                     </div>
+
                                 </div>
+
                             </div>
                         ))}
                     </div>
                 </div>
 
                 <div className="flex justify-between space-x-4 pt-4">
-                    <button
-                        type="button"
-                        onClick={handleBack}
-                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center shadow"
-                    >
+                    <button type="button" onClick={handleBack} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center shadow">
                         <FontAwesomeIcon icon={faTimes} className="mr-2" />
                         Batal
                     </button>
-                    <button
-                        type="submit"
+                    <button type="submit"
                         disabled={loading}
                         className={`${loading ? "bg-green-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"
                             } text-white px-4 py-2 rounded flex items-center shadow transition-all`}

@@ -158,18 +158,15 @@ const Penugasan = () => {
                     return (
                         <div key={item.id} className="bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-all p-5 flex flex-col gap-4 md:gap-3">
                             {/* ===================== HEADER ===================== */}
-                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-3">
+                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5 md:gap-1">
 
                                 {/* Nomor + Nama */}
-                                <div className="flex items-center gap-3 min-w-0 flex-1">
-                                    <span className="px-2 py-[3px] rounded-lg bg-emerald-200 text-emerald-900 border border-emerald-300 text-xs font-bold min-w-[28px] text-center">
-                                        {indexOfFirstItem + index + 1}
-                                    </span>
-
+                                <div className="flex items-center gap-2 min-w-0 flex-1">
                                     <h2 className="text-base font-semibold text-gray-900 leading-tight line-clamp-1">
-                                        {item.nama}
+                                        {indexOfFirstItem + index + 1}. {item.nama}
                                     </h2>
                                 </div>
+
 
                                 {/* STATUS & PROGRESS */}
                                 <div className="w-full md:w-auto flex flex-col md:flex-row md:items-center justify-between gap-5 md:gap-4">
@@ -200,7 +197,7 @@ const Penugasan = () => {
                                         <div className="relative h-9 w-9 mt-1">
                                             <svg className="h-9 w-9">
                                                 <circle cx="18" cy="18" r="13" stroke="#d1d5db" strokeWidth="3" fill="none" />
-                                                <circle cx="18" cy="18" r="13" stroke="#ea580c"  strokeWidth="3" fill="none" strokeDasharray={2 * Math.PI * 13} strokeDashoffset={(2 * Math.PI * 13) * (1 - progressPersen / 100)} strokeLinecap="round"/>
+                                                <circle cx="18" cy="18" r="13" stroke="#ea580c" strokeWidth="3" fill="none" strokeDasharray={2 * Math.PI * 13} strokeDashoffset={(2 * Math.PI * 13) * (1 - progressPersen / 100)} strokeLinecap="round" />
                                             </svg>
                                             <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-gray-800">
                                                 {progressPersen}%
@@ -233,8 +230,8 @@ const Penugasan = () => {
                                     <div className="flex flex-col">
                                         <span className="text-[11px] text-slate-500">Kategori Penugasan</span>
                                         <span className={`px-1.5 py-[2px] text-[10px] rounded font-semibold border capitalize w-fit ${item.category === "urgent"
-                                                ? "bg-red-100 text-red-700 border-red-300"
-                                                : "bg-emerald-100 text-emerald-700 border-emerald-300"
+                                            ? "bg-red-100 text-red-700 border-red-300"
+                                            : "bg-emerald-100 text-emerald-700 border-emerald-300"
                                             }`}>
                                             {item.category}
                                         </span>

@@ -220,23 +220,26 @@ const EditTugas = () => {
 
                 <div className="pt-5">
                     {/* HEADER */}
-                    <div className="flex items-center justify-between mb-5">
-                        <div>
-                            <h2 className="text-xl font-semibold text-gray-900">Daftar Penugasan Pekerja</h2>
-                            <p className="text-sm text-gray-600">
-                                Kelola daftar pekerja dan tugas dengan mudah, termasuk menyalin data untuk mempercepat proses input.
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
+
+                        {/* Title & Description */}
+                        <div className="space-y-1">
+                            <h2 className="text-xl font-semibold text-gray-900">
+                                Daftar Penugasan Pekerja
+                            </h2>
+
+                            <p className="text-sm text-gray-600 leading-relaxed max-w-md">
+                                Pantau dan kelola daftar pekerja serta tugas yang terkait. Anda juga dapat menyalin data untuk mempercepat proses input.
                             </p>
                         </div>
 
-                        <button
-                            type="button"
-                            onClick={handleAddWorker}
-                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 shadow transition-all hover:scale-105"
-                        >
+                        {/* Button */}
+                        <button type="button" onClick={handleAddWorker} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm flex items-center justify-center gap-2 shadow transition-all hover:scale-105 w-full md:w-auto">
                             <FontAwesomeIcon icon={faPlus} />
                             Tambah Pekerja
                         </button>
                     </div>
+
 
                     {/* LIST CONTAINER */}
                     <div className="max-h-[70vh] overflow-y-auto pr-1 space-y-4 scrollbar-green">
@@ -308,7 +311,7 @@ const EditTugas = () => {
                                                     value: u.id_user,
                                                     label: u.nama_user,
                                                 }))}
-                                                placeholder="Pilih Karyawan..."
+                                                placeholder="Pilih karyawan yang akan ditugaskan..."
                                                 classNamePrefix="react-select"
                                                 menuPortalTarget={document.body}
                                                 styles={{
@@ -332,13 +335,7 @@ const EditTugas = () => {
                                         <label className="font-medium text-gray-700">Deskripsi Pekerjaan</label>
 
                                         <div className="col-span-2 sm:col-span-3">
-                                            <textarea
-                                                value={worker.deskripsi}
-                                                onChange={(e) => handleWorkerChange(index, "deskripsi", e.target.value)}
-                                                placeholder="Tuliskan deskripsi..."
-                                                rows="3"
-                                                className="w-full border border-green-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none resize-none"
-                                            />
+                                            <textarea value={worker.deskripsi} onChange={(e) => handleWorkerChange(index, "deskripsi", e.target.value)} placeholder="Tuliskan deskripsi..." rows="3" className="w-full border border-green-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none resize-none"/>
                                         </div>
                                     </div>
 
