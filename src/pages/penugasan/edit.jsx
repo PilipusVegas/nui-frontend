@@ -68,7 +68,7 @@ const EditTugas = () => {
 
 
     const handleAddWorker = () => {
-        setWorkers([...workers, { id_user: "", deskripsi: "", id_tugas: idTugas }]);
+        setWorkers([...workers, { id_user: "", deskripsi: "", telp: "", id_tugas: idTugas }]);
     };
 
     const handleRemoveWorker = async (index) => {
@@ -152,7 +152,8 @@ const EditTugas = () => {
                     const workerPayload = {
                         id_user: w.id_user,
                         deskripsi: w.deskripsi,
-                        id_tugas: idTugas
+                        telp: w.telp,
+                        id_tugas: idTugas,
                     };
                     if (w.id_detail) workerPayload.id = w.id_detail;
                     return workerPayload;
@@ -302,14 +303,18 @@ const EditTugas = () => {
                                                     .map((u) => ({
                                                         value: u.id_user,
                                                         label: u.nama_user,
+                                                        telp: u.telp,
                                                     }))
                                                     .find((opt) => opt.value === worker.id_user) || null}
-                                                onChange={(opt) =>
-                                                    handleWorkerChange(index, "id_user", opt ? opt.value : "")
+                                                onChange={(opt) => {   
+                                                    handleWorkerChange(index, "id_user", opt ? opt.value : "");
+                                                    handleWorkerChange(index, "telp", opt ? opt.telp : "");
+                                                }
                                                 }
                                                 options={profilList.map((u) => ({
                                                     value: u.id_user,
                                                     label: u.nama_user,
+                                                    telp: u.telp,
                                                 }))}
                                                 placeholder="Pilih karyawan yang akan ditugaskan..."
                                                 classNamePrefix="react-select"

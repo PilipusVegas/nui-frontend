@@ -20,7 +20,7 @@ const TambahTugas = () => {
     const [nama, setNama] = useState("");
     const [startDate, setStartDate] = useState("");
     const [deadlineAt, setDeadlineAt] = useState("");
-    const [workerList, setWorkerList] = useState([{ id_user: "", deskripsi: "" }]);
+    const [workerList, setWorkerList] = useState([{ id_user: "", deskripsi: "", telp: "" }]);
 
     const [profilList, setProfilList] = useState([]);
     const [category, setCategory] = useState("daily");
@@ -54,7 +54,7 @@ const TambahTugas = () => {
         if (confirm.isConfirmed) navigate("/penugasan");
     };
 
-    const handleAddWorker = () => setWorkerList([...workerList, { id_user: "", deskripsi: "" }]);
+    const handleAddWorker = () => setWorkerList([...workerList, { id_user: "", deskripsi: "", telp: "" }]);
     const handleRemoveWorker = async (index) => {
         const confirm = await Swal.fire({
             title: "Hapus penugasan pada karyawan ini?",
@@ -125,6 +125,7 @@ const TambahTugas = () => {
                     .map((w) => ({
                         id_user: Number(w.id_user),
                         deskripsi: w.deskripsi.trim(),
+                        telp: w.telp.trim(),
                     })),
             };
 
@@ -149,7 +150,6 @@ const TambahTugas = () => {
             setLoading(false);
         }
     };
-
     return (
         <div className="min-h-screen flex flex-col">
             <SectionHeader
@@ -287,20 +287,28 @@ const TambahTugas = () => {
                                                     value: user.id_user,
                                                     label: user.nama_user,
                                                     role: user.role,
+                                                    telp: user.telp,
                                                 }))
                                                 .find((option) => option.value === worker.id_user) || null
                                         }
-                                        onChange={(selectedOption) =>
+                                        onChange={(selectedOption) => {
                                             handleWorkerChange(
                                                 index,
                                                 "id_user",
                                                 selectedOption ? selectedOption.value : ""
+                                            );
+                                            handleWorkerChange(
+                                                index,
+                                                "telp",
+                                                selectedOption ? selectedOption.telp : ""
                                             )
+                                        }
                                         }
                                         options={profilList.map((user) => ({
                                             value: user.id_user,
                                             label: user.nama_user,
                                             role: user.role,
+                                            telp: user.telp,
                                         }))}
                                         placeholder="Pilih karyawan yang akan ditugaskan..."
                                         required
