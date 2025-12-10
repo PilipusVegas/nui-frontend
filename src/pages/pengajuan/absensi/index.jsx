@@ -79,7 +79,7 @@ const DataAbsensi = () => {
 
       <div className="grid grid-cols-2 gap-3 mb-4">
         <SummaryCard icon={faCheckCircle} title="Total Karyawan Lapangan" value={absenData.length} />
-        <SummaryCard icon={faExclamationTriangle} title="Total Belum Disetujui" value={absenData.reduce((sum, d) => sum + Number(d.unapproved || 0), 0)} note={[1].includes(user?.id_role) ? "Lihat semua pengajuan" : undefined} onClick={[1].includes(user?.id_role) ? () => navigate("/pengajuan-absensi/batch") : undefined}/>
+        <SummaryCard icon={faExclamationTriangle} title="Total Belum Disetujui" value={absenData.reduce((sum, d) => sum + Number(d.unapproved || 0), 0)} note={[1, 4].includes(user?.id_role) ? "Lihat semua pengajuan" : undefined} onClick={[1].includes(user?.id_role) ? () => navigate("/pengajuan-absensi/batch") : undefined}/>
       </div>
 
       <SearchBar onSearch={(val) => { setSearchName(val); setCurrentPage(1); }} placeholder="Cari nama dan divisi..." className="mb-4" />
