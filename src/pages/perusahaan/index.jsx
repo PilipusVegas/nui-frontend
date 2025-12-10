@@ -42,11 +42,11 @@ const KelolaPerusahaan = () => {
       {/* Mode Desktop - Table */}
       <div className="hidden sm:block overflow-x-auto bg-white shadow-md rounded-xl border border-gray-200">
         <table className="w-full text-sm text-left text-gray-700">
-          <thead className="bg-green-600 text-white text-sm uppercase">
+          <thead className="bg-green-500 text-white text-sm uppercase">
             <tr>
-              <th className="py-2 px-4 font-semibold text-center">No.</th>
-              <th className="py-2 px-4 font-semibold">Perusahaan</th>
-              <th className="py-2 px-4 font-semibold text-center w-32">Menu</th>
+              <th className="py-3 px-4 font-semibold text-center">No.</th>
+              <th className="py-3 px-4 font-semibold">Perusahaan</th>
+              <th className="py-3 px-4 font-semibold text-center w-32">Menu</th>
             </tr>
           </thead>
           <tbody>
