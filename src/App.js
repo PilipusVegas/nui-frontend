@@ -10,7 +10,8 @@ import Lembur from "./pages/lembur";
 import Tugas from "./pages/tugas";
 import DetailTugas from "./pages/tugas/show";
 import Cuti from "./pages/cuti";
-import FormulirDinas from "./pages/dinas";
+import FormulirDinas from "./pages/dinas/";
+import FormulirDinasAplikasi from "./pages/dinas/formDinasAplikasi";
 import PermohonanCuti from "./pages/cuti/formCuti";
 import Profile from "./pages/user-profile";
 import EditProfile from "./pages/user-profile/edit";
@@ -219,6 +220,7 @@ const App = () => {
     // ALL ROUNDER
     { path: "/riwayat-face", component: <RiwayatFace />, roles: [] },
     { path: "/formulir-dinas", component: <FormulirDinas />, roles: [] },
+    { path: "/formulir-dinas-aplikasi", component: <FormulirDinasAplikasi />, roles: [] },
 
     // MOBILE
     { path: "/notification", component: <Notification />, roles: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },

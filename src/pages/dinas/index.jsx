@@ -3,12 +3,20 @@ import Select from "react-select";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { fetchWithJwt } from "../../utils/jwtHelper";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCircleInfo,
+  faChevronUp,
+  faChevronDown,
+} from "@fortawesome/free-solid-svg-icons";
 
 export default function SuratDinasPage() {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
+
   const [namaOptions, setNamaOptions] = useState([]);
-  const [kadivOptions, setKadivOptions] = useState([]);
   const [profilLoading, setProfilLoading] = useState(true);
+  const [infoOpen, setInfoOpen] = useState(false);
+
   const [form, setForm] = useState({
     id_user: null,
     nama: "",
@@ -17,11 +25,14 @@ export default function SuratDinasPage() {
     tgl_berangkat: "",
     tgl_pulang: "",
     waktu: "",
-    id_kadiv: null,
   });
+
   const [submitLoading, setSubmitLoading] = useState(false);
   const [confirm, setConfirm] = useState(false);
 
+  // ==========================================================
+  // LOAD PROFIL
+  // ==========================================================
   useEffect(() => {
     const loadProfil = async () => {
       try {
@@ -32,17 +43,11 @@ export default function SuratDinasPage() {
         const allEmployees = result.data.map((u) => ({
           value: u.id_user,
           label: u.nama_user,
-          id_role: u.id_role,
         }));
 
         setNamaOptions(allEmployees);
-
-        const kadivFiltered = allEmployees
-          .filter((u) => [4, 5, 20].includes(u.id_role))
-          .map((u) => ({ value: u.value, label: u.label }));
-        setKadivOptions(kadivFiltered);
       } catch {
-        toast.error("Gagal memuat data profil");
+        toast.error("Gagal memuat data profil.");
       } finally {
         setProfilLoading(false);
       }
@@ -53,30 +58,27 @@ export default function SuratDinasPage() {
   const handleChange = (field, value) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
-  /** ✅ Submit dengan konfirmasi Swal */
+  // ==========================================================
+  // SUBMIT FORM
+  // ==========================================================
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!confirm) {
-      toast.error("Anda harus menyetujui pernyataan kebenaran data.");
-      return;
-    }
-    if (
-      !form.id_user ||
-      !form.kategori ||
-      !form.tgl_berangkat ||
-      !form.waktu ||
-      !form.id_kadiv
-    ) {
-      toast.error("Lengkapi seluruh data wajib.");
-      return;
-    }
-    if (form.kategori.value === 2 && !form.tgl_pulang) {
-      toast.error("Tanggal pulang wajib diisi untuk dinas luar kota.");
+      toast.error("Anda wajib menyetujui pernyataan kebenaran data.");
       return;
     }
 
-    // ✅ Validasi tanggal pulang ≥ tanggal berangkat
+    if (!form.id_user || !form.kategori || !form.tgl_berangkat || !form.waktu) {
+      toast.error("Lengkapi seluruh data wajib.");
+      return;
+    }
+
+    if (form.kategori.value === 2 && !form.tgl_pulang) {
+      toast.error("Tanggal pulang wajib untuk perjalanan luar kota.");
+      return;
+    }
+
     if (
       form.kategori.value === 2 &&
       new Date(form.tgl_pulang) < new Date(form.tgl_berangkat)
@@ -85,36 +87,29 @@ export default function SuratDinasPage() {
       return;
     }
 
-    // --- Rangkai teks konfirmasi ---
     const tanggalInfo =
       form.kategori.value === 2
         ? `dari ${form.tgl_berangkat} sampai ${form.tgl_pulang}`
         : `pada ${form.tgl_berangkat}`;
     const jamInfo = `pukul ${form.waktu}`;
-    const kadivNama = form.id_kadiv?.label || "—";
 
-    const textKonfirmasi = `
-      Apakah Anda benar-benar melakukan perjalanan dinas 
-      ${tanggalInfo} ${jamInfo}
-      dengan Kepala Divisi penanggung jawab: <b>${kadivNama}</b> ?
-    `;
-
-    // --- Tampilkan dialog konfirmasi ---
     const result = await Swal.fire({
-      title: "Konfirmasi Perjalanan Dinas",
-      html: textKonfirmasi,
+      title: "Konfirmasi Pengajuan",
+      html: `
+        Apakah Anda yakin melakukan perjalanan dinas 
+        <b>${tanggalInfo}</b> ${jamInfo}?<br>
+        Data akan diproses secara resmi.
+      `,
       icon: "question",
-      showCancelButton: true,
       confirmButtonText: "Ya, Kirim",
       cancelButtonText: "Batal",
-      confirmButtonColor: "#059669", // hijau tegas
+      showCancelButton: true,
+      confirmButtonColor: "#059669",
       cancelButtonColor: "#d33",
-      focusCancel: true,
     });
 
     if (!result.isConfirmed) return;
 
-    // --- Kirim ke server bila disetujui ---
     setSubmitLoading(true);
     try {
       const res = await fetchWithJwt(`${apiUrl}/surat-dinas`, {
@@ -128,12 +123,12 @@ export default function SuratDinasPage() {
           tgl_berangkat: form.tgl_berangkat,
           tgl_pulang: form.kategori.value === 2 ? form.tgl_pulang : null,
           waktu: form.waktu,
-          id_kadiv: form.id_kadiv.value,
         }),
       });
+
       if (!res.ok) throw new Error();
-      toast.success("Form berhasil dikirim");
-      // Reset form
+      toast.success("Pengajuan berhasil dikirim.");
+
       setForm({
         id_user: null,
         nama: "",
@@ -142,11 +137,10 @@ export default function SuratDinasPage() {
         tgl_berangkat: "",
         tgl_pulang: "",
         waktu: "",
-        id_kadiv: null,
       });
       setConfirm(false);
     } catch {
-      toast.error("Terjadi kesalahan pengiriman");
+      toast.error("Terjadi kesalahan saat mengirim data.");
     } finally {
       setSubmitLoading(false);
     }
@@ -155,15 +149,14 @@ export default function SuratDinasPage() {
   if (profilLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        Memuat data profil…
+        Memuat data…
       </div>
     );
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-emerald-50 p-3">
-      <form onSubmit={handleSubmit} className="w-full max-w-lg bg-white/90 backdrop-blur border border-emerald-100 rounded-3xl shadow-2xl p-6 pb-8 space-y-4">
-        {/* Header */}
+      <form onSubmit={handleSubmit} className="w-full max-w-lg bg-white/90 backdrop-blur border border-emerald-100 rounded-3xl shadow-2xl p-6 pb-7 space-y-5">
         <header className="text-center border-b border-emerald-200 pb-4">
           <h1 className="text-xl font-bold tracking-wide text-emerald-800">
             Formulir Perjalanan Dinas
@@ -172,21 +165,85 @@ export default function SuratDinasPage() {
             Globalindo Group
           </p>
         </header>
+        <div className="rounded-xl overflow-hidden border border-blue-300 shadow bg-white">
+          <div onClick={() => setInfoOpen(!infoOpen)} className="flex justify-between items-center cursor-pointer bg-blue-100 px-4 py-3">
+            <div className="flex items-center gap-2 text-blue-800 font-semibold">
+              <FontAwesomeIcon icon={faCircleInfo} />
+              Panduan Pengisian Formulir
+            </div>
+            <FontAwesomeIcon icon={infoOpen ? faChevronUp : faChevronDown} className="text-blue-800"/>
+          </div>
 
-        {/* Nama Karyawan */}
+          {infoOpen && (
+            <div className="px-4 py-4 bg-blue-50 text-blue-900 text-sm space-y-4 border-t border-blue-300">
+
+              {/* TITLE */}
+              <p className="font-bold text-blue-900">
+                Informasi Wajib Dibaca Sebelum Mengajukan:
+              </p>
+
+              {/* POINTS */}
+              <ul className="list-disc list-inside space-y-2 leading-relaxed">
+
+                <li>
+                  Semua data pada formulir ini adalah
+                  <span className="font-semibold"> wajib diisi </span>
+                  untuk memastikan proses perjalanan dinas berjalan lancar.
+                </li>
+
+                <li>
+                  Pengisian harus menggunakaN
+                  <span className="font-semibold"> Nama Masing-Masing </span>
+                  untuk menghindari kesalahan identitas dan mencegah penyalahgunaan.
+                </li>
+
+                <li>
+                  Jika Anda pergi keluar kota,
+                  <span className="font-semibold"> cukup isi satu kali </span>
+                  dengan rentang tanggal berangkat dan pulang.
+                  Sistem akan otomatis mencatat seluruh periode perjalanan Anda.
+                </li>
+
+                <li>
+                  Pastikan memilih
+                  <span className="font-semibold"> kategori perjalanan </span>
+                  yang benar (Dalam Kota / Luar Kota) agar proses persetujuan lebih cepat.
+                </li>
+
+                <li>
+                  Isi tanggal dan waktu keberangkatan secara
+                  <span className="font-semibold"> akurat dan jujur. </span>
+                  Keterangan yang tidak sesuai dapat menghambat proses dinas,
+                  menimbulkan revisi, dan dapat dianggap sebagai pelanggaran.
+                </li>
+
+                <li>
+                  Tulis tujuan perjalanan dengan
+                  <span className="font-semibold"> jelas, singkat, dan langsung pada maksudnya </span>
+                  agar mudah dipahami oleh pihak yang memverifikasi.
+                </li>
+
+              </ul>
+
+              {/* FOOTNOTE */}
+              <p className="text-xs text-blue-700 leading-relaxed pt-1">
+                Pengajuan yang diisi dengan lengkap, benar, dan jujur akan mempercepat proses validasi,
+                mencegah kesalahan data, dan membantu memastikan perjalanan dinas Anda tercatat resmi sesuai aturan.
+              </p>
+            </div>
+          )}
+        </div>
+        {/* Nama */}
         <section>
-          <label className="block text-sm font-semibold tracking-wide text-gray-900">
-            Nama Karyawan<span className="text-red-600">*</span>
+          <label className="block text-sm font-semibold text-gray-900">
+            Nama Karyawan <span className="text-red-600">*</span>
           </label>
-          <p className="text-xs text-gray-500 mt-1 mb-2">
-            Pilih karyawan yang akan melaksanakan perjalanan dinas.
-          </p>
-          <Select classNamePrefix="react-select"
+          <Select
+            classNamePrefix="react-select"
             styles={{
               control: (base) => ({
                 ...base,
                 borderColor: "#d1d5db",
-                boxShadow: "none",
                 ":hover": { borderColor: "#10b981" },
               }),
             }}
@@ -196,34 +253,23 @@ export default function SuratDinasPage() {
               handleChange("id_user", v);
               handleChange("nama", v?.label || "");
             }}
-            placeholder="Pilih Nama Karyawan"
+            placeholder="Pilih Nama"
           />
         </section>
 
-        {/* Kategori Perjalanan */}
+        {/* Kategori */}
         <section>
-          <label className="block text-sm font-semibold tracking-wide text-gray-900">
-            Kategori Perjalanan<span className="text-red-600">*</span>
+          <label className="block text-sm font-semibold text-gray-900">
+            Kategori Perjalanan <span className="text-red-600">*</span>
           </label>
-          <p className="text-[10px] text-gray-700 mt-0.5 mb-2 tracking-wide">
-            <strong>Dalam Kota:</strong> hanya tanggal berangkat. <br />
-            <strong>Luar Kota:</strong> wajib isi tanggal pulang.
-          </p>
           <Select
-            styles={{
-              control: (base) => ({
-                ...base,
-                borderColor: "#d1d5db",
-                ":hover": { borderColor: "#10b981" },
-              }),
-            }}
             options={[
               { value: 1, label: "Dalam Kota" },
               { value: 2, label: "Luar Kota" },
             ]}
             value={form.kategori}
             onChange={(v) => handleChange("kategori", v)}
-            placeholder="Pilih Kategori Perjalanan"
+            placeholder="Pilih Kategori"
           />
         </section>
 
@@ -231,16 +277,27 @@ export default function SuratDinasPage() {
         <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-semibold text-gray-900">
-              Tanggal Berangkat<span className="text-red-600">*</span>
+              Tanggal Berangkat <span className="text-red-600">*</span>
             </label>
-            <input type="date" className="mt-2 w-full border border-gray-300 rounded-lg p-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500" value={form.tgl_berangkat} onChange={(e) => handleChange("tgl_berangkat", e.target.value)} />
+            <input
+              type="date"
+              className="mt-2 w-full border border-gray-300 rounded-lg p-3 text-sm"
+              value={form.tgl_berangkat}
+              onChange={(e) => handleChange("tgl_berangkat", e.target.value)}
+            />
           </div>
+
           {form.kategori?.value === 2 && (
             <div>
               <label className="block text-sm font-semibold text-gray-900">
-                Tanggal Pulang<span className="text-red-600">*</span>
+                Tanggal Pulang <span className="text-red-600">*</span>
               </label>
-              <input type="date" className="mt-2 w-full border border-gray-300 rounded-lg p-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500" value={form.tgl_pulang} onChange={(e) => handleChange("tgl_pulang", e.target.value)} />
+              <input
+                type="date"
+                className="mt-2 w-full border border-gray-300 rounded-lg p-3 text-sm"
+                value={form.tgl_pulang}
+                onChange={(e) => handleChange("tgl_pulang", e.target.value)}
+              />
             </div>
           )}
         </section>
@@ -248,54 +305,62 @@ export default function SuratDinasPage() {
         {/* Jam */}
         <section>
           <label className="block text-sm font-semibold text-gray-900">
-            Jam Berangkat<span className="text-red-600">*</span>
+            Jam Berangkat <span className="text-red-600">*</span>
           </label>
-          <input type="time" className="mt-2 w-full border border-gray-300 rounded-lg p-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500" value={form.waktu} onChange={(e) => handleChange("waktu", e.target.value)} />
-        </section>
-
-        {/* Kepala Divisi */}
-        <section>
-          <label className="block text-sm font-semibold text-gray-900 mb-1">
-            Kepala Divisi Penanggung Jawab<span className="text-red-600">*</span>
-          </label>
-          <Select
-            styles={{
-              control: (base) => ({
-                ...base,
-                borderColor: "#d1d5db",
-                ":hover": { borderColor: "#10b981" },
-              }),
-            }}
-            options={kadivOptions}
-            value={form.id_kadiv}
-            onChange={(v) => handleChange("id_kadiv", v)}
-            placeholder="Pilih Kepala Divisi"
+          <input
+            type="time"
+            className="mt-2 w-full border border-gray-300 rounded-lg p-3 text-sm"
+            value={form.waktu}
+            onChange={(e) => handleChange("waktu", e.target.value)}
           />
         </section>
 
         {/* Keterangan */}
         <section>
           <label className="block text-sm font-semibold text-gray-900">
-            Keterangan Tugas<span className="text-red-600">*</span>
+            Keterangan Tugas <span className="text-red-600">*</span>
           </label>
-          <textarea className="mt-2 w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-emerald-500 focus:ring-emerald-500" rows="3" placeholder="Tuliskan tujuan/deskripsi tugas" value={form.keterangan} onChange={(e) => handleChange("keterangan", e.target.value)} />
+          <textarea
+            className="mt-2 w-full border border-gray-300 rounded-lg p-3 text-sm"
+            rows="3"
+            placeholder="Tuliskan tujuan perjalanan..."
+            value={form.keterangan}
+            onChange={(e) => handleChange("keterangan", e.target.value)}
+          />
         </section>
 
         {/* Konfirmasi */}
-        <section className="bg-emerald-50/80 border border-emerald-300 rounded-xl p-4 flex items-start gap-3">
-          <input type="checkbox" id="confirm" checked={confirm} onChange={(e) => setConfirm(e.target.checked)} className="mt-1 accent-emerald-600" />
-          <label htmlFor="confirm" className="text-[10px] text-gray-800 leading-snug tracking-wide">
-            Dengan ini saya menyatakan seluruh data yang saya isi
-            <strong> benar, sah, dan dapat dipertanggungjawabkan</strong>.
+        <section
+          className="bg-emerald-50 border border-emerald-300 rounded-xl p-4 flex items-start gap-3 cursor-pointer"
+          onClick={() => setConfirm(!confirm)}
+        >
+          <input
+            type="checkbox"
+            id="confirm"
+            checked={confirm}
+            onChange={(e) => setConfirm(e.target.checked)}
+            className="mt-1 accent-emerald-600 cursor-pointer"
+            onClick={(e) => e.stopPropagation()}
+          />
+
+          <label
+            htmlFor="confirm"
+            className="text-[11px] text-gray-900 leading-snug cursor-pointer"
+          >
+            Saya menyatakan bahwa seluruh data yang saya isi
+            <strong> benar dan dapat dipertanggungjawabkan.</strong>
           </label>
         </section>
 
         {/* Submit */}
-        <button type="submit" disabled={submitLoading} className=" w-full py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-semibold tracking-wide shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed">
-          {submitLoading ? "Mengirim..." : "Kirim Pengajuan Dinas"}
+        <button
+          type="submit"
+          disabled={submitLoading}
+          className="w-full py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-semibold tracking-wide shadow-md transition disabled:opacity-50"
+        >
+          {submitLoading ? "Mengirim..." : "Kirim Pengajuan"}
         </button>
       </form>
     </div>
   );
-
 }
