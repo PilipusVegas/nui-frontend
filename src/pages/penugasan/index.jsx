@@ -112,7 +112,7 @@ const Penugasan = () => {
                 }
             />
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 my-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 my-4">
                 <SummaryCard icon={faClipboardList} title="Butuh Approval" value={totalButuhApproval} />
                 <SummaryCard icon={faPause} title="Tugas Di-Pause" value={totalPaused} />
                 <SummaryCard icon={faChartLine} title="Rata-Rata Progress" value={`${averageProgress}%`} />

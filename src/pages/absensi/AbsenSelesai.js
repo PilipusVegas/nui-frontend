@@ -20,22 +20,27 @@ const AbsenSelesai = ({ handleNextStepData }) => {
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [facingMode, setFacingMode] = useState("user");
 
-  // --- ambil daftar lokasi dari API ---
   useEffect(() => {
     fetchWithJwt(`${apiUrl}/lokasi`)
       .then((res) => res.json())
       .then((data) =>
         setLocations(
-          (data.data || []).map((item) => ({
-            value: item.id,
-            label: item.nama,
-          }))
+          (data.data || []).map((item) => {
+            const [lat, lon] = item.koordinat.split(",").map(Number);
+            return {
+              value: item.id,
+              label: item.nama,
+              timezone: item.timezone,
+              lat,
+              lon,
+            };
+          })
         )
       )
       .catch(() => Swal.fire("Error", "Gagal memuat daftar lokasi", "error"));
   }, [apiUrl]);
 
-  // --- fungsi ambil koordinat GPS ---
+
   const getLocation = () => {
     if (!navigator.geolocation) {
       Swal.fire("Error", "Browser tidak mendukung geolocation", "error");
@@ -56,7 +61,7 @@ const AbsenSelesai = ({ handleNextStepData }) => {
     );
   };
 
-  // --- ambil foto webcam + otomatis ambil GPS ---
+
   const handleAmbilFoto = () => {
     if (!webcamRef.current) return;
     const imageSrc = webcamRef.current.getScreenshot();
@@ -69,6 +74,7 @@ const AbsenSelesai = ({ handleNextStepData }) => {
     }
   };
 
+
   const handleUlangi = () => {
     setFotoFile(null);
     setFotoPreview(null);
@@ -76,6 +82,7 @@ const AbsenSelesai = ({ handleNextStepData }) => {
     setUserCoords({ latitude: null, longitude: null });
     setSelectedLocation(null);
   };
+
 
   const isValid = () =>
     fotoFile instanceof File &&
@@ -91,6 +98,7 @@ const AbsenSelesai = ({ handleNextStepData }) => {
     handleNextStepData({
       fotoSelesai: fotoFile,
       id_lokasi: selectedLocation.value,
+      timezone: selectedLocation.timezone,
       lokasi: selectedLocation.label,
       jamSelesai: jamSelesai.toLocaleTimeString([], {
         hour: "2-digit",
@@ -111,16 +119,65 @@ const AbsenSelesai = ({ handleNextStepData }) => {
     return new File([u8arr], filename, { type: mime });
   };
 
+  const getDistanceMeters = (lat1, lon1, lat2, lon2) => {
+    const R = 6371000; // radius bumi dalam meter
+    const toRad = (deg) => (deg * Math.PI) / 180;
+
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) ** 2;
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c; // hasil meter
+  };
+
+  const showRadiusWarning = (dist) => {
+    const displayDist = dist < 1000
+      ? `${Math.floor(dist)} meter`
+      : `${(dist / 1000).toFixed(2)} km`;
+
+    Swal.fire({
+      icon: "warning",
+      title: "Lokasi Absensi Anda Di Luar Jangkauan",
+      html: `
+      <div style="text-align:left; font-size:13px; line-height:1.6;">
+        <p><strong>Jarak Anda:</strong> ${displayDist} dari titik lokasi kerja.</p>
+        <p>Absensi hanya sah dalam radius <strong>60 meter</strong>. Saat ini posisi Anda di luar batas tersebut.</p>
+        <p>Anda tetap bisa melanjutkan, tetapi HRD akan memeriksa data absensi Anda.</p>
+        <p>Disarankan melakukan absensi <strong>di area lokasi kerja</strong> agar data akurat dan valid.</p>
+      </div>
+    `,
+      confirmButtonText: "Lanjutkan Absensi",
+      confirmButtonColor: "#d33",
+      focusConfirm: true,
+    });
+  };
+
+
+  const checkLocationRadius = (userLat, userLon, loc) => {
+    if (!userLat || !userLon || !loc?.lat || !loc?.lon) return;
+
+    const jarak = getDistanceMeters(userLat, userLon, loc.lat, loc.lon);
+
+    if (jarak > 60) {
+      showRadiusWarning(jarak);
+    }
+  };
+
   return (
     <MobileLayout title="Absen Selesai">
       <form onSubmit={handleSubmit} className="max-w-lg mx-auto p-4 space-y-6 bg-white rounded-xl shadow">
-        {/* Kamera atau preview */}
         {!fotoFile ? (
           <div className="space-y-4">
             <div className="aspect-[3/4] w-full bg-gray-100 rounded-xl overflow-hidden shadow">
               <Webcam ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode }} className="w-full h-full object-cover scale-x-[-1]" />
             </div>
-            {/* Petunjuk singkat */}
             <p className="text-[10px] text-gray-600 text-center leading-snug">
               Silakan ambil foto sebagai bukti selesai bekerja. Pastikan wajah terlihat jelas dan cahaya memadai. Anda dapat menukar kamera depan/belakang sesuai kebutuhan.
             </p>
@@ -142,7 +199,6 @@ const AbsenSelesai = ({ handleNextStepData }) => {
               </div>
             </div>
 
-            {/* Lokasi */}
             <div>
               <label className="block text-xs font-bold">
                 Lokasi Selesai Bekerja<span className="text-red-500">*</span>
@@ -153,9 +209,8 @@ const AbsenSelesai = ({ handleNextStepData }) => {
                 </span>
               </p>
 
-              <Select options={locations} value={selectedLocation} onChange={setSelectedLocation} placeholder="Pilih lokasi..." isSearchable className="text-xs" />
+              <Select options={locations} value={selectedLocation} onChange={(loc) => { setSelectedLocation(loc); checkLocationRadius(userCoords.latitude, userCoords.longitude, loc); }} placeholder="Pilih lokasi..." isSearchable className="text-xs" />
 
-              {/* Status lokasi */}
               <div className="flex items-center mt-1 text-[9px]">
                 {loadingLocation ? (
                   <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-100 text-gray-500">
@@ -182,7 +237,6 @@ const AbsenSelesai = ({ handleNextStepData }) => {
               </div>
             </div>
 
-            {/* Tombol */}
             <div className="flex flex-col gap-3">
               <p className="text-[10px] text-gray-500 text-center">
                 Pastikan foto dan lokasi sudah sesuai sebelum melanjutkan.

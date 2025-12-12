@@ -61,7 +61,7 @@ import DetailPenugasan from "./pages/penugasan/show";
 import RiwayatPenugasan from "./pages/penugasan/riwayat";
 import RekapTunjangan from "./pages/tunjangan/";
 import RoleApp from "./pages/role-app";
-import BatchApproval from "./pages/pengajuan/absensi/batchApproval"
+import BatchApproval from "./pages/pengajuan/absensi/absensiAbnormal";
 
 
 // ===================== MOBILE USERS ========================

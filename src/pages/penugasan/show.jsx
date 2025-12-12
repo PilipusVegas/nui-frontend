@@ -365,6 +365,44 @@ const DetailPenugasan = () => {
                                         {tugas.is_complete ? "Terselesaikan" : "Tandai Selesai"}
                                     </button>
                                 </div>
+
+
+                                {/* ==================== FOTO EXAMPLES ==================== */}
+                                {/* ==================== FOTO CONTOH TUGAS (ATTACHMENT) ==================== */}
+                                {tugas?.attachment && tugas.attachment.length > 0 && (
+                                    <div className="mb-6">
+                                        <h3 className="text-md font-bold text-green-600 mb-3">
+                                            Contoh Foto Tugas
+                                        </h3>
+
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                            {tugas.attachment
+                                                .filter((img) => img.tipe_foto === 1) // foto contoh
+                                                .map((img, index) => {
+                                                    const src = `${apiUrl}/uploads/img/tugas/${img.bukti_foto}`;
+                                                    return (
+                                                        <div
+                                                            key={img.id}
+                                                            className="cursor-pointer group"
+                                                            onClick={() =>
+                                                                handleOpenLightbox(
+                                                                    src,
+                                                                    tugas.attachment.filter((i) => i.tipe_foto === 1)
+                                                                )
+                                                            }
+                                                        >
+                                                            <img src={src}
+                                                                alt="Foto Contoh Tugas"
+                                                                className="rounded-lg shadow border object-cover w-full h-32 group-hover:opacity-80 transition"
+                                                            />
+                                                        </div>
+                                                    );
+                                                })}
+                                        </div>
+                                    </div>
+                                )}
+
+
                             </div>
                         </div>
 

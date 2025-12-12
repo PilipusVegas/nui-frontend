@@ -143,7 +143,7 @@ const DivisiTable = () => {
 
   return (
     <div className="w-full mx-auto">
-      <SectionHeader title="Data Divisi" subtitle={`Menampilkan ${divisi.length} divisi keseluruhan.`} onBack={() => navigate("/")}
+      <SectionHeader title="Kelola Divisi" subtitle={`Menampilkan ${divisi.length} divisi keseluruhan.`} onBack={() => navigate("/")}
         actions={
           <button onClick={() => { setEditId(null); setNama(""); setKeterangan(""); setIsModalOpen(true); }} title="Tambah Divisi" aria-label="Tambah Divisi" className="flex items-center justify-center px-3 py-2 sm:px-5 sm:py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
             <FontAwesomeIcon icon={faPlus} className="text-base sm:mr-2" />

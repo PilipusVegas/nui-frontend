@@ -1,10 +1,12 @@
-import { useEffect, useState, useRef } from "react";
-import Webcam from "react-webcam";
-import MobileLayout from "../../layouts/mobileLayout";
-import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRight, faChevronRight, faChevronUp, faMapMarkerAlt, faSpinner, faTimesCircle, } from "@fortawesome/free-solid-svg-icons";
 import Select from "react-select";
+import Webcam from "react-webcam";
+import { useEffect, useState, useRef } from "react";
+import MobileLayout from "../../layouts/mobileLayout";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
+import { faArrowRight, faChevronRight, faChevronUp, faMapMarkerAlt, faSpinner, faTimesCircle, } from "@fortawesome/free-solid-svg-icons";
+import Swal from "sweetalert2";
+
 
 const AbsenMulai = ({ handleNextStepData }) => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -87,8 +89,19 @@ const AbsenMulai = ({ handleNextStepData }) => {
     };
 
     fetchData("lokasi", setLocations, (data) =>
-      data.map((loc) => ({ value: loc.id, label: loc.nama }))
+      data.map((loc) => {
+        const [latStr, lonStr] = (loc.koordinat || "").split(",").map(s => s.trim());
+
+        return {
+          value: loc.id,
+          label: loc.nama,
+          timezone: loc.timezone,
+          lat: parseFloat(latStr),
+          lon: parseFloat(lonStr),
+        };
+      })
     );
+
     fetchData("shift", setShiftList);
   }, [apiUrl]);
 
@@ -111,22 +124,85 @@ const AbsenMulai = ({ handleNextStepData }) => {
       koordinatMulai: userCoords.latitude && userCoords.longitude ? `${userCoords.latitude},${userCoords.longitude}` : "",
       fotoMulai,
       tipe_absensi: 1,
+      timezone: selectedLocation?.timezone || "",
     };
 
     handleNextStepData(formData);
   };
 
 
+  // Hitung jarak dalam meter (Haversine Formula)
+  const getDistanceMeters = (lat1, lon1, lat2, lon2) => {
+    if (!lat1 || !lon1 || !lat2 || !lon2) return 0;
+
+    const R = 6371000;
+    const toRad = (x) => (x * Math.PI) / 180;
+
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) ** 2;
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
+  };
+
+  const checkLocationRadius = (loc) => {
+    if (!userCoords.latitude || !userCoords.longitude || !loc.lat || !loc.lon) return;
+
+    const dist = getDistanceMeters(
+      Number(userCoords.latitude),
+      Number(userCoords.longitude),
+      Number(loc.lat),
+      Number(loc.lon)
+    );
+
+    console.log("Jarak:", dist);
+
+    if (dist > 60) {
+      showRadiusWarning(dist);
+    }
+  };
+
+  const showRadiusWarning = (dist) => {
+    let displayDist;
+    if (dist < 1000) {
+      displayDist = `${Math.floor(dist)} meter`;
+    } else {
+      displayDist = `${(dist / 1000).toFixed(2)} km`;
+    }
+
+    Swal.fire({
+      icon: "warning",
+      title: "Lokasi Absensi Di Luar Jangkauan",
+      html: `
+      <div style="text-align:left; font-size:13px; line-height:1.6;">
+        <p><strong>Jarak Anda:</strong> ${displayDist} dari titik lokasi kerja.</p>
+        <p>Absensi hanya sah dalam radius <strong>60 meter</strong>. Saat ini posisi Anda di luar batas tersebut.</p>
+        <p>Anda tetap bisa melanjutkan, tetapi HRD akan memeriksa data absensi anda.</p>
+        <p>Disarankan melakukan absensi <strong>di area lokasi kerja</strong> agar data akurat dan valid.</p>
+      </div>
+    `,
+      confirmButtonText: "Lanjutkan Absensi",
+      confirmButtonColor: "#d33",
+      focusConfirm: true,
+    });
+  };
+
   return (
     <MobileLayout title="Absen Masuk Kerja" className="bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
       <div className="flex justify-center">
-        <form className="w-full max-w-xl px-3 pb-10 space-y-5 tracking-wider" onSubmit={handleSubmit}>
-          {/* Kamera / Foto */}
+        <form className="w-full max-w-xl px-3 pb-28 space-y-8 tracking-wider" onSubmit={handleSubmit}>
           <div className="mt-3">
             <label className="block text-sm font-semibold">
               Foto Kehadiran<span className="text-red-500">*</span>
             </label>
-            <p className="text-[10px] text-gray-500 mb-2">
+            <p className="text-[11px] text-gray-700 mb-2">
               Pastikan wajah Anda terlihat jelas dan gunakan kamera depan atau belakang sesuai kebutuhan. <strong>jika sudah scroll kebawah</strong>
             </p>
 
@@ -148,10 +224,7 @@ const AbsenMulai = ({ handleNextStepData }) => {
             ) : (
               <div className="text-center">
                 <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden shadow-lg border border-gray-200">
-                  {/* Foto Absen */}
                   <img src={fotoMulai} alt="Foto Mulai" className="w-full h-full object-cover scale-x-[-1]" />
-
-                  {/* Overlay Informasi */}
                   <div className="absolute bottom-0 w-full bg-gradient-to-t from-black/90 via-black/90 to-transparent px-3 py-2 text-white">
                     <p className="text-sm font-semibold">Tanggal: {jamMulai?.toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" })}</p>
                     <p className="text-sm font-semibold">Waktu: {jamMulai?.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</p>
@@ -169,18 +242,18 @@ const AbsenMulai = ({ handleNextStepData }) => {
 
           {/* Lokasi */}
           <div>
-            <label className="block text-xs font-bold">
+            <label className="block text-sm font-bold">
               Lokasi Bekerja<span className="text-red-500">*</span>
             </label>
-            <p className="text-[10px] text-gray-500 mb-2">
+            <p className="text-[11px] text-gray-700 mb-2">
               Pilih lokasi kerja sesuai titik GPS Anda saat ini.
             </p>
-            <Select options={locations} value={selectedLocation} onChange={setSelectedLocation} placeholder="Pilih lokasi..." isSearchable className="text-xs" />
+            <Select options={locations} value={selectedLocation} onChange={(loc) => { setSelectedLocation(loc); checkLocationRadius(loc); }} placeholder="Pilih lokasi..." isSearchable className="text-xs" />
 
             {/* Status lokasi */}
             <div className="flex items-center mt-1 text-[9px]">
               {loadingLocation ? (
-                <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-100 text-gray-500">
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-100 text-gray-700">
                   <FontAwesomeIcon icon={faSpinner} className="text-gray-400 text-xs animate-spin" />
                   <span className="font-medium">
                     Mencari titik lokasi GPS anda...
@@ -204,12 +277,11 @@ const AbsenMulai = ({ handleNextStepData }) => {
             </div>
           </div>
 
-          {/* Shift */}
           <div>
-            <label className="block text-xs font-bold">
+            <label className="block text-sm font-bold">
               Jadwal Kerja / Shift<span className="text-red-500">*</span>
             </label>
-            <p className="text-[10px] text-gray-500 mb-2">
+            <p className="text-[11px] text-gray-700 mb-2">
               Pilih shift sesuai jadwal kerja yang sudah ditentukan.
             </p>
             <Select options={shiftList.map((s) => ({ value: s.id, label: s.nama, }))}
@@ -229,7 +301,7 @@ const AbsenMulai = ({ handleNextStepData }) => {
 
           {selectedShift?.detail && (
             <div className="rounded-md overflow-hidden border border-green-500 bg-white shadow-sm">
-              <div className="flex justify-between items-center px-4 py-3 bg-green-600 text-white text-[10px] font-semibold cursor-pointer" onClick={() => setShowShiftDetail(!showShiftDetail)}>
+              <div className="flex justify-between items-center px-4 py-3 bg-green-600 text-white text-[11px] font-semibold cursor-pointer" onClick={() => setShowShiftDetail(!showShiftDetail)}>
                 <span>Lihat Jadwal {selectedShift.nama}</span>
                 <FontAwesomeIcon icon={showShiftDetail ? faChevronUp : faChevronRight} className="ml-3 text-xs" />
               </div>
@@ -251,19 +323,17 @@ const AbsenMulai = ({ handleNextStepData }) => {
             </div>
           )}
 
-          {/* Keterangan */}
           <div>
-            <label htmlFor="tugas" className="block text-xs font-bold">
+            <label htmlFor="tugas" className="block text-sm font-bold">
               Keterangan
             </label>
-            <p className="text-[10px] text-gray-500 mb-2">
+            <p className="text-[10px] text-gray-700 mb-2">
               Isi keterangan jika ada tugas atau catatan tambahan.
             </p>
             <textarea rows="3" id="tugas" name="tugas" value={tugas} className="w-full p-2 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 resize-vertical" onChange={(e) => setTugas(e.target.value)} />
           </div>
 
-          {/* Tombol Next */}
-          <button type="submit" className={`w-full py-2 text-lg font-bold rounded-lg transition-all ${isFormValid() ? "bg-green-500 text-white hover:bg-green-600" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`} disabled={!isFormValid()}>
+          <button type="submit" className={`w-full py-2 text-lg font-bold rounded-lg transition-all ${isFormValid() ? "bg-green-500 text-white hover:bg-green-600" : "bg-gray-300 text-gray-700 cursor-not-allowed"}`} disabled={!isFormValid()}>
             Lanjut
             <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
           </button>

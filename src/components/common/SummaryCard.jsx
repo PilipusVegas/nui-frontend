@@ -42,7 +42,7 @@ const SummaryCard = ({
             {/* NOTE DI POJOK KANAN BAWAH */}
             {note && (
                 <div className="absolute bottom-2 right-3 flex items-center gap-1">
-                    <span className="text-[9px] sm:text-[10px] text-green-600 font-medium">
+                    <span className="text-[10px] sm:text-[11px] text-green-600 font-medium hover:underline">
                         {note}
                     </span>
 

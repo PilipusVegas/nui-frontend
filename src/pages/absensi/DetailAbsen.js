@@ -13,7 +13,6 @@ const DetailAbsen = ({ formData = {} }) => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const {
-    userId = "",
     id_lokasi = "",
     lokasi = "",
     tugas = "",
@@ -30,6 +29,7 @@ const DetailAbsen = ({ formData = {} }) => {
     nama = "",
     shift = null,
     tipe_absensi = "",
+    timezone = "",
   } = formData;
 
   /** Detail grup */
@@ -151,8 +151,7 @@ const DetailAbsen = ({ formData = {} }) => {
         endpoint = "/absen/selesai";
         notificationTitle = "Absen Selesai Berhasil!";
 
-        formDataToSend.append("id_absen", id_absen);
-        if (jamSelesai) formDataToSend.append("jam_selesai", jamSelesai);
+        if (timezone) formDataToSend.append("timezone", timezone);
         if (fotoSelesai?.startsWith?.("blob:")) {
           const file = await blobUrlToFile(fotoSelesai, "fotoSelesai.jpg");
           formDataToSend.append("foto", file);
@@ -162,7 +161,6 @@ const DetailAbsen = ({ formData = {} }) => {
           const file = base64ToFile(fotoSelesai, "fotoSelesai.jpg");
           formDataToSend.append("foto", file);
         }
-        if (userId) formDataToSend.append("id_user", String(userId));
         if (id_lokasi) formDataToSend.append("id_lokasi", String(id_lokasi));
 
         const titikSelesai = parseCoordinates(koordinatSelesai);
@@ -174,11 +172,11 @@ const DetailAbsen = ({ formData = {} }) => {
         endpoint = "/absen/mulai";
         notificationTitle = "Absen Mulai Berhasil!";
 
-        if (userId) formDataToSend.append("id_user", String(userId));
         if (id_shift) formDataToSend.append("id_shift", String(id_shift));
         if (tugas) formDataToSend.append("deskripsi", tugas);
         if (id_lokasi) formDataToSend.append("id_lokasi", String(id_lokasi));
         if (tipe_absensi) formDataToSend.append("tipe_absensi", String(tipe_absensi));
+        if (timezone) formDataToSend.append("timezone", timezone);
 
         const titikMulai = parseCoordinates(koordinatMulai);
         if (titikMulai) {
@@ -280,11 +278,7 @@ const DetailAbsen = ({ formData = {} }) => {
                   </p>
                   <div className="flex justify-center">
                     <div className="w-40 h-52 rounded-xl overflow-hidden border bg-gray-100 shadow group">
-                      <img
-                        src={fotoMulai instanceof File ? URL.createObjectURL(fotoMulai) : fotoMulai}
-                        alt="Absen Mulai"
-                        className="w-full h-full object-cover transition scale-x-[-1]"
-                      />
+                      <img src={fotoMulai instanceof File ? URL.createObjectURL(fotoMulai) : fotoMulai} alt="Absen Mulai" className="w-full h-full object-cover transition scale-x-[-1]"/>
                     </div>
                   </div>
                 </div>

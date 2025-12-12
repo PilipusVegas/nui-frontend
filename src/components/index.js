@@ -7,6 +7,7 @@ export { default as LoadingSpinner } from "./common/LoadingSpinner";
 export { default as Pagination } from "./common/Pagination";
 export { default as SearchBar } from "./common/SearchBar";
 export { default as SummaryCard } from "./common/SummaryCard";
+// export { default as PhotoViewer } from "./common/PhotoViewer";
 // export { default as DateRangePicker } from "./common/DateRangePicker";
 // export { default as PageHeader } from "./common/PageHeader";
 

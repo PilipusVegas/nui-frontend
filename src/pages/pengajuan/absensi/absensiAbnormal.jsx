@@ -11,7 +11,7 @@ import "yet-another-react-lightbox/styles.css";
 import Swal from "sweetalert2";
 
 
-const BatchApproval = () => {
+const AbsensiAbnormal = () => {
     const navigate = useNavigate();
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -191,7 +191,7 @@ const BatchApproval = () => {
 
     return (
         <div className="min-h-screen flex flex-col relative">
-            <SectionHeader title="Batch Approval Absensi" subtitle="Kelola pengajuan absensi karyawan secara cepat. Pilih, setujui, atau tolak absen dalam satu langkah." onBack={() => navigate("/home")}
+            <SectionHeader title="Absensi Abnormal" subtitle="Daftar absensi yang perlu diverifikasi dan disetujui untuk menjaga data kehadiran tetap akurat." onBack={() => navigate("/home")}
                 actions={
                     <button onClick={() => setIsInfoModalOpen(true)} className="flex items-center justify-center px-4 sm:px-4 py-2 text-sm font-semibold rounded-md text-white bg-blue-500 hover:bg-blue-600 gap-1">
                         <FontAwesomeIcon icon={faInfo} className="mr-0 sm:mr-1" />
@@ -211,12 +211,12 @@ const BatchApproval = () => {
             )}
             {error && (
                 <div className="min-h-[50vh] flex items-center justify-center">
-                    <ErrorState title="Gagal Memuat Data" message={error} onRetry={loadBatch}/>
+                    <ErrorState title="Gagal Memuat Data" message={error} onRetry={loadBatch} />
                 </div>
             )}
             {!loading && filteredData.length === 0 && (
                 <div className="min-h-[50vh] flex flex-col items-center justify-center p-6">
-                    <EmptyState title="Semua Absen Telah Disetujui" message="Tidak ditemukan pengajuan absensi."/>
+                    <EmptyState title="Semua Absen Telah Disetujui" message="Tidak ditemukan pengajuan absensi." />
                 </div>
             )}
 
@@ -701,4 +701,4 @@ const BatchApproval = () => {
     );
 };
 
-export default BatchApproval;
+export default AbsensiAbnormal;
