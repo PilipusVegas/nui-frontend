@@ -318,7 +318,7 @@ const AbsensiAbnormal = () => {
                                                                     <div className="p-5 py-4 rounded-2xl border border-green-300 bg-green-50 shadow-sm flex flex-col sm:flex-row gap-5">
                                                                         <div className="flex-shrink-0 flex flex-col items-center sm:items-start gap-2 sm:w-1/3">
                                                                             <p className="font-bold text-green-700 text-lg">
-                                                                                Detail Absen Masuk
+                                                                                Absen Masuk
                                                                             </p>
                                                                             <div className="w-full h-[1px] bg-green-300 mb-2"></div>
                                                                             {a.foto_mulai ? (
@@ -383,7 +383,7 @@ const AbsensiAbnormal = () => {
                                                                     <div className="p-5 py-4 rounded-2xl border border-rose-300 bg-rose-50 shadow-sm flex flex-col sm:flex-row gap-5">
                                                                         <div className="flex-shrink-0 flex flex-col items-center sm:items-start gap-2 sm:w-1/3">
                                                                             <p className="font-bold text-rose-700 text-lg">
-                                                                                Detail Absen Pulang
+                                                                                Absen Pulang
                                                                             </p>
                                                                             <div className="w-full h-[1px] bg-rose-300 mb-2"></div>
 

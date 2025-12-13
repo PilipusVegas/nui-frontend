@@ -52,7 +52,7 @@ const RiwayatPenugasan = () => {
 
     return (
         <div className="w-full mx-auto">
-            <SectionHeader title="Riwayat Penugasan" subtitle={`Menampilkan ${tugas.length} tugas yang telah diselesaikan.`} onBack={() => navigate("/penugasan")} />
+            <SectionHeader title="Riwayat Reminder" subtitle={`Menampilkan ${tugas.length} tugas yang telah diselesaikan.`} onBack={() => navigate("/penugasan")} />
 
             <div className="my-3">
                 <SearchBar placeholder="Cari nama tugas..." onSearch={(v) => { setSearchTerm(v); setCurrentPage(1); }} />

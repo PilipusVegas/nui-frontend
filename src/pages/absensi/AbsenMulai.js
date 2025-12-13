@@ -7,7 +7,6 @@ import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { faArrowRight, faChevronRight, faChevronUp, faMapMarkerAlt, faSpinner, faTimesCircle, } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 
-
 const AbsenMulai = ({ handleNextStepData }) => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const [tugas, setTugas] = useState("");
