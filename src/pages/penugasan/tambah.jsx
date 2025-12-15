@@ -1,19 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { fetchWithJwt } from "../../utils/jwtHelper";
-import {
-    faSave,
-    faTimes,
-    faPlus,
-    faTrash,
-    faCopy,
-    faSpinner,
-} from "@fortawesome/free-solid-svg-icons";
+import { faSave, faTimes, faPlus, faTrash, faCopy, faSpinner, faCamera } from "@fortawesome/free-solid-svg-icons";
 import { SectionHeader } from "../../components";
 import Select from "react-select";
+import Webcam from "react-webcam";
+
 
 const TambahTugas = () => {
     const navigate = useNavigate();
@@ -26,6 +21,10 @@ const TambahTugas = () => {
     const [category, setCategory] = useState("daily");
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const [loading, setLoading] = useState(false);
+    const MAX_PHOTO = 3;
+    const [photos, setPhotos] = useState([]);
+    const [showCamera, setShowCamera] = useState(false);
+    const webcamRef = useRef(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -82,23 +81,6 @@ const TambahTugas = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const today = new Date().toISOString().split("T")[0];
-
-        if (!nama.trim() || !startDate || !deadlineAt) {
-            Swal.fire("Peringatan", "Nama, tanggal mulai, dan deadline wajib diisi!", "warning");
-            return;
-        }
-
-        if (startDate < today) {
-            Swal.fire("Peringatan", "Tanggal mulai tidak boleh mundur dari hari ini!", "warning");
-            return;
-        }
-
-        if (deadlineAt < startDate) {
-            Swal.fire("Peringatan", "Deadline tidak boleh kurang dari tanggal mulai!", "warning");
-            return;
-        }
-
         const confirm = await Swal.fire({
             title: "Simpan tugas baru?",
             text: "Data penugasan akan disimpan ke sistem.",
@@ -106,57 +88,87 @@ const TambahTugas = () => {
             showCancelButton: true,
             confirmButtonText: "Ya, simpan",
             cancelButtonText: "Batal",
-            iconColor: "#22C55E",
         });
 
         if (!confirm.isConfirmed) return;
 
-        // ✅ Aktifkan indikator loading di sini
         setLoading(true);
 
         try {
-            const payload = {
-                nama,
-                category,
-                start_date: startDate,
-                deadline_at: deadlineAt,
-                worker_list: workerList
-                    .filter((w) => w.id_user && w.deskripsi.trim())
-                    .map((w) => ({
-                        id_user: Number(w.id_user),
-                        deskripsi: w.deskripsi.trim(),
-                        telp: w.telp.trim(),
-                    })),
-            };
+            const formData = new FormData();
+
+            // ===== DATA UTAMA =====
+            formData.append("nama", nama);
+            formData.append("category", category);
+            formData.append("start_date", startDate);
+            formData.append("deadline_at", deadlineAt);
+
+            workerList
+                .filter((w) => w.id_user && w.deskripsi.trim())
+                .forEach((worker, index) => {
+                    formData.append(`worker_list[${index}][id_user]`, worker.id_user);
+                    formData.append(`worker_list[${index}][deskripsi]`, worker.deskripsi.trim());
+                    formData.append(`worker_list[${index}][telp]`, worker.telp || "");
+                    formData.append(`worker_list[${index}][interval_notifikasi]`, 5); // contoh default
+                });
+
+            // ===== FOTO (BINARY) =====
+            photos.forEach((photo, index) => {
+                const file = base64ToFile(photo, `foto_${index + 1}.jpg`);
+                formData.append("foto", file);
+            });
 
             const res = await fetchWithJwt(`${apiUrl}/tugas`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
+                body: formData, // ❗ JANGAN SET HEADER
             });
 
             if (!res.ok) throw new Error("Gagal menambahkan tugas.");
 
-            Swal.fire({
-                title: "Berhasil!",
-                text: "Tugas baru berhasil ditambahkan.",
-                icon: "success",
-                confirmButtonText: "OK",
-            }).then(() => navigate("/penugasan"));
+            Swal.fire("Berhasil!", "Tugas berhasil ditambahkan.", "success")
+                .then(() => navigate("/penugasan"));
         } catch (err) {
-            Swal.fire("Gagal", err.message || "Terjadi kesalahan saat menambah tugas.", "error");
+            Swal.fire("Gagal", err.message, "error");
         } finally {
-            // ✅ Matikan indikator loading di sini
             setLoading(false);
         }
     };
+
+    const base64ToFile = (base64, filename) => {
+        const arr = base64.split(",");
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+
+        return new File([u8arr], filename, { type: mime });
+    };
+
+
+    const handleCapture = () => {
+        if (photos.length >= MAX_PHOTO) {
+            toast.error("Maksimal 3 foto");
+            return;
+        }
+
+        const imageSrc = webcamRef.current.getScreenshot();
+        if (!imageSrc) return;
+
+        setPhotos((prev) => [...prev, imageSrc]);
+        setShowCamera(false);
+    };
+
+    const handleRemovePhoto = (index) => {
+        setPhotos((prev) => prev.filter((_, i) => i !== index));
+    };
+
     return (
         <div className="min-h-screen flex flex-col">
-            <SectionHeader
-                title="Tambah Penugasan"
-                onBack={handleBack}
-                subtitle="Tambah penugasan baru"
-            />
+            <SectionHeader title="Tambah Penugasan" onBack={handleBack} subtitle="Tambah penugasan baru" />
 
             <form onSubmit={handleSubmit} className="flex-grow p-4 w-full mx-auto space-y-4">
                 <div>
@@ -164,17 +176,101 @@ const TambahTugas = () => {
                     <p className="text-sm text-gray-500 mb-2">
                         Masukkan nama penugasan sebagai penanda secara ringkas.
                     </p>
-                    <input
-                        type="text"
-                        value={nama}
-                        onChange={(e) => setNama(e.target.value.slice(0, 150))}
-                        maxLength={150}
-                        required
-                        placeholder="Masukkan Nama Penugasan"
-                        className="w-full px-4 py-2 border border-gray-300/50 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                    />
+                    <input type="text" value={nama} onChange={(e) => setNama(e.target.value.slice(0, 150))} maxLength={150} required placeholder="Masukkan Nama Penugasan" className="w-full px-4 py-2 border border-gray-300/50 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     <p className="text-xs text-gray-400 mt-1">Maksimal 150 karakter ({nama.length}/150)</p>
                 </div>
+
+                {/* ===== DOKUMENTASI FOTO (OPSIONAL) ===== */}
+                <div className="mt-4 space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                        <div>
+                            <label className="block font-medium text-gray-700">
+                                Dokumentasi Foto
+                                <span className="text-gray-400 text-sm font-normal"> (Opsional)</span>
+                            </label>
+                            <p className="text-sm text-gray-500">
+                                Tambahkan foto pendukung jika diperlukan (maks. 3 foto).
+                            </p>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setShowCamera(true)}
+                            disabled={photos.length >= MAX_PHOTO}
+                            className={`shrink-0 px-3 py-2 rounded-lg flex items-center gap-2 text-sm shadow
+                ${photos.length >= MAX_PHOTO
+                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                                }`}
+                        >
+                            <FontAwesomeIcon icon={faCamera} />
+                            Foto
+                        </button>
+                    </div>
+
+                    {/* PREVIEW FOTO */}
+                    {photos.length > 0 && (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            {photos.map((photo, index) => (
+                                <div
+                                    key={index}
+                                    className="relative rounded-lg overflow-hidden border bg-gray-50"
+                                >
+                                    <img
+                                        src={photo}
+                                        alt={`Dokumentasi ${index + 1}`}
+                                        className="w-full h-28 object-cover"
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemovePhoto(index)}
+                                        className="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white text-xs px-2 py-1 rounded shadow"
+                                    >
+                                        Hapus
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {showCamera && (
+                    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-xl w-full max-w-md p-4 space-y-3">
+                            <h4 className="font-semibold text-gray-800 text-center">
+                                Ambil Foto Dokumentasi
+                            </h4>
+
+                            <div className="overflow-hidden rounded-lg border">
+                                <Webcam
+                                    ref={webcamRef}
+                                    screenshotFormat="image/jpeg"
+                                    videoConstraints={{ facingMode: "environment" }}
+                                    className="w-full"
+                                />
+                            </div>
+
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCamera(false)}
+                                    className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleCapture}
+                                    className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg"
+                                >
+                                    Ambil Foto
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
 
                 <div>
                     <label className="block mb-1 font-medium text-gray-700">Kategori Tugas</label>

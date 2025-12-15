@@ -1,34 +1,5 @@
 // src/data/menuConfig.js
-import { 
-    faHome, 
-    faPeopleGroup, 
-    faUsersCog, 
-    faBuilding,
-    faCalendarDays,
-    faUserEdit,
-    faUserCheck,
-    faCheckSquare,
-    faMoneyBillWave,
-    faPlaneDeparture,
-    faFileSignature,
-    faBusinessTime,
-    faTasks,
-    faMapMarkerAlt,
-    faTabletScreenButton,
-    faKey,
-    faUserShield,
-    faListCheck,
-    faHistory,
-    faBriefcase,
-    faClock,
-    faFolderOpen,
-    faEdit,
-    faUserGear,
-    faGift,
-    faCalendarCheck,
-    faUserGroup,
-    faPenFancy
-} from "@fortawesome/free-solid-svg-icons";
+import { faHome, faPeopleGroup, faUsersCog, faBuilding,faCalendarDays,faUserEdit,faUserCheck,faCheckSquare,faMoneyBillWave,faPlaneDeparture,faFileSignature,faBusinessTime,faTasks,faMapMarkerAlt,faTabletScreenButton,faKey,faUserShield,faListCheck,faHistory,faBriefcase,faClock,faFolderOpen,faEdit,faUserGear,faGift,faCalendarCheck,faUserGroup,faPenFancy} from "@fortawesome/free-solid-svg-icons";
 
 export const menuConfig = [
     // =========================
@@ -64,13 +35,13 @@ export const menuConfig = [
             {
                 label: "Kelola Absensi",
                 icon: faUserEdit,
-                roles: [1, 4, 5, 6, 18],
+                roles: [1, 4, 5, 6, 18, 20],
                 submenu: [
                     {
                         label: "Persetujuan Absensi",
                         icon: faCheckSquare,
                         path: "/pengajuan-absensi",
-                        roles: [1, 4, 5, 6, 18],
+                        roles: [1, 4, 5, 6, 18, 20],
                         perusahaan: [1, 4],
                     },
                     {

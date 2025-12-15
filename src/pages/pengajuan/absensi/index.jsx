@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { faCheck, faEye, faExclamationTriangle, faCalendarAlt, faCheckCircle, faSortDown, faSortUp, faCalendarXmark      } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faEye, faExclamationTriangle, faCalendarAlt, faCheckCircle, faSortDown, faSortUp, faCalendarXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
 import { fetchWithJwt, getUserFromToken } from "../../../utils/jwtHelper";
@@ -25,18 +25,17 @@ const DataAbsensi = () => {
   const fetchAbsenData = async () => {
     setLoading(true);
     setError(null);
+
     try {
       const response = await fetchWithJwt(`${apiUrl}/absen`);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-      const user = getUserFromToken();
-      const userRole = user?.id_role;
-      let filtered = [];
-      if ([1, 4, 6].includes(userRole)) filtered = data.data;
-      else if (userRole === 20 || userRole === 18)
-        filtered = data.data.filter((d) => d.id_role === 22);
-      else if (userRole === 5) filtered = data.data.filter((d) => d.id_role === 3);
-      setAbsenData(Array.isArray(filtered) ? filtered : []);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      const data = result?.data;
+
+      setAbsenData(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error fetching absen data:", err);
       setError(err.message);
@@ -45,6 +44,7 @@ const DataAbsensi = () => {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     fetchAbsenData();
@@ -79,7 +79,7 @@ const DataAbsensi = () => {
 
       <div className="grid grid-cols-2 gap-3 mb-4">
         <SummaryCard icon={faCheckCircle} title="Total Karyawan Lapangan" value={absenData.length} />
-        <SummaryCard icon={faCalendarXmark} title="Data Absensi Abnormal" value={absenData.reduce((sum, d) => sum + Number(d.unapproved || 0), 0)} note={[1, 4].includes(user?.id_role) ? "Lihat semua Data" : undefined} onClick={[1, 4].includes(user?.id_role) ? () => navigate("/pengajuan-absensi/batch") : undefined}/>
+        <SummaryCard icon={faCalendarXmark} title="Data Absensi Abnormal" value={absenData.reduce((sum, d) => sum + Number(d.unapproved || 0), 0)} note={[1, 4].includes(user?.id_role) ? "Lihat semua Data" : undefined} onClick={[1, 4].includes(user?.id_role) ? () => navigate("/pengajuan-absensi/batch") : undefined} />
       </div>
 
       <SearchBar onSearch={(val) => { setSearchName(val); setCurrentPage(1); }} placeholder="Cari nama dan divisi..." className="mb-4" />

@@ -24,7 +24,6 @@ const KadivMember = () => {
     const [currentKadivId, setCurrentKadivId] = useState(null);
     const [currentKadivName, setCurrentKadivName] = useState("");
 
-
     const toggleDetail = async (id) => {
         try {
             const res = await fetchWithJwt(`${apiUrl}/profil/kadiv-access/${id}`);
@@ -84,12 +83,12 @@ const KadivMember = () => {
 
     return (
         <div className="w-full mx-auto animate-fadeIn">
-            <SectionHeader title="Kelola Kadiv & Member" subtitle="Kelola daftar kepala divisi beserta informasinya." onBack={() => navigate(-1)}
+            <SectionHeader title="Kelola Kepala Divisi & Anggota Tim" subtitle="Kelola daftar kepala divisi beserta informasinya." onBack={() => navigate(-1)}
                 actions={
                     <div>
                         <button onClick={() => { setEditKadiv(null); setFormModalOpen(true);}} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 shadow-sm transition-all duration-200 font-semibold">
                             <FontAwesomeIcon icon={faPlus} />
-                            <span className="hidden sm:inline">Tambah</span>
+                            <span className="hidden sm:inline">Kepala Divisi</span>
                         </button>
                     </div>
                 }
@@ -112,6 +111,7 @@ const KadivMember = () => {
                                 <tr>
                                     <th className="py-2 px-4 text-center font-semibold">NIP</th>
                                     <th className="py-2 px-4 text-left font-semibold">Kepala Divisi</th>
+                                    <th className="py-2 px-4 font-semibold text-center">Perusahaan</th>
                                     <th className="py-2 px-4 text-center font-semibold">Menu</th>
                                 </tr>
                             </thead>
@@ -129,16 +129,19 @@ const KadivMember = () => {
                                                         {kadiv.nama}
                                                     </span>
                                                     <p className="text-xs text-gray-500 mt-0.5">
-                                                        ID Kadiv: {kadiv.id_kadiv}
+                                                        ID Kadiv : {kadiv.id_user} 
                                                     </p>
                                                 </div>
                                             </td>
+                                            <td className="py-2 px-4 text-center font-medium text-gray-800">
+                                                {kadiv.perusahaan}
+                                            </td>
                                             <td className="py-2 px-4 text-center">
                                                 <div className="flex justify-center gap-2 flex-wrap">
-                                                    <button onClick={() => { setCurrentKadivId(kadiv.id); setCurrentKadivName(kadiv.nama); setAddMemberModalOpen(true); }} className="px-3 py-1.5 rounded bg-green-500 hover:bg-green-600 text-white text-sm flex items-center gap-1.5 shadow-sm transition-all duration-200 active:scale-95">
+                                                    {/* <button onClick={() => { setCurrentKadivId(kadiv.id); setCurrentKadivName(kadiv.nama); setAddMemberModalOpen(true); }} className="px-3 py-1.5 rounded bg-green-500 hover:bg-green-600 text-white text-sm flex items-center gap-1.5 shadow-sm transition-all duration-200 active:scale-95">
                                                         <FontAwesomeIcon icon={faPlus} className="text-xs" />
                                                         Anggota
-                                                    </button>
+                                                    </button> */}
                                                     <button onClick={() => { setEditKadiv(kadiv); setFormModalOpen(true);}} className="px-3 py-1.5 rounded bg-amber-400 hover:bg-amber-500 text-white text-sm flex items-center gap-1.5 shadow-sm transition-all duration-200 active:scale-95">
                                                         <FontAwesomeIcon icon={faEdit} className="text-xs" />
                                                         Edit
@@ -158,7 +161,7 @@ const KadivMember = () => {
                 )}
             </div>
 
-            <Modal isOpen={detailModalOpen} onClose={() => setDetailModalOpen(false)} title="Detail Kepala Divisi" note="Informasi lengkap mengenai kepala divisi dan member yang berada di bawahnya." size="lg">
+            <Modal isOpen={detailModalOpen} onClose={() => setDetailModalOpen(false)} title="Detail Kepala Divisi" note="Informasi lengkap mengenai kepala divisi dan member yang berada di bawahnya." size="xl">
                 <DetailKadiv data={selectedKadiv} />
             </Modal>
             <FormAccessKadiv isOpen={formModalOpen} onClose={() => setFormModalOpen(false)} onSuccess={fetchKadivAccess} editData={editKadiv} />

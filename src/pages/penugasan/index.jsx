@@ -6,6 +6,9 @@ import { fetchWithJwt } from "../../utils/jwtHelper";
 import { faPlus, faEye, faTrash, faPen, faClipboardList, faPause, faChartLine, faListCheck, faFire, faCalendar } from "@fortawesome/free-solid-svg-icons";
 import { SectionHeader, Modal, Pagination, LoadingSpinner, ErrorState, EmptyState, SearchBar, SummaryCard, } from "../../components";
 import Swal from "sweetalert2";
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
+import "yet-another-react-lightbox/plugins/captions.css";
 
 const Penugasan = () => {
     const itemsPerPage = 3;
@@ -106,7 +109,7 @@ const Penugasan = () => {
                     <div className="flex flex-wrap gap-2">
                         <button onClick={() => navigate("/penugasan/tambah")} className="flex items-center justify-center px-3 py-2 sm:px-4 sm:py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg transition-all duration-200 ease-in-out active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
                             <FontAwesomeIcon icon={faPlus} className="text-sm sm:text-base" />
-                            <span className="hidden md:inline ml-2">Tugas</span>
+                            <span className="hidden md:inline ml-2">Reminder</span>
                         </button>
                     </div>
                 }
@@ -166,7 +169,6 @@ const Penugasan = () => {
                                         {indexOfFirstItem + index + 1}. {item.nama}
                                     </h2>
                                 </div>
-
 
                                 {/* STATUS & PROGRESS */}
                                 <div className="w-full md:w-auto flex flex-col md:flex-row md:items-center justify-between gap-5 md:gap-4">

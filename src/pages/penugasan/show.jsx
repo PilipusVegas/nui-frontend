@@ -8,7 +8,6 @@ import { formatFullDate, formatCustomDateTime } from "../../utils/dateUtils";
 import { LoadingSpinner, EmptyState, ErrorState, SectionHeader, Modal } from "../../components";
 import { faTasks, faClock, faSpinner, faPause, faUserGroup, faPlay, faRotateRight, faCircle, faInfoCircle, faCheckCircle, faTimesCircle, faChevronDown, faChevronUp, faPlayCircle, } from "@fortawesome/free-solid-svg-icons";
 import Lightbox from "yet-another-react-lightbox";
-import Captions from "yet-another-react-lightbox/plugins/captions";
 import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/captions.css";
 
