@@ -290,12 +290,6 @@ export const menuConfig = [
                 path: "/role-app",
                 roles: [1],
             },
-            {
-                label: "Kadiv Member",
-                icon: faUserGroup,
-                path: "/kadiv-member",
-                roles: [1],
-            },
         ],
     },
 ];

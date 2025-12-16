@@ -19,25 +19,22 @@ export const getDefaultPeriod = () => {
 };
 
 
-//untuk tunjangan
+// Periode default: Sabtu sampai Jumat
 export const getDefaultPeriodWeek = () => {
   const today = new Date();
+  const dayOfWeek = today.getDay(); // 0 = Minggu, 6 = Sabtu
 
-  // Tentukan indeks hari (0 = Minggu, 1 = Senin, dst.)
-  const dayOfWeek = today.getDay();
+  const SATURDAY = 6;
 
-  // Hitung jarak ke Senin dan Minggu
-  const distanceToMonday = (dayOfWeek + 6) % 7; // shift supaya Senin = 0
-  const distanceToSunday = 7 - distanceToMonday - 1;
+  // Jarak mundur ke Sabtu terakhir
+  const distanceToSaturday = (dayOfWeek - SATURDAY + 7) % 7;
 
-  // Tentukan tanggal mulai (Senin) dan akhir (Minggu)
   const start = new Date(today);
-  start.setDate(today.getDate() - distanceToMonday);
+  start.setDate(today.getDate() - distanceToSaturday);
 
-  const end = new Date(today);
-  end.setDate(today.getDate() + distanceToSunday);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6); // Sabtu → Jumat
 
-  // Format ke yyyy-mm-dd (HTML date input friendly)
   const toInputDate = (date) => date.toISOString().split("T")[0];
 
   return {
@@ -45,3 +42,5 @@ export const getDefaultPeriodWeek = () => {
     end: toInputDate(end),
   };
 };
+
+

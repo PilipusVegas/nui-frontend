@@ -1,9 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faEyeSlash, faInfoCircle, faSave, faTimes, faChevronDown, } from "@fortawesome/free-solid-svg-icons";
+import {
+    faEye,
+    faEyeSlash,
+    faInfoCircle,
+    faSave,
+    faTimes,
+    faChevronDown,
+} from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
-import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
+import { fetchWithJwt } from "../../utils/jwtHelper";
 import { SectionHeader } from "../../components";
 import Select from "react-select";
 
@@ -18,6 +25,7 @@ const EditKaryawan = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showShiftDetails, setShowShiftDetails] = useState(false);
     const [kadivList, setKadivList] = useState([]);
+    const [groupList, setGroupList] = useState([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -26,7 +34,7 @@ const EditKaryawan = () => {
                     fetchWithJwt(`${apiUrl}/karyawan/divisi`),
                     fetchWithJwt(`${apiUrl}/shift`),
                     fetchWithJwt(`${apiUrl}/profil/${id}`),
-                    fetchWithJwt(`${apiUrl}/perusahaan`), // fetch semua perusahaan
+                    fetchWithJwt(`${apiUrl}/perusahaan`),
                 ]);
 
                 const divisiData = await divisiRes.json();
@@ -41,13 +49,7 @@ const EditKaryawan = () => {
                     setCurrentUser(userData.data);
                 }
 
-                // Ambil perusahaan yang bisa dikelola dari token
-                const tokenUser = getUserFromToken();
-                const filteredPerusahaan = perusahaanData.data.filter(p =>
-                    (tokenUser.perusahaan_dikelola || []).includes(p.id)
-                );
-
-                setPerusahaanList(filteredPerusahaan);
+                setPerusahaanList(perusahaanData.data);
             } catch (err) {
                 console.error("Gagal fetch data", err);
             }
@@ -69,7 +71,6 @@ const EditKaryawan = () => {
         fetchKadiv();
     }, [apiUrl]);
 
-
     const handleChange = (e) => {
         const { name, value } = e.target;
         let updatedValue = value;
@@ -87,10 +88,30 @@ const EditKaryawan = () => {
         setCurrentUser((prev) => ({ ...prev, [name]: updatedValue }));
     };
 
+    useEffect(() => {
+        if (!currentUser?.id_kadiv) return;
+
+        const fetchGroup = async () => {
+            try {
+                const res = await fetchWithJwt(
+                    `${apiUrl}/profil/kadiv-access/group/kadiv/${currentUser.id_kadiv}`
+                );
+                const json = await res.json();
+
+                if (json.success) {
+                    setGroupList(json.data);
+                }
+            } catch (err) {
+                console.error("Gagal fetch group", err);
+            }
+        };
+
+        fetchGroup();
+    }, [apiUrl, currentUser?.id_kadiv]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const payload = { ...currentUser, };
+        const payload = { ...currentUser };
         try {
             const res = await fetchWithJwt(`${apiUrl}/profil/update/${id}`, {
                 method: "PUT",
@@ -117,14 +138,16 @@ const EditKaryawan = () => {
 
     return (
         <div className="bg-white flex flex-col">
-            <SectionHeader title="Edit Karyawan" onBack={() => navigate(-1)} subtitle="Formulir untuk mengedit data karyawan" />
+            <SectionHeader
+                title="Edit Karyawan"
+                onBack={() => navigate(-1)}
+                subtitle="Formulir untuk mengedit data karyawan"
+            />
             <form onSubmit={handleSubmit} className="flex-grow pb-5 px-3 w-full mx-auto space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="col-span-full flex flex-col">
                         <div className="flex items-center">
-                            <h3 className="text-lg font-bold text-green-600">
-                                Biodata Lengkap Karyawan
-                            </h3>
+                            <h3 className="text-lg font-bold text-green-600">Biodata Lengkap Karyawan</h3>
                             <div className="flex-grow h-1 bg-green-500 ml-4 mt-1"></div>
                         </div>
                         <p className="text-sm text-gray-500 mt-1 ml-0">
@@ -134,44 +157,95 @@ const EditKaryawan = () => {
 
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">Nama Lengkap</label>
-                        <p className="text-sm text-gray-500 mb-2 -mt-1.5">Masukkan <span className="font-semibold text-gray-800">nama lengkap</span> karyawan.</p>
-                        <input type="text" name="nama" value={currentUser.nama} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                        <p className="text-sm text-gray-500 mb-2 -mt-1.5">
+                            Masukkan <span className="font-semibold text-gray-800">nama lengkap</span> karyawan.
+                        </p>
+                        <input
+                            type="text"
+                            name="nama"
+                            value={currentUser.nama}
+                            onChange={handleChange}
+                            required
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                        />
                     </div>
 
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">NIK</label>
-                        <p className="text-sm text-gray-500 mb-2 -mt-1.5">Masukkan Nomor Induk Kependudukan (NIK).</p>
-                        <input type="text" name="nik" value={currentUser.nik} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                        <p className="text-sm text-gray-500 mb-2 -mt-1.5">
+                            Masukkan Nomor Induk Kependudukan (NIK).
+                        </p>
+                        <input
+                            type="text"
+                            name="nik"
+                            value={currentUser.nik}
+                            onChange={handleChange}
+                            required
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                        />
                     </div>
 
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">NIP</label>
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">Masukkan nomor induk pegawai.</p>
-                        <input type="text" name="nip" value={currentUser.nip} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                        <input
+                            type="text"
+                            name="nip"
+                            value={currentUser.nip}
+                            onChange={handleChange}
+                            required
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                        />
                     </div>
 
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">NPWP</label>
-                        <p className="text-sm text-gray-500 mb-2 -mt-1.5">Masukkan Nomor Pokok Wajib Pajak (NPWP).</p>
-                        <input type="text" name="npwp" value={currentUser.npwp} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                        <p className="text-sm text-gray-500 mb-2 -mt-1.5">
+                            Masukkan Nomor Pokok Wajib Pajak (NPWP).
+                        </p>
+                        <input
+                            type="text"
+                            name="npwp"
+                            value={currentUser.npwp}
+                            onChange={handleChange}
+                            required
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                        />
                     </div>
 
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">No. Telepon</label>
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">Masukkan nomor telepon aktif.</p>
-                        <input type="text" name="telp" value={currentUser.telp} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                        <input
+                            type="text"
+                            name="telp"
+                            value={currentUser.telp}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                        />
                     </div>
 
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">Nomor Rekening</label>
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">Masukkan Nomor Rekening Karyawan.</p>
-                        <input type="text" name="no_rek" value={currentUser.no_rek} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                        <input
+                            type="text"
+                            name="no_rek"
+                            value={currentUser.no_rek}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                        />
                     </div>
 
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">Status Pernikahan</label>
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">Pilih status pernikahan karyawan.</p>
-                        <select name="status_nikah" value={currentUser.status_nikah || ""} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                        <select
+                            name="status_nikah"
+                            value={currentUser.status_nikah || ""}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                        >
                             <option value="">Pilih Status</option>
                             <option value="Belum_Menikah">Belum Menikah</option>
                             <option value="Sudah_Menikah">Sudah Menikah</option>
@@ -182,8 +256,17 @@ const EditKaryawan = () => {
                     {currentUser.status_nikah === "Sudah_Menikah" && (
                         <div>
                             <label className="block mb-1 font-medium text-gray-700">Jumlah Anak</label>
-                            <p className="text-sm text-gray-500 mb-2 -mt-1.5">Masukkan jumlah anak (jika ada). Jika belum mempunyai anak maka isi 0 saja</p>
-                            <input type="number" name="jml_anak" value={currentUser.jml_anak || ""} onChange={handleChange} min="0" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                            <p className="text-sm text-gray-500 mb-2 -mt-1.5">
+                                Masukkan jumlah anak (jika ada). Jika belum mempunyai anak maka isi 0 saja
+                            </p>
+                            <input
+                                type="number"
+                                name="jml_anak"
+                                value={currentUser.jml_anak || ""}
+                                onChange={handleChange}
+                                min="0"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                            />
                         </div>
                     )}
 
@@ -192,7 +275,8 @@ const EditKaryawan = () => {
                             Status Kendaraan <span className="text-gray-400 text-sm font-normal">(Opsional)</span>
                         </label>
                         <p className="text-sm text-gray-600 mb-2 -mt-1.5">
-                            Pilih jenis kendaraan untuk menentukan tunjangan transportasi. Kosongkan jika tidak menerima tunjangan.
+                            Pilih jenis kendaraan untuk menentukan tunjangan transportasi. Kosongkan jika tidak
+                            menerima tunjangan.
                         </p>
 
                         <select
@@ -215,12 +299,9 @@ const EditKaryawan = () => {
                         </select>
                     </div>
 
-                    {/* === PENEMPATAN KERJA & DIVISI === */}   
                     <div className="col-span-full flex flex-col mt-4">
                         <div className="flex items-center">
-                            <h3 className="text-lg font-bold text-green-600">
-                                Penempatan Kerja & Divisi
-                            </h3>
+                            <h3 className="text-lg font-bold text-green-600">Penempatan Kerja & Divisi</h3>
                             <div className="flex-grow h-1 bg-green-500 ml-4 mt-1"></div>
                         </div>
                         <p className="text-sm text-gray-500 mt-1 ml-0">
@@ -228,11 +309,17 @@ const EditKaryawan = () => {
                         </p>
                     </div>
 
-                    {/* Perusahaan */}
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">Perusahaan</label>
-                        <p className="text-sm text-gray-500 mb-2 -mt-1.5">Pilih perusahaan sesuai tempat kerja.</p>
-                        <select name="id_perusahaan" value={currentUser.id_perusahaan} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                        <p className="text-sm text-gray-500 mb-2 -mt-1.5">
+                            Pilih perusahaan sesuai tempat kerja.
+                        </p>
+                        <select
+                            name="id_perusahaan"
+                            value={currentUser.id_perusahaan}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                        >
                             <option value="">Pilih Perusahaan</option>
                             {perusahaanList.map((item) => (
                                 <option key={item.id} value={item.id}>
@@ -241,8 +328,9 @@ const EditKaryawan = () => {
                             ))}
                         </select>
 
-                        {/* Keterangan jumlah shift */}
-                        {currentUser.id_perusahaan !== "" && currentUser.id_perusahaan !== null && !isNaN(currentUser.id_perusahaan) && (
+                        {currentUser.id_perusahaan !== "" &&
+                            currentUser.id_perusahaan !== null &&
+                            !isNaN(currentUser.id_perusahaan) &&
                             (() => {
                                 const idPerusahaan = parseInt(currentUser.id_perusahaan);
                                 const jumlahShift = shiftList.filter((shift) =>
@@ -251,23 +339,32 @@ const EditKaryawan = () => {
 
                                 return (
                                     <div className="mt-2 text-sm text-gray-600 flex items-center gap-2">
-                                        <p> Perusahaan ini memiliki <strong>{jumlahShift}</strong> shift. </p>
+                                        <p>
+                                            {" "}
+                                            Perusahaan ini memiliki <strong>{jumlahShift}</strong> shift.{" "}
+                                        </p>
                                         {jumlahShift === 0 && (
-                                            <span onClick={() => navigate(`/perusahaan/edit/${idPerusahaan}`)} className="cursor-pointer px-2 py-0.5 bg-green-50 border border-green-400 text-green-700 rounded-md hover:bg-green-100 transition">
+                                            <span
+                                                onClick={() => navigate(`/perusahaan/edit/${idPerusahaan}`)}
+                                                className="cursor-pointer px-2 py-0.5 bg-green-50 border border-green-400 text-green-700 rounded-md hover:bg-green-100 transition"
+                                            >
                                                 Tambah shift
                                             </span>
                                         )}
                                     </div>
                                 );
-                            })()
-                        )}
+                            })()}
                     </div>
 
-                    {/* Divisi */}
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">Divisi</label>
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">Pilih divisi sesuai tugasnya.</p>
-                        <select name="id_role" value={currentUser.id_role} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                        <select
+                            name="id_role"
+                            value={currentUser.id_role}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                        >
                             <option value="">Pilih Divisi</option>
                             {divisiList
                                 .filter((item) => item.id !== 1)
@@ -279,21 +376,39 @@ const EditKaryawan = () => {
                         </select>
                     </div>
 
-                    {/* Select Kepala Divisi */}
+                    {/* ===============================
+    KEPALA DIVISI
+=============================== */}
                     {parseInt(currentUser.id_perusahaan) === 1 && !currentUser.is_kadiv && (
-                        <div className="mb-4">
-                            <label className="block mb-1 font-medium text-gray-700">
-                                Pilih Kepala Divisi <span className="text-red-500">*</span>
+                        <div className="space-y-1">
+                            <label className="block text-sm font-medium text-gray-700">
+                                Kepala Divisi <span className="text-red-500">*</span>
                             </label>
+
+                            <p className="text-xs text-gray-500">
+                                Pilih kepala divisi yang bertanggung jawab atas karyawan ini.
+                            </p>
+
                             <Select
-                                options={kadivList.map((k, index) => ({ value: k.id, label: k.nama }))} // pakai 'id' index
+                                options={kadivList.map((k) => ({
+                                    value: k.id,
+                                    label: k.nama,
+                                }))}
                                 value={
                                     currentUser.id_kadiv
-                                        ? { value: currentUser.id_kadiv, label: kadivList.find(k => k.id === currentUser.id_kadiv)?.nama }
+                                        ? {
+                                            value: currentUser.id_kadiv,
+                                            label: kadivList.find((k) => k.id === currentUser.id_kadiv)?.nama,
+                                        }
                                         : null
                                 }
                                 onChange={(selected) =>
-                                    setCurrentUser(prev => ({ ...prev, id_kadiv: selected?.value || "" }))
+                                    setCurrentUser((prev) => ({
+                                        ...prev,
+                                        id_kadiv: selected?.value || "",
+                                        id_kadiv_group: null,
+                                        level: 2,
+                                    }))
                                 }
                                 placeholder="Pilih Kepala Divisi"
                                 isClearable
@@ -302,16 +417,80 @@ const EditKaryawan = () => {
                         </div>
                     )}
 
+                    {/* ===============================
+    TIM / GRUP
+=============================== */}
+                    {currentUser.id_kadiv && (
+                        <div className="space-y-1">
+                            <label className="block text-sm font-medium text-gray-700">Tim / Grup</label>
+
+                            <p className="text-xs text-gray-500">Pilih tim tempat karyawan ini tergabung.</p>
+
+                            <select
+                                name="id_kadiv_group"
+                                value={currentUser.id_kadiv_group || ""}
+                                onChange={(e) =>
+                                    setCurrentUser((prev) => ({
+                                        ...prev,
+                                        id_kadiv_group: Number(e.target.value),
+                                        level: prev.level ?? 2,
+                                    }))
+                                }
+                                className="
+                w-full px-4 py-2 text-sm
+                border rounded-lg
+                bg-white
+                focus:outline-none
+                focus:ring-2 focus:ring-green-500
+            "
+                            >
+                                <option value="">Pilih Tim</option>
+
+                                {groupList.map((g) => (
+                                    <option key={g.id} value={g.id}>
+                                        {g.nama_grup}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+
+                    {/* ===============================
+    PERAN DI TIM
+=============================== */}
+                    {currentUser.id_kadiv_group && (
+                        <div className="space-y-1">
+                            <label className="block text-sm font-medium text-gray-700">Peran di Tim</label>
+
+                            <p className="text-xs text-gray-500">Tentukan peran karyawan dalam tim.</p>
+
+                            <select
+                                name="level"
+                                value={currentUser.level || 2}
+                                onChange={handleChange}
+                                className="
+                w-full px-4 py-2 text-sm
+                border rounded-lg
+                bg-white
+                focus:outline-none
+                focus:ring-2 focus:ring-green-500
+            "
+                            >
+                                <option value={1}>Team Leader</option>
+                                <option value={2}>Anggota</option>
+                            </select>
+                        </div>
+                    )}
+
                     <div className="col-span-full flex flex-col mt-4">
                         <div className="flex items-center">
-                            <h3 className="text-lg font-bold text-green-600">
-                                Kelola Jadwal Kerja
-                            </h3>
+                            <h3 className="text-lg font-bold text-green-600">Kelola Jadwal Kerja</h3>
                             <div className="flex-grow h-1 bg-green-500 ml-4 mt-1"></div>
                         </div>
 
                         <p className="text-sm text-gray-500 mt-1 ml-0">
-                            Pilih dan atur shift yang berlaku untuk karyawan ini agar jadwal kerja lebih terstruktur.
+                            Pilih dan atur shift yang berlaku untuk karyawan ini agar jadwal kerja lebih
+                            terstruktur.
                         </p>
                     </div>
 
@@ -350,11 +529,17 @@ const EditKaryawan = () => {
 
                     {currentUser?.id_shift && (
                         <div className="md:col-span-2 border border-gray-300 bg-green-500 rounded-md">
-                            <button type="button" className="w-full px-4 py-3 flex justify-between items-center text-white font-semibold focus:outline-none" onClick={() => setShowShiftDetails((prev) => !prev)}>
-                                <p className="font-semibold mb-1">
-                                    Detail Jadwal {currentUser?.shift || "-"}
-                                </p>
-                                <FontAwesomeIcon icon={faChevronDown} className={`transition-transform duration-200 ${showShiftDetails ? "rotate-180" : "rotate-0"}`} />
+                            <button
+                                type="button"
+                                className="w-full px-4 py-3 flex justify-between items-center text-white font-semibold focus:outline-none"
+                                onClick={() => setShowShiftDetails((prev) => !prev)}
+                            >
+                                <p className="font-semibold mb-1">Detail Jadwal {currentUser?.shift || "-"}</p>
+                                <FontAwesomeIcon
+                                    icon={faChevronDown}
+                                    className={`transition-transform duration-200 ${showShiftDetails ? "rotate-180" : "rotate-0"
+                                        }`}
+                                />
                             </button>
 
                             {showShiftDetails && (
@@ -415,32 +600,52 @@ const EditKaryawan = () => {
                             </p>
                             <ul className="list-disc list-inside ml-6 mt-2 text-gray-700 space-y-1 text-sm">
                                 <li>
-                                    <strong>Karyawan Kantor:</strong> Harus <strong>daftar wajah</strong> di perangkat <strong>Face Recognition</strong> (tablet/mesin kantor) sebelum bisa absen.
+                                    <strong>Karyawan Kantor:</strong> Harus <strong>daftar wajah</strong> di perangkat{" "}
+                                    <strong>Face Recognition</strong> (tablet/mesin kantor) sebelum bisa absen.
                                     Username dan password tidak wajib karena absensi lewat wajah.
                                 </li>
                                 <li>
-                                    <strong>Karyawan Lapangan:</strong> Wajib absen lewat <strong>Aplikasi Absensi Online</strong> di handphone, dengan <strong>username</strong> dan <strong>password</strong>.
-                                    Sistem memakai <strong>kamera</strong> dan <strong>GPS</strong> untuk memastikan lokasi kehadiran.
+                                    <strong>Karyawan Lapangan:</strong> Wajib absen lewat{" "}
+                                    <strong>Aplikasi Absensi Online</strong> di handphone, dengan{" "}
+                                    <strong>username</strong> dan <strong>password</strong>. Sistem memakai{" "}
+                                    <strong>kamera</strong> dan <strong>GPS</strong> untuk memastikan lokasi
+                                    kehadiran.
                                 </li>
                             </ul>
                         </div>
-
                     </div>
 
-                    {/* Username */}
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">Username</label>
-                        <p className="text-sm text-gray-500 mb-2 -mt-1.5">Usenaame wajib diisi untuk karyawan lapangan.</p>
-                        <input type="text" name="username" value={currentUser.username} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                        <p className="text-sm text-gray-500 mb-2 -mt-1.5">
+                            Usenaame wajib diisi untuk karyawan lapangan.
+                        </p>
+                        <input
+                            type="text"
+                            name="username"
+                            value={currentUser.username}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                        />
                     </div>
 
-                    {/* Password */}
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">Password</label>
-                        <p className="text-sm text-gray-500 mb-2 -mt-1.5">Password wajib diisi untuk karyawan lapangan.</p>
+                        <p className="text-sm text-gray-500 mb-2 -mt-1.5">
+                            Password wajib diisi untuk karyawan lapangan.
+                        </p>
                         <div className="relative">
-                            <input type={showPassword ? "text" : "password"} name="password" value={currentUser.password} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 pr-10 outline-none" />
-                            <span onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-2.5 cursor-pointer text-gray-500">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                name="password"
+                                value={currentUser.password}
+                                onChange={handleChange}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 pr-10 outline-none"
+                            />
+                            <span
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-2.5 cursor-pointer text-gray-500"
+                            >
                                 <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
                             </span>
                         </div>
@@ -451,7 +656,9 @@ const EditKaryawan = () => {
                             <div>
                                 <h4 className="text-lg font-bold text-gray-800">Status Karyawan</h4>
                                 <p className="text-sm text-gray-500 mt-1">
-                                    Tentukan apakah karyawan ini masih <span className="font-semibold text-green-700">aktif bekerja</span> atau <span className="font-semibold text-red-600">nonaktif bekerja</span>.
+                                    Tentukan apakah karyawan ini masih{" "}
+                                    <span className="font-semibold text-green-700">aktif bekerja</span> atau{" "}
+                                    <span className="font-semibold text-red-600">nonaktif bekerja</span>.
                                 </p>
                             </div>
 
@@ -459,8 +666,8 @@ const EditKaryawan = () => {
                                 <span className={`text-sm font-bold ${currentUser.status === 1 ? "text-green-700" : "text-red-500"}`}>
                                     {currentUser.status === 1 ? "AKTIF" : "NONAKTIF"}
                                 </span>
-                                <button type="button" onClick={handleToggleStatus} className={`w-16 h-8 flex items-center rounded-full p-1 transition-colors duration-300 ${currentUser.status === 1 ? "bg-green-500" : "bg-gray-300"}`} title="Ubah Status">
-                                    <div className={`w-7 h-7 bg-white rounded-full shadow-md transform transition-transform duration-300 ${currentUser.status === 1 ? "translate-x-8" : "translate-x-0"}`} />
+                                <button type="button" onClick={handleToggleStatus} className={`w-16 h-8 flex items-center rounded-full p-1 transition-colors duration-300 ${currentUser.status === 1 ? "bg-green-500" : "bg-gray-300"}`}  title="Ubah Status">
+                                    <div className={`w-7 h-7 bg-white rounded-full shadow-md transform transition-transform duration-300 ${currentUser.status === 1 ? "translate-x-8" : "translate-x-0"}`}/>
                                 </button>
                             </div>
                         </div>
@@ -472,26 +679,36 @@ const EditKaryawan = () => {
                             </p>
                             <ul className="list-disc list-inside ml-6 mt-2 text-gray-700 space-y-1">
                                 <li>
-                                    <span className="font-semibold text-green-700">Karyawan aktif:</span> dapat login, mengakses sistem, dan melakukan absensi sesuai metode yang berlaku.
+                                    <span className="font-semibold text-green-700">Karyawan aktif:</span> dapat login,
+                                    mengakses sistem, dan melakukan absensi sesuai metode yang berlaku.
                                 </li>
                                 <li>
-                                    <span className="font-semibold text-red-600">Karyawan nonaktif:</span> tidak memiliki akses, dan aktivitas absensi tidak akan tercatat.
+                                    <span className="font-semibold text-red-600">Karyawan nonaktif:</span> tidak
+                                    memiliki akses, dan aktivitas absensi tidak akan tercatat.
                                 </li>
                             </ul>
                             <p className="mt-2 text-gray-700">
-                                Pastikan selalu memperbarui status karyawan saat ada perubahan, agar data kehadiran tetap <strong>akurat</strong> dan <strong>tercatat</strong>.
+                                Pastikan selalu memperbarui status karyawan saat ada perubahan, agar data kehadiran
+                                tetap <strong>akurat</strong> dan <strong>tercatat</strong>.
                             </p>
                         </div>
                     </div>
                 </div>
 
                 <div className="pt-10 flex flex-row justify-end gap-3 flex-wrap">
-                    <button type="button" onClick={() => navigate("/karyawan")} className="bg-red-500 hover:bg-red-600 text-white w-full sm:w-auto px-4 py-2.5 rounded-lg flex items-center justify-center">
+                    <button
+                        type="button"
+                        onClick={() => navigate("/karyawan")}
+                        className="bg-red-500 hover:bg-red-600 text-white w-full sm:w-auto px-4 py-2.5 rounded-lg flex items-center justify-center"
+                    >
                         <FontAwesomeIcon icon={faTimes} className="mr-2" />
                         Batalkan
                     </button>
 
-                    <button type="submit" className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto px-4 py-2.5 rounded-lg flex items-center justify-center">
+                    <button
+                        type="submit"
+                        className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto px-4 py-2.5 rounded-lg flex items-center justify-center"
+                    >
                         <FontAwesomeIcon icon={faSave} className="mr-2" />
                         Simpan Perubahan
                     </button>

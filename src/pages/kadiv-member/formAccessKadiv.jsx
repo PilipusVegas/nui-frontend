@@ -21,10 +21,9 @@ const FormAccessKadiv = ({ isOpen, onClose, onSuccess, editData }) => {
 
                 if (json.success) {
                     let filtered = json.data
-                        .filter((u) => u.status === 1)               // hanya aktif
-                        .filter((u) => !u.is_kadiv && !u.is_member); // bukan kadiv/member
+                        .filter((u) => u.status === 1)
+                        .filter((u) => !u.is_kadiv && !u.is_member);
 
-                    // --- Penting: Saat edit, tambahkan user yang sedang dipakai ---
                     if (editData) {
                         const currentUser = json.data.find(
                             (u) => u.id === editData.id_user
@@ -102,7 +101,7 @@ const FormAccessKadiv = ({ isOpen, onClose, onSuccess, editData }) => {
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={editData ? "Edit Akses Kadiv" : "Tambah Akses Kadiv"} note={editData  ? "Ganti kepala divisi sambil mempertahankan anggota yang ada."  : "Tambahkan kepala divisi baru."}>
+        <Modal isOpen={isOpen} onClose={onClose} title={editData ? "Ganti Kepala Divisi" : "Tambah Kepala Divisi"} note={editData  ? "Ganti kepala divisi sambil mempertahankan anggota yang ada."  : "Tambahkan kepala divisi baru."}>
 
             <form onSubmit={handleSubmit} className="grid gap-4 text-sm text-gray-700">
 
@@ -130,7 +129,7 @@ const FormAccessKadiv = ({ isOpen, onClose, onSuccess, editData }) => {
                 </div>
 
                 <button type="submit" disabled={loading || !selectedUser} className="w-full px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg shadow active:scale-95 transition-all">
-                    {loading ? "Menyimpan..." : editData ? "Perbarui" : "Tambah"}
+                    {loading ? "Menyimpan..." : editData ? "Gantikan" : "Tambah"}
                 </button>
             </form>
         </Modal >

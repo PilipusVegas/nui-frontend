@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash, faChevronDown, faInfoCircle, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
-import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
+import { fetchWithJwt } from "../../utils/jwtHelper";
 import { SectionHeader } from "../../components";
 import Select from "react-select";
 
@@ -17,34 +17,35 @@ const TambahKaryawan = () => {
   const [currentUser, setCurrentUser] = useState({ nip: "", nik: "", npwp: "", no_rek: "", id_kadiv: null, nama: "", status_nikah: "", jml_anak: 0, id_perusahaan: "", id_role: "", id_shift: "", telp: "", username: "", password: "", status: 1, });
   const [showShiftDetails, setShowShiftDetails] = useState(false);
   const [kadivList, setKadivList] = useState([]);
+  const [kadivGroupList, setKadivGroupList] = useState([]);
+  const [loadingGroup, setLoadingGroup] = useState(false);
+
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userToken = getUserFromToken(); // Ambil data user dari JWT
         const [divisiRes, shiftRes, perusahaanRes] = await Promise.all([
           fetchWithJwt(`${apiUrl}/karyawan/divisi`),
           fetchWithJwt(`${apiUrl}/shift`),
           fetchWithJwt(`${apiUrl}/perusahaan`),
         ]);
+
         const divisiData = await divisiRes.json();
         const shiftData = await shiftRes.json();
         const perusahaanData = await perusahaanRes.json();
 
-        // Filter perusahaan hanya yang ada di perusahaan_dikelola
-        const filteredPerusahaan = perusahaanData.data.filter(p =>
-          userToken.perusahaan_dikelola.includes(p.id)
-        );
-
-        setPerusahaanList(filteredPerusahaan);
+        setPerusahaanList(perusahaanData.data);
         setDivisiList(divisiData.data);
         setShiftList(shiftData.data);
+
       } catch (err) {
         console.error("Gagal fetch data tambahan", err);
       }
     };
+
     fetchData();
   }, [apiUrl]);
+
 
   useEffect(() => {
     const fetchKadiv = async () => {
@@ -59,21 +60,58 @@ const TambahKaryawan = () => {
     fetchKadiv();
   }, [apiUrl]);
 
+  useEffect(() => {
+    const fetchKadivGroup = async () => {
+      if (!currentUser.id_kadiv) {
+        setKadivGroupList([]);
+        setCurrentUser(prev => ({ ...prev, id_kadiv_group: null }));
+        return;
+      }
 
-  // Validasi sebelum submit
+      try {
+        setLoadingGroup(true);
+        const res = await fetchWithJwt(
+          `${apiUrl}/profil/kadiv-access/group/kadiv/${currentUser.id_kadiv}`
+        );
+        const data = await res.json();
+
+        if (data.success) {
+          setKadivGroupList(data.data);
+        } else {
+          setKadivGroupList([]);
+        }
+      } catch (err) {
+        console.error("Gagal fetch group kadiv", err);
+        setKadivGroupList([]);
+      } finally {
+        setLoadingGroup(false);
+      }
+    };
+
+    fetchKadivGroup();
+  }, [apiUrl, currentUser.id_kadiv]);
+
+
+
   const handleAdd = async () => {
     if (!currentUser.nip || !currentUser.nama || !currentUser.id_perusahaan || !currentUser.id_role || !currentUser.id_shift) {
       return Swal.fire("Peringatan", "Kolom nama, perusahaan, role, dan shift harus diisi.", "warning");
     }
 
-    // if (!currentUser.is_kadiv && !currentUser.id_kadiv) {
-    //   return Swal.fire("Peringatan", "Harap pilih Kepala Divisi jika bukan Kadiv.", "warning");
-    // }
+    if (currentUser.id_kadiv && !currentUser.id_kadiv_group) {
+      return Swal.fire(
+        "Peringatan",
+        "Grup Kepala Divisi wajib dipilih.",
+        "warning"
+      );
+    }
+
 
     try {
       const payload = {
         ...currentUser,
-        id_kadiv: currentUser.is_kadiv ? null : currentUser.id_kadiv ?? null
+        id_kadiv: currentUser.id_kadiv ?? null,
+        id_kadiv_group: currentUser.id_kadiv_group ?? null,
       };
       const res = await fetchWithJwt(`${apiUrl}/profil`, {
         method: "POST",
@@ -91,6 +129,7 @@ const TambahKaryawan = () => {
       Swal.fire("Error", "Terjadi kesalahan pada server.", "error");
     }
   };
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -274,8 +313,7 @@ const TambahKaryawan = () => {
               <label className="block mb-1 font-medium text-gray-700">
                 Pilih Kepala Divisi <span className="text-red-500">*</span>
               </label>
-              <Select
-                options={kadivList.map((k) => ({ value: k.id, label: k.nama }))}
+              <Select options={kadivList.map((k) => ({ value: k.id, label: k.nama }))}
                 value={
                   currentUser.id_kadiv
                     ? { value: currentUser.id_kadiv, label: kadivList.find(k => k.id === currentUser.id_kadiv)?.nama }
@@ -287,10 +325,45 @@ const TambahKaryawan = () => {
                 placeholder="Pilih Kepala Divisi"
                 isClearable
                 classNamePrefix="react-select"
-              />  
+              />
             </div>
           )}
 
+          {/* Select Group Kadiv */}
+          {currentUser.id_kadiv && (
+            <div className="mb-4">
+              <label className="block mb-1 font-medium text-gray-700">
+                Pilih Grup Kepala Divisi <span className="text-red-500">*</span>
+              </label>
+
+              <Select
+                options={kadivGroupList.map((g) => ({
+                  value: g.id,
+                  label: g.nama_grup,
+                }))}
+                value={
+                  currentUser.id_kadiv_group
+                    ? {
+                      value: currentUser.id_kadiv_group,
+                      label: kadivGroupList.find(
+                        g => g.id === currentUser.id_kadiv_group
+                      )?.nama_grup,
+                    }
+                    : null
+                }
+                onChange={(selected) =>
+                  setCurrentUser(prev => ({
+                    ...prev,
+                    id_kadiv_group: selected?.value ?? null,
+                  }))
+                }
+                isLoading={loadingGroup}
+                isClearable
+                placeholder="Pilih Grup Kadiv"
+                classNamePrefix="react-select"
+              />
+            </div>
+          )}
 
 
           <div className="col-span-full flex flex-col mt-4">
