@@ -47,8 +47,6 @@ const DetailKadiv = ({ data }) => {
         }
     };
 
-
-
     const handleDeleteGroup = async () => {
         if (!groupDetail) return;
         const result = await Swal.fire({

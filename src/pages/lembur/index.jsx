@@ -112,9 +112,6 @@ const Lembur = () => {
   };
 
 
-
-
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -140,8 +137,8 @@ const Lembur = () => {
 
       const result = await response.json();
 
-      if (result.success) {
-        toast.success("Pengajuan lembur berhasil!");
+      if (response.ok) {
+        toast.success(result.message || "Pengajuan lembur berhasil!");
         navigate("/riwayat-pengguna");
       } else {
         toast.error(result.message || "Terjadi kesalahan saat pengiriman.");

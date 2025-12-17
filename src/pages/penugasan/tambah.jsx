@@ -16,7 +16,6 @@ const TambahTugas = () => {
     const [startDate, setStartDate] = useState("");
     const [deadlineAt, setDeadlineAt] = useState("");
     const [workerList, setWorkerList] = useState([{ id_user: "", deskripsi: "", telp: "" }]);
-
     const [profilList, setProfilList] = useState([]);
     const [category, setCategory] = useState("daily");
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -53,7 +52,13 @@ const TambahTugas = () => {
         if (confirm.isConfirmed) navigate("/penugasan");
     };
 
-    const handleAddWorker = () => setWorkerList([...workerList, { id_user: "", deskripsi: "", telp: "" }]);
+    const handleAddWorker = () =>
+        setWorkerList(prev => [
+            ...prev,
+            { id_user: "", deskripsi: "", telp: "", interval_notifikasi: 60 }
+        ]);
+
+
     const handleRemoveWorker = async (index) => {
         const confirm = await Swal.fire({
             title: "Hapus penugasan pada karyawan ini?",
@@ -109,7 +114,7 @@ const TambahTugas = () => {
                     formData.append(`worker_list[${index}][id_user]`, worker.id_user);
                     formData.append(`worker_list[${index}][deskripsi]`, worker.deskripsi.trim());
                     formData.append(`worker_list[${index}][telp]`, worker.telp || "");
-                    formData.append(`worker_list[${index}][interval_notifikasi]`, 5); // contoh default
+                    formData.append(`worker_list[${index}][interval_notifikasi]`, worker.interval_notifikasi || 60);
                 });
 
             // ===== FOTO (BINARY) =====
@@ -271,14 +276,9 @@ const TambahTugas = () => {
                     </div>
                 )}
 
-
                 <div>
                     <label className="block mb-1 font-medium text-gray-700">Kategori Tugas</label>
-                    <select
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        className="w-full border border-gray-300/50 px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                    >
+                    <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full border border-gray-300/50 px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
                         <option value="daily">Daily – untuk tugas rutin atau kegiatan harian.</option>
                         <option value="urgent">
                             Urgent – untuk tugas yang bersifat mendesak dan perlu segera diselesaikan.
@@ -289,28 +289,12 @@ const TambahTugas = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">Tanggal Mulai Penugasan</label>
-                        <input
-                            type="date"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                            required
-                            min={new Date().toISOString().split("T")[0]}
-                            className="w-full border border-gray-300/50 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                        />
+                        <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required min={new Date().toISOString().split("T")[0]} className="w-full border border-gray-300/50 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     </div>
 
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">Tenggat Waktu Penugasan</label>
-                        <input
-                            type="date"
-                            value={deadlineAt}
-                            onChange={(e) => setDeadlineAt(e.target.value)}
-                            required
-                            min={startDate || new Date().toISOString().split("T")[0]}
-                            disabled={!startDate}
-                            className={`w-full border border-gray-300/50 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none ${!startDate ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""
-                                }`}
-                        />
+                        <input type="date" value={deadlineAt} onChange={(e) => setDeadlineAt(e.target.value)} required min={startDate || new Date().toISOString().split("T")[0]} disabled={!startDate} className={`w-full border border-gray-300/50 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none ${!startDate ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}`} />
                     </div>
                 </div>
 
@@ -318,7 +302,6 @@ const TambahTugas = () => {
                     {/* HEADER */}
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
 
-                        {/* Title & Description */}
                         <div className="space-y-1">
                             <h2 className="text-xl font-semibold text-gray-900">
                                 Daftar Penugasan Pekerja
@@ -330,7 +313,6 @@ const TambahTugas = () => {
                             </p>
                         </div>
 
-                        {/* Button */}
                         <button type="button" onClick={handleAddWorker} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg  text-sm flex items-center justify-center gap-2 shadow transition-all hover:scale-105 w-full md:w-auto">
                             <FontAwesomeIcon icon={faPlus} />
                             Tambah Baru
@@ -339,16 +321,36 @@ const TambahTugas = () => {
 
 
                     {/* LIST CONTAINER */}
-                    <div className="max-h-[70vh] overflow-y-auto pr-1 space-y-4 scrollbar-green pb-20">
+                    <div className="max-h-[70vh] overflow-y-auto space-y-2 pb-24 pr-1">
                         {workerList.map((worker, index) => (
-                            <div key={index} className="border border-green-500/50 bg-white rounded-xl shadow-sm hover:shadow-md transition-all p-4">
-                                {/* CARD HEADER */}
-                                <div className="flex justify-between items-center pb-3 border-b border-green-200">
-                                    <h3 className="text-sm font-semibold text-green-700">Penugasan {index + 1}</h3>
+                            <div
+                                key={index}
+                                className="relative bg-white rounded-xl border border-gray-200 p-3 transition hover:shadow-md"
+                            >
+                                {/* ACCENT STRIP */}
+                                <div className="absolute left-0 top-0 h-full w-1 bg-green-500 rounded-l-xl" />
 
-                                    <div className="flex items-center gap-2">
+                                {/* HEADER */}
+                                <div className="flex items-center justify-between mb-3 pl-2">
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center gap-2">
+                                            <span className="px-2 py-0.5 text-xs font-semibold rounded bg-green-100 text-green-700">
+                                                #{index + 1}
+                                            </span>
+                                            <span className="text-sm font-semibold text-gray-800">
+                                                Detail Penugasan Karyawan
+                                            </span>
+                                        </div>
+
+                                        <span className="text-[11px] text-gray-500">
+                                            Tentukan karyawan, pengingat tugas, dan deskripsi pekerjaan.
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-1">
                                         <button
                                             type="button"
+                                            title="Salin penugasan"
                                             onClick={() => {
                                                 const copied = { ...worker };
                                                 setWorkerList((prev) => {
@@ -358,117 +360,157 @@ const TambahTugas = () => {
                                                 });
                                                 toast.success("Penugasan berhasil disalin");
                                             }}
-                                            className="px-3 py-1 rounded-md bg-blue-500 hover:bg-blue-600 text-[11px] text-white flex items-center gap-1 shadow-sm transition"
+                                            className="p-1.5 rounded-md text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition"
                                         >
-                                            <FontAwesomeIcon icon={faCopy} className="w-3 h-3" />
-                                            Salin
+                                            <FontAwesomeIcon icon={faCopy} className="text-xs" />
                                         </button>
 
                                         {workerList.length > 1 && (
-                                            <button type="button" onClick={() => handleRemoveWorker(index)} className="px-3 py-1 rounded-md bg-red-500 hover:bg-red-600 text-[11px] text-white flex items-center gap-1 shadow-sm transition">
-                                                <FontAwesomeIcon icon={faTrash} className="w-3 h-3" />
-                                                Hapus
+                                            <button
+                                                type="button"
+                                                title="Hapus penugasan"
+                                                onClick={() => handleRemoveWorker(index)}
+                                                className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition"
+                                            >
+                                                <FontAwesomeIcon icon={faTrash} className="text-xs" />
                                             </button>
                                         )}
                                     </div>
                                 </div>
 
-                                {/* CARD CONTENT */}
-                                <div className="mt-3 space-y-4 text-sm">
+                                {/* BODY */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-2 text-sm">
 
-                                    <Select
-                                        value={
-                                            profilList
-                                                .map((user) => ({
-                                                    value: user.id_user,
-                                                    label: user.nama_user,
-                                                    role: user.role,
-                                                    telp: user.telp,
-                                                }))
-                                                .find((option) => option.value === worker.id_user) || null
-                                        }
-                                        onChange={(selectedOption) => {
-                                            handleWorkerChange(
-                                                index,
-                                                "id_user",
-                                                selectedOption ? selectedOption.value : ""
-                                            );
-                                            handleWorkerChange(
-                                                index,
-                                                "telp",
-                                                selectedOption ? selectedOption.telp : ""
-                                            )
-                                        }
-                                        }
-                                        options={profilList.map((user) => ({
-                                            value: user.id_user,
-                                            label: user.nama_user,
-                                            role: user.role,
-                                            telp: user.telp,
-                                        }))}
-                                        placeholder="Pilih karyawan yang akan ditugaskan..."
-                                        required
-                                        classNamePrefix="react-select"
-                                        menuPortalTarget={document.body}
-                                        formatOptionLabel={(option) => (
-                                            <div className="flex justify-between w-full items-center">
-                                                <span>{option.label}</span>
-                                                <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-md">
-                                                    {option.role}
-                                                </span>
-                                            </div>
-                                        )}
-                                        styles={{
-                                            control: (base) => ({
-                                                ...base,
-                                                borderColor: "#86efac",
-                                                minHeight: "38px",
-                                                fontSize: "0.9rem",
-                                                backgroundColor: "white",
-                                                borderRadius: "0.6rem",
-                                                boxShadow: "none",
-                                                "&:hover": { borderColor: "#16a34a" },
-                                            }),
-                                            menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                                            option: (provided, state) => ({
-                                                ...provided,
-                                                paddingTop: 8,
-                                                paddingBottom: 8,
-                                                fontSize: "0.9rem",
-                                                backgroundColor: state.isSelected
-                                                    ? "#16a34a"
-                                                    : state.isFocused
-                                                        ? "#dcfce7"
-                                                        : "white",
-                                                color: state.isSelected ? "white" : "#1f2937",
-                                                cursor: "pointer",
-                                            }),
-                                        }}
-                                    />
+                                    {/* KARYAWAN */}
+                                    <div className="md:col-span-2">
+                                        <label className="block text-[11px] font-medium text-gray-600 mb-1">
+                                            Karyawan yang Ditugaskan
+                                        </label>
 
-
-                                    {/* DESKRIPSI */}
-                                    <div className="flex flex-col gap-1">
-                                        <label className="font-medium text-gray-700">Deskripsi Pekerjaan</label>
-                                        <textarea placeholder="Tuliskan deskripsi penugasan dengan detail dan jelas..." value={worker.deskripsi}
-                                            onChange={(e) =>
-                                                handleWorkerChange(
-                                                    index,
-                                                    "deskripsi",
-                                                    e.target.value
-                                                )
+                                        <Select
+                                            value={
+                                                profilList
+                                                    .map((user) => ({
+                                                        value: user.id_user,
+                                                        label: user.nama_user,
+                                                        role: user.role,
+                                                        telp: user.telp,
+                                                    }))
+                                                    .find((option) => option.value === worker.id_user) || null
                                             }
-                                            rows="3"
-                                            className="w-full border border-green-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none resize-none"
-                                            required
+                                            onChange={(selectedOption) => {
+                                                handleWorkerChange(index, "id_user", selectedOption?.value || "");
+                                                handleWorkerChange(index, "telp", selectedOption?.telp || "");
+                                            }}
+                                            options={profilList.map((user) => ({
+                                                value: user.id_user,
+                                                label: user.nama_user,
+                                                role: user.role,
+                                                telp: user.telp,
+                                            }))}
+                                            placeholder="Pilih karyawan"
+                                            classNamePrefix="react-select"
+                                            menuPortalTarget={document.body}
+                                            styles={{
+                                                control: (base) => ({
+                                                    ...base,
+                                                    minHeight: "36px",
+                                                    borderRadius: "0.6rem",
+                                                    borderColor: "#d1d5db",
+                                                    boxShadow: "none",
+                                                    "&:hover": { borderColor: "#22c55e" },
+                                                }),
+                                                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                            }}
                                         />
                                     </div>
 
-                                </div>
+                                    {/* PENGINGAT */}
+                                    <div>
+                                        <label className="block text-[11px] font-medium text-gray-600 mb-1">
+                                            Pengingat Tugas (Menit)
+                                        </label>
 
+                                        <div className="flex flex-wrap items-center gap-1.5">
+                                            {[15, 30, 60, 120].map((val) => (
+                                                <button
+                                                    key={val}
+                                                    type="button"
+                                                    onClick={() =>
+                                                        handleWorkerChange(index, "interval_notifikasi", val)
+                                                    }
+                                                    className={`
+                  px-2.5 py-1 rounded-full text-xs border
+                  ${worker.interval_notifikasi === val
+                                                            ? "bg-green-600 text-white border-green-600"
+                                                            : "bg-gray-50 text-gray-600 border-gray-300 hover:border-green-500"
+                                                        }
+                `}
+                                                >
+                                                    {val}m
+                                                </button>
+                                            ))}
+
+                                            <input
+                                                type="number"
+                                                min={1}
+                                                max={1440}
+                                                value={worker.interval_notifikasi}
+                                                onChange={(e) =>
+                                                    handleWorkerChange(
+                                                        index,
+                                                        "interval_notifikasi",
+                                                        Number(e.target.value || 60)
+                                                    )
+                                                }
+                                                className="
+                w-16 px-2 py-1 text-xs
+                border border-gray-300
+                rounded-md
+                focus:ring-1 focus:ring-green-500
+              "
+                                            />
+                                        </div>
+
+                                        <span className="text-[11px] text-gray-500 mt-1 block">
+                                            Sistem akan mengirim pengingat secara berkala.
+                                        </span>
+                                    </div>
+
+                                    {/* DESKRIPSI */}
+                                    <div>
+                                        <label className="block text-[11px] font-medium text-gray-600 mb-1">
+                                            Deskripsi Pekerjaan
+                                        </label>
+
+                                        <textarea
+                                            rows={2}
+                                            placeholder="Contoh: Periksa stok gudang dan laporkan hasilnya."
+                                            value={worker.deskripsi}
+                                            onChange={(e) =>
+                                                handleWorkerChange(index, "deskripsi", e.target.value)
+                                            }
+                                            className="
+              w-full
+              border border-gray-300
+              rounded-lg
+              px-3 py-2
+              text-sm
+              focus:ring-2 focus:ring-green-500
+              resize-none
+            "
+                                            required
+                                        />
+
+                                        <span className="text-[11px] text-gray-500 mt-1 block">
+                                            Tulis singkat, jelas, dan mudah dipahami karyawan.
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         ))}
                     </div>
+
                 </div>
 
                 <div className="flex justify-between space-x-4 pt-4">
@@ -476,11 +518,7 @@ const TambahTugas = () => {
                         <FontAwesomeIcon icon={faTimes} className="mr-2" />
                         Batal
                     </button>
-                    <button type="submit"
-                        disabled={loading}
-                        className={`${loading ? "bg-green-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"
-                            } text-white px-4 py-2 rounded flex items-center shadow transition-all`}
-                    >
+                    <button type="submit" disabled={loading} className={`${loading ? "bg-green-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"} text-white px-4 py-2 rounded flex items-center shadow transition-all`}>
                         {loading ? (
                             <>
                                 <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
