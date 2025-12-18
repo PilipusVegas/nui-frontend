@@ -165,17 +165,11 @@ const EditTugas = () => {
         try {
             const formData = new FormData();
 
-            // =========================
-            // DATA UTAMA
-            // =========================
             formData.append("nama", nama);
             formData.append("start_date", startDate);
             formData.append("category", category);
             formData.append("deadline_at", deadline);
 
-            // =========================
-            // WORKER LIST (JSON STRING)
-            // =========================
             workers.forEach((w, index) => {
                 if (w.id_detail) {
                     formData.append(`worker_list[${index}][id]`, w.id_detail);
@@ -192,16 +186,10 @@ const EditTugas = () => {
             });
 
 
-            // =========================
-            // FOTO (MULTIPLE FIELD SAMA)
-            // =========================
             newPhotos.forEach((file) => {
                 formData.append("foto", file);
             });
 
-            // =========================
-            // REQUEST
-            // =========================
             const res = await fetchWithJwt(`${apiUrl}/tugas/${id}`, {
                 method: "PUT",
                 body: formData,
