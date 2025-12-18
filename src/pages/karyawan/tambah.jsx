@@ -106,7 +106,6 @@ const TambahKaryawan = () => {
       );
     }
 
-
     try {
       const payload = {
         ...currentUser,
@@ -306,21 +305,32 @@ const TambahKaryawan = () => {
             />
           </div>
 
-
           {/* Select Kepala Divisi */}
-          {parseInt(currentUser.id_perusahaan) === 1 && !currentUser.is_kadiv && (
+          {Number.isInteger(currentUser.id_role) && !currentUser.is_kadiv && (
             <div className="mb-4">
               <label className="block mb-1 font-medium text-gray-700">
                 Pilih Kepala Divisi <span className="text-red-500">*</span>
               </label>
-              <Select options={kadivList.map((k) => ({ value: k.id, label: k.nama }))}
+
+              <Select
+                options={kadivList.map((k) => ({
+                  value: k.id,
+                  label: k.nama,
+                }))}
                 value={
-                  currentUser.id_kadiv
-                    ? { value: currentUser.id_kadiv, label: kadivList.find(k => k.id === currentUser.id_kadiv)?.nama }
+                  Number.isInteger(currentUser.id_kadiv)
+                    ? {
+                      value: currentUser.id_kadiv,
+                      label: kadivList.find(k => k.id === currentUser.id_kadiv)?.nama,
+                    }
                     : null
                 }
                 onChange={(selected) =>
-                  setCurrentUser(prev => ({ ...prev, id_kadiv: selected?.value ?? null }))
+                  setCurrentUser(prev => ({
+                    ...prev,
+                    id_kadiv: selected ? selected.value : null,
+                    id_kadiv_group: null,
+                  }))
                 }
                 placeholder="Pilih Kepala Divisi"
                 isClearable
@@ -329,8 +339,9 @@ const TambahKaryawan = () => {
             </div>
           )}
 
+
           {/* Select Group Kadiv */}
-          {currentUser.id_kadiv && (
+          {Number.isInteger(currentUser.id_kadiv) && (
             <div className="mb-4">
               <label className="block mb-1 font-medium text-gray-700">
                 Pilih Grup Kepala Divisi <span className="text-red-500">*</span>
@@ -342,7 +353,7 @@ const TambahKaryawan = () => {
                   label: g.nama_grup,
                 }))}
                 value={
-                  currentUser.id_kadiv_group
+                  Number.isInteger(currentUser.id_kadiv_group)
                     ? {
                       value: currentUser.id_kadiv_group,
                       label: kadivGroupList.find(
@@ -354,7 +365,7 @@ const TambahKaryawan = () => {
                 onChange={(selected) =>
                   setCurrentUser(prev => ({
                     ...prev,
-                    id_kadiv_group: selected?.value ?? null,
+                    id_kadiv_group: selected ? selected.value : null,
                   }))
                 }
                 isLoading={loadingGroup}
@@ -362,6 +373,11 @@ const TambahKaryawan = () => {
                 placeholder="Pilih Grup Kadiv"
                 classNamePrefix="react-select"
               />
+              <div className="mt-2 p-2 bg-blue-50 border-l-4 border-blue-400 rounded text-xs text-blue-800">
+                <strong>Catatan:</strong> Karyawan baru akan masuk sebagai <strong>Anggota Tim</strong>.
+                Perubahan menjadi <strong>Team Leader</strong> dilakukan melalui menu
+                <strong> Kelola Kepala Divisi</strong>.
+              </div>
             </div>
           )}
 

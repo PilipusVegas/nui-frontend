@@ -1,14 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faEye,
-    faEyeSlash,
-    faInfoCircle,
-    faSave,
-    faTimes,
-    faChevronDown,
-} from "@fortawesome/free-solid-svg-icons";
+import { faEye, faEyeSlash, faInfoCircle, faSave, faTimes, faChevronDown } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { SectionHeader } from "../../components";
@@ -26,6 +19,25 @@ const EditKaryawan = () => {
     const [showShiftDetails, setShowShiftDetails] = useState(false);
     const [kadivList, setKadivList] = useState([]);
     const [groupList, setGroupList] = useState([]);
+    const [initialPlacement, setInitialPlacement] = useState(null);
+    const isMovedPlacement =
+        initialPlacement &&
+        (
+            currentUser.id_kadiv !== initialPlacement.id_kadiv ||
+            currentUser.id_kadiv_group !== initialPlacement.id_kadiv_group
+        );
+    // ambil grup yang sedang dipilih
+    const selectedGroup = groupList.find(
+        (g) => g.id === currentUser.id_kadiv_group
+    );
+
+    // cek apakah grup sudah punya leader
+    const groupHasLeader = Boolean(selectedGroup?.id_leader);
+
+    const disableLeaderSelect = groupHasLeader;
+
+
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -47,7 +59,13 @@ const EditKaryawan = () => {
 
                 if (userData.success) {
                     setCurrentUser(userData.data);
+
+                    setInitialPlacement({
+                        id_kadiv: userData.data.id_kadiv,
+                        id_kadiv_group: userData.data.id_kadiv_group,
+                    });
                 }
+
 
                 setPerusahaanList(perusahaanData.data);
             } catch (err) {
@@ -73,20 +91,42 @@ const EditKaryawan = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        let updatedValue = value;
-        if (name === "id_perusahaan") {
-            setCurrentUser((prev) => ({
+
+        setCurrentUser((prev) => {
+            // PILIH PERUSAHAAN
+            if (name === "id_perusahaan") {
+                const id_perusahaan = value === "" ? null : Number(value);
+
+                return {
+                    ...prev,
+                    id_perusahaan,
+                    id_role: null,
+                    id_kadiv: null,
+                    id_kadiv_group: null,
+                    level: null,
+                };
+            }
+
+            // PILIH DIVISI
+            if (name === "id_role") {
+                const id_role = value === "" ? null : Number(value);
+
+                return {
+                    ...prev,
+                    id_role,
+                    id_kadiv: null,
+                    id_kadiv_group: null,
+                    level: null,
+                };
+            }
+
+            return {
                 ...prev,
-                id_perusahaan: parseInt(value),
-                id_shift: null,
-            }));
-            return;
-        }
-        if (name === "id_role" || name === "id_shift") {
-            updatedValue = parseInt(value);
-        }
-        setCurrentUser((prev) => ({ ...prev, [name]: updatedValue }));
+                [name]: value,
+            };
+        });
     };
+
 
     useEffect(() => {
         if (!currentUser?.id_kadiv) return;
@@ -160,14 +200,7 @@ const EditKaryawan = () => {
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">
                             Masukkan <span className="font-semibold text-gray-800">nama lengkap</span> karyawan.
                         </p>
-                        <input
-                            type="text"
-                            name="nama"
-                            value={currentUser.nama}
-                            onChange={handleChange}
-                            required
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                        />
+                        <input type="text" name="nama" value={currentUser.nama} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     </div>
 
                     <div>
@@ -175,27 +208,13 @@ const EditKaryawan = () => {
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">
                             Masukkan Nomor Induk Kependudukan (NIK).
                         </p>
-                        <input
-                            type="text"
-                            name="nik"
-                            value={currentUser.nik}
-                            onChange={handleChange}
-                            required
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                        />
+                        <input type="text" name="nik" value={currentUser.nik} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     </div>
 
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">NIP</label>
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">Masukkan nomor induk pegawai.</p>
-                        <input
-                            type="text"
-                            name="nip"
-                            value={currentUser.nip}
-                            onChange={handleChange}
-                            required
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                        />
+                        <input type="text" name="nip" value={currentUser.nip} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     </div>
 
                     <div>
@@ -259,14 +278,7 @@ const EditKaryawan = () => {
                             <p className="text-sm text-gray-500 mb-2 -mt-1.5">
                                 Masukkan jumlah anak (jika ada). Jika belum mempunyai anak maka isi 0 saja
                             </p>
-                            <input
-                                type="number"
-                                name="jml_anak"
-                                value={currentUser.jml_anak || ""}
-                                onChange={handleChange}
-                                min="0"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                            />
+                            <input type="number" name="jml_anak" value={currentUser.jml_anak || ""} onChange={handleChange} min="0" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                         </div>
                     )}
 
@@ -311,19 +323,11 @@ const EditKaryawan = () => {
 
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">Perusahaan</label>
-                        <p className="text-sm text-gray-500 mb-2 -mt-1.5">
-                            Pilih perusahaan sesuai tempat kerja.
-                        </p>
-                        <select
-                            name="id_perusahaan"
-                            value={currentUser.id_perusahaan}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                        >
+                        <select name="id_perusahaan" value={currentUser.id_perusahaan ?? ""} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg">
                             <option value="">Pilih Perusahaan</option>
-                            {perusahaanList.map((item) => (
-                                <option key={item.id} value={item.id}>
-                                    {item.nama}
+                            {perusahaanList.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                    {p.nama}
                                 </option>
                             ))}
                         </select>
@@ -356,38 +360,28 @@ const EditKaryawan = () => {
                             })()}
                     </div>
 
-                    <div>
-                        <label className="block mb-1 font-medium text-gray-700">Divisi</label>
-                        <p className="text-sm text-gray-500 mb-2 -mt-1.5">Pilih divisi sesuai tugasnya.</p>
-                        <select
-                            name="id_role"
-                            value={currentUser.id_role}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                        >
-                            <option value="">Pilih Divisi</option>
-                            {divisiList
-                                .filter((item) => item.id !== 1)
-                                .map((item) => (
-                                    <option key={item.id} value={item.id}>
-                                        {item.nama}
-                                    </option>
-                                ))}
-                        </select>
-                    </div>
+                    {Number.isInteger(currentUser.id_perusahaan) && (
+                        <div>
+                            <label className="block mb-1 font-medium text-gray-700">Divisi</label>
+                            <select name="id_role" value={currentUser.id_role ?? ""} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg">
+                                <option value="">Pilih Divisi</option>
+                                {divisiList
+                                    .filter((d) => d.id !== 1)
+                                    .map((d) => (
+                                        <option key={d.id} value={d.id}>
+                                            {d.nama}
+                                        </option>
+                                    ))}
+                            </select>
+                        </div>
+                    )}
 
-                    {/* ===============================
-    KEPALA DIVISI
-=============================== */}
-                    {parseInt(currentUser.id_perusahaan) === 1 && !currentUser.is_kadiv && (
-                        <div className="space-y-1">
+
+                    {Number.isInteger(currentUser.id_role) && !currentUser.is_kadiv && (
+                        <div className="space-y-2">
                             <label className="block text-sm font-medium text-gray-700">
-                                Kepala Divisi <span className="text-red-500">*</span>
+                                Kepala Divisi
                             </label>
-
-                            <p className="text-xs text-gray-500">
-                                Pilih kepala divisi yang bertanggung jawab atas karyawan ini.
-                            </p>
 
                             <Select
                                 options={kadivList.map((k) => ({
@@ -395,57 +389,48 @@ const EditKaryawan = () => {
                                     label: k.nama,
                                 }))}
                                 value={
-                                    currentUser.id_kadiv
+                                    Number.isInteger(currentUser.id_kadiv)
                                         ? {
                                             value: currentUser.id_kadiv,
-                                            label: kadivList.find((k) => k.id === currentUser.id_kadiv)?.nama,
+                                            label: kadivList.find(
+                                                (k) => k.id === currentUser.id_kadiv
+                                            )?.nama,
                                         }
                                         : null
                                 }
                                 onChange={(selected) =>
                                     setCurrentUser((prev) => ({
                                         ...prev,
-                                        id_kadiv: selected?.value || "",
+                                        id_kadiv: selected ? selected.value : null,
                                         id_kadiv_group: null,
-                                        level: 2,
+                                        level: null,
                                     }))
                                 }
                                 placeholder="Pilih Kepala Divisi"
                                 isClearable
-                                classNamePrefix="react-select"
                             />
                         </div>
                     )}
 
-                    {/* ===============================
-    TIM / GRUP
-=============================== */}
-                    {currentUser.id_kadiv && (
-                        <div className="space-y-1">
-                            <label className="block text-sm font-medium text-gray-700">Tim / Grup</label>
 
-                            <p className="text-xs text-gray-500">Pilih tim tempat karyawan ini tergabung.</p>
-
+                    {Number.isInteger(currentUser.id_kadiv) && (
+                        <div>
+                            <label className="block mb-1 font-medium text-gray-700">Tim / Grup</label>
                             <select
-                                name="id_kadiv_group"
-                                value={currentUser.id_kadiv_group || ""}
+                                value={currentUser.id_kadiv_group ?? ""}
                                 onChange={(e) =>
                                     setCurrentUser((prev) => ({
                                         ...prev,
-                                        id_kadiv_group: Number(e.target.value),
-                                        level: prev.level ?? 2,
+                                        id_kadiv_group:
+                                            e.target.value === ""
+                                                ? null
+                                                : Number(e.target.value),
+                                        level: 2,
                                     }))
                                 }
-                                className="
-                w-full px-4 py-2 text-sm
-                border rounded-lg
-                bg-white
-                focus:outline-none
-                focus:ring-2 focus:ring-green-500
-            "
+                                className="w-full px-4 py-2 border-2 rounded-lg"
                             >
                                 <option value="">Pilih Tim</option>
-
                                 {groupList.map((g) => (
                                     <option key={g.id} value={g.id}>
                                         {g.nama_grup}
@@ -455,28 +440,33 @@ const EditKaryawan = () => {
                         </div>
                     )}
 
-                    {/* ===============================
-    PERAN DI TIM
-=============================== */}
-                    {currentUser.id_kadiv_group && (
-                        <div className="space-y-1">
-                            <label className="block text-sm font-medium text-gray-700">Peran di Tim</label>
+                    {Number.isInteger(currentUser.id_kadiv_group) && (
+                        <div>
+                            <label className="block mb-1 font-medium text-gray-700">
+                                Peran di Tim
+                            </label>
 
-                            <p className="text-xs text-gray-500">Tentukan peran karyawan dalam tim.</p>
+                            <p className="text-xs text-gray-500 mb-1">
+                                {groupHasLeader
+                                    ? "Tim ini sudah memiliki Team Leader."
+                                    : isMovedPlacement
+                                        ? "Peran tidak dapat diubah karena karyawan telah pindah tim."
+                                        : "Tentukan peran karyawan dalam tim."}
+                            </p>
 
                             <select
                                 name="level"
-                                value={currentUser.level || 2}
+                                value={currentUser.level ?? 2}
                                 onChange={handleChange}
-                                className="
-                w-full px-4 py-2 text-sm
-                border rounded-lg
-                bg-white
-                focus:outline-none
-                focus:ring-2 focus:ring-green-500
-            "
+                                disabled={disableLeaderSelect}
+                                className={`w-full px-4 py-2 border-2 rounded-lg
+                ${disableLeaderSelect ? "bg-gray-100 cursor-not-allowed" : ""}
+            `}
                             >
-                                <option value={1}>Team Leader</option>
+                                {/* Team Leader hanya muncul jika BELUM ADA leader */}
+                                {!groupHasLeader && (
+                                    <option value={1}>Team Leader</option>
+                                )}
                                 <option value={2}>Anggota</option>
                             </select>
                         </div>
@@ -529,17 +519,9 @@ const EditKaryawan = () => {
 
                     {currentUser?.id_shift && (
                         <div className="md:col-span-2 border border-gray-300 bg-green-500 rounded-md">
-                            <button
-                                type="button"
-                                className="w-full px-4 py-3 flex justify-between items-center text-white font-semibold focus:outline-none"
-                                onClick={() => setShowShiftDetails((prev) => !prev)}
-                            >
+                            <button type="button" className="w-full px-4 py-3 flex justify-between items-center text-white font-semibold focus:outline-none" onClick={() => setShowShiftDetails((prev) => !prev)}>
                                 <p className="font-semibold mb-1">Detail Jadwal {currentUser?.shift || "-"}</p>
-                                <FontAwesomeIcon
-                                    icon={faChevronDown}
-                                    className={`transition-transform duration-200 ${showShiftDetails ? "rotate-180" : "rotate-0"
-                                        }`}
-                                />
+                                <FontAwesomeIcon icon={faChevronDown} className={`transition-transform duration-200 ${showShiftDetails ? "rotate-180" : "rotate-0"}`} />
                             </button>
 
                             {showShiftDetails && (
@@ -620,13 +602,7 @@ const EditKaryawan = () => {
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">
                             Usenaame wajib diisi untuk karyawan lapangan.
                         </p>
-                        <input
-                            type="text"
-                            name="username"
-                            value={currentUser.username}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                        />
+                        <input type="text" name="username" value={currentUser.username} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     </div>
 
                     <div>
@@ -635,17 +611,8 @@ const EditKaryawan = () => {
                             Password wajib diisi untuk karyawan lapangan.
                         </p>
                         <div className="relative">
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                name="password"
-                                value={currentUser.password}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 pr-10 outline-none"
-                            />
-                            <span
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-2.5 cursor-pointer text-gray-500"
-                            >
+                            <input type={showPassword ? "text" : "password"} name="password" value={currentUser.password} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 pr-10 outline-none" />
+                            <span onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-2.5 cursor-pointer text-gray-500">
                                 <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
                             </span>
                         </div>
@@ -666,8 +633,8 @@ const EditKaryawan = () => {
                                 <span className={`text-sm font-bold ${currentUser.status === 1 ? "text-green-700" : "text-red-500"}`}>
                                     {currentUser.status === 1 ? "AKTIF" : "NONAKTIF"}
                                 </span>
-                                <button type="button" onClick={handleToggleStatus} className={`w-16 h-8 flex items-center rounded-full p-1 transition-colors duration-300 ${currentUser.status === 1 ? "bg-green-500" : "bg-gray-300"}`}  title="Ubah Status">
-                                    <div className={`w-7 h-7 bg-white rounded-full shadow-md transform transition-transform duration-300 ${currentUser.status === 1 ? "translate-x-8" : "translate-x-0"}`}/>
+                                <button type="button" onClick={handleToggleStatus} className={`w-16 h-8 flex items-center rounded-full p-1 transition-colors duration-300 ${currentUser.status === 1 ? "bg-green-500" : "bg-gray-300"}`} title="Ubah Status">
+                                    <div className={`w-7 h-7 bg-white rounded-full shadow-md transform transition-transform duration-300 ${currentUser.status === 1 ? "translate-x-8" : "translate-x-0"}`} />
                                 </button>
                             </div>
                         </div>
@@ -696,19 +663,12 @@ const EditKaryawan = () => {
                 </div>
 
                 <div className="pt-10 flex flex-row justify-end gap-3 flex-wrap">
-                    <button
-                        type="button"
-                        onClick={() => navigate("/karyawan")}
-                        className="bg-red-500 hover:bg-red-600 text-white w-full sm:w-auto px-4 py-2.5 rounded-lg flex items-center justify-center"
-                    >
+                    <button type="button" onClick={() => navigate("/karyawan")} className="bg-red-500 hover:bg-red-600 text-white w-full sm:w-auto px-4 py-2.5 rounded-lg flex items-center justify-center">
                         <FontAwesomeIcon icon={faTimes} className="mr-2" />
                         Batalkan
                     </button>
 
-                    <button
-                        type="submit"
-                        className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto px-4 py-2.5 rounded-lg flex items-center justify-center"
-                    >
+                    <button type="submit" className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto px-4 py-2.5 rounded-lg flex items-center justify-center">
                         <FontAwesomeIcon icon={faSave} className="mr-2" />
                         Simpan Perubahan
                     </button>

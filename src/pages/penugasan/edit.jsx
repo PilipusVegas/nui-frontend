@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSave, faTimes, faPlus, faTrash, faCopy, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faSave, faTimes, faPlus, faTrash, faCopy, faSpinner, faUpload, faCamera } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import Select from "react-select";
 import toast from "react-hot-toast";
-import { SectionHeader, LoadingSpinner, ErrorState, EmptyState } from "../../components";
+import Webcam from "react-webcam";
+
+import { SectionHeader, LoadingSpinner, ErrorState, EmptyState, Modal } from "../../components";
 
 const EditTugas = () => {
     const { id } = useParams();
@@ -22,13 +24,30 @@ const EditTugas = () => {
     const [idTugas, setIdTugas] = useState(null);
     const [profilList, setProfilList] = useState([]);
     const [saving, setSaving] = useState(false);
+    const MAX_PHOTO = 3;
+    const [existingPhotos, setExistingPhotos] = useState([]);
+    const [newPhotos, setNewPhotos] = useState([]);
+    const [showCamera, setShowCamera] = useState(false);
+    const [facingMode, setFacingMode] = useState("environment");
+    const webcamRef = useRef(null);
+
+    const totalPhotoCount = existingPhotos.length + newPhotos.length;
+
+    const isPhotoLimitReached = () => {
+        if (totalPhotoCount >= MAX_PHOTO) {
+            toast.error(
+                "Maksimal 3 foto. Hapus foto lama terlebih dahulu untuk menambah foto baru."
+            );
+            return true;
+        }
+        return false;
+    };
 
 
     useEffect(() => {
         const fetchAllData = async () => {
             try {
                 setLoading(true);
-
                 const [userRes, tugasRes] = await Promise.all([
                     fetchWithJwt(`${apiUrl}/tugas/profil`),
                     fetchWithJwt(`${apiUrl}/tugas/${id}`),
@@ -36,12 +55,9 @@ const EditTugas = () => {
 
                 const userData = await userRes.json();
                 const tugasData = await tugasRes.json();
-
-                if (userData.success) setProfilList(userData.data || []);
-
+                if (userData.success) setProfilList(userData.data || [])
                 if (tugasData.success && tugasData.data) {
                     const tugas = tugasData.data;
-
                     setIdTugas(tugas.id);
                     setNama(tugas.nama || "");
                     setStartDate(tugas.start_date?.split("T")[0] || "");
@@ -52,10 +68,22 @@ const EditTugas = () => {
                         tugas.details?.map((d) => ({
                             id_user: d.id_user,
                             deskripsi: d.deskripsi,
+                            telp: d.telp || "",
+                            interval_notifikasi: d.interval_notifikasi ?? 60,
                             id_detail: d.id,
                         })) || []
                     );
+
+                    if (tugas.attachment) {
+                        setExistingPhotos(
+                            tugas.attachment.map((a) => ({
+                                id: a.id,
+                                url: `${apiUrl}/uploads/img/tugas/${a.bukti_foto}`,
+                            }))
+                        );
+                    }
                 }
+
             } catch (err) {
                 toast.error("Gagal memuat data penugasan");
             } finally {
@@ -73,7 +101,6 @@ const EditTugas = () => {
 
     const handleRemoveWorker = async (index) => {
         const worker = workers[index];
-
         const confirm = await Swal.fire({
             title: "Hapus penugasan ini?",
             text: "Data yang dihapus tidak dapat dikembalikan.",
@@ -84,27 +111,21 @@ const EditTugas = () => {
             confirmButtonColor: "#EF4444",
             cancelButtonColor: "#6B7280",
         });
-
         if (!confirm.isConfirmed) return;
-
         try {
             if (worker.id_detail) {
                 const res = await fetchWithJwt(`${apiUrl}/tugas/user/${worker.id_detail}`, {
                     method: "DELETE",
                 });
-
                 if (!res.ok) throw new Error(`Gagal menghapus pekerja dengan ID ${worker.id_detail}`);
             }
-
             setWorkers((prev) => prev.filter((_, i) => i !== index));
-
             toast.success("Penugasan pekerja berhasil dihapus");
         } catch (error) {
             console.error("Error menghapus pekerja:", error);
             toast.error("Gagal menghapus penugasan pekerja");
         }
     };
-
 
     const handleWorkerChange = (index, field, value) => {
         const updated = [...workers];
@@ -137,33 +158,53 @@ const EditTugas = () => {
             cancelButtonText: "Batal",
             iconColor: "#22C55E",
         });
-
         if (!confirm.isConfirmed) return;
 
         setSaving(true);
 
         try {
-            const payload = {
-                nama,
-                start_date: startDate,
-                category,
-                deadline_at: deadline,
-                worker_list: workers.map((w) => {
-                    const workerPayload = {
-                        id_user: w.id_user,
-                        deskripsi: w.deskripsi,
-                        telp: w.telp,
-                        id_tugas: idTugas,
-                    };
-                    if (w.id_detail) workerPayload.id = w.id_detail;
-                    return workerPayload;
-                }),
-            };
+            const formData = new FormData();
 
+            // =========================
+            // DATA UTAMA
+            // =========================
+            formData.append("nama", nama);
+            formData.append("start_date", startDate);
+            formData.append("category", category);
+            formData.append("deadline_at", deadline);
+
+            // =========================
+            // WORKER LIST (JSON STRING)
+            // =========================
+            workers.forEach((w, index) => {
+                if (w.id_detail) {
+                    formData.append(`worker_list[${index}][id]`, w.id_detail);
+                }
+
+                formData.append(`worker_list[${index}][id_user]`, w.id_user);
+                formData.append(`worker_list[${index}][id_tugas]`, idTugas);
+                formData.append(`worker_list[${index}][deskripsi]`, w.deskripsi);
+                formData.append(`worker_list[${index}][interval_notifikasi]`, w.interval_notifikasi);
+
+                // OPTIONAL – sesuaikan dengan backend
+                // formData.append(`worker_list[${index}][is_paused]`, w.is_paused ?? 0);
+                formData.append(`worker_list[${index}][status]`, w.status ?? 0);
+            });
+
+
+            // =========================
+            // FOTO (MULTIPLE FIELD SAMA)
+            // =========================
+            newPhotos.forEach((file) => {
+                formData.append("foto", file);
+            });
+
+            // =========================
+            // REQUEST
+            // =========================
             const res = await fetchWithJwt(`${apiUrl}/tugas/${id}`, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
+                body: formData,
             });
 
             if (!res.ok) throw new Error("Gagal memperbarui tugas");
@@ -174,12 +215,56 @@ const EditTugas = () => {
                 icon: "success",
                 confirmButtonText: "OK",
             }).then(() => navigate("/penugasan"));
+
         } catch (err) {
-            Swal.fire("Gagal", err.message || "Terjadi kesalahan saat menyimpan.", "error");
+            Swal.fire(
+                "Gagal",
+                err.message || "Terjadi kesalahan saat menyimpan.",
+                "error"
+            );
         } finally {
             setSaving(false);
         }
     };
+
+    const base64ToFile = (base64, filename) => {
+        const arr = base64.split(",");
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+
+        return new File([u8arr], filename, { type: mime });
+    };
+
+
+    const handleCapture = () => {
+        if (!webcamRef.current) {
+            toast.error("Kamera belum siap");
+            return;
+        }
+
+        if (isPhotoLimitReached()) return;
+
+        const imageSrc = webcamRef.current.getScreenshot();
+        if (!imageSrc) {
+            toast.error("Gagal mengambil foto");
+            return;
+        }
+
+        const file = base64ToFile(
+            imageSrc,
+            `foto_${Date.now()}.jpg`
+        );
+
+        setNewPhotos(prev => [...prev, file]);
+        setShowCamera(false);
+    };
+
 
 
 
@@ -199,6 +284,124 @@ const EditTugas = () => {
                         Maksimal 150 karakter ({nama.length}/150)
                     </p>
                 </div>
+
+                {/* ===== DOKUMENTASI FOTO (OPSIONAL) ===== */}
+                <div className="mt-4 space-y-3">
+
+                    {/* HEADER */}
+                    <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-start sm:items-center">
+                        <div>
+                            <label className="block font-medium text-gray-700">
+                                Dokumentasi Foto
+                                <span className="text-gray-400 text-sm font-normal"> (Opsional)</span>
+                            </label>
+                            <p className="text-sm text-gray-500 max-w-md">
+                                Foto lama tetap tersimpan. Anda dapat menambah atau menghapus foto.
+                            </p>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+
+                            {/* INPUT FILE */}
+                            <input type="file" id="photoUpload" hidden accept="image/jpeg,image/png" multiple
+                                onChange={(e) => {
+                                    const files = Array.from(e.target.files || []);
+                                    const allowed = ["image/jpeg", "image/png"];
+                                    const validFiles = files.filter(f => allowed.includes(f.type));
+
+                                    if (isPhotoLimitReached()) {
+                                        e.target.value = "";
+                                        return;
+                                    }
+
+                                    const remainingSlot = MAX_PHOTO - totalPhotoCount;
+
+                                    validFiles.slice(0, remainingSlot).forEach(file => {
+                                        const reader = new FileReader();
+                                        reader.onloadend = () => {
+                                            setNewPhotos(prev => [...prev, reader.result]);
+                                        };
+                                        reader.readAsDataURL(file);
+                                    });
+
+                                    if (validFiles.length > remainingSlot) {
+                                        toast.error(
+                                            "Sebagian foto tidak ditambahkan karena batas maksimal 3 foto."
+                                        );
+                                    }
+
+                                    e.target.value = "";
+                                }}
+
+                            />
+
+                            <div onClick={() => { if (isPhotoLimitReached()) return; document.getElementById("photoUpload").click(); }} className="cursor-pointer rounded-xl border-2 border-dashed px-5 py-4 transition-all flex items-center gap-3 sm:min-w-[220px] bg-green-50 border-gray-300 hover:border-green-500">
+                                <div className="w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center">
+                                    <FontAwesomeIcon icon={faUpload} />
+                                </div>
+                                <div>
+                                    <p className="font-medium text-gray-700 text-sm">Upload Foto</p>
+                                    <p className="text-xs text-gray-500">JPG / PNG</p>
+                                </div>
+                            </div>
+
+                            {/* KAMERA */}
+                            <div onClick={() => { if (isPhotoLimitReached()) return; setShowCamera(true); }}
+                                className="cursor-pointer rounded-xl border-2 border-dashed px-5 py-4 transition-all flex items-center gap-3 sm:min-w-[220px] bg-blue-50 border-blue-300 hover:bg-blue-100 hover:border-blue-500">
+                                <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center">
+                                    <FontAwesomeIcon icon={faCamera} />
+                                </div>
+                                <div>
+                                    <p className="font-medium text-gray-700 text-sm">Ambil Foto</p>
+                                    <p className="text-xs text-gray-500">Kamera</p>
+                                </div>
+                            </div>
+
+                            <span className="text-xs text-gray-500 whitespace-nowrap">
+                                {existingPhotos.length + newPhotos.length}/{MAX_PHOTO}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* PREVIEW FOTO */}
+                    {(existingPhotos.length > 0 || newPhotos.length > 0) && (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            {[...existingPhotos, ...newPhotos].map((photo, index) => {
+                                const isExisting = index < existingPhotos.length;
+                                const imageSrc = isExisting ? photo.url : URL.createObjectURL(photo);
+
+                                const handleRemove = () => {
+                                    if (isExisting) {
+                                        setExistingPhotos(prev =>
+                                            prev.filter(p => p.id !== photo.id)
+                                        );
+                                    } else {
+                                        const newIndex = index - existingPhotos.length;
+                                        setNewPhotos(prev =>
+                                            prev.filter((_, i) => i !== newIndex)
+                                        );
+                                    }
+                                };
+
+                                return (
+                                    <div key={isExisting ? `old-${photo.id}` : `new-${index}`} className="group relative overflow-hidden rounded-xl border border-gray-200 bg-gray-100 shadow-sm hover:shadow-lg transition">
+                                        <div className="aspect-[4/3] w-full">
+                                            <img src={imageSrc} alt={`Dokumentasi ${index + 1}`} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                                        </div>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition" />
+                                        <button type="button" onClick={handleRemove} className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur text-red-600 flex items-center justify-center shadow transition hover:bg-red-600 hover:text-white" title="Hapus foto">
+                                            <FontAwesomeIcon icon={faTimes} />
+                                        </button>
+                                        <span className="absolute bottom-2 left-2 text-xs font-medium bg-black/60 text-white px-2 py-0.5 rounded-md">
+                                            Foto {index + 1}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+
 
                 <div>
                     <label className="block mb-1 font-medium text-gray-700">Kategori</label>
@@ -220,10 +423,8 @@ const EditTugas = () => {
                 </div>
 
                 <div className="pt-5">
-                    {/* HEADER */}
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
 
-                        {/* Title & Description */}
                         <div className="space-y-1">
                             <h2 className="text-xl font-semibold text-gray-900">
                                 Daftar Penugasan Pekerja
@@ -234,7 +435,6 @@ const EditTugas = () => {
                             </p>
                         </div>
 
-                        {/* Button */}
                         <button type="button" onClick={handleAddWorker} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm flex items-center justify-center gap-2 shadow transition-all hover:scale-105 w-full md:w-auto">
                             <FontAwesomeIcon icon={faPlus} />
                             Tambah Pekerja
@@ -243,22 +443,32 @@ const EditTugas = () => {
 
 
                     {/* LIST CONTAINER */}
-                    <div className="max-h-[70vh] overflow-y-auto pr-1 space-y-4 scrollbar-green">
+                    <div className="max-h-[100vh] overflow-y-auto space-y-2 pb-24 pr-1 scrollbar-green">
 
                         {workers.length === 0 && (
-                            <p className="text-gray-500 text-sm italic">Belum ada pekerja ditambahkan.</p>
+                            <p className="text-gray-500 text-sm italic">
+                                Belum ada pekerja ditambahkan.
+                            </p>
                         )}
 
                         {workers.map((worker, index) => (
-                            <div key={index} className="border border-green-500/50 bg-white rounded-xl shadow-sm hover:shadow-md transition-all p-4">
-                                {/* CARD HEADER */}
-                                <div className="flex justify-between items-center pb-3 border-b border-green-200">
-                                    <h3 className="text-sm font-semibold text-green-700">
-                                        Penugasan {index + 1}
-                                    </h3>
+                            <div key={index} className="relative bg-white rounded-xl border border-gray-200 p-3 transition hover:shadow-md">
+                                {/* ACCENT STRIP */}
+                                <div className="absolute left-0 top-0 h-full w-1 bg-green-500 rounded-l-xl" />
 
+                                {/* HEADER */}
+                                <div className="flex items-start justify-between mb-3 pl-2 gap-3">
                                     <div className="flex items-center gap-2">
-                                        {/* Salin */}
+                                        <span className="px-2 py-0.5 text-sm font-semibold rounded bg-green-100 text-green-700">
+                                            #{index + 1}
+                                        </span>
+                                        <span className="text-sm font-semibold text-gray-800">
+                                            Penugasan Karyawan
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        {/* SALIN */}
                                         <button
                                             type="button"
                                             onClick={() => {
@@ -270,87 +480,136 @@ const EditTugas = () => {
                                                 });
                                                 toast.success("Penugasan berhasil disalin");
                                             }}
-                                            className="px-3 py-1 rounded-md bg-blue-500 hover:bg-blue-600 text-[11px] text-white flex items-center gap-1 shadow-sm transition"
+                                            className="flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 transition"
                                         >
-                                            <FontAwesomeIcon icon={faCopy} className="w-3 h-3" />
-                                            Salin
+                                            <FontAwesomeIcon icon={faCopy} className="text-sm" />
+                                            <span className="hidden sm:inline">Salin</span>
                                         </button>
 
-                                        {/* Hapus */}
+                                        {/* HAPUS */}
                                         {workers.length > 1 && (
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveWorker(index)}
-                                                className="px-3 py-1 rounded-md bg-red-500 hover:bg-red-600 text-[11px] text-white flex items-center gap-1 shadow-sm transition"
-                                            >
-                                                <FontAwesomeIcon icon={faTrash} className="w-3 h-3" />
-                                                Hapus
+                                            <button type="button" onClick={() => handleRemoveWorker(index)} className="flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium text-red-700 bg-red-100 hover:bg-red-200 transition">
+                                                <FontAwesomeIcon icon={faTrash} className="text-sm" />
+                                                <span className="hidden sm:inline">Hapus</span>
                                             </button>
                                         )}
                                     </div>
                                 </div>
 
-                                {/* CARD CONTENT */}
-                                <div className="mt-3 space-y-4 text-sm">
+                                {/* BODY */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-2 text-sm">
 
                                     {/* KARYAWAN */}
-                                    <div className="grid grid-cols-3 sm:grid-cols-4 items-center gap-3">
-                                        <label className="font-medium text-gray-700">Karyawan</label>
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Karyawan yang Ditugaskan
+                                        </label>
 
-                                        <div className="col-span-2 sm:col-span-3">
-                                            <Select
-                                                value={profilList
+                                        <Select
+                                            value={
+                                                profilList
                                                     .map((u) => ({
                                                         value: u.id_user,
                                                         label: u.nama_user,
                                                         telp: u.telp,
                                                     }))
-                                                    .find((opt) => opt.value === worker.id_user) || null}
-                                                onChange={(opt) => {   
-                                                    handleWorkerChange(index, "id_user", opt ? opt.value : "");
-                                                    handleWorkerChange(index, "telp", opt ? opt.telp : "");
+                                                    .find((opt) => opt.value === worker.id_user) || null
+                                            }
+                                            onChange={(opt) => {
+                                                handleWorkerChange(index, "id_user", opt?.value || "");
+                                                handleWorkerChange(index, "telp", opt?.telp || "");
+                                            }}
+                                            options={profilList.map((u) => ({
+                                                value: u.id_user,
+                                                label: u.nama_user,
+                                                telp: u.telp,
+                                            }))}
+                                            placeholder="Pilih karyawan"
+                                            classNamePrefix="react-select"
+                                            menuPortalTarget={document.body}
+                                            styles={{
+                                                control: (base) => ({
+                                                    ...base,
+                                                    minHeight: "42px",
+                                                    borderRadius: "0.6rem",
+                                                    borderColor: "#d1d5db",
+                                                    fontSize: "14px",
+                                                    boxShadow: "none",
+                                                    "&:hover": { borderColor: "#22c55e" },
+                                                }),
+                                            }}
+                                        />
+                                    </div>
+
+                                    {/* PENGINGAT */}
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-700 mb-2">
+                                            Pengingat Tugas (Menit)
+                                        </label>
+
+                                        <div className="flex flex-wrap items-center gap-1.5">
+                                            {[15, 30, 60, 120].map((val) => (
+                                                <button
+                                                    key={val}
+                                                    type="button"
+                                                    onClick={() =>
+                                                        handleWorkerChange(index, "interval_notifikasi", val)
+                                                    }
+                                                    className={`px-2.5 py-1 rounded-full text-xs border
+                        ${worker.interval_notifikasi === val
+                                                            ? "bg-green-600 text-white border-green-600"
+                                                            : "bg-gray-50 text-gray-600 border-gray-300 hover:border-green-500"
+                                                        }`}
+                                                >
+                                                    {val}m
+                                                </button>
+                                            ))}
+
+                                            <input
+                                                type="number"
+                                                min={1}
+                                                max={1440}
+                                                value={worker.interval_notifikasi}
+                                                onChange={(e) =>
+                                                    handleWorkerChange(
+                                                        index,
+                                                        "interval_notifikasi",
+                                                        Number(e.target.value || 60)
+                                                    )
                                                 }
-                                                }
-                                                options={profilList.map((u) => ({
-                                                    value: u.id_user,
-                                                    label: u.nama_user,
-                                                    telp: u.telp,
-                                                }))}
-                                                placeholder="Pilih karyawan yang akan ditugaskan..."
-                                                classNamePrefix="react-select"
-                                                menuPortalTarget={document.body}
-                                                styles={{
-                                                    control: (base) => ({
-                                                        ...base,
-                                                        borderColor: "#86efac",
-                                                        minHeight: "36px",
-                                                        fontSize: "0.88rem",
-                                                        borderRadius: "0.5rem",
-                                                        boxShadow: "none",
-                                                        "&:hover": { borderColor: "#16a34a" },
-                                                    }),
-                                                }}
+                                                className="w-16 px-2 py-1 text-xs border border-gray-300 rounded-md
+                    focus:ring-1 focus:ring-green-500"
                                             />
-
                                         </div>
+
+                                        <span className="text-xs text-gray-600 mt-1 block">
+                                            Sistem akan mengirim pengingat secara berkala.
+                                        </span>
                                     </div>
 
-                                    {/* DESKRIPSI */}
-                                    <div className="grid grid-cols-3 sm:grid-cols-4 items-start gap-3">
-                                        <label className="font-medium text-gray-700">Deskripsi Pekerjaan</label>
+                                    {/* DESKRIPSI — SEKARANG SEJAJAR */}
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                                            Deskripsi Pekerjaan
+                                        </label>
 
-                                        <div className="col-span-2 sm:col-span-3">
-                                            <textarea value={worker.deskripsi} onChange={(e) => handleWorkerChange(index, "deskripsi", e.target.value)} placeholder="Tuliskan deskripsi..." rows="3" className="w-full border border-green-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none resize-none"/>
-                                        </div>
+                                        <textarea
+                                            rows={2}
+                                            placeholder="Contoh: Periksa stok gudang dan laporkan hasilnya."
+                                            value={worker.deskripsi}
+                                            onChange={(e) =>
+                                                handleWorkerChange(index, "deskripsi", e.target.value)
+                                            }
+                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 resize-none"
+                                            required
+                                        />
                                     </div>
-
                                 </div>
+
                             </div>
                         ))}
-
                     </div>
                 </div>
-
 
 
                 <div className="flex justify-between space-x-4 pt-6">
@@ -371,9 +630,37 @@ const EditTugas = () => {
                             </>
                         )}
                     </button>
-
                 </div>
             </form>
+
+            <Modal isOpen={showCamera} onClose={() => setShowCamera(false)} title="Ambil Foto Dokumentasi" note="Pastikan objek terlihat jelas sebelum mengambil foto." size="xl"
+                footer={
+                    <div className="flex gap-2">
+                        <button type="button" onClick={() => setShowCamera(false)} className="px-4 py-2 rounded-lg bg-gray-500 hover:bg-gray-600 text-white">
+                            Batal
+                        </button>
+
+                        <button type="button" onClick={() =>
+                            setFacingMode(prev =>
+                                prev === "environment" ? "user" : "environment"
+                            )
+                        }
+                            className="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white"
+                        >
+                            Ganti Kamera
+                        </button>
+
+                        <button type="button" onClick={handleCapture} className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white">
+                            Ambil Foto
+                        </button>
+                    </div>
+                }
+            >
+                <div className="overflow-hidden rounded-lg border">
+                    <Webcam key={facingMode} ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode }} className="w-full" />
+                </div>
+            </Modal>
+
         </div>
     );
 };
