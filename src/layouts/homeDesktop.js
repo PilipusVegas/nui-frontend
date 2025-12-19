@@ -4,10 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarAlt, faSun, faCloudSun, faCloud, faCloudRain, faCloudShowersHeavy, faBolt, faSmog, } from "@fortawesome/free-solid-svg-icons";
 import { getUserFromToken } from "../utils/jwtHelper";
 import DashboardCard from "../components/desktop/DashboardCard";
-// import { cardConfig } from "../data/menuConfig";
-import { routeConfig } from "../config/route.config";
-import { hasAccess } from "../access/access.helper";
-
+import { cardConfig } from "../data/menuConfig";
 import { formatFullDate } from "../utils/dateUtils";
 
 const HomeDesktop = () => {
@@ -71,19 +68,15 @@ const HomeDesktop = () => {
     return map[code] || { desc: "Berawan", icon: faCloud, accent: "text-gray-400" };
   };
 
-  // Filter menu berdasarkan role & perusahaan
-  // const filteredCards =
-  //   roleId && perusahaanId
-  //     ? cardConfig.filter(
-  //         (card) =>
-  //           card.roles.includes(roleId) &&
-  //           (!card.perusahaan || card.perusahaan.includes(perusahaanId))
-  //       )
-  //     : [];
 
-  const cards = routeConfig.filter(
-    r => r.meta?.label && hasAccess(r.meta, user)
-  );
+  const filteredCards =
+    roleId && perusahaanId
+      ? cardConfig.filter(
+        (card) =>
+          card.roles?.includes(roleId) &&
+          (!card.perusahaan || card.perusahaan.includes(perusahaanId))
+      )
+      : [];
 
 
   return (
@@ -123,25 +116,19 @@ const HomeDesktop = () => {
               Menu Utama
             </h3>
             <span className="text-xs sm:text-sm text-gray-400">
-              {cards.length} menu
+              {filteredCards.length} menu
             </span>
           </div>
 
-          {cards.length === 0 ? (
+          {filteredCards.length === 0 ? (
             <p className="text-center text-gray-400 text-sm py-8">
               Tidak ada data yang ditampilkan untuk role ini.
             </p>
           ) : (
             <div className={`grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 transition-all duration-300`}>
-              {cards.map((route) => (
-                <DashboardCard
-                  key={route.path}
-                  title={route.meta.label}
-                  icon={route.meta.icon}
-                  onClick={() => navigate(route.path)}
-                />
+              {filteredCards.map((card) => (
+                <DashboardCard key={card.link} title={card.title} icon={card.icon} onClick={() => navigate(card.link)}/>
               ))}
-
             </div>
           )}
         </div>

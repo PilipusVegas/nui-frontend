@@ -1,11 +1,12 @@
 // components/DetailKadiv.jsx
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUserTie, faBuilding, faUsers, faUserShield, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faUserTie, faBuilding, faUsers, faUserShield, faTrash, faPlus, faUserPlus, faUser, faUserMinus, faUserGroup, faUserGear, faRightLeft } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { LoadingSpinner, ErrorState, EmptyState } from "../../components";
 import { toast } from "react-hot-toast";
 import Swal from "sweetalert2";
+import MutasiMember from "./MutasiMember";
 
 
 const DetailKadiv = ({ data }) => {
@@ -24,6 +25,16 @@ const DetailKadiv = ({ data }) => {
     const [newGroupName, setNewGroupName] = useState("");
     const [submittingGroup, setSubmittingGroup] = useState(false);
     const [searchMember, setSearchMember] = useState("");
+    const [showMutasi, setShowMutasi] = useState(false);
+    const [memberToMutate, setMemberToMutate] = useState(null);
+
+    const [kadivList, setKadivList] = useState([]);
+    const [teamList, setTeamList] = useState([]);
+
+    const [targetKadiv, setTargetKadiv] = useState("");
+    const [targetTeam, setTargetTeam] = useState("");
+    const [targetLevel, setTargetLevel] = useState(2);
+
 
     /* INIT TEAMS */
     useEffect(() => {
@@ -31,7 +42,6 @@ const DetailKadiv = ({ data }) => {
             setTims(data.teams);
         }
     }, [data]);
-
 
     const loadUserList = async () => {
         try {
@@ -157,7 +167,6 @@ const DetailKadiv = ({ data }) => {
     };
 
 
-    /* LOAD GROUP DETAIL */
     const loadGroupDetail = async (id_group) => {
         try {
             setLoadingGroup(true);
@@ -280,10 +289,13 @@ const DetailKadiv = ({ data }) => {
         u.perusahaan?.toLowerCase().includes(searchMember.toLowerCase())
     );
 
+    const selectedTeam = teamList.find(t => t.id_group === Number(targetTeam));
+    const hasLeader = selectedTeam?.team_lead?.length > 0;
+
+
     return (
         <div className="space-y-6">
 
-            {/* INFORMASI KADIV */}
             <div className="bg-white border rounded-xl p-4 py-3 shadow-sm">
                 <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
                     <FontAwesomeIcon icon={faUserTie} className="text-green-600" />
@@ -313,7 +325,6 @@ const DetailKadiv = ({ data }) => {
                 </div>
             </div>
 
-            {/* DAFTAR TEAM */}
             <div className="bg-white border rounded-xl p-5 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold flex items-center gap-2">
@@ -322,7 +333,7 @@ const DetailKadiv = ({ data }) => {
                     </h3>
 
                     <button onClick={() => setShowAddGroup(true)} className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition" aria-label="Tambah Tim">
-                        <FontAwesomeIcon icon={faPlus} />
+                        <FontAwesomeIcon icon={faUserPlus} />
                         <span className="hidden sm:inline text-sm">
                             Tim
                         </span>
@@ -361,25 +372,15 @@ const DetailKadiv = ({ data }) => {
                                 : null;
 
                             return (
-                                <button
-                                    key={team.id_group}
-                                    onClick={() => loadGroupDetail(team.id_group)}
-                                    className={`
-                        text-left rounded-xl border
-                        p-3 sm:p-4
-                        transition-all duration-200
-                        hover:shadow-md
-                        ${selectedGroupId === team.id_group
-                                            ? "border-green-600 bg-green-50"
-                                            : "border-gray-200 bg-white"}
-                    `}
+                                <button key={team.id_group} onClick={() => loadGroupDetail(team.id_group)}
+                                    className={` text-left rounded-xl border p-3 sm:p-4 transition-all duration-200 hover:shadow-md
+                                    ${selectedGroupId === team.id_group ? "border-green-600 bg-green-50" : "border-gray-200 bg-white"}
+                                    `}
                                 >
-                                    {/* TEAM NAME */}
                                     <p className="text-sm sm:text-base font-semibold text-gray-900 truncate">
                                         {team.nama_grup}
                                     </p>
 
-                                    {/* LEADER */}
                                     {leaders ? (
                                         <p className="mt-1 text-xs sm:text-sm text-gray-600 line-clamp-2">
                                             <span className="font-medium text-gray-700">
@@ -399,9 +400,6 @@ const DetailKadiv = ({ data }) => {
                 )}
             </div>
 
-            {/* ===============================
-                DETAIL GROUP
-            =============================== */}
             {selectedGroupId && (
                 <div className="bg-white border rounded-xl px-4 py-3 sm:p-5 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
@@ -412,14 +410,14 @@ const DetailKadiv = ({ data }) => {
 
                         <div className="flex gap-2">
                             <button onClick={() => { setShowAddMember(true); loadUserList(); }} title="Tambah Anggota" className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">
-                                <FontAwesomeIcon icon={faPlus} />
+                                <FontAwesomeIcon icon={faUserPlus} />
                                 <span className="hidden sm:inline ml-2 text-sm">
                                     Anggota
                                 </span>
                             </button>
 
                             <button onClick={handleDeleteGroup} title="Hapus Tim" className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition">
-                                <FontAwesomeIcon icon={faTrash} />
+                                <FontAwesomeIcon icon={faUserGroup} />
                                 <span className="hidden sm:inline ml-2 text-sm">
                                     Hapus Tim
                                 </span>
@@ -449,11 +447,9 @@ const DetailKadiv = ({ data }) => {
                                     </p>
 
                                     <div className="relative overflow-hidden rounded-2xl border border-blue-300 bg-gradient-to-br from-blue-50 to-white p-4 shadow-sm">
-                                        {/* ACCENT BAR */}
                                         <div className="absolute inset-y-0 left-0 w-1 bg-blue-600" />
 
                                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                            {/* INFO */}
                                             <div className="pl-3 min-w-0">
                                                 <div className="flex items-center gap-2">
                                                     <FontAwesomeIcon icon={faUserShield} className="text-blue-600" />
@@ -471,8 +467,7 @@ const DetailKadiv = ({ data }) => {
                                             {/* ACTION */}
                                             <div className="flex items-center gap-2 self-end sm:self-auto">
                                                 {/* LEVEL */}
-                                                <select
-                                                    value={groupDetail.team_lead.level}
+                                                <select value={groupDetail.team_lead.level}
                                                     onChange={e =>
                                                         handleUpdateLevel(
                                                             groupDetail.team_lead,
@@ -509,13 +504,7 @@ const DetailKadiv = ({ data }) => {
                                     </div>
 
                                     {/* SEARCH */}
-                                    <input
-                                        type="text"
-                                        value={searchMember}
-                                        onChange={e => setSearchMember(e.target.value)}
-                                        placeholder="Cari nama / NIP / perusahaan..."
-                                        className="w-full mb-3 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                                    />
+                                    <input type="text" value={searchMember} onChange={e => setSearchMember(e.target.value)} placeholder="Cari nama / NIP / perusahaan..." className="w-full mb-3 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" />
 
                                     {/* LIST */}
                                     <div className="max-h-72 overflow-y-auto border rounded-lg bg-white divide-y">
@@ -526,22 +515,15 @@ const DetailKadiv = ({ data }) => {
                                         )}
 
                                         {filteredUserList.map(u => (
-                                            <label
-                                                key={u.id}
-                                                className="flex items-center gap-4 px-4 py-3 rounded-lg cursor-pointer
-                   transition hover:bg-gray-50"
-                                            >
+                                            <label key={u.id} className="flex items-center gap-4 px-4 py-3 rounded-lg cursor-pointer transition hover:bg-gray-50">
                                                 {/* CHECKBOX */}
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectedMembers.includes(u.id)}
-                                                    onChange={() => {
-                                                        setSelectedMembers(prev =>
-                                                            prev.includes(u.id)
-                                                                ? prev.filter(id => id !== u.id)
-                                                                : [...prev, u.id]
-                                                        );
-                                                    }}
+                                                <input type="checkbox" checked={selectedMembers.includes(u.id)} onChange={() => {
+                                                    setSelectedMembers(prev =>
+                                                        prev.includes(u.id)
+                                                            ? prev.filter(id => id !== u.id)
+                                                            : [...prev, u.id]
+                                                    );
+                                                }}
                                                     className="accent-green-600"
                                                 />
 
@@ -586,11 +568,7 @@ const DetailKadiv = ({ data }) => {
                                             Batal
                                         </button>
 
-                                        <button
-                                            onClick={handleSubmitBatch}
-                                            disabled={selectedMembers.length === 0 || submitting}
-                                            className="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-                                        >
+                                        <button onClick={handleSubmitBatch} disabled={selectedMembers.length === 0 || submitting} className="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50">
                                             Tambahkan ({selectedMembers.length})
                                         </button>
                                     </div>
@@ -636,6 +614,9 @@ const DetailKadiv = ({ data }) => {
                                                         <option value={1}>Tim Leader</option>
                                                         <option value={2}>Anggota</option>
                                                     </select>
+                                                    <button onClick={() => { setMemberToMutate(m); setShowMutasi(true); }} className="w-8 h-8 flex items-center justify-center bg-yellow-600 text-white rounded-md hover:bg-yellow-700" title="Mutasi Anggota">
+                                                        <FontAwesomeIcon icon={faRightLeft} size="sm" />
+                                                    </button>
 
                                                     <button onClick={() => handleDeleteMember(m.id, m.nama)} title="Hapus Anggota" className="w-8 h-8 flex items-center justify-center bg-red-600 text-white rounded-md hover:bg-red-700 transition">
                                                         <FontAwesomeIcon icon={faTrash} size="sm" />
@@ -650,6 +631,16 @@ const DetailKadiv = ({ data }) => {
                     )}
                 </div>
             )}
+
+            {showMutasi && memberToMutate && (
+                <MutasiMember open={showMutasi} onClose={() => setShowMutasi(false)} member={memberToMutate} apiUrl={apiUrl}
+                    onSuccess={() => {
+                        setShowMutasi(false);
+                        loadGroupDetail(groupDetail.id);
+                    }}
+                />
+            )}
+
         </div>
     );
 };

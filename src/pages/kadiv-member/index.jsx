@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faEdit, faPlus, faUserGear } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faPlus, faUserGear } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { SectionHeader, LoadingSpinner, ErrorState, EmptyState, SearchBar, Modal } from "../../components";
 import DetailKadiv from "./show";
 import FormAccessKadiv from "./formAccessKadiv";
-import AddMemberModal from "./addMember";
 
 const KadivMember = () => {
     const [kadivList, setKadivList] = useState([]);
@@ -21,8 +20,6 @@ const KadivMember = () => {
     const [formModalOpen, setFormModalOpen] = useState(false);
     const [editKadiv, setEditKadiv] = useState(null);
     const [addMemberModalOpen, setAddMemberModalOpen] = useState(false);
-    const [currentKadivId, setCurrentKadivId] = useState(null);
-    const [currentKadivName, setCurrentKadivName] = useState("");
 
     const toggleDetail = async (id) => {
         try {
@@ -206,7 +203,6 @@ const KadivMember = () => {
                 <DetailKadiv data={selectedKadiv} />
             </Modal>
             <FormAccessKadiv isOpen={formModalOpen} onClose={() => setFormModalOpen(false)} onSuccess={fetchKadivAccess} editData={editKadiv} />
-            <AddMemberModal isOpen={addMemberModalOpen} onClose={() => setAddMemberModalOpen(false)} idKadiv={currentKadivId} kadivName={currentKadivName} onSuccess={fetchKadivAccess} />
         </div>
     );
 };
