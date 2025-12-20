@@ -119,9 +119,38 @@ const TambahKaryawan = () => {
       });
       const result = await res.json();
       if (result.success) {
-        Swal.fire("Sukses", result.message, "success");
-        navigate("/karyawan");
-      } else {
+        const newId =
+          result.data?.id_user || result.id_user;
+
+        Swal.fire({
+          title: "Data Berhasil Disimpan",
+          html: `
+      <div style="text-align:left; font-size:14px; line-height:1.6;">
+        <p>
+          Data karyawan berhasil ditambahkan ke sistem.
+        </p>
+        <p style="margin-top:8px;">
+          Selanjutnya, Anda dapat melengkapi data karyawan
+          dengan mengatur <strong>hak tunjangan</strong>
+          melalui halaman detail karyawan.
+        </p>
+        <p style="margin-top:6px; color:#555;">
+          Pengaturan ini bisa dilakukan sekarang atau kapan saja.
+        </p>
+      </div>
+    `,
+          icon: "success",
+          confirmButtonText: "Lihat Detail Karyawan",
+        }).then(() => {
+          if (newId) {
+            navigate(`/karyawan/show/${newId}`);
+          } else {
+            navigate("/karyawan");
+          }
+        });
+      }
+
+      else {
         Swal.fire("Gagal", result.message, "error");
       }
     } catch (err) {

@@ -2,7 +2,12 @@ import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrash, faPlus, faInfoCircle, faSortUp, faSortDown, faSort, faCheckCircle, faExclamationCircle, faEye } from "@fortawesome/free-solid-svg-icons";
+import {
+  faEdit, faTrash, faPlus, faInfoCircle, faSortUp, faSortDown, faSort, faCheckCircle, faExclamationCircle, faEye, faGasPump,
+  faUtensils,
+  faSuitcaseRolling,
+  faHotel,
+} from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { LoadingSpinner, EmptyState, ErrorState, Pagination, SearchBar, SectionHeader, Modal } from "../../components/";
 import Select from "react-select";
@@ -178,11 +183,30 @@ const DataKaryawan = () => {
     return getIncompleteFields(user).length === 0;
   };
 
+  const tunjanganConfig = [
+    { key: "bensin", label: "Transport", icon: faGasPump },
+    { key: "makan", label: "Makan", icon: faUtensils },
+    { key: "dinas", label: "Perjalanan Dinas", icon: faSuitcaseRolling },
+    { key: "penginapan", label: "Penginapan", icon: faHotel },
+  ];
+
+const TunjanganIcons = ({ tunjangan }) => (
+  <div className="flex items-center gap-3 mt-1">
+    {tunjanganConfig.map((item) => {
+      const active = tunjangan?.[item.key] === 1;
+
+      return (
+        <FontAwesomeIcon key={item.key} title={item.label} icon={item.icon} className={`text-[12px] ${active ? "text-emerald-600" : "text-gray-300"}`}
+        />
+      );
+    })}
+  </div>
+);
 
   return (
     <div className="flex flex-col">
       <div className="flex-grow">
-        <SectionHeader title="Kelola Karyawan" subtitle="Halaman Untuk Menampilkan Data Karyawan." onBack={() => navigate("/home")} actions={
+        <SectionHeader title="Kelola Data Karyawan" subtitle="Halaman Untuk Menampilkan Data Karyawan." onBack={() => navigate("/home")} actions={
           <button onClick={() => navigate("/karyawan/tambah")} className="flex items-center justify-center px-3 py-2 sm:px-5 sm:py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg transition-all duration-200 ease-in-out active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
             <FontAwesomeIcon icon={faPlus} className="text-base sm:mr-2" />
             <span className="hidden sm:inline">Tambah Karyawan</span>
@@ -284,7 +308,7 @@ const DataKaryawan = () => {
                     <th className="px-4 py-3 font-semibold text-center cursor-pointer select-none" onClick={handleSortStatus} title={`Urutkan Status (${sortOrder === "asc" ? "Aktif dulu" : "Nonaktif dulu"})`}>
                       <div className="flex items-center justify-center gap-2">
                         <span>Status</span>
-                        <FontAwesomeIcon icon={sortOrder === "asc" ? faSortUp : sortOrder === "desc" ? faSortDown : faSort} className={`text-base transition-transform duration-200 ${sortOrder ? "text-white" : "text-white/70"}`}/>
+                        <FontAwesomeIcon icon={sortOrder === "asc" ? faSortUp : sortOrder === "desc" ? faSortDown : faSort} className={`text-base transition-transform duration-200 ${sortOrder ? "text-white" : "text-white/70"}`} />
                       </div>
                     </th>
                     <th className="px-4 py-3 font-semibold text-center rounded-tr-lg">Menu</th>
@@ -305,10 +329,12 @@ const DataKaryawan = () => {
 
                         <td className="px-4 py-2">
                           <div className="flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-2 truncate">
-                              <span className="font-semibold capitalize truncate max-w-[250px]">
+                            <div className="flex flex-col gap-0.5">
+                              <span className="font-semibold uppercase truncate max-w-[250px]">
                                 {user.nama || "N/A"}
                               </span>
+
+                              <TunjanganIcons tunjangan={user.tunjangan} />
                             </div>
 
                             {user.status === 1 && !isDataComplete(user) && (
@@ -404,7 +430,7 @@ const DataKaryawan = () => {
                       </div>
 
                       <span className={`ml-3 px-3 py-1.5 rounded-full text-[11px] font-semibold flex items-center gap-1 border ${user.status === 1 ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-gray-50 text-gray-500 border-gray-200"}`}>
-                        <i className={`fa-solid ${user.status === 1 ? "fa-circle-check" : "fa-circle-xmark"} text-[12px]`}/>
+                        <i className={`fa-solid ${user.status === 1 ? "fa-circle-check" : "fa-circle-xmark"} text-[12px]`} />
                         {user.status === 1 ? "Aktif" : "Nonaktif"}
                       </span>
                     </div>
@@ -461,11 +487,9 @@ const DataKaryawan = () => {
       <Modal isOpen={openInfo} onClose={() => setOpenInfo(false)} title="Kelengkapan Data" size="md" note={selectedUserInfo?.nama}
         footer={
           <div className="flex justify-between items-center gap-2 w-full">
-
             <button onClick={() => setOpenInfo(false)} className="px-4 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded text-sm font-medium shadow-sm transition">
               Tutup
             </button>
-
             {!isDataComplete(selectedUserInfo) && (
               <button onClick={() => { setOpenInfo(false); navigate(`/karyawan/edit/${selectedUserInfo?.id}`); }} className="flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded text-sm font-semibold shadow-md">
                 <FontAwesomeIcon icon={faEdit} className="text-white text-sm" />
@@ -513,7 +537,7 @@ const DataKaryawan = () => {
                 <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 shadow-[0_2px_6px_rgba(0,0,255,0.08)]">
                   <div className="flex items-start gap-3">
                     <div className="mt-1">
-                      <FontAwesomeIcon icon={faInfoCircle} className="text-blue-500 text-lg"/>
+                      <FontAwesomeIcon icon={faInfoCircle} className="text-blue-500 text-lg" />
                     </div>
 
                     <div>
@@ -535,8 +559,13 @@ const DataKaryawan = () => {
         )}
       </Modal>
 
+
+      
     </div>
   );
 };
+
+
+
 
 export default DataKaryawan;

@@ -1,22 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faUser,
-  faIdCard,
-  faUserTie,
-  faChildren,
-  faBuilding,
-  faPhone,
-  faClock,
-  faCarSide,
-  faEdit,
-  faCheckCircle,
-  faTimesCircle,
-  faUserEdit,
-} from "@fortawesome/free-solid-svg-icons";
+import { faUser, faIdCard, faChildren, faBuilding, faPhone, faClock, faCarSide, faCheckCircle, faTimesCircle, faUserEdit, faGasPump, faSlidersH, faUtensils, faSuitcaseRolling, faHotel} from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt } from "../../utils/jwtHelper";
-import { LoadingSpinner, EmptyState, ErrorState, SectionHeader } from "../../components";
+import { LoadingSpinner, EmptyState, ErrorState, SectionHeader, Modal } from "../../components";
+import TunjanganForm from "../tunjangan-karyawan/form";
 
 
 const DetailKaryawan = () => {
@@ -27,19 +15,22 @@ const DetailKaryawan = () => {
   const [karyawan, setKaryawan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showTunjanganModal, setShowTunjanganModal] = useState(false);
+  const [editTunjanganData, setEditTunjanganData] = useState(null);
 
-  const TunjanganBadge = ({ label, active }) => (
-    <div
-      className={`flex items-center justify-between rounded-lg border px-4 py-2 text-sm font-semibold ${active
-        ? "border-green-300 bg-green-50 text-green-700"
-        : "border-gray-200 bg-gray-50 text-gray-400"
-        }`}
-    >
-      <span>{label}</span>
-      <FontAwesomeIcon
-        icon={active ? faCheckCircle : faTimesCircle}
-        className={active ? "text-green-600" : "text-gray-400"}
-      />
+
+  const TunjanganBadge = ({ label, icon, active }) => (
+    <div className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-sm transition ${active ? "border-emerald-300 bg-emerald-50 text-emerald-700" : "border-gray-200 bg-gray-50 text-gray-400"}`}>
+      <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${active ? "bg-emerald-100" : "bg-gray-100"}`}>
+        <FontAwesomeIcon icon={icon} className={`text-base ${active ? "text-emerald-600" : "text-gray-400"}`} />
+      </div>
+
+      <div className="flex flex-col leading-tight">
+        <span className="font-semibold">{label}</span>
+        <span className="text-xs">
+          {active ? "Dapat" : "Tidak Dapat"}
+        </span>
+      </div>
     </div>
   );
 
@@ -71,10 +62,7 @@ const DetailKaryawan = () => {
       : "Tidak tersedia";
 
   const statusKaryawan = (val) => (
-    <span
-      className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${val ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-        }`}
-    >
+    <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${val ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
       <FontAwesomeIcon icon={val ? faCheckCircle : faTimesCircle} />
       {val ? "Aktif Bekerja" : "Non-Aktif"}
     </span>
@@ -89,15 +77,9 @@ const DetailKaryawan = () => {
 
   return (
     <div className="space-y-2">
-      <SectionHeader
-        title="Profil Karyawan"
-        subtitle="Informasi personal dan pekerjaan karyawan"
-        onBack={() => navigate(-1)}
+      <SectionHeader title="Profil Karyawan" subtitle="Informasi personal dan pekerjaan karyawan" onBack={() => navigate("/karyawan")}
         actions={
-          <button
-            onClick={() => navigate(`/karyawan/edit/${id}`)}
-            className="flex items-center gap-2 rounded bg-yellow-500 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-yellow-600"
-          >
+          <button onClick={() => navigate(`/karyawan/edit/${id}`)} className="flex items-center gap-2 rounded bg-yellow-500 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-yellow-600">
             <FontAwesomeIcon icon={faUserEdit} />
             Edit
           </button>
@@ -134,29 +116,38 @@ const DetailKaryawan = () => {
             </div>
 
             {/* TUNJANGAN & FASILITAS */}
-            <DataSection
-              title={
-                <div className="flex items-center justify-between">
+            <DataSection title={
+                <div className="flex items-center justify-between gap-3">
                   <span>Tunjangan & Fasilitas</span>
 
-                  <button
-                    onClick={() => navigate(`/tunjangan-karyawan/${id}`)}
-                    className="text-xs font-semibold text-green-600 hover:underline"
+                  <button type="button" onClick={() => {
+                      setEditTunjanganData({
+                        id: karyawan.id,
+                        id_user: karyawan.id,
+                        nama: karyawan.nama,
+                        nip: karyawan.nip,
+                        role: karyawan.role_name,
+                        perusahaan: karyawan.perusahaan,
+                        ...karyawan.tunjangan,
+                      });
+                      setShowTunjanganModal(true);
+                    }}
+                    className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300 transition"
                   >
+                    <FontAwesomeIcon icon={faSlidersH} className="text-xs" />
                     Kelola Tunjangan
                   </button>
-
                 </div>
               }
             >
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <TunjanganBadge label="Bensin" active={karyawan.tunjangan?.bensin === 1} />
-                <TunjanganBadge label="Uang Makan" active={karyawan.tunjangan?.makan === 1} />
-                <TunjanganBadge label="Dinas" active={karyawan.tunjangan?.dinas === 1} />
-                <TunjanganBadge label="Penginapan" active={karyawan.tunjangan?.penginapan === 1} />
-
+                <TunjanganBadge label="Transport" icon={faGasPump} active={karyawan.tunjangan?.bensin === 1} />
+                <TunjanganBadge label="Voucher Makan" icon={faUtensils} active={karyawan.tunjangan?.makan === 1} />
+                <TunjanganBadge label="Perjalanan Dinas" icon={faSuitcaseRolling} active={karyawan.tunjangan?.dinas === 1} />
+                <TunjanganBadge label="Biaya Penginapan" icon={faHotel} active={karyawan.tunjangan?.penginapan === 1} />
               </div>
+
             </DataSection>
 
 
@@ -202,7 +193,23 @@ const DetailKaryawan = () => {
             </DataSection>
           </div>
         )}
+        <Modal isOpen={showTunjanganModal} onClose={() => setShowTunjanganModal(false)} title="Kelola Tunjangan Karyawan" size="lg">
+          <TunjanganForm editData={editTunjanganData}
+            onSuccess={() => {
+              setShowTunjanganModal(false);
+
+              setLoading(true);
+              fetchWithJwt(`${apiUrl}/profil/${id}`)
+                .then((res) => res.json())
+                .then((json) => setKaryawan(json.data))
+                .finally(() => setLoading(false));
+            }}
+          />
+        </Modal>
+
       </div>
+
+
     </div>
   );
 };
@@ -235,5 +242,7 @@ const InfoBadge = ({ label, value }) => (
     <div className="text-sm font-bold text-gray-800">{value}</div>
   </div>
 );
+
+
 
 export default DetailKaryawan;

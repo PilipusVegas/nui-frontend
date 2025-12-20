@@ -238,7 +238,7 @@ export const menuConfig = [
                 ]
             },
             {
-                label: "Divisi",
+                label: "Kelola Divisi",
                 icon: faUsersCog,
                 roles: [1, 4, 6],
                 submenu: [
@@ -249,7 +249,7 @@ export const menuConfig = [
                         roles: [1, 4, 6],
                     },
                     {
-                        label: "Kepala Divisi",
+                        label: "Kelola Kepala Divisi",
                         icon: faUserGroup,
                         path: "/kadiv-member",
                         roles: [1, 4, 6],
@@ -258,7 +258,7 @@ export const menuConfig = [
                 ],
             },
             {
-                label: "Perusahaan",
+                label: "Kelola Perusahaan",
                 icon: faBuilding,
                 roles: [1, 4, 6],
                 submenu: [

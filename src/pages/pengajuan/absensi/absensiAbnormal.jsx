@@ -1,15 +1,33 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faChevronUp, faMapMarkerAlt, faBuilding, faInfo, faArrowUpRightFromSquare, faBus, faMoon, faAlignLeft, faGift, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import {
+    faChevronDown,
+    faChevronUp,
+    faMapMarkerAlt,
+    faBuilding,
+    faInfo,
+    faArrowUpRightFromSquare,
+    faBus,
+    faMoon,
+    faAlignLeft,
+    faGift,
+    faInfoCircle,
+} from "@fortawesome/free-solid-svg-icons";
 import toast from "react-hot-toast";
 import { fetchWithJwt } from "../../../utils/jwtHelper";
 import { formatFullDate, formatTime } from "../../../utils/dateUtils";
-import { SectionHeader, SearchBar, Modal, EmptyState, LoadingSpinner, ErrorState } from "../../../components";
+import {
+    SectionHeader,
+    SearchBar,
+    Modal,
+    EmptyState,
+    LoadingSpinner,
+    ErrorState,
+} from "../../../components";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import Swal from "sweetalert2";
-
 
 const AbsensiAbnormal = () => {
     const navigate = useNavigate();
@@ -21,13 +39,13 @@ const AbsensiAbnormal = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [lightboxIndex, setLightboxIndex] = useState(0);
     const [checkedStatus, setCheckedStatus] = useState({});
-    const [openDetailId, setOpenDetailId] = useState(null);
+    const [openDetailMap, setOpenDetailMap] = useState({});
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxImages, setLightboxImages] = useState([]);
     const [expandedUserId, setExpandedUserId] = useState(null);
     const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
     const findAbsenPulangKosong = (list) => {
-        return list.filter(a => !a.absen_pulang);
+        return list.filter((a) => !a.absen_pulang);
     };
 
     const sendBatchUpdate = async (approved, rejected) => {
@@ -37,9 +55,9 @@ const AbsensiAbnormal = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     id_absen_approved: approved,
-                    id_absen_rejected: rejected
+                    id_absen_rejected: rejected,
                 }),
-            }).then(r => r.json());
+            }).then((r) => r.json());
 
             if (res.success) {
                 toast.success("Berhasil melakukan update");
@@ -53,8 +71,6 @@ const AbsensiAbnormal = () => {
         }
     };
 
-
-
     const getSelectedStatus = () => {
         const approved = [];
         const rejected = [];
@@ -64,7 +80,6 @@ const AbsensiAbnormal = () => {
         });
         return { approved, rejected };
     };
-
 
     const handleApproveAll = async () => {
         const { approved, rejected } = getSelectedStatus();
@@ -124,9 +139,7 @@ const AbsensiAbnormal = () => {
                 if (result.isConfirmed) {
                     await sendBatchUpdate(approved, rejected);
                 } else if (result.dismiss === Swal.DismissReason.cancel) {
-                    const filtered = approved.filter(
-                        (id) => !absenKosong.some((a) => a.id === id)
-                    );
+                    const filtered = approved.filter((id) => !absenKosong.some((a) => a.id === id));
 
                     if (filtered.length === 0) {
                         return Swal.fire({
@@ -142,10 +155,8 @@ const AbsensiAbnormal = () => {
             });
         }
 
-        // ✔ Jika tidak ada masalah, langsung kirim
         await sendBatchUpdate(approved, rejected);
     };
-
 
     const handleOpenLightbox = (images, index) => {
         setLightboxImages(images);
@@ -189,11 +200,33 @@ const AbsensiAbnormal = () => {
         loadBatch();
     }, []);
 
+    const toggleUserCard = (user) => {
+        setExpandedUserId((prev) => {
+            if (prev === user.id_user) {
+                setOpenDetailMap((m) => ({ ...m, [user.id_user]: [] }));
+                return null;
+            }
+
+            setOpenDetailMap((m) => ({
+                ...m,
+                [user.id_user]: user.absen.map((a) => a.id),
+            }));
+
+            return user.id_user;
+        });
+    };
+
     return (
         <div className="min-h-screen flex flex-col relative">
-            <SectionHeader title="Absensi Abnormal" subtitle="Daftar absensi yang perlu diverifikasi dan disetujui untuk menjaga data kehadiran tetap akurat." onBack={() => navigate("/home")}
+            <SectionHeader
+                title="Absensi Abnormal"
+                subtitle="Daftar absensi yang perlu diverifikasi dan disetujui untuk menjaga data kehadiran tetap akurat."
+                onBack={() => navigate("/home")}
                 actions={
-                    <button onClick={() => setIsInfoModalOpen(true)} className="flex items-center justify-center px-4 sm:px-4 py-2 text-sm font-semibold rounded-md text-white bg-blue-500 hover:bg-blue-600 gap-1">
+                    <button
+                        onClick={() => setIsInfoModalOpen(true)}
+                        className="flex items-center justify-center px-4 sm:px-4 py-2 text-sm font-semibold rounded-md text-white bg-blue-500 hover:bg-blue-600 gap-1"
+                    >
                         <FontAwesomeIcon icon={faInfo} className="mr-0 sm:mr-1" />
                         <span className="hidden sm:inline">Informasi</span>
                     </button>
@@ -216,49 +249,103 @@ const AbsensiAbnormal = () => {
             )}
             {!loading && filteredData.length === 0 && (
                 <div className="min-h-[50vh] flex flex-col items-center justify-center p-6">
-                    <EmptyState title="Semua Absen Telah Disetujui" message="Tidak ditemukan pengajuan absensi." />
+                    <EmptyState
+                        title="Semua Absen Telah Disetujui"
+                        message="Tidak ditemukan pengajuan absensi."
+                    />
                 </div>
             )}
 
             <div className="space-y-4 pb-32">
                 {filteredData.map((user) => {
                     return (
-                        <div key={user.id_user} className="rounded-xl overflow-hidden shadow-lg border border-gray-200 transition hover:shadow-xl">
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full px-4 py-3 bg-gradient-to-br from-green-400 to-green-500 shadow-md hover:shadow-lg border border-white/30 backdrop-blur-md rounded-xl cursor-pointer  transition-all duration-300 space-y-3 sm:space-y-0" onClick={() => setExpandedUserId((prev) => (prev === user.id_user ? null : user.id_user))}>
-                                <div className="flex items-center justify-between w-full sm:w-auto">
-                                    <div className="flex flex-col select-none">
-                                        <p className="text-sm sm:text-lg font-semibold text-white drop-shadow">
-                                            {user.nama}
-                                        </p>
+                        <div
+                            key={user.id_user}
+                            className="rounded-xl overflow-hidden shadow-lg transition hover:shadow-xl"
+                        >
+                            <div
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleUserCard(user);
+                                }}
+                                className={`
+    relative w-full cursor-pointer
+    rounded-2xl border
+    px-5 py-4
+    bg-white
+    transition-all duration-200
+    hover:shadow-md
+    ${expandedUserId === user.id_user ? "border-emerald-300 shadow-sm" : "border-gray-200"}
+  `}
+                            >
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                    {/* LEFT — IDENTITAS */}
+                                    <div className="flex items-center gap-4">
+                                        {/* Avatar */}
+                                        <div
+                                            className={`
+          w-10 h-10 rounded-full
+          flex items-center justify-center
+          text-sm font-semibold
+          ${expandedUserId === user.id_user
+                                                    ? "bg-emerald-100 text-emerald-700"
+                                                    : "bg-gray-100 text-gray-600"
+                                                }
+        `}
+                                        >
+                                            {user.nama?.charAt(0)}
+                                        </div>
 
-                                        <p className="text-[11px] sm:text-sm text-white/90 tracking-wide">
-                                            {user.role} • NIP {user.nip}
-                                        </p>
+                                        <div className="flex flex-col">
+                                            <p className="text-sm sm:text-base font-semibold text-gray-900 leading-tight">
+                                                {user.nama}
+                                            </p>
+                                            <p className="text-xs sm:text-sm text-gray-500">
+                                                {user.role} • NIP {user.nip}
+                                            </p>
+                                        </div>
                                     </div>
 
-                                    <button className="sm:hidden ml-3 w-7 h-7 flex items-center justify-center  rounded-lg bg-white/25 hover:bg-white/35  backdrop-blur-sm transition-all active:scale-95" onClick={(e) => { e.stopPropagation(); setExpandedUserId((prev) => (prev === user.id_user ? null : user.id_user)); }}>
-                                        <FontAwesomeIcon icon={expandedUserId === user.id_user ? faChevronUp : faChevronDown} className="text-white text-sm" />
-                                    </button>
-                                </div>
+                                    {/* RIGHT — STATS + CHEVRON */}
+                                    <div className="flex items-center gap-3 sm:gap-4">
+                                        {/* Statistik */}
+                                        <div className="flex gap-2 overflow-x-auto no-scrollbar">
+                                            <span className="px-3 py-1 text-xs font-medium rounded-full bg-emerald-50 text-emerald-700">
+                                                {user.absen.filter((a) => checkedStatus[a.id] === "approve").length}{" "}
+                                                Disetujui
+                                            </span>
 
-                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
-                                    <div className="flex flex-row sm:flex-row gap-2 overflow-x-auto sm:overflow-visible w-full sm:w-auto pb-1 no-scrollbar">
-                                        <div className="px-3 py-1.5 bg-white/25 text-white text-[11px] sm:text-xs rounded-lg shadow-sm font-semibold backdrop-blur-sm whitespace-nowrap">
-                                            {user.absen.filter((a) => checkedStatus[a.id] === "approve").length} Disetujui
+                                            <span className="px-3 py-1 text-xs font-medium rounded-full bg-rose-50 text-rose-700">
+                                                {user.absen.filter((a) => checkedStatus[a.id] === "reject").length} Ditolak
+                                            </span>
+
+                                            <span className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+                                                {user.absen.filter((a) => a.status === 0).length} Total
+                                            </span>
                                         </div>
 
-                                        <div className="px-3 py-1.5 bg-white/25 text-white text-[11px] sm:text-xs rounded-lg shadow-sm font-semibold backdrop-blur-sm whitespace-nowrap">
-                                            {user.absen.filter((a) => checkedStatus[a.id] === "reject").length} Ditolak
-                                        </div>
-
-                                        <div className="px-3 py-1.5 bg-white/25 text-white text-[11px] sm:text-xs rounded-lg shadow-sm font-semibold backdrop-blur-sm whitespace-nowrap">
-                                            {user.absen.filter((a) => a.status === 0).length} Total
-                                        </div>
+                                        {/* Chevron */}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                toggleUserCard(user);
+                                            }}
+                                            className={`
+          flex items-center justify-center
+          w-8 h-8 rounded-full
+          transition-all
+          ${expandedUserId === user.id_user
+                                                    ? "bg-emerald-100 text-emerald-700"
+                                                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                                                }
+        `}
+                                        >
+                                            <FontAwesomeIcon
+                                                icon={expandedUserId === user.id_user ? faChevronUp : faChevronDown}
+                                                className="text-xs"
+                                            />
+                                        </button>
                                     </div>
-
-                                    <button className="hidden sm:flex items-center justify-center w-7 h-7 rounded-lg bg-white/25 hover:bg-white/35 cursor-pointer transition-all duration-150 active:scale-95 shadow-sm backdrop-blur-sm" onClick={(e) => { e.stopPropagation(); setExpandedUserId((prev) => (prev === user.id_user ? null : user.id_user)); }}>
-                                        <FontAwesomeIcon icon={expandedUserId === user.id_user ? faChevronUp : faChevronDown} className="text-white text-sm" />
-                                    </button>
                                 </div>
                             </div>
 
@@ -267,8 +354,21 @@ const AbsensiAbnormal = () => {
                                     {user.absen.map((a) => {
                                         return (
                                             <div key={a.id} className="p-4">
-                                                <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition p-4 sm:p-5">
-                                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 cursor-pointer" onClick={() => setOpenDetailId((prev) => (prev === a.id ? null : a.id))}>
+                                                <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition p-4 sm:p-5">
+                                                    <div
+                                                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 cursor-pointer"
+                                                        onClick={() => {
+                                                            setOpenDetailMap((prev) => {
+                                                                const current = prev[user.id_user] || [];
+                                                                return {
+                                                                    ...prev,
+                                                                    [user.id_user]: current.includes(a.id)
+                                                                        ? current.filter((id) => id !== a.id)
+                                                                        : [...current, a.id],
+                                                                };
+                                                            });
+                                                        }}
+                                                    >
                                                         <div className="flex-1">
                                                             <p className="text-sm sm:text-lg font-semibold text-gray-800 leading-tight">
                                                                 {formatFullDate(a.tanggal_absen)}
@@ -276,8 +376,14 @@ const AbsensiAbnormal = () => {
                                                         </div>
 
                                                         <div className="flex items-center gap-5 sm:gap-6">
-                                                            <label className="flex items-center gap-2 text-green-600 text-md font-semibold select-none" onClick={(e) => e.stopPropagation()}>
-                                                                <input type="checkbox" checked={checkedStatus[a.id] === "approve"} onClick={(e) => e.stopPropagation()}
+                                                            <label
+                                                                className="flex items-center gap-2 text-green-600 text-md font-semibold select-none"
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            >
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={checkedStatus[a.id] === "approve"}
+                                                                    onClick={(e) => e.stopPropagation()}
                                                                     onChange={() =>
                                                                         setCheckedStatus((prev) => ({
                                                                             ...prev,
@@ -289,24 +395,34 @@ const AbsensiAbnormal = () => {
                                                                 <span onClick={(e) => e.stopPropagation()}>Setujui</span>
                                                             </label>
 
-                                                            <label className="flex items-center gap-2 text-red-600 text-md font-semibold select-none" onClick={(e) => e.stopPropagation()}>
-                                                                <input type="checkbox" checked={checkedStatus[a.id] === "reject"} onClick={(e) => e.stopPropagation()} onChange={() =>
-                                                                    setCheckedStatus((prev) => ({
-                                                                        ...prev,
-                                                                        [a.id]: prev[a.id] === "reject" ? null : "reject",
-                                                                    }))
-                                                                }
+                                                            <label
+                                                                className="flex items-center gap-2 text-red-600 text-md font-semibold select-none"
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            >
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={checkedStatus[a.id] === "reject"}
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                    onChange={() =>
+                                                                        setCheckedStatus((prev) => ({
+                                                                            ...prev,
+                                                                            [a.id]: prev[a.id] === "reject" ? null : "reject",
+                                                                        }))
+                                                                    }
                                                                     className="w-5 h-5 accent-red-600"
                                                                 />
                                                                 <span onClick={(e) => e.stopPropagation()}>Tolak</span>
                                                             </label>
-                                                            <FontAwesomeIcon icon={faChevronDown} className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${openDetailId === a.id ? "rotate-180" : ""}`}
+                                                            <FontAwesomeIcon
+                                                                icon={faChevronDown}
+                                                                className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${openDetailMap[user.id_user]?.includes(a.id) ? "rotate-180" : ""
+                                                                    }`}
                                                             />
                                                         </div>
                                                     </div>
 
                                                     {/* DETAIL MENYATU DI DALAM CARD */}
-                                                    {openDetailId === a.id && (
+                                                    {openDetailMap[user.id_user]?.includes(a.id) && (
                                                         <div className="pt-6 mt-6 border-t border-gray-300">
                                                             <div className="space-y-5">
                                                                 <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm mt-0.5">
@@ -322,7 +438,16 @@ const AbsensiAbnormal = () => {
                                                                             </p>
                                                                             <div className="w-full h-[1px] bg-green-300 mb-2"></div>
                                                                             {a.foto_mulai ? (
-                                                                                <img src={a.foto_mulai} className="w-32 h-32 object-cover rounded-xl border border-green-400 cursor-pointer hover:scale-105 transition" onClick={() => handleOpenLightbox([a.foto_mulai, a.foto_selesai].filter(Boolean), 0)} />
+                                                                                <img
+                                                                                    src={a.foto_mulai}
+                                                                                    className="w-32 h-32 object-cover rounded-xl border border-green-400 cursor-pointer hover:scale-105 transition"
+                                                                                    onClick={() =>
+                                                                                        handleOpenLightbox(
+                                                                                            [a.foto_mulai, a.foto_selesai].filter(Boolean),
+                                                                                            0
+                                                                                        )
+                                                                                    }
+                                                                                />
                                                                             ) : (
                                                                                 <p className="text-xs text-gray-500 italic py-8 w-32 text-center">
                                                                                     Foto tidak tersedia
@@ -346,17 +471,30 @@ const AbsensiAbnormal = () => {
                                                                             </p>
 
                                                                             <p className="flex items-center gap-2">
-                                                                                <FontAwesomeIcon icon={faMapMarkerAlt} className="text-green-700" />
+                                                                                <FontAwesomeIcon
+                                                                                    icon={faMapMarkerAlt}
+                                                                                    className="text-green-700"
+                                                                                />
                                                                                 <span className="font-semibold">Lokasi Absen:</span>
 
-                                                                                <a href={`https://www.google.com/maps?q=${a.titik_mulai_pengguna}`} target="_blank" className="font-semibold underline hover:text-green-900 flex items-center gap-1">
+                                                                                <a
+                                                                                    href={`https://www.google.com/maps?q=${a.titik_mulai_pengguna}`}
+                                                                                    target="_blank"
+                                                                                    className="font-semibold underline hover:text-green-900 flex items-center gap-1"
+                                                                                >
                                                                                     Lihat Maps
-                                                                                    <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="text-green-700 text-sm" />
+                                                                                    <FontAwesomeIcon
+                                                                                        icon={faArrowUpRightFromSquare}
+                                                                                        className="text-green-700 text-sm"
+                                                                                    />
                                                                                 </a>
                                                                             </p>
 
                                                                             <p className="flex items-center gap-2">
-                                                                                <FontAwesomeIcon icon={faBuilding} className="text-gray-700" />
+                                                                                <FontAwesomeIcon
+                                                                                    icon={faBuilding}
+                                                                                    className="text-gray-700"
+                                                                                />
                                                                                 Tempat Kerja:{" "}
                                                                                 <span className="font-semibold">{a.tempat_mulai}</span>
                                                                             </p>
@@ -392,12 +530,15 @@ const AbsensiAbnormal = () => {
                                                                                     Belum absen pulang
                                                                                 </p>
                                                                             ) : (
-                                                                                <img src={a.foto_selesai} className="w-32 h-32 object-cover rounded-xl border border-rose-400 cursor-pointer hover:scale-105 transition" onClick={() =>
-                                                                                    handleOpenLightbox(
-                                                                                        [a.foto_mulai, a.foto_selesai].filter(Boolean),
-                                                                                        1
-                                                                                    )
-                                                                                }
+                                                                                <img
+                                                                                    src={a.foto_selesai}
+                                                                                    className="w-32 h-32 object-cover rounded-xl border border-rose-400 cursor-pointer hover:scale-105 transition"
+                                                                                    onClick={() =>
+                                                                                        handleOpenLightbox(
+                                                                                            [a.foto_mulai, a.foto_selesai].filter(Boolean),
+                                                                                            1
+                                                                                        )
+                                                                                    }
                                                                                 />
                                                                             )}
                                                                         </div>
@@ -417,17 +558,30 @@ const AbsensiAbnormal = () => {
                                                                                     {formatFullDate(a.absen_pulang)}
                                                                                 </p>
                                                                                 <p className="flex items-center gap-2">
-                                                                                    <FontAwesomeIcon icon={faMapMarkerAlt} className="text-red-700" />
+                                                                                    <FontAwesomeIcon
+                                                                                        icon={faMapMarkerAlt}
+                                                                                        className="text-red-700"
+                                                                                    />
                                                                                     <span className="font-semibold">Lokasi Absen:</span>
 
-                                                                                    <a href={`https://www.google.com/maps?q=${a.titik_selesai_pengguna}`} target="_blank" className="font-semibold underline hover:text-red-900 flex items-center gap-1">
+                                                                                    <a
+                                                                                        href={`https://www.google.com/maps?q=${a.titik_selesai_pengguna}`}
+                                                                                        target="_blank"
+                                                                                        className="font-semibold underline hover:text-red-900 flex items-center gap-1"
+                                                                                    >
                                                                                         Lihat Maps
-                                                                                        <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="text-red-700 text-sm" />
+                                                                                        <FontAwesomeIcon
+                                                                                            icon={faArrowUpRightFromSquare}
+                                                                                            className="text-red-700 text-sm"
+                                                                                        />
                                                                                     </a>
                                                                                 </p>
 
                                                                                 <p className="flex items-center gap-2">
-                                                                                    <FontAwesomeIcon icon={faBuilding} className="text-gray-700" />
+                                                                                    <FontAwesomeIcon
+                                                                                        icon={faBuilding}
+                                                                                        className="text-gray-700"
+                                                                                    />
                                                                                     Tempat Kerja:
                                                                                     <span className="font-semibold">
                                                                                         {a.tempat_selesai || "Belum Absen"}
@@ -483,7 +637,13 @@ const AbsensiAbnormal = () => {
                                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                                         {/* Transport */}
                                                                         <div className="flex items-start gap-3 p-4 rounded-xl border bg-white shadow-sm">
-                                                                            <FontAwesomeIcon icon={faBus} className={`${a.tunjangan?.transport ? "text-green-700" : "text-gray-400"} text-xl`} />
+                                                                            <FontAwesomeIcon
+                                                                                icon={faBus}
+                                                                                className={`${a.tunjangan?.transport
+                                                                                        ? "text-green-700"
+                                                                                        : "text-gray-400"
+                                                                                    } text-xl`}
+                                                                            />
                                                                             <div className="space-y-1">
                                                                                 <p className="text-sm font-semibold text-gray-800">
                                                                                     Tunjangan Transport
@@ -492,21 +652,28 @@ const AbsensiAbnormal = () => {
                                                                                 <p className="text-sm text-gray-600">
                                                                                     {a.tunjangan?.transport ? (
                                                                                         <span className="text-green-800 font-semibold">
-                                                                                            Diberikan — Karyawan menggunakan kendaraan pribadi dan bekerja di gerai.
+                                                                                            Diberikan — Karyawan menggunakan kendaraan pribadi dan
+                                                                                            bekerja di gerai.
                                                                                         </span>
                                                                                     ) : (
                                                                                         <span className="text-gray-500 italic">
-                                                                                            Tidak diberikan — Karyawan tidak memenuhi syarat transport.
+                                                                                            Tidak diberikan — Karyawan tidak memenuhi syarat
+                                                                                            transport.
                                                                                         </span>
                                                                                     )}
                                                                                 </p>
                                                                             </div>
                                                                         </div>
 
-
                                                                         {/* Night Shift */}
                                                                         <div className="flex items-start gap-3 p-4 rounded-xl border bg-white shadow-sm">
-                                                                            <FontAwesomeIcon icon={faMoon} className={`${a.tunjangan?.night_shift ? "text-indigo-700" : "text-gray-400"} text-xl`} />
+                                                                            <FontAwesomeIcon
+                                                                                icon={faMoon}
+                                                                                className={`${a.tunjangan?.night_shift
+                                                                                        ? "text-indigo-700"
+                                                                                        : "text-gray-400"
+                                                                                    } text-xl`}
+                                                                            />
                                                                             <div className="space-y-1">
                                                                                 <p className="text-sm font-semibold text-gray-800">
                                                                                     Tunjangan Night Shift
@@ -519,7 +686,8 @@ const AbsensiAbnormal = () => {
                                                                                         </span>
                                                                                     ) : (
                                                                                         <span className="text-gray-500 italic">
-                                                                                            Tidak diberikan — Karyawan tidak bekerja pada shift malam.
+                                                                                            Tidak diberikan — Karyawan tidak bekerja pada shift
+                                                                                            malam.
                                                                                         </span>
                                                                                     )}
                                                                                 </p>
@@ -606,8 +774,8 @@ const AbsensiAbnormal = () => {
                                 onClick={handleApproveAll}
                                 disabled={isDisabled}
                                 className={`px-6 py-3 rounded-lg font-semibold shadow-md h-fit ${isDisabled
-                                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                                    : "bg-green-600 hover:bg-green-700 text-white"
+                                        ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                                        : "bg-green-600 hover:bg-green-700 text-white"
                                     }`}
                             >
                                 Simpan
@@ -615,7 +783,6 @@ const AbsensiAbnormal = () => {
                         </div>
                     </div>
                 )}
-
 
                 {lightboxOpen && (
                     <Lightbox
