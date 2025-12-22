@@ -9,7 +9,6 @@ import { SectionHeader, Modal } from "../../components";
 import Select from "react-select";
 import Webcam from "react-webcam";
 
-
 const TambahTugas = () => {
     const navigate = useNavigate();
     const [nama, setNama] = useState("");
@@ -25,6 +24,8 @@ const TambahTugas = () => {
     const [showCamera, setShowCamera] = useState(false);
     const [facingMode, setFacingMode] = useState("environment");
     const webcamRef = useRef(null);
+    const [deskripsiTugas, setDeskripsiTugas] = useState("");
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -105,6 +106,7 @@ const TambahTugas = () => {
 
             // ===== DATA UTAMA =====
             formData.append("nama", nama);
+            formData.append("deskripsi", deskripsiTugas);
             formData.append("category", category);
             formData.append("start_date", startDate);
             formData.append("deadline_at", deadlineAt);
@@ -200,6 +202,19 @@ const TambahTugas = () => {
                     </p>
                     <input type="text" value={nama} onChange={(e) => setNama(e.target.value.slice(0, 150))} maxLength={150} required placeholder="Masukkan Nama Penugasan" className="w-full px-4 py-2 border-2 border-gray-400/50 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     <p className="text-xs text-gray-400 mt-1">Maksimal 150 karakter ({nama.length}/150)</p>
+                </div>
+
+                <div>
+                    <label className="block font-medium text-gray-700">
+                        Deskripsi Tugas
+                    </label>
+                    <p className="text-sm text-gray-500 mb-2">
+                        Jelaskan detail tugas secara umum agar mudah dipahami.
+                    </p>
+                    <textarea rows={3} value={deskripsiTugas} onChange={(e) => setDeskripsiTugas(e.target.value.slice(0, 500))} maxLength={500} placeholder="Contoh: Reminder ini digunakan untuk memastikan aktivitas operasional harian berjalan sesuai jadwal." className="w-full px-4 py-2 border-2 border-gray-400/50 rounded-lg focus:ring-2 focus:ring-green-500 outline-none resize-none"/>
+                    <p className="text-xs text-gray-400 mt-1">
+                        Maksimal 500 karakter ({deskripsiTugas.length}/500)
+                    </p>
                 </div>
 
                 {/* ===== DOKUMENTASI FOTO (OPSIONAL) ===== */}

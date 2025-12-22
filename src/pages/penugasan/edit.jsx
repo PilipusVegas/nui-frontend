@@ -7,7 +7,6 @@ import { fetchWithJwt } from "../../utils/jwtHelper";
 import Select from "react-select";
 import toast from "react-hot-toast";
 import Webcam from "react-webcam";
-
 import { SectionHeader, LoadingSpinner, ErrorState, EmptyState, Modal } from "../../components";
 
 const EditTugas = () => {
@@ -24,12 +23,13 @@ const EditTugas = () => {
     const [idTugas, setIdTugas] = useState(null);
     const [profilList, setProfilList] = useState([]);
     const [saving, setSaving] = useState(false);
-    const MAX_PHOTO = 3;
     const [existingPhotos, setExistingPhotos] = useState([]);
     const [newPhotos, setNewPhotos] = useState([]);
     const [showCamera, setShowCamera] = useState(false);
     const [facingMode, setFacingMode] = useState("environment");
     const webcamRef = useRef(null);
+    const [deskripsiTugas, setDeskripsiTugas] = useState("");
+    const MAX_PHOTO = 3;
 
     const totalPhotoCount = existingPhotos.length + newPhotos.length;
 
@@ -60,6 +60,7 @@ const EditTugas = () => {
                     const tugas = tugasData.data;
                     setIdTugas(tugas.id);
                     setNama(tugas.nama || "");
+                    setDeskripsiTugas(tugas.deskripsi || "");
                     setStartDate(tugas.start_date?.split("T")[0] || "");
                     setDeadline(tugas.deadline_at?.split("T")[0] || "");
                     setCategory(tugas.category || "daily");
@@ -273,10 +274,20 @@ const EditTugas = () => {
                     </p>
                 </div>
 
-                {/* ===== DOKUMENTASI FOTO (OPSIONAL) ===== */}
-                <div className="mt-4 space-y-3">
+                <div>
+                    <label className="block mb-1 font-medium text-gray-700">
+                        Deskripsi Tugas
+                    </label>
+                    <p className="text-sm text-gray-500 mb-2">
+                        Penjelasan umum mengenai tugas ini.
+                    </p>
+                    <textarea rows={3} value={deskripsiTugas} onChange={(e) => setDeskripsiTugas(e.target.value.slice(0, 500))} maxLength={500} placeholder="Contoh: Tugas ini bertujuan untuk memastikan proses operasional berjalan sesuai jadwal." className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none resize-none"/>
+                    <p className="text-xs text-gray-400 mt-1">
+                        Maksimal 500 karakter ({deskripsiTugas.length}/500)
+                    </p>
+                </div>
 
-                    {/* HEADER */}
+                <div className="mt-4 space-y-3">
                     <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-start sm:items-center">
                         <div>
                             <label className="block font-medium text-gray-700">
