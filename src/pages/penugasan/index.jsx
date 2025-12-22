@@ -11,7 +11,7 @@ import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/captions.css";
 
 const Penugasan = () => {
-    const itemsPerPage = 3;
+    const itemsPerPage = 5;
     const navigate = useNavigate();
     const [tugas, setTugas] = useState([]);
     const [error, setError] = useState(null);

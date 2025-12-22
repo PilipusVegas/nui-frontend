@@ -154,7 +154,7 @@ const TunjanganKaryawan = () => {
 
                 <div className="w-full md:w-56">
                     <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="w-full h-[42px] border-2 rounded-lg px-3 text-sm text-gray-700 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-                        <option value="ALL">Semua Role</option>
+                        <option value="ALL">Semua Divisi</option>
                         {roleOptions
                             .filter((r) => r !== "ALL")
                             .map((role) => (

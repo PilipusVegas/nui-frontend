@@ -6,6 +6,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { faArrowRight, faChevronRight, faChevronUp, faMapMarkerAlt, faSpinner, faTimesCircle, } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
+import { formatFullDate, formatTime } from "../../utils/dateUtils";
+import {getDistanceMeters} from "../../utils/locationUtils";
+
 
 const AbsenMulai = ({ handleNextStepData }) => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -27,7 +30,6 @@ const AbsenMulai = ({ handleNextStepData }) => {
   const isFormValid = () =>
     selectedLocation && selectedShift && fotoMulai && jamMulai;
 
-  // ambil foto
   const capture = () => {
     if (!webcamRef.current) return;
     const imageSrc = webcamRef.current.getScreenshot();
@@ -115,8 +117,8 @@ const AbsenMulai = ({ handleNextStepData }) => {
       nama: username,
       id_lokasi: selectedLocation?.value || "",
       lokasi: selectedLocation?.label || "",
-      tanggalMulai: now.toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric", }),
-      jamMulai: now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit", }),
+      tanggalMulai: formatFullDate(now),
+      jamMulai: formatTime(now),
       tugas,
       id_shift: selectedShift?.id ?? "",
       shift: selectedShift?.nama ?? "",
@@ -129,27 +131,6 @@ const AbsenMulai = ({ handleNextStepData }) => {
     handleNextStepData(formData);
   };
 
-
-  // Hitung jarak dalam meter (Haversine Formula)
-  const getDistanceMeters = (lat1, lon1, lat2, lon2) => {
-    if (!lat1 || !lon1 || !lat2 || !lon2) return 0;
-
-    const R = 6371000;
-    const toRad = (x) => (x * Math.PI) / 180;
-
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
-
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLon / 2) ** 2;
-
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    return R * c;
-  };
 
   const checkLocationRadius = (loc) => {
     if (!userCoords.latitude || !userCoords.longitude || !loc.lat || !loc.lon) return;
@@ -225,8 +206,12 @@ const AbsenMulai = ({ handleNextStepData }) => {
                 <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden shadow-lg border border-gray-200">
                   <img src={fotoMulai} alt="Foto Mulai" className="w-full h-full object-cover scale-x-[-1]" />
                   <div className="absolute bottom-0 w-full bg-gradient-to-t from-black/90 via-black/90 to-transparent px-3 py-2 text-white">
-                    <p className="text-sm font-semibold">Tanggal: {jamMulai?.toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" })}</p>
-                    <p className="text-sm font-semibold">Waktu: {jamMulai?.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</p>
+                    <p className="text-sm font-semibold">
+                      Tanggal: {formatFullDate(jamMulai)}
+                    </p>
+                    <p className="text-sm font-semibold">
+                      Waktu: {formatTime(jamMulai)}
+                    </p>
                   </div>
                 </div>
 
@@ -249,7 +234,6 @@ const AbsenMulai = ({ handleNextStepData }) => {
             </p>
             <Select options={locations} value={selectedLocation} onChange={(loc) => { setSelectedLocation(loc); checkLocationRadius(loc); }} placeholder="Pilih lokasi..." isSearchable className="text-xs" />
 
-            {/* Status lokasi */}
             <div className="flex items-center mt-1 text-[9px]">
               {loadingLocation ? (
                 <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-100 text-gray-700">

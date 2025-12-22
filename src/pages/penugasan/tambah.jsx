@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { faSave, faTimes, faPlus, faTrash, faCopy, faSpinner, faCamera, faUpload } from "@fortawesome/free-solid-svg-icons";
-import { SectionHeader, Modal } from "../../components";
+import { SectionHeader, Modal, LoadingSpinner } from "../../components";
 import Select from "react-select";
 import Webcam from "react-webcam";
 
@@ -25,7 +25,18 @@ const TambahTugas = () => {
     const [facingMode, setFacingMode] = useState("environment");
     const webcamRef = useRef(null);
     const [deskripsiTugas, setDeskripsiTugas] = useState("");
+    const [isCameraReady, setIsCameraReady] = useState(false);
 
+    useEffect(() => {
+        if (showCamera) {
+            setIsCameraReady(false);
+        }
+    }, [showCamera, facingMode]);
+
+    useEffect(() => {
+        const today = new Date().toISOString().split("T")[0];
+        setStartDate(today);
+    }, []);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -211,7 +222,7 @@ const TambahTugas = () => {
                     <p className="text-sm text-gray-500 mb-2">
                         Jelaskan detail tugas secara umum agar mudah dipahami.
                     </p>
-                    <textarea rows={3} value={deskripsiTugas} onChange={(e) => setDeskripsiTugas(e.target.value.slice(0, 500))} maxLength={500} placeholder="Contoh: Reminder ini digunakan untuk memastikan aktivitas operasional harian berjalan sesuai jadwal." className="w-full px-4 py-2 border-2 border-gray-400/50 rounded-lg focus:ring-2 focus:ring-green-500 outline-none resize-none"/>
+                    <textarea rows={3} value={deskripsiTugas} onChange={(e) => setDeskripsiTugas(e.target.value.slice(0, 500))} maxLength={500} placeholder="Contoh: Reminder ini digunakan untuk memastikan aktivitas operasional harian berjalan sesuai jadwal." className="w-full px-4 py-2 border-2 border-gray-400/50 rounded-lg focus:ring-2 focus:ring-green-500 outline-none resize-none" />
                     <p className="text-xs text-gray-400 mt-1">
                         Maksimal 500 karakter ({deskripsiTugas.length}/500)
                     </p>
@@ -329,12 +340,12 @@ const TambahTugas = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">Tanggal Mulai Penugasan</label>
-                        <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required min={new Date().toISOString().split("T")[0]} className="w-full border border-gray-300/50 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                        <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required min={new Date().toISOString().split("T")[0]} className="w-full border border-gray-300/50 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"/>
                     </div>
 
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">Tenggat Waktu Penugasan</label>
-                        <input type="date" value={deadlineAt} onChange={(e) => setDeadlineAt(e.target.value)} required min={startDate || new Date().toISOString().split("T")[0]} disabled={!startDate} className={`w-full border border-gray-300/50 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none ${!startDate ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}`} />
+                        <input type="date" value={deadlineAt} onChange={(e) => setDeadlineAt(e.target.value)} required min={startDate || new Date().toISOString().split("T")[0]} disabled={!startDate} className={`w-full border border-gray-300/50 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none ${!startDate ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}`}/>
                     </div>
                 </div>
 
@@ -355,9 +366,7 @@ const TambahTugas = () => {
                         </button>
                     </div>
 
-
-                    {/* LIST CONTAINER */}
-                    <div className="max-h-[100vh] overflow-y-auto space-y-2 pb-24 pr-1">
+                    <div className="max-h-[100vh] overflow-y-auto scrollbar-green space-y-2 pb-24 pr-1">
                         {workerList.map((worker, index) => (
                             <div key={index} className="relative bg-white rounded-xl border border-gray-200 p-3 transition hover:shadow-md">
                                 <div className="absolute left-0 top-0 h-full w-1 bg-green-500 rounded-l-xl" />
@@ -401,8 +410,6 @@ const TambahTugas = () => {
                                     </div>
                                 </div>
 
-
-                                {/* BODY */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-2 text-sm">
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -462,7 +469,6 @@ const TambahTugas = () => {
                                     </div>
 
 
-                                    {/* PENGINGAT */}
                                     <div>
                                         <label className="block text-xs font-medium text-gray-700 mb-2">
                                             Pengingat Tugas (Menit)
@@ -492,7 +498,7 @@ const TambahTugas = () => {
                                         </div>
 
                                         <span className="text-xs text-gray-600 mt-1 block">
-                                            Sistem akan mengirim pengingat secara berkala.
+                                            Sistem akan mengirim pengingat setiap {worker.interval_notifikasi || 60} menit.
                                         </span>
                                     </div>
 
@@ -501,10 +507,7 @@ const TambahTugas = () => {
                                             Deskripsi Pekerjaan
                                         </label>
 
-                                        <textarea rows={2} placeholder="Contoh: Periksa stok gudang dan laporkan hasilnya." value={worker.deskripsi} onChange={(e) => handleWorkerChange(index, "deskripsi", e.target.value)}
-                                            className=" w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 resize-none"
-                                            required
-                                        />
+                                        <textarea rows={2} placeholder="Contoh: Periksa stok gudang dan laporkan hasilnya." value={worker.deskripsi} onChange={(e) => handleWorkerChange(index, "deskripsi", e.target.value)} className=" w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 resize-none" required/>
                                     </div>
                                 </div>
                             </div>
@@ -541,29 +544,28 @@ const TambahTugas = () => {
                         <button type="button" onClick={() => setShowCamera(false)} className="px-4 py-2 rounded-lg bg-gray-500 hover:bg-gray-600 text-white">
                             Batal
                         </button>
-                        <button type="button" onClick={handleSwitchCamera} className="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white"                        >
+
+                        <button type="button" onClick={handleSwitchCamera} className="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white">
                             Ganti Kamera
                         </button>
-                        <button type="button" onClick={handleCapture} className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white">
+
+                        <button type="button" onClick={handleCapture} className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white">
                             Ambil Foto
                         </button>
-
                     </div>
                 }
-
             >
-                <div className="overflow-hidden rounded-lg border">
-                    <Webcam
-                        key={facingMode}
-                        ref={webcamRef}
-                        screenshotFormat="image/jpeg"
-                        videoConstraints={{ facingMode }}
-                        className="w-full"
-                    />
-
+                <div className="w-full max-w-4xl mx-auto">
+                    <div className="relative w-full aspect-video rounded-lg overflow-hidden border bg-black">
+                        {!isCameraReady && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black">
+                                <LoadingSpinner message="Mengaktifkan kamera..." />
+                            </div>
+                        )}
+                        <Webcam key={facingMode} ref={webcamRef} audio={false} screenshotFormat="image/jpeg" videoConstraints={{ facingMode }} onUserMedia={() => setIsCameraReady(true)} onUserMediaError={() => setIsCameraReady(false)} className="absolute inset-0 w-full h-full object-cover" />
+                    </div>
                 </div>
             </Modal>
-
         </div>
     );
 };

@@ -27,6 +27,7 @@ import {
     faCalendarCheck,
     faUserGroup,
     faPenFancy,
+    faListAlt
 } from "@fortawesome/free-solid-svg-icons";
 
 export const menuConfig = [
@@ -73,7 +74,7 @@ export const menuConfig = [
                         target: "_blank",
                     },
                     {
-                        label: "Catatan Absensi",
+                        label: "Remark Absensi",
                         icon: faEdit,
                         path: "/remark-absensi",
                         roles: [1, 4, 6],
@@ -223,27 +224,20 @@ export const menuConfig = [
                 roles: [1, 4, 6],
                 submenu: [
                     {
-                        label: "Data Karyawan",
+                        label: "Kelola Data Karyawan",
                         icon: faUserGroup,
                         path: "/karyawan",
                         roles: [1, 4, 6],
-                        perusahaan: [1, 4],
                     },
                     {
                         label: "Tunjangan Karyawan",
                         icon: faMoneyBillWave,
                         path: "/tunjangan-karyawan",
                         roles: [1, 4, 6],
+                        perusahaan: [1, 4],
                     },
-                ]
-            },
-            {
-                label: "Kelola Divisi",
-                icon: faUsersCog,
-                roles: [1, 4, 6],
-                submenu: [
                     {
-                        label: "Data Divisi",
+                        label: "Kelola Data Divisi",
                         icon: faUsersCog,
                         path: "/divisi",
                         roles: [1, 4, 6],
@@ -255,7 +249,8 @@ export const menuConfig = [
                         roles: [1, 4, 6],
                         perusahaan: [1, 4],
                     },
-                ],
+
+                ]
             },
             {
                 label: "Kelola Perusahaan",
@@ -287,7 +282,7 @@ export const menuConfig = [
                 label: "Lokasi Absensi",
                 icon: faMapMarkerAlt,
                 path: "/lokasi-presensi",
-                roles: [1, 5],
+                roles: [1],
             },
             {
                 label: "Perangkat Absensi",
@@ -311,6 +306,12 @@ export const menuConfig = [
                 label: "Role Aplikasi",
                 icon: faUserGear,
                 path: "/role-app",
+                roles: [1],
+            },
+            {
+                label: "Log Sistem",
+                icon: faListAlt,
+                path: "/log-sistem",
                 roles: [1],
             },
         ],

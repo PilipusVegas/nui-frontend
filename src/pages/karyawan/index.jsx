@@ -183,25 +183,6 @@ const DataKaryawan = () => {
     return getIncompleteFields(user).length === 0;
   };
 
-  const tunjanganConfig = [
-    { key: "bensin", label: "Transport", icon: faGasPump },
-    { key: "makan", label: "Makan", icon: faUtensils },
-    { key: "dinas", label: "Perjalanan Dinas", icon: faSuitcaseRolling },
-    { key: "penginapan", label: "Penginapan", icon: faHotel },
-  ];
-
-const TunjanganIcons = ({ tunjangan }) => (
-  <div className="flex items-center gap-3 mt-1">
-    {tunjanganConfig.map((item) => {
-      const active = tunjangan?.[item.key] === 1;
-
-      return (
-        <FontAwesomeIcon key={item.key} title={item.label} icon={item.icon} className={`text-[12px] ${active ? "text-emerald-600" : "text-gray-300"}`}
-        />
-      );
-    })}
-  </div>
-);
 
   return (
     <div className="flex flex-col">
@@ -329,14 +310,9 @@ const TunjanganIcons = ({ tunjangan }) => (
 
                         <td className="px-4 py-2">
                           <div className="flex items-center justify-between gap-3">
-                            <div className="flex flex-col gap-0.5">
                               <span className="font-semibold uppercase truncate max-w-[250px]">
                                 {user.nama || "N/A"}
                               </span>
-
-                              <TunjanganIcons tunjangan={user.tunjangan} />
-                            </div>
-
                             {user.status === 1 && !isDataComplete(user) && (
                               <FontAwesomeIcon icon={faExclamationCircle} className="text-red-500 text-lg cursor-pointer flex-shrink-0 animate-bounce" onClick={() => { setSelectedUserInfo(user); setOpenInfo(true); }} title={`Data belum lengkap:\n- ${getIncompleteFields(user).join("\n- ")}`} />
                             )}

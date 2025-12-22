@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser, faIdCard, faChildren, faBuilding, faPhone, faClock, faCarSide, faCheckCircle, faTimesCircle, faUserEdit, faGasPump, faSlidersH, faUtensils, faSuitcaseRolling, faHotel} from "@fortawesome/free-solid-svg-icons";
-import { fetchWithJwt } from "../../utils/jwtHelper";
+import { faUser, faIdCard, faChildren, faBuilding, faPhone, faClock, faCarSide, faCheckCircle, faTimesCircle, faUserEdit, faGasPump, faSlidersH, faUtensils, faSuitcaseRolling, faHotel } from "@fortawesome/free-solid-svg-icons";
+import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { LoadingSpinner, EmptyState, ErrorState, SectionHeader, Modal } from "../../components";
 import TunjanganForm from "../tunjangan-karyawan/form";
 
@@ -11,13 +11,14 @@ const DetailKaryawan = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
-
+  const userLogin = getUserFromToken();
   const [karyawan, setKaryawan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showTunjanganModal, setShowTunjanganModal] = useState(false);
   const [editTunjanganData, setEditTunjanganData] = useState(null);
-
+  const ALLOWED_PERUSAHAAN_KADIV = [1, 4];
+  const canShowKadiv = karyawan && ALLOWED_PERUSAHAAN_KADIV.includes(Number(karyawan.id_perusahaan));
 
   const TunjanganBadge = ({ label, icon, active }) => (
     <div className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-sm transition ${active ? "border-emerald-300 bg-emerald-50 text-emerald-700" : "border-gray-200 bg-gray-50 text-gray-400"}`}>
@@ -100,9 +101,12 @@ const DetailKaryawan = () => {
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-green-900">{karyawan.nama}</h2>
-                  <p className="mt-1 text-sm text-green-800 font-medium">
-                    Kepala Divisi: {safeText(karyawan.nama_kadiv)}
-                  </p>
+                  {canShowKadiv && (
+                    <p className="mt-1 text-sm text-green-800 font-medium">
+                      Kepala Divisi: {safeText(karyawan.nama_kadiv)}
+                    </p>
+                  )}
+
                   <div className="mt-2">{statusKaryawan(karyawan.status)}</div>
                 </div>
               </div>
@@ -116,7 +120,7 @@ const DetailKaryawan = () => {
             </div>
 
             {/* TUNJANGAN & FASILITAS */}
-            <DataSection title={
+            {/* <DataSection title={
                 <div className="flex items-center justify-between gap-3">
                   <span>Tunjangan & Fasilitas</span>
 
@@ -148,7 +152,7 @@ const DetailKaryawan = () => {
                 <TunjanganBadge label="Biaya Penginapan" icon={faHotel} active={karyawan.tunjangan?.penginapan === 1} />
               </div>
 
-            </DataSection>
+            </DataSection> */}
 
 
             {/* BIODATA */}
