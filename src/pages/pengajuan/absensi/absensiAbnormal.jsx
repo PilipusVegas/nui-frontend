@@ -1,162 +1,94 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faChevronDown,
-    faChevronUp,
-    faMapMarkerAlt,
-    faBuilding,
-    faInfo,
-    faArrowUpRightFromSquare,
-    faBus,
-    faMoon,
-    faAlignLeft,
-    faGift,
-    faInfoCircle,
-} from "@fortawesome/free-solid-svg-icons";
-import toast from "react-hot-toast";
-import { fetchWithJwt } from "../../../utils/jwtHelper";
-import { formatFullDate, formatTime } from "../../../utils/dateUtils";
-import {
-    SectionHeader,
-    SearchBar,
-    Modal,
-    EmptyState,
-    LoadingSpinner,
-    ErrorState,
-} from "../../../components";
-import Lightbox from "yet-another-react-lightbox";
-import "yet-another-react-lightbox/styles.css";
 import Swal from "sweetalert2";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import "yet-another-react-lightbox/styles.css";
+import Lightbox from "yet-another-react-lightbox";
+import React, { useState, useEffect } from "react";
+import { fetchWithJwt } from "../../../utils/jwtHelper";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { formatFullDate, formatTime } from "../../../utils/dateUtils";
+import { SectionHeader, SearchBar, Modal, EmptyState, LoadingSpinner, ErrorState } from "../../../components";
+import { faChevronDown, faChevronUp, faMapMarkerAlt, faBuilding, faInfo, faArrowUpRightFromSquare, faBus, faMoon, faAlignLeft, faGift, faInfoCircle, } from "@fortawesome/free-solid-svg-icons";
 
 const AbsensiAbnormal = () => {
     const navigate = useNavigate();
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const [searchQuery, setSearchQuery] = useState("");
     const [lightboxIndex, setLightboxIndex] = useState(0);
-    const [checkedStatus, setCheckedStatus] = useState({});
     const [openDetailMap, setOpenDetailMap] = useState({});
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxImages, setLightboxImages] = useState([]);
     const [expandedUserId, setExpandedUserId] = useState(null);
     const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
-    const findAbsenPulangKosong = (list) => {
-        return list.filter((a) => !a.absen_pulang);
+    const [processingId, setProcessingId] = useState(null);
+
+    const getAbnormalReason = (absen) => {
+        const reasons = [];
+        if (absen.jarak_mulai >= 60) {
+            reasons.push("Jarak absen terlalu jauh");
+        }
+
+        if (!absen.foto_mulai) {
+            reasons.push("Foto absen tidak tersedia");
+        }
+
+        if (!absen.absen_pulang) {
+            reasons.push("Belum absen pulang");
+        }
+
+        return reasons;
     };
 
-    const sendBatchUpdate = async (approved, rejected) => {
+    const getDecisionStatus = (absen) => {
+        const reasons = getAbnormalReason(absen);
+
+        if (reasons.length === 0) {
+            return { status: "AMAN", level: "green" };
+        }
+
+        if (reasons.includes("Jarak absen terlalu jauh")) {
+            return { status: "KRITIS", level: "red" };
+        }
+
+        return { status: "PERLU DITINJAU", level: "yellow" };
+    };
+
+
+    const submitSingleDecision = async ({ id_absen, action }) => {
+        setProcessingId(id_absen);
         try {
+            const payload = {
+                id_absen_approved: action === "approve" ? [id_absen] : [],
+                id_absen_rejected: action === "reject" ? [id_absen] : [],
+            };
+
             const res = await fetchWithJwt(`${apiUrl}/absen/status/batch`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    id_absen_approved: approved,
-                    id_absen_rejected: rejected,
-                }),
+                body: JSON.stringify(payload),
             }).then((r) => r.json());
 
-            if (res.success) {
-                toast.success("Berhasil melakukan update");
-                setCheckedStatus({});
-                await loadBatch();
-            } else {
-                toast.error("Gagal update");
+            if (!res.success) {
+                throw new Error("Gagal update");
             }
+
+            toast.success(
+                action === "approve"
+                    ? "Absen disetujui"
+                    : "Absen ditolak"
+            );
+
+            await loadBatch(); // refresh data
         } catch (err) {
-            toast.error("Terjadi kesalahan");
+            toast.error("Gagal menyimpan keputusan");
+        } finally {
+            setProcessingId(null);
         }
     };
 
-    const getSelectedStatus = () => {
-        const approved = [];
-        const rejected = [];
-        Object.entries(checkedStatus).forEach(([id, status]) => {
-            if (status === "approve") approved.push(Number(id));
-            if (status === "reject") rejected.push(Number(id));
-        });
-        return { approved, rejected };
-    };
-
-    const handleApproveAll = async () => {
-        const { approved, rejected } = getSelectedStatus();
-
-        if (!approved.length && !rejected.length) {
-            return toast.error("Belum ada absen yang dipilih");
-        }
-
-        let selectedAbsen = [];
-
-        data.forEach((user) => {
-            user.absen.forEach((a) => {
-                if (approved.includes(a.id)) {
-                    selectedAbsen.push(a);
-                }
-            });
-        });
-
-        const absenKosong = findAbsenPulangKosong(selectedAbsen);
-
-        if (selectedAbsen.length === 1 && absenKosong.length === 1) {
-            return Swal.fire({
-                icon: "warning",
-                title: "Absen Pulang Masih Kosong",
-                html: `
-                Karyawan ini belum melakukan absen pulang.<br/>
-                Lanjutkan persetujuan?
-            `,
-                showCancelButton: true,
-                confirmButtonText: "Setujui Saja",
-                cancelButtonText: "Batalkan",
-                reverseButtons: true,
-                confirmButtonColor: "#3085d6",
-                cancelButtonColor: "#d33",
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    await sendBatchUpdate(approved, rejected);
-                }
-            });
-        }
-
-        if (absenKosong.length > 0) {
-            return Swal.fire({
-                icon: "warning",
-                title: "Ada Absen Pulang yang Kosong",
-                html: `
-                Terdapat <b>${absenKosong.length}</b> absen yang belum memiliki data pulang.<br/>
-                Pilih tindakan yang ingin dilakukan.
-            `,
-                showCancelButton: true,
-                confirmButtonText: "Setujui Semua",
-                cancelButtonText: "Lewati yang Kosong",
-                reverseButtons: true,
-                confirmButtonColor: "#3085d6",
-                cancelButtonColor: "#d33",
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    await sendBatchUpdate(approved, rejected);
-                } else if (result.dismiss === Swal.DismissReason.cancel) {
-                    const filtered = approved.filter((id) => !absenKosong.some((a) => a.id === id));
-
-                    if (filtered.length === 0) {
-                        return Swal.fire({
-                            icon: "info",
-                            title: "Tidak Ada Absen yang Lengkap",
-                            text: "Semua absen yang dipilih belum memiliki data pulang.",
-                            confirmButtonColor: "#3085d6",
-                        });
-                    }
-
-                    await sendBatchUpdate(filtered, rejected);
-                }
-            });
-        }
-
-        await sendBatchUpdate(approved, rejected);
-    };
 
     const handleOpenLightbox = (images, index) => {
         setLightboxImages(images);
@@ -164,9 +96,6 @@ const AbsensiAbnormal = () => {
         setLightboxOpen(true);
     };
 
-    const { approved, rejected } = getSelectedStatus();
-    const totalSelected = approved.length + rejected.length;
-    const isDisabled = totalSelected === 0;
 
     const filteredData = data.filter(
         (user) =>
@@ -311,14 +240,12 @@ const AbsensiAbnormal = () => {
                                         {/* Statistik */}
                                         <div className="flex gap-2 overflow-x-auto no-scrollbar">
                                             <span className="px-3 py-1 text-xs font-medium rounded-full bg-emerald-50 text-emerald-700">
-                                                {user.absen.filter((a) => checkedStatus[a.id] === "approve").length}{" "}
-                                                Disetujui
+                                                {user.absen.filter((a) => a.status === 1).length} Disetujui
                                             </span>
 
                                             <span className="px-3 py-1 text-xs font-medium rounded-full bg-rose-50 text-rose-700">
-                                                {user.absen.filter((a) => checkedStatus[a.id] === "reject").length} Ditolak
+                                                {user.absen.filter((a) => a.status === 2).length} Ditolak
                                             </span>
-
                                             <span className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
                                                 {user.absen.filter((a) => a.status === 0).length} Total
                                             </span>
@@ -376,48 +303,17 @@ const AbsensiAbnormal = () => {
                                                         </div>
 
                                                         <div className="flex items-center gap-5 sm:gap-6">
-                                                            <label
-                                                                className="flex items-center gap-2 text-green-600 text-md font-semibold select-none"
-                                                                onClick={(e) => e.stopPropagation()}
-                                                            >
-                                                                <input
-                                                                    type="checkbox"
-                                                                    checked={checkedStatus[a.id] === "approve"}
-                                                                    onClick={(e) => e.stopPropagation()}
-                                                                    onChange={() =>
-                                                                        setCheckedStatus((prev) => ({
-                                                                            ...prev,
-                                                                            [a.id]: prev[a.id] === "approve" ? null : "approve",
-                                                                        }))
-                                                                    }
-                                                                    className="w-5 h-5 accent-green-600"
-                                                                />
-                                                                <span onClick={(e) => e.stopPropagation()}>Setujui</span>
+                                                            <label className="flex items-center gap-2 text-green-600 font-semibold" onClick={(e) => e.stopPropagation()}>
+                                                                <input type="checkbox" checked={a.status === 1} disabled={processingId === a.id} onChange={() => submitSingleDecision({ id_absen: a.id, action: "approve", })} className="w-5 h-5 accent-green-600" />
+                                                                Setujui
                                                             </label>
 
-                                                            <label
-                                                                className="flex items-center gap-2 text-red-600 text-md font-semibold select-none"
-                                                                onClick={(e) => e.stopPropagation()}
-                                                            >
-                                                                <input
-                                                                    type="checkbox"
-                                                                    checked={checkedStatus[a.id] === "reject"}
-                                                                    onClick={(e) => e.stopPropagation()}
-                                                                    onChange={() =>
-                                                                        setCheckedStatus((prev) => ({
-                                                                            ...prev,
-                                                                            [a.id]: prev[a.id] === "reject" ? null : "reject",
-                                                                        }))
-                                                                    }
-                                                                    className="w-5 h-5 accent-red-600"
-                                                                />
-                                                                <span onClick={(e) => e.stopPropagation()}>Tolak</span>
+                                                            <label className="flex items-center gap-2 text-red-600 font-semibold" onClick={(e) => e.stopPropagation()}>
+                                                                <input type="checkbox" checked={a.status === 2} disabled={processingId === a.id} onChange={() => submitSingleDecision({ id_absen: a.id, action: "reject", })} className="w-5 h-5 accent-red-600" />
+                                                                Tolak
                                                             </label>
-                                                            <FontAwesomeIcon
-                                                                icon={faChevronDown}
-                                                                className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${openDetailMap[user.id_user]?.includes(a.id) ? "rotate-180" : ""
-                                                                    }`}
-                                                            />
+
+                                                            <FontAwesomeIcon icon={faChevronDown} className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${openDetailMap[user.id_user]?.includes(a.id) ? "rotate-180" : ""}`} />
                                                         </div>
                                                     </div>
 
@@ -634,66 +530,24 @@ const AbsensiAbnormal = () => {
                                                                         Informasi Tunjangan
                                                                     </p>
 
-                                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                                        {/* Transport */}
-                                                                        <div className="flex items-start gap-3 p-4 rounded-xl border bg-white shadow-sm">
-                                                                            <FontAwesomeIcon
-                                                                                icon={faBus}
-                                                                                className={`${a.tunjangan?.transport
-                                                                                        ? "text-green-700"
-                                                                                        : "text-gray-400"
-                                                                                    } text-xl`}
-                                                                            />
-                                                                            <div className="space-y-1">
-                                                                                <p className="text-sm font-semibold text-gray-800">
-                                                                                    Tunjangan Transport
-                                                                                </p>
-
-                                                                                <p className="text-sm text-gray-600">
-                                                                                    {a.tunjangan?.transport ? (
-                                                                                        <span className="text-green-800 font-semibold">
-                                                                                            Diberikan — Karyawan menggunakan kendaraan pribadi dan
-                                                                                            bekerja di gerai.
-                                                                                        </span>
-                                                                                    ) : (
-                                                                                        <span className="text-gray-500 italic">
-                                                                                            Tidak diberikan — Karyawan tidak memenuhi syarat
-                                                                                            transport.
-                                                                                        </span>
-                                                                                    )}
-                                                                                </p>
-                                                                            </div>
+                                                                    <div className="flex items-center gap-4 mt-2">
+                                                                        <div
+                                                                            className={`flex items-center gap-1 text-sm ${a.tunjangan?.transport ? "text-green-700" : "text-gray-400"
+                                                                                }`}
+                                                                        >
+                                                                            <FontAwesomeIcon icon={faBus} />
+                                                                            <span>Transport</span>
                                                                         </div>
 
-                                                                        {/* Night Shift */}
-                                                                        <div className="flex items-start gap-3 p-4 rounded-xl border bg-white shadow-sm">
-                                                                            <FontAwesomeIcon
-                                                                                icon={faMoon}
-                                                                                className={`${a.tunjangan?.night_shift
-                                                                                        ? "text-indigo-700"
-                                                                                        : "text-gray-400"
-                                                                                    } text-xl`}
-                                                                            />
-                                                                            <div className="space-y-1">
-                                                                                <p className="text-sm font-semibold text-gray-800">
-                                                                                    Tunjangan Night Shift
-                                                                                </p>
-
-                                                                                <p className="text-sm text-gray-600">
-                                                                                    {a.tunjangan?.night_shift ? (
-                                                                                        <span className="text-indigo-800 font-semibold">
-                                                                                            Diberikan — Karyawan bekerja shift malam di gerai.
-                                                                                        </span>
-                                                                                    ) : (
-                                                                                        <span className="text-gray-500 italic">
-                                                                                            Tidak diberikan — Karyawan tidak bekerja pada shift
-                                                                                            malam.
-                                                                                        </span>
-                                                                                    )}
-                                                                                </p>
-                                                                            </div>
+                                                                        <div
+                                                                            className={`flex items-center gap-1 text-sm ${a.tunjangan?.night_shift ? "text-indigo-700" : "text-gray-400"
+                                                                                }`}
+                                                                        >
+                                                                            <FontAwesomeIcon icon={faMoon} />
+                                                                            <span>Night</span>
                                                                         </div>
                                                                     </div>
+
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -708,106 +562,15 @@ const AbsensiAbnormal = () => {
                     );
                 })}
 
-                {data.length > 0 && (
-                    <div className="sticky bottom-0 bg-white/90 backdrop-blur-md border-t border-gray-200 p-4 rounded-xl shadow-lg flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center z-10">
-                        <div className="flex justify-between w-full sm:justify-start sm:w-auto gap-4">
-                            <label className="flex items-center gap-2 cursor-pointer select-none">
-                                <input
-                                    type="checkbox"
-                                    checked={data.every((user) =>
-                                        user.absen.every((a) => checkedStatus[a.id] === "approve")
-                                    )}
-                                    onChange={() => {
-                                        const allApproved = data.every((user) =>
-                                            user.absen.every((a) => checkedStatus[a.id] === "approve")
-                                        );
-                                        const newStatus = {};
-                                        data.forEach((user) =>
-                                            user.absen.forEach((a) => {
-                                                newStatus[a.id] = allApproved ? null : "approve";
-                                            })
-                                        );
-                                        setCheckedStatus(newStatus);
-                                    }}
-                                    className="w-5 h-5 accent-green-600 border-2 border-green-500 rounded"
-                                />
-                                <span className="text-sm font-semibold text-green-700">Setujui Semua</span>
-                            </label>
-
-                            <label className="flex items-center gap-2 cursor-pointer select-none">
-                                <input
-                                    type="checkbox"
-                                    checked={data.every((user) =>
-                                        user.absen.every((a) => checkedStatus[a.id] === "reject")
-                                    )}
-                                    onChange={() => {
-                                        const allRejected = data.every((user) =>
-                                            user.absen.every((a) => checkedStatus[a.id] === "reject")
-                                        );
-                                        const newStatus = {};
-                                        data.forEach((user) =>
-                                            user.absen.forEach((a) => {
-                                                newStatus[a.id] = allRejected ? null : "reject";
-                                            })
-                                        );
-                                        setCheckedStatus(newStatus);
-                                    }}
-                                    className="w-5 h-5 accent-red-500 border-2 border-red-500 rounded"
-                                />
-                                <span className="text-sm font-semibold text-red-700">Tolak Semua</span>
-                            </label>
-                        </div>
-
-                        <div className="flex w-full sm:w-auto justify-between sm:justify-end gap-4">
-                            <div className="flex flex-col gap-1 text-sm w-36">
-                                <div className="flex justify-between px-3 py-1 bg-green-50 text-green-700 font-semibold rounded-md">
-                                    <span>Disetujui</span>
-                                    <span>{approved.length}</span>
-                                </div>
-                                <div className="flex justify-between px-3 py-1 bg-red-50 text-red-700 font-semibold rounded-md">
-                                    <span>Ditolak</span>
-                                    <span>{rejected.length}</span>
-                                </div>
-                            </div>
-
-                            <button
-                                onClick={handleApproveAll}
-                                disabled={isDisabled}
-                                className={`px-6 py-3 rounded-lg font-semibold shadow-md h-fit ${isDisabled
-                                        ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                                        : "bg-green-600 hover:bg-green-700 text-white"
-                                    }`}
-                            >
-                                Simpan
-                            </button>
-                        </div>
-                    </div>
-                )}
 
                 {lightboxOpen && (
-                    <Lightbox
-                        open={lightboxOpen}
-                        close={() => setLightboxOpen(false)}
-                        slides={lightboxImages.map((img, idx) => ({
-                            src: img,
-                            title: idx === 0 ? "Foto Masuk" : "Foto Pulang",
-                        }))}
-                        index={lightboxIndex}
-                    />
+                    <Lightbox open={lightboxOpen} close={() => setLightboxOpen(false)} slides={lightboxImages.map((img, idx) => ({ src: img, title: idx === 0 ? "Foto Masuk" : "Foto Pulang", }))} index={lightboxIndex} />
                 )}
             </div>
 
-            <Modal
-                isOpen={isInfoModalOpen}
-                onClose={() => setIsInfoModalOpen(false)}
-                title="Informasi Batch Approval"
-                note="Panduan singkat penggunaan fitur."
-                size="lg"
+            <Modal isOpen={isInfoModalOpen} onClose={() => setIsInfoModalOpen(false)} title="Informasi Batch Approval" note="Panduan singkat penggunaan fitur." size="lg"
                 footer={
-                    <button
-                        onClick={() => setIsInfoModalOpen(false)}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-                    >
+                    <button onClick={() => setIsInfoModalOpen(false)} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
                         Mengerti
                     </button>
                 }

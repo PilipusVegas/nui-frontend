@@ -106,7 +106,6 @@ const MenuSidebar = ({ perusahaanId, roleId, isOpen, toggleSidebar, isMobile }) 
                           <FontAwesomeIcon icon={faAngleDown} className={`transition-transform duration-300 ${isSubmenuOpen ? "rotate-180" : ""}`} />
                         </button>
 
-                        {/* Submenu */}
                         {menu.submenu &&
                           menu.submenu
                             .filter(

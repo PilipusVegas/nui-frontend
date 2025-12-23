@@ -19,21 +19,22 @@ export const getDefaultPeriod = () => {
 };
 
 
-// Periode default: Sabtu sampai Jumat
+// utils/getDefaultPeriod.js
+// Periode default: Jumat sampai Kamis
 export const getDefaultPeriodWeek = () => {
   const today = new Date();
-  const dayOfWeek = today.getDay(); // 0 = Minggu, 6 = Sabtu
+  const dayOfWeek = today.getDay(); // 0 = Minggu, 5 = Jumat
 
-  const SATURDAY = 6;
+  const FRIDAY = 5;
 
-  // Jarak mundur ke Sabtu terakhir
-  const distanceToSaturday = (dayOfWeek - SATURDAY + 7) % 7;
+  // Jarak mundur ke Jumat terakhir
+  const distanceToFriday = (dayOfWeek - FRIDAY + 7) % 7;
 
   const start = new Date(today);
-  start.setDate(today.getDate() - distanceToSaturday);
+  start.setDate(today.getDate() - distanceToFriday);
 
   const end = new Date(start);
-  end.setDate(start.getDate() + 6); // Sabtu → Jumat
+  end.setDate(start.getDate() + 6); // Jumat → Kamis
 
   const toInputDate = (date) => date.toISOString().split("T")[0];
 
@@ -42,5 +43,3 @@ export const getDefaultPeriodWeek = () => {
     end: toInputDate(end),
   };
 };
-
-

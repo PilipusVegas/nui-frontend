@@ -43,6 +43,66 @@ export const menuConfig = [
             },
         ],
     },
+        
+    // MANAJEMEN SDM
+    {
+        sectionTitle: "Manajemen SDM",
+        items: [
+            {
+                label: "Kelola Karyawan",
+                icon: faPeopleGroup,
+                roles: [1, 4, 6],
+                submenu: [
+                    {
+                        label: "Kelola Data Karyawan",
+                        icon: faUserGroup,
+                        path: "/karyawan",
+                        roles: [1, 4, 6],
+                    },
+                    {
+                        label: "Tunjangan Karyawan",
+                        icon: faMoneyBillWave,
+                        path: "/tunjangan-karyawan",
+                        roles: [1, 4, 6],
+                        perusahaan: [1, 4],
+                    },
+                    {
+                        label: "Kelola Data Divisi",
+                        icon: faUsersCog,
+                        path: "/divisi",
+                        roles: [1, 4, 6],
+                    },
+                    {
+                        label: "Kelola Kepala Divisi",
+                        icon: faUserGroup,
+                        path: "/kadiv-member",
+                        roles: [1, 4, 6],
+                        perusahaan: [1, 4],
+                    },
+
+                ]
+            },
+            {
+                label: "Kelola Perusahaan",
+                icon: faBuilding,
+                roles: [1, 4, 6],
+                submenu: [
+                    {
+                        label: "Data Perusahaan",
+                        icon: faBuilding,
+                        path: "/perusahaan",
+                        roles: [1, 4, 6],
+                    },
+                    {
+                        label: "Hari Libur",
+                        icon: faCalendarDays,
+                        path: "/manajemen-hari-libur",
+                        roles: [1],
+                    },
+                ],
+            },
+        ],
+    },
 
     // ABSENSI
     {
@@ -214,65 +274,7 @@ export const menuConfig = [
         ],
     },
 
-    // MANAJEMEN SDM
-    {
-        sectionTitle: "Manajemen SDM",
-        items: [
-            {
-                label: "Kelola Karyawan",
-                icon: faPeopleGroup,
-                roles: [1, 4, 6],
-                submenu: [
-                    {
-                        label: "Kelola Data Karyawan",
-                        icon: faUserGroup,
-                        path: "/karyawan",
-                        roles: [1, 4, 6],
-                    },
-                    {
-                        label: "Tunjangan Karyawan",
-                        icon: faMoneyBillWave,
-                        path: "/tunjangan-karyawan",
-                        roles: [1, 4, 6],
-                        perusahaan: [1, 4],
-                    },
-                    {
-                        label: "Kelola Data Divisi",
-                        icon: faUsersCog,
-                        path: "/divisi",
-                        roles: [1, 4, 6],
-                    },
-                    {
-                        label: "Kelola Kepala Divisi",
-                        icon: faUserGroup,
-                        path: "/kadiv-member",
-                        roles: [1, 4, 6],
-                        perusahaan: [1, 4],
-                    },
 
-                ]
-            },
-            {
-                label: "Kelola Perusahaan",
-                icon: faBuilding,
-                roles: [1, 4, 6],
-                submenu: [
-                    {
-                        label: "Data Perusahaan",
-                        icon: faBuilding,
-                        path: "/perusahaan",
-                        roles: [1, 4, 6],
-                    },
-                    {
-                        label: "Hari Libur",
-                        icon: faCalendarDays,
-                        path: "/manajemen-hari-libur",
-                        roles: [1],
-                    },
-                ],
-            },
-        ],
-    },
 
     // PENGATURAN SISTEM
     {

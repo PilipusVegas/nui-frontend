@@ -92,7 +92,6 @@ const TambahKaryawan = () => {
   }, [apiUrl, currentUser.id_kadiv]);
 
 
-
   const handleAdd = async () => {
     if (!currentUser.nip || !currentUser.nama || !currentUser.id_perusahaan || !currentUser.id_role || !currentUser.id_shift) {
       return Swal.fire("Peringatan", "Kolom nama, perusahaan, role, dan shift harus diisi.", "warning");
@@ -204,7 +203,7 @@ const TambahKaryawan = () => {
           </div>
 
           <div>
-            <label className="block mb-1 font-medium text-gray-700 mb-1">Nomor Induk Pegawai (NIP)</label>
+            <label className="block mb-1 font-medium text-gray-700">Nomor Induk Pegawai (NIP)</label>
             <input type="text" name="nip" value={currentUser.nip} placeholder="Masukkan NIP Karyawan" onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
           </div>
 

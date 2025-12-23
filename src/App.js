@@ -63,6 +63,7 @@ import RekapTunjangan from "./pages/tunjangan/";
 import RoleApp from "./pages/role-app";
 import AbsensiAbnormal from "./pages/pengajuan/absensi/absensiAbnormal";
 import TunjanganKaryawan from "./pages/tunjangan-karyawan";
+import LogSistem from "./pages/log-sistem/LogPage";
 
 
 // ===================== MOBILE USERS ========================
@@ -280,6 +281,7 @@ const App = () => {
     { path: "/penugasan/riwayat", component: <RiwayatPenugasan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
     { path: "/tunjangan-karyawan", component: <TunjanganKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },    
     { path: "/rekap-tunjangan", component: <RekapTunjangan />, roles: ["1", "4", "6"] },    
+    { path: "/log-sistem", component: <LogSistem />, roles: ["1", "4", "6"], layout: SidebarLayout },
   ];
 
   return (
