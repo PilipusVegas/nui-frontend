@@ -14,6 +14,22 @@ const TunjanganForm = ({ editData, onSuccess }) => {
         dinas: editData?.dinas || 0,
     });
 
+    const selectStyles = {
+        option: (base, state) => ({
+            ...base,
+            backgroundColor: state.isSelected
+                ? "#E5F7ED"   // hijau lembut untuk selected
+                : state.isFocused
+                    ? "#F9FAFB"   // abu hover tipis
+                    : "white",
+            color: "#1F2937",
+            cursor: "pointer",
+        }),
+    };
+
+
+
+
     /* FETCH PROFIL (MODE TAMBAH) */
     useEffect(() => {
         if (editData) return;
@@ -21,7 +37,7 @@ const TunjanganForm = ({ editData, onSuccess }) => {
         const fetchProfil = async () => {
             try {
                 setLoadingUser(true);
-                const res = await fetchWithJwt(`${apiUrl}/profil`);
+                const res = await fetchWithJwt(`${apiUrl}/tunjangan/user/profil`);
                 const json = await res.json();
 
                 if (json.success) {
@@ -38,7 +54,6 @@ const TunjanganForm = ({ editData, onSuccess }) => {
                                             {u.nip} • {u.role}
                                         </div>
                                     </div>
-
                                     <div className="text-xs text-gray-500 text-right whitespace-nowrap">
                                         {u.perusahaan}
                                     </div>
@@ -47,8 +62,6 @@ const TunjanganForm = ({ editData, onSuccess }) => {
                             raw: u,
                         }))
                     );
-
-
                 }
             } finally {
                 setLoadingUser(false);
@@ -58,47 +71,53 @@ const TunjanganForm = ({ editData, onSuccess }) => {
         fetchProfil();
     }, [editData, apiUrl]);
 
-    /* =============================
-     SUBMIT
-    ============================= */
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const payload = {
-            id_user: form.id_user,
-            tunjangan: {
-                bensin: form.bensin,
-                makan: form.makan,
-                penginapan: form.penginapan,
-                dinas: form.dinas,
-            },
+        const tunjanganPayload = {
+            bensin: form.bensin,
+            makan: form.makan,
+            penginapan: form.penginapan,
+            dinas: form.dinas,
         };
 
-        const url = editData ? `${apiUrl}/tunjangan/user/${editData.id}` : `${apiUrl}/tunjangan/user`;
+        // MODE EDIT
+        if (editData) {
+            await fetchWithJwt(
+                `${apiUrl}/tunjangan/user/${editData.id_user}`,
+                {
+                    method: "PUT",
+                    body: JSON.stringify({
+                        tunjangan: tunjanganPayload,
+                    }),
+                }
+            );
 
-        const method = editData ? "PUT" : "POST";
+            onSuccess();
+            return;
+        }
 
-        await fetchWithJwt(url, {
-            method,
-            body: JSON.stringify(payload),
-        });
-
+        // MODE TAMBAH
+        await fetchWithJwt(
+            `${apiUrl}/tunjangan/user`,
+            {
+                method: "POST",
+                body: JSON.stringify({
+                    id_user: form.id_user,
+                    tunjangan: tunjanganPayload,
+                }),
+            }
+        );
         onSuccess();
     };
 
-    /* =============================
-     COMPONENT
-    ============================= */
     const CheckboxCard = ({ label, name }) => {
         const checked = form[name] === 1;
 
         return (
-            <div onClick={() => setForm({ ...form, [name]: checked ? 0 : 1 })}
-                className={`cursor-pointer select-none flex items-center gap-3 rounded-lg border px-4 py-3 transition
-                    ${checked ? "border-green-500 bg-green-50" : "border-gray-200 bg-white hover:bg-gray-50"}
-                `}
-            >
-                <input type="checkbox" checked={checked} readOnly className="w-4 h-4 accent-green-600 pointer-events-none"/>
+            <div onClick={() => setForm({ ...form, [name]: checked ? 0 : 1 })} className={`cursor-pointer select-none flex items-center gap-3 rounded-lg border px-4 py-3 transition ${checked ? "border-green-500 bg-green-50" : "border-gray-200 bg-white hover:bg-gray-50"}`}>
+                <input type="checkbox" checked={checked} readOnly className="w-4 h-4 accent-green-600 pointer-events-none" />
                 <span className="text-sm font-medium text-gray-800">
                     {label}
                 </span>
@@ -147,26 +166,36 @@ const TunjanganForm = ({ editData, onSuccess }) => {
 
             {/* ================= TAMBAH MODE ================= */}
             {!editData && (
-                <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">Pilih Karyawan</label>
+                <div className="space-y-2">
+                    {/* LABEL */}
+                    <label className="block text-sm font-semibold text-gray-700">
+                        Pilih Karyawan
+                        <span className="ml-1 text-xs font-normal text-gray-500">
+                            (Nama atau NIP)
+                        </span>
+                    </label>
 
-                    <Select options={userOptions} isLoading={loadingUser} placeholder="Cari nama / NIP karyawan..."
-                        onChange={(opt) =>
-                            setForm({ ...form, id_user: opt?.value || null })
-                        }
-                        classNamePrefix="react-select"
-                        menuPortalTarget={document.body}
-                        menuPosition="fixed"
-                        styles={{
-                            menuPortal: (base) => ({
-                                ...base,
-                                zIndex: 9999,
-                            }),
-                        }}
-                    />
+                    {/* SELECT */}
+                    <div className="relative">
+                        <Select
+                            options={userOptions}
+                            isLoading={loadingUser}
+                            placeholder="Ketik nama atau NIP karyawan..."
+                            onChange={(opt) =>
+                                setForm({ ...form, id_user: opt?.value || null })
+                            }
+                            styles={selectStyles}
+                        />
 
+                    </div>
+
+                    {/* HELPER TEXT */}
+                    <p className="text-xs text-gray-500">
+                        Digunakan untuk menentukan karyawan yang akan diberikan tunjangan.
+                    </p>
                 </div>
             )}
+
 
             {/* ================= TUNJANGAN ================= */}
             <div className="space-y-3">

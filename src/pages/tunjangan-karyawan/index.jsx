@@ -149,7 +149,7 @@ const TunjanganKaryawan = () => {
             <SectionHeader title="Tunjangan Karyawan" subtitle="Halaman untuk mengelola tunjangan karyawan" onBack={() => navigate(-1)}
                 actions={
                     <div className="flex gap-2">
-                        <button onClick={() => { setEditData(null); setFormOpen(true);}} className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg">
+                        <button onClick={() => { setEditData(null); setFormOpen(true); }} className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg">
                             <FontAwesomeIcon icon={faPlus} />
                             Tambah
                         </button>
@@ -189,7 +189,7 @@ const TunjanganKaryawan = () => {
                     <EmptyState message="Data tunjangan belum tersedia" />
                 ) : (
                     <>
-                        <div className="hidden md:block bg-white rounded-xl shadow border overflow-x-auto">
+                        <div className="hidden lg:block bg-white rounded-xl shadow border overflow-x-auto">
                             <table className="min-w-full text-sm">
                                 <thead className="bg-green-500 text-white">
                                     <tr>
@@ -206,7 +206,7 @@ const TunjanganKaryawan = () => {
                                         <tr key={item.id} className="hover:bg-green-50">
                                             <td className="px-4 py-1 text-center">{item.nip}</td>
                                             <td className="px-4 py-1 text-center">
-                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${item.status ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500" }`}>
+                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${item.status ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
                                                     {item.status ? "Aktif Bekerja" : "Non-Aktif"}
                                                 </span>
                                             </td>
@@ -217,23 +217,37 @@ const TunjanganKaryawan = () => {
                                             <td className="px-4 py-1 text-center">{item.perusahaan}</td>
                                             <td className="px-4 py-1 text-center">
                                                 <div className="flex justify-center gap-2.5">
-                                                    <FontAwesomeIcon icon={faGasPump} title="Uang Bensin" className={`text-sm ${item.bensin ? "text-orange-500" : "text-gray-300"}`}/>
-                                                    <FontAwesomeIcon icon={faUtensils} title="Voucher Makan" className={`text-sm ${item.makan ? "text-green-500" : "text-gray-300"}`}/>
-                                                    <FontAwesomeIcon icon={faHotel} title="Biaya Penginapan" className={`text-sm ${item.penginapan ? "text-indigo-500" : "text-gray-300"}`}/>
-                                                    <FontAwesomeIcon icon={faBriefcase} title="Perjalanan Dinas" className={`text-sm ${item.dinas ? "text-blue-500" : "text-gray-300"}`}/>
+                                                    <FontAwesomeIcon icon={faGasPump} title="Uang Bensin" className={`text-sm ${item.bensin ? "text-orange-500" : "text-gray-300"}`} />
+                                                    <FontAwesomeIcon icon={faUtensils} title="Voucher Makan" className={`text-sm ${item.makan ? "text-green-500" : "text-gray-300"}`} />
+                                                    <FontAwesomeIcon icon={faHotel} title="Biaya Penginapan" className={`text-sm ${item.penginapan ? "text-indigo-500" : "text-gray-300"}`} />
+                                                    <FontAwesomeIcon icon={faBriefcase} title="Perjalanan Dinas" className={`text-sm ${item.dinas ? "text-blue-500" : "text-gray-300"}`} />
                                                 </div>
                                             </td>
-                                            <td className="px-4 py-1 text-center space-x-1.5 text-xs">
-                                                <button onClick={() => { setSelected(item); setDetailOpen(true);}} className="px-3 py-1.5 bg-blue-500 text-white rounded">
-                                                    <FontAwesomeIcon icon={faEye} /> Detail
-                                                </button>
-                                                <button onClick={() => { setEditData(item); setFormOpen(true);}} className="px-3 py-1.5 bg-amber-400 text-white rounded">
-                                                    <FontAwesomeIcon icon={faEdit} /> Edit
-                                                </button>
-                                                <button onClick={() => handleDelete(item)} className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded">
-                                                    <FontAwesomeIcon icon={faTrash} /> Hapus
-                                                </button>
+                                            <td className="px-4 py-1 text-center text-xs">
+                                                <div className="flex flex-wrap justify-center gap-1.5">
+                                                    <button onClick={() => { setSelected(item); setDetailOpen(true); }} className="px-3 py-1.5 bg-blue-500 text-white rounded">
+                                                        <FontAwesomeIcon icon={faEye} /> Detail
+                                                    </button>
+
+                                                    <button
+                                                        onClick={() => {
+                                                            setEditData(item);
+                                                            setFormOpen(true);
+                                                        }}
+                                                        className="px-3 py-1.5 bg-amber-400 text-white rounded"
+                                                    >
+                                                        <FontAwesomeIcon icon={faEdit} /> Edit
+                                                    </button>
+
+                                                    <button
+                                                        onClick={() => handleDelete(item)}
+                                                        className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded"
+                                                    >
+                                                        <FontAwesomeIcon icon={faTrash} /> Hapus
+                                                    </button>
+                                                </div>
                                             </td>
+
                                         </tr>
                                     ))}
                                 </tbody>
@@ -241,49 +255,107 @@ const TunjanganKaryawan = () => {
                         </div>
 
                         {/* MOBILE */}
-                        <div className="md:hidden space-y-3">
+                        <div className="lg:hidden space-y-3">
                             {paginatedData.map((item) => (
-                                <div key={item.id} className="bg-white border rounded-xl p-4 shadow-sm">
-                                    <div className="font-semibold text-gray-900">{item.nama}</div>
-                                    <div className="text-xs text-gray-500">{item.nip}</div>
-                                    <div className="text-xs text-gray-500">{item.perusahaan}</div>
+                                <div key={item.id} className="bg-white border rounded-xl px-4 py-3 shadow-sm">
+                                    {/* HEADER */}
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-semibold text-gray-900 truncate">
+                                                {item.nama}
+                                            </p>
+                                            <p className="text-[11px] text-gray-500">
+                                                {item.nip}
+                                            </p>
+                                            <p className="text-[11px] text-gray-500 truncate">
+                                                {item.perusahaan}
+                                            </p>
+                                        </div>
 
-                                    <div className="mt-2 flex gap-3">
-                                        <FontAwesomeIcon icon={faGasPump} className={item.bensin ? "text-orange-500" : "text-gray-300"}/>
-                                        <FontAwesomeIcon icon={faUtensils} className={item.makan ? "text-green-500" : "text-gray-300"}/>
-                                        <FontAwesomeIcon icon={faHotel} className={item.penginapan ? "text-indigo-500" : "text-gray-300"}/>
-                                        <FontAwesomeIcon icon={faBriefcase} className={item.dinas ? "text-blue-500" : "text-gray-300"}/>
+                                        {/* STATUS (optional, kalau mau ditampilkan) */}
+                                        <span
+                                            className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium ${item.status
+                                                    ? "bg-green-100 text-green-700"
+                                                    : "bg-gray-100 text-gray-500"
+                                                }`}
+                                        >
+                                            {item.status ? "Aktif" : "Non-Aktif"}
+                                        </span>
                                     </div>
 
-                                    <div className="mt-3 flex gap-2">
-                                        <button
-                                            onClick={() => {
-                                                setSelected(item);
-                                                setDetailOpen(true);
-                                            }}
-                                            className="flex-1 bg-blue-500 text-white text-xs py-2 rounded"
-                                        >
-                                            Detail
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setEditData(item);
-                                                setFormOpen(true);
-                                            }}
-                                            className="flex-1 bg-amber-400 text-white text-xs py-2 rounded"
-                                        >
-                                            Edit
-                                        </button>
+                                    {/* DIVIDER */}
+                                    <div className="my-3 border-t" />
+
+                                    {/* TUNJANGAN */}
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3 text-sm">
+                                            <FontAwesomeIcon
+                                                icon={faGasPump}
+                                                title="Uang Bensin"
+                                                className={item.bensin ? "text-orange-500" : "text-gray-300"}
+                                            />
+                                            <FontAwesomeIcon
+                                                icon={faUtensils}
+                                                title="Voucher Makan"
+                                                className={item.makan ? "text-green-500" : "text-gray-300"}
+                                            />
+                                            <FontAwesomeIcon
+                                                icon={faHotel}
+                                                title="Penginapan"
+                                                className={item.penginapan ? "text-indigo-500" : "text-gray-300"}
+                                            />
+                                            <FontAwesomeIcon
+                                                icon={faBriefcase}
+                                                title="Perjalanan Dinas"
+                                                className={item.dinas ? "text-blue-500" : "text-gray-300"}
+                                            />
+                                        </div>
+
+                                        {/* ACTION ICON */}
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => {
+                                                    setSelected(item);
+                                                    setDetailOpen(true);
+                                                }}
+                                                title="Detail"
+                                                className="
+              w-8 h-8 flex items-center justify-center
+              rounded-md
+              bg-blue-50 text-blue-600
+              hover:bg-blue-100 transition
+            "
+                                            >
+                                                <FontAwesomeIcon icon={faEye} className="text-xs" />
+                                            </button>
+
+                                            <button
+                                                onClick={() => {
+                                                    setEditData(item);
+                                                    setFormOpen(true);
+                                                }}
+                                                title="Edit"
+                                                className="
+              w-8 h-8 flex items-center justify-center
+              rounded-md
+              bg-amber-50 text-amber-600
+              hover:bg-amber-100 transition
+            "
+                                            >
+                                                <FontAwesomeIcon icon={faEdit} className="text-xs" />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
+
                     </>
                 )}
             </div>
 
             {filtered.length > ITEMS_PER_PAGE && (
-                <Pagination currentPage={currentPage} totalItems={filtered.length} itemsPerPage={ITEMS_PER_PAGE} onPageChange={setCurrentPage}/>
+                <Pagination currentPage={currentPage} totalItems={filtered.length} itemsPerPage={ITEMS_PER_PAGE} onPageChange={setCurrentPage} />
             )}
 
             <Modal isOpen={detailOpen} onClose={() => setDetailOpen(false)} title={`Detail Tunjangan ${selected?.nama ?? ""}`} note="Penjelasan jenis tunjangan, arti ikon, serta ketentuan umum pemberian tunjangan karyawan." size="xl">
@@ -291,7 +363,7 @@ const TunjanganKaryawan = () => {
             </Modal>
 
             <Modal isOpen={formOpen} onClose={() => setFormOpen(false)} title={editData ? "Edit Tunjangan" : "Tambah Tunjangan"}>
-                <TunjanganForm editData={editData} onSuccess={() => { setFormOpen(false); fetchData();}}/>
+                <TunjanganForm editData={editData} onSuccess={() => { setFormOpen(false); fetchData(); }} />
             </Modal>
 
             {/* INFORMASI */}

@@ -17,23 +17,18 @@ export default function Absensi() {
     useEffect(() => {
         const load = async () => {
             try {
-                const res = await fetchWithJwt(`${apiUrl}/absen/riwayat/${user.id_user}`);
-
+                const res = await fetchWithJwt(`${apiUrl}/absen/riwayat/user/${user.id_user}`);
                 if (res.status === 404) {
                     setData([]);
                     return;
                 }
-
                 if (!res.ok) throw new Error("Gagal memuat data absensi");
-
                 const json = await res.json();
                 const sorted = (json.data || []).sort(
                     (a, b) => new Date(b.jam_mulai) - new Date(a.jam_mulai)
                 );
-
                 setData(sorted);
             } catch (e) {
-                // hanya error selain 404
                 setError(e.message);
             } finally {
                 setLoading(false);

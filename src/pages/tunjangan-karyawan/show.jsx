@@ -4,6 +4,7 @@ import { faGasPump, faUtensils, faHotel, faBriefcase, faCheckCircle, faCircle } 
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { formatFullDate } from "../../utils/dateUtils";
 import { getDefaultPeriodWeek } from "../../utils/getDefaultPeriod";
+import { LoadingSpinner, EmptyState, ErrorState } from "../../components";
 
 const iconMap = {
     "Uang Bensin": faGasPump,
@@ -11,6 +12,29 @@ const iconMap = {
     "Uang Penginapan": faHotel,
     "Perjalanan dinas": faBriefcase,
 };
+
+const TUNJANGAN_MASTER = [
+    {
+        key: "Uang Bensin",
+        icon: faGasPump,
+        color: "bg-orange-500",
+    },
+    {
+        key: "Voucher makan",
+        icon: faUtensils,
+        color: "bg-green-500",
+    },
+    {
+        key: "Uang Penginapan",
+        icon: faHotel,
+        color: "bg-indigo-500",
+    },
+    {
+        key: "Perjalanan dinas",
+        icon: faBriefcase,
+        color: "bg-blue-500",
+    },
+];
 
 const Row = ({ icon, label, active, activeColor }) => (
     <div className="flex items-center justify-between py-3 border-b last:border-b-0">
@@ -25,6 +49,24 @@ const Row = ({ icon, label, active, activeColor }) => (
         </div>
     </div>
 );
+
+const SummaryCard = ({ icon, label, count, color }) => (
+    <div className="flex items-center justify-between px-4 py-4 rounded-xl bg-white shadow-sm">
+        <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 flex items-center justify-center rounded-lg ${color} text-white`}>
+                <FontAwesomeIcon icon={icon} />
+            </div>
+            <p className="text-sm font-medium text-gray-700">
+                {label}
+            </p>
+        </div>
+
+        <p className="text-2xl font-semibold text-gray-900">
+            {count}x
+        </p>
+    </div>
+);
+
 
 /* ================= MAIN ================= */
 const TunjanganDetail = ({ data }) => {
@@ -41,9 +83,6 @@ const TunjanganDetail = ({ data }) => {
         setStartDate(start);
         setEndDate(end);
     }, []);
-
-
-
 
     /* === FETCH FUNCTION (SUDAH BENAR POSISINYA) === */
     const fetchTunjangan = async () => {
@@ -80,13 +119,27 @@ const TunjanganDetail = ({ data }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [startDate, endDate]);
 
+    const getSummary = () => {
+        if (!response?.data) return {};
+
+        const summary = {};
+
+        Object.values(response.data).forEach((items) => {
+            items.forEach((item) => {
+                summary[item.nama] = (summary[item.nama] || 0) + 1;
+            });
+        });
+
+        return summary;
+    };
+
 
     if (!data) return null;
 
     return (
         <div className="space-y-5">
             <div className="bg-white rounded-xl p-5 shadow-sm border">
-                <p className="text-lg font-semibold">{data.nama}</p>
+                <p className="text-lg font-semibold uppercase">{data.nama}</p>
                 <div className="mt-2 flex gap-4 text-sm text-gray-600">
                     <span><b>NIP:</b> {data.nip}</span>
                     <span><b>Role:</b> {data.role}</span>
@@ -98,10 +151,10 @@ const TunjanganDetail = ({ data }) => {
             <div className="border rounded-xl flex flex-col max-h-[120vh]">
                 <div className="px-4 py-3 space-y-4 border-b bg-white rounded-t-xl">
                     <p className="text-sm font-semibold">Tunjangan Aktif</p>
-                    <Row icon={faGasPump} label="Uang Bensin" active={Boolean(data.bensin)} activeColor="text-orange-500"/>
-                    <Row icon={faUtensils} label="Voucher Makan" active={Boolean(data.makan)} activeColor="text-green-500"/>
-                    <Row icon={faHotel} label="Biaya Penginapan" active={Boolean(data.penginapan)} activeColor="text-indigo-500"/>
-                    <Row icon={faBriefcase} label="Perjalanan Dinas" active={Boolean(data.dinas)} activeColor="text-blue-500"/>
+                    <Row icon={faGasPump} label="Uang Bensin" active={Boolean(data.bensin)} activeColor="text-orange-500" />
+                    <Row icon={faUtensils} label="Voucher Makan" active={Boolean(data.makan)} activeColor="text-green-500" />
+                    <Row icon={faHotel} label="Biaya Penginapan" active={Boolean(data.penginapan)} activeColor="text-indigo-500" />
+                    <Row icon={faBriefcase} label="Perjalanan Dinas" active={Boolean(data.dinas)} activeColor="text-blue-500" />
                 </div>
 
                 <div className="sticky bottom-0 bg-white px-4 py-3 rounded-b-xl z-20">
@@ -110,6 +163,22 @@ const TunjanganDetail = ({ data }) => {
                         <input type="date" value={endDate} min={startDate} onChange={(e) => setEndDate(e.target.value)} className="border rounded px-3 py-2 text-sm" />
                     </div>
                 </div>
+
+                {/* ===== SUMMARY ===== */}
+                {response && (
+                    <div className="px-4 pt-4 border-b bg-gray-50">
+                        <p className="text-sm font-semibold text-gray-800 mb-3">
+                            Ringkasan Tunjangan Periode Ini
+                        </p>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pb-4">
+                            {TUNJANGAN_MASTER.map((t) => (
+                                <SummaryCard key={t.key} icon={t.icon} label={t.key} count={getSummary()[t.key] || 0} color={t.color}/>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
 
                 <div className="flex-1 overflow-y-auto scrollbar-green px-4 py-3 space-y-4">
                     {loading && (

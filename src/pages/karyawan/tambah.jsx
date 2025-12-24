@@ -4,7 +4,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash, faChevronDown, faInfoCircle, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 import { fetchWithJwt } from "../../utils/jwtHelper";
-import { SectionHeader } from "../../components";
+import { SectionHeader, Modal } from "../../components";
+import TunjanganForm from "../tunjangan-karyawan/form";
 import Select from "react-select";
 
 const TambahKaryawan = () => {
@@ -19,6 +20,13 @@ const TambahKaryawan = () => {
   const [kadivList, setKadivList] = useState([]);
   const [kadivGroupList, setKadivGroupList] = useState([]);
   const [loadingGroup, setLoadingGroup] = useState(false);
+  const [openTunjangan, setOpenTunjangan] = useState(false);
+  const [newUserId, setNewUserId] = useState(null);
+  const [idUserTunjangan, setIdUserTunjangan] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [editTunjanganData, setEditTunjanganData] = useState(null);
+
+
 
 
   useEffect(() => {
@@ -118,37 +126,31 @@ const TambahKaryawan = () => {
       });
       const result = await res.json();
       if (result.success) {
-        const newId =
-          result.data?.id_user || result.id_user;
+        const tunjanganId = result.id_user_tunjangan;
+        const userId = result.id_user;
 
-        Swal.fire({
-          title: "Data Berhasil Disimpan",
-          html: `
-      <div style="text-align:left; font-size:14px; line-height:1.6;">
-        <p>
-          Data karyawan berhasil ditambahkan ke sistem.
-        </p>
-        <p style="margin-top:8px;">
-          Selanjutnya, Anda dapat melengkapi data karyawan
-          dengan mengatur <strong>hak tunjangan</strong>
-          melalui halaman detail karyawan.
-        </p>
-        <p style="margin-top:6px; color:#555;">
-          Pengaturan ini bisa dilakukan sekarang atau kapan saja.
-        </p>
-      </div>
-    `,
-          icon: "success",
-          confirmButtonText: "Lihat Detail Karyawan",
-        }).then(() => {
-          if (newId) {
-            navigate(`/karyawan/show/${newId}`);
-          } else {
-            navigate("/karyawan");
-          }
+        if (!tunjanganId || !userId) {
+          Swal.fire("Error", "ID user / tunjangan tidak ditemukan", "error");
+          return;
+        }
+
+        setUserId(userId);
+
+        setEditTunjanganData({
+          id: tunjanganId,       // PENTING → dipakai PUT
+          id_user: userId,
+          bensin: 0,
+          makan: 0,
+          penginapan: 0,
+          dinas: 0,
+          nama: currentUser.nama,
+          nip: currentUser.nip,
+          role: divisiList.find(d => d.id === currentUser.id_role)?.nama,
+          perusahaan: perusahaanList.find(p => p.id === currentUser.id_perusahaan)?.nama,
         });
-      }
 
+        setOpenTunjangan(true);
+      }
       else {
         Swal.fire("Gagal", result.message, "error");
       }
@@ -172,6 +174,7 @@ const TambahKaryawan = () => {
   };
 
   const handleBack = () => navigate("/karyawan");
+
 
   return (
     <div className="bg-white flex flex-col">
@@ -581,6 +584,22 @@ const TambahKaryawan = () => {
           </button>
         </div>
       </form>
+
+      <Modal isOpen={openTunjangan} onClose={() => { setOpenTunjangan(false); navigate(`/karyawan/show/${userId}`);}} title="Atur Tunjangan Karyawan" size="md">
+        <TunjanganForm editData={editTunjanganData} onSuccess={() => {
+            setOpenTunjangan(false);
+            Swal.fire({
+              icon: "success",
+              title: "Berhasil",
+              text: "Tunjangan karyawan berhasil disimpan",
+            }).then(() => {
+              navigate(`/karyawan/show/${userId}`);
+            });
+          }}
+        />
+
+      </Modal>
+
     </div>
   );
 };

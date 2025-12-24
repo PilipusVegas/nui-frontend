@@ -28,8 +28,8 @@ const DetailKaryawan = () => {
 
       <div className="flex flex-col leading-tight">
         <span className="font-semibold">{label}</span>
-        <span className="text-xs">
-          {active ? "Dapat" : "Tidak Dapat"}
+        <span className="text-xs font-bold tracking-wide">
+          {active ? "YA" : "TIDAK"}
         </span>
       </div>
     </div>
@@ -120,22 +120,23 @@ const DetailKaryawan = () => {
             </div>
 
             {/* TUNJANGAN & FASILITAS */}
-            {/* <DataSection title={
+            {canShowKadiv && (
+              <DataSection title={
                 <div className="flex items-center justify-between gap-3">
                   <span>Tunjangan & Fasilitas</span>
 
                   <button type="button" onClick={() => {
-                      setEditTunjanganData({
-                        id: karyawan.id,
-                        id_user: karyawan.id,
-                        nama: karyawan.nama,
-                        nip: karyawan.nip,
-                        role: karyawan.role_name,
-                        perusahaan: karyawan.perusahaan,
-                        ...karyawan.tunjangan,
-                      });
-                      setShowTunjanganModal(true);
-                    }}
+                    setEditTunjanganData({
+                      id: karyawan.id,
+                      id_user: karyawan.id,
+                      nama: karyawan.nama,
+                      nip: karyawan.nip,
+                      role: karyawan.role_name,
+                      perusahaan: karyawan.perusahaan,
+                      ...karyawan.tunjangan,
+                    });
+                    setShowTunjanganModal(true);
+                  }}
                     className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300 transition"
                   >
                     <FontAwesomeIcon icon={faSlidersH} className="text-xs" />
@@ -143,17 +144,16 @@ const DetailKaryawan = () => {
                   </button>
                 </div>
               }
-            >
+              >
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <TunjanganBadge label="Transport" icon={faGasPump} active={karyawan.tunjangan?.bensin === 1} />
+                  <TunjanganBadge label="Voucher Makan" icon={faUtensils} active={karyawan.tunjangan?.makan === 1} />
+                  <TunjanganBadge label="Perjalanan Dinas" icon={faSuitcaseRolling} active={karyawan.tunjangan?.dinas === 1} />
+                  <TunjanganBadge label="Biaya Penginapan" icon={faHotel} active={karyawan.tunjangan?.penginapan === 1} />
+                </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <TunjanganBadge label="Transport" icon={faGasPump} active={karyawan.tunjangan?.bensin === 1} />
-                <TunjanganBadge label="Voucher Makan" icon={faUtensils} active={karyawan.tunjangan?.makan === 1} />
-                <TunjanganBadge label="Perjalanan Dinas" icon={faSuitcaseRolling} active={karyawan.tunjangan?.dinas === 1} />
-                <TunjanganBadge label="Biaya Penginapan" icon={faHotel} active={karyawan.tunjangan?.penginapan === 1} />
-              </div>
-
-            </DataSection> */}
-
+              </DataSection>
+            )}
 
             {/* BIODATA */}
             <DataSection title="Biodata Pribadi">
