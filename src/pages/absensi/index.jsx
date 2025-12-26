@@ -53,7 +53,7 @@ const Absensi = () => {
 
   const fetchAttendanceHistory = async () => {
     try {
-      const response = await fetchWithJwt(`${apiUrl}/absen/riwayat/${attendanceData.userId}`);
+      const response = await fetchWithJwt(`${apiUrl}/absen/riwayat/user/${attendanceData.userId}`);
       const data = await response.json();
       if (response.ok) {
         const last24Hours = data.data.filter((item) => new Date() - new Date(item.jam_mulai) <= 24 * 60 * 60 * 1000);
@@ -275,7 +275,7 @@ const Absensi = () => {
 
                               {item.keterlambatan > 0 && (
                                 <span className="text-[10px] px-2 py-[2px] rounded bg-red-200 text-red-700 font-semibold">
-                                  Terlambat {item.keterlambatan} mnt
+                                  Telat {item.keterlambatan} Menit
                                 </span>
                               )}
                             </div>
@@ -288,7 +288,7 @@ const Absensi = () => {
                           <p className="text-[11px] text-gray-600 mt-1">
                             Lokasi:{" "}
                             <span className="font-medium text-gray-700">
-                              {item.lokasi_absen_mulai || "Belum tersedia"}
+                              {item.lokasi_absen_mulai || "N/A"}
                             </span>
                           </p>
                         </div>

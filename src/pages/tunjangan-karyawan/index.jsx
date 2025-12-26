@@ -79,7 +79,7 @@ const TunjanganKaryawan = () => {
         if (!result.isConfirmed) return;
 
         try {
-            await fetchWithJwt(`${apiUrl}/tunjangan/user/${item.id}`, { method: "DELETE" });
+            await fetchWithJwt(`${apiUrl}/tunjangan/user/${item.id_user}`, { method: "DELETE" });
 
             await Swal.fire({
                 icon: "success",

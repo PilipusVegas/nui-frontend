@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { faCheck, faEye, faExclamationTriangle, faCalendarAlt, faCheckCircle, faSortDown, faSortUp, faCalendarXmark } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faEye, faExclamationTriangle, faCalendarAlt, faCheckCircle, faSortDown, faSortUp, faCalendarXmark, faClockRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
 import { fetchWithJwt, getUserFromToken } from "../../../utils/jwtHelper";
@@ -75,11 +75,23 @@ const DataAbsensi = () => {
 
   return (
     <div className="flex flex-col justify-start">
-      <SectionHeader title="Persetujuan Absensi Lapangan" subtitle="Monitoring kehadiran karyawan lapangan secara real-time setiap hari." onBack={() => navigate("/home")} />
+      <SectionHeader title="Persetujuan Absensi Lapangan" subtitle="Monitoring kehadiran karyawan lapangan secara real-time setiap hari." onBack={() => navigate("/home")}
+        actions={
+          <button onClick={() => navigate("/pengajuan-absensi/riwayat")}title="Riwayat Persetujuan"
+            className=" inline-flex items-center justify-center px-3 py-2 text-blue-700 bg-blue-100 border border-blue-300 rounded-lg hover:bg-blue-200 transition"
+          >
+            <FontAwesomeIcon icon={faClockRotateLeft} />
+            <span className="hidden sm:inline ml-2 text-sm font-semibold">
+              Riwayat Persetujuan
+            </span>
+          </button>
+        }
+      />
+
 
       <div className="grid grid-cols-2 gap-3 mb-4">
         <SummaryCard icon={faCheckCircle} title="Total Karyawan Lapangan" value={absenData.length} />
-        <SummaryCard icon={faCalendarXmark} title="Data Absensi Abnormal" value={absenData.reduce((sum, d) => sum + Number(d.unapproved || 0), 0)} note={[1, 4].includes(user?.id_role) ? "Lihat semua Data" : undefined} onClick={[1, 4].includes(user?.id_role) ? () => navigate("/pengajuan-absensi/batch") : undefined} />
+        <SummaryCard icon={faCalendarXmark} title="Data Absensi Abnormal" value={absenData.reduce((sum, d) => sum + Number(d.unapproved || 0), 0)} note={[1, 4].includes(user?.id_role) ? "Lihat semua Data" : undefined} onClick={[1, 4].includes(user?.id_role) ? () => navigate("/pengajuan-absensi/abnormal") : undefined} />
       </div>
 
       <SearchBar onSearch={(val) => { setSearchName(val); setCurrentPage(1); }} placeholder="Cari nama dan divisi..." className="mb-4" />

@@ -19,7 +19,7 @@ const HomeMobile = ({ handleLogout }) => {
     const idUser = user?.id_user;
     const fetchAttendance = async () => {
       try {
-        const response = await fetchWithJwt(`${apiUrl}/absen/riwayat/${idUser}`);
+        const response = await fetchWithJwt(`${apiUrl}/absen/riwayat/user/${idUser}`);
         if (!response.ok) throw new Error("Failed to fetch attendance data");
 
         const json = await response.json();

@@ -7,27 +7,40 @@ const TunjanganForm = ({ editData, onSuccess }) => {
     const [loadingUser, setLoadingUser] = useState(false);
     const [userOptions, setUserOptions] = useState([]);
     const [form, setForm] = useState({
-        id_user: editData?.id_user || null,
+        user: null, // simpan object option
         bensin: editData?.bensin || 0,
         makan: editData?.makan || 0,
         penginapan: editData?.penginapan || 0,
         dinas: editData?.dinas || 0,
     });
 
+
     const selectStyles = {
         option: (base, state) => ({
             ...base,
-            backgroundColor: state.isSelected
-                ? "#E5F7ED"   // hijau lembut untuk selected
-                : state.isFocused
-                    ? "#F9FAFB"   // abu hover tipis
-                    : "white",
+            backgroundColor: state.isFocused
+                ? "#F3F4F6" // abu-abu tipis saat hover
+                : "#FFFFFF", // putih default & selected
             color: "#1F2937",
             cursor: "pointer",
         }),
+        control: (base, state) => ({
+            ...base,
+            borderColor: state.isFocused ? "#D1D5DB" : "#E5E7EB",
+            boxShadow: "none",
+            "&:hover": {
+                borderColor: "#D1D5DB",
+            },
+        }),
+        singleValue: (base) => ({
+            ...base,
+            color: "#111827",
+        }),
+        placeholder: (base) => ({
+            ...base,
+            color: "#9CA3AF",
+        }),
     };
-
-
 
 
     /* FETCH PROFIL (MODE TAMBAH) */
@@ -43,12 +56,12 @@ const TunjanganForm = ({ editData, onSuccess }) => {
                 if (json.success) {
                     setUserOptions(
                         json.data.map((u) => ({
-                            value: u.id,
+                            value: u.id_user,
                             label: (
                                 <div className="flex justify-between items-start gap-4 leading-tight">
                                     <div>
-                                        <div className="font-medium text-gray-800">
-                                            {u.nama}
+                                        <div className="font-medium text-gray-800 text-xs">
+                                            {u.nama_user}
                                         </div>
                                         <div className="text-xs text-gray-500">
                                             {u.nip} • {u.role}
@@ -98,17 +111,18 @@ const TunjanganForm = ({ editData, onSuccess }) => {
             return;
         }
 
-        // MODE TAMBAH
-        await fetchWithJwt(
-            `${apiUrl}/tunjangan/user`,
-            {
-                method: "POST",
-                body: JSON.stringify({
-                    id_user: form.id_user,
-                    tunjangan: tunjanganPayload,
-                }),
-            }
-        );
+        await fetchWithJwt(`${apiUrl}/tunjangan/user`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                id_user: form.user?.value,
+                tunjangan: tunjanganPayload,
+            }),
+        });
+
+
         onSuccess();
     };
 
@@ -140,6 +154,11 @@ const TunjanganForm = ({ editData, onSuccess }) => {
             dinas: checked ? 1 : 0,
         });
     };
+
+
+    const selectedUser = userOptions.find(
+        (opt) => opt.value === form.id_user
+    ) || null;
 
 
     return (
@@ -179,10 +198,11 @@ const TunjanganForm = ({ editData, onSuccess }) => {
                     <div className="relative">
                         <Select
                             options={userOptions}
+                            value={form.user}
                             isLoading={loadingUser}
                             placeholder="Ketik nama atau NIP karyawan..."
                             onChange={(opt) =>
-                                setForm({ ...form, id_user: opt?.value || null })
+                                setForm({ ...form, user: opt })
                             }
                             styles={selectStyles}
                         />
@@ -226,9 +246,14 @@ const TunjanganForm = ({ editData, onSuccess }) => {
                 </div>
             </div>
 
-            <button type="submit" disabled={!form.id_user} className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white py-2.5 rounded-lg font-semibold transition">
+            <button
+                type="submit"
+                disabled={editData ? false : !form.user}
+                className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white py-2.5 rounded-lg font-semibold transition"
+            >
                 Simpan Tunjangan
             </button>
+
         </form>
     );
 };

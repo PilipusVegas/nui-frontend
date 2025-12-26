@@ -242,7 +242,7 @@ const App = () => {
     // DESKTOP
     { path: "/pengajuan-absensi", component: <PengajuanAbsensi />, roles: ["1", "4", "5", "6", "18", "20"], allowedCompanies: ["1", "4"], layout: SidebarLayout },
     { path: "/pengajuan-absensi/:id_user", component: <DetailPengajuanAbsensi />, roles: ["1", "4", "5", "6", "18", "20"], allowedCompanies: ["1", "4"], layout: SidebarLayout },
-    { path: "/pengajuan-absensi/batch", component: <AbsensiAbnormal />, roles: ["1", "4", "5", "6", "18", "20"], allowedCompanies: ["1", "4"], layout: SidebarLayout },
+    { path: "/pengajuan-absensi/abnormal", component: <AbsensiAbnormal />, roles: ["1", "4", "5", "6", "18", "20"], allowedCompanies: ["1", "4"], layout: SidebarLayout },
     { path: "/pengajuan-lembur", component: <PengajuanLembur />, roles: ["1", "4", "5", "6", "20"], allowedCompanies: ["1", "4", "5", "6"], layout: SidebarLayout },
     { path: "/pengajuan-dinas", component: <PengajuanDinas />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
     { path: "/pengajuan-dinas/:id", component: <DetailPengajuanDinas />, roles: ["1", "4", "5", "6","20"], layout: SidebarLayout },
@@ -284,8 +284,8 @@ const App = () => {
     { path: "/tunjangan-karyawan", component: <TunjanganKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },    
     { path: "/rekap-tunjangan", component: <RekapTunjangan />, roles: ["1", "4", "6"] },    
     { path: "/log-sistem", component: <LogSistem />, roles: ["1", "4", "6"], layout: SidebarLayout },
-    { path: "/riwayat-absensi", component: <RiwayatAbsensi />, roles: ["1", "4", "6"], layout: SidebarLayout },
-    { path: "/riwayat-absensi/:id", component: <RiwayatAbsensiDetail />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/pengajuan-absensi/riwayat", component: <RiwayatAbsensi />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/pengajuan-absensi/riwayat/:id_user", component: <RiwayatAbsensiDetail />, roles: ["1", "4", "6"], layout: SidebarLayout },
   ];
 
   return (
