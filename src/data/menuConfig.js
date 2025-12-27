@@ -148,12 +148,12 @@ export const menuConfig = [
     {
         sectionTitle: "Pengajuan",
         items: [
-            {
-                label: "Pengajuan Lembur",
-                icon: faClock,
-                path: "/lembur",
-                roles: [5, 20],
-            },
+            // {
+            //     label: "Pengajuan Lembur",
+            //     icon: faClock,
+            //     path: "/lembur",
+            //     roles: [5, 20],
+            // },
             {
                 label: "Pengajuan Dinas",
                 icon: faPlaneDeparture,
@@ -173,7 +173,7 @@ export const menuConfig = [
                 roles: [1, 4, 5, 6, 20],
                 submenu: [
                     {
-                        label: "Daftar Pengajuan Lembur",
+                        label: "Daftar Pengajuan Lembur",   
                         icon: faPenFancy,
                         path: "/pengajuan-lembur",
                         roles: [1, 4, 5, 6, 20],

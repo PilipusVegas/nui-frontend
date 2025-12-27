@@ -222,26 +222,13 @@ const EditKaryawan = () => {
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">
                             Masukkan Nomor Pokok Wajib Pajak (NPWP).
                         </p>
-                        <input
-                            type="text"
-                            name="npwp"
-                            value={currentUser.npwp}
-                            onChange={handleChange}
-                            required
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                        />
+                        <input type="text" name="npwp" value={currentUser.npwp} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"/>
                     </div>
 
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">No. Telepon</label>
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">Masukkan nomor telepon aktif.</p>
-                        <input
-                            type="text"
-                            name="telp"
-                            value={currentUser.telp}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                        />
+                        <input type="text" name="telp" value={currentUser.telp} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"/>
                     </div>
 
                     <div>
@@ -282,7 +269,7 @@ const EditKaryawan = () => {
                         </div>
                     )}
 
-                    <div>
+                    {/* <div>
                         <label className="block mb-1 font-medium text-gray-700">
                             Status Kendaraan <span className="text-gray-400 text-sm font-normal">(Opsional)</span>
                         </label>
@@ -309,7 +296,7 @@ const EditKaryawan = () => {
                             <option value="3">Menggunakan Kendaraan Umum (Menerima Tunjangan)</option>
                             <option value="2">Menggunakan Kendaraan Kantor (Tidak Menerima Tunjangan)</option>
                         </select>
-                    </div>
+                    </div> */}
 
                     <div className="col-span-full flex flex-col mt-4">
                         <div className="flex items-center">

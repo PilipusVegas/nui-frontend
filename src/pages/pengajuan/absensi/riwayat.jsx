@@ -136,11 +136,11 @@ const RiwayatPersetujuanAbsensi = () => {
 
     return (
         <div className="flex flex-col">
-            <SectionHeader title="Riwayat Persetujuan Absensi" subtitle="Rekap absensi karyawan berdasarkan periode penggajian." onBack={() => navigate("/pengajuan-absensi")}/>
+            <SectionHeader title="Riwayat Persetujuan Absensi" subtitle="Rekap absensi karyawan berdasarkan periode penggajian." onBack={() => navigate("/pengajuan-absensi")} />
 
             <div className="mb-4 flex flex-col sm:flex-row sm:items-end gap-3">
                 <div className="w-full sm:flex-1">
-                    <SearchBar placeholder="Cari nama atau divisi..." onSearch={(v) => { setSearch(v); setCurrentPage(1);}}/>
+                    <SearchBar placeholder="Cari nama atau divisi..." onSearch={(v) => { setSearch(v); setCurrentPage(1); }} />
                 </div>
 
                 <div className="w-full sm:w-auto sm:min-w-[260px]">
@@ -213,15 +213,21 @@ const RiwayatPersetujuanAbsensi = () => {
                                     </td>
                                     <td className="text-center text-sm">{item.total_absen} Hari</td>
                                     <td className="text-center">
-                                        <button disabled={!isValidPeriode}
-                                            onClick={() => navigate(`/pengajuan-absensi/riwayat/${item.id_user}?startDate=${formatISODate(selectedPeriode.tgl_awal)}&endDate=${formatISODate(selectedPeriode.tgl_akhir)}`)}
+                                        <a
+                                            href={`/pengajuan-absensi/riwayat/${item.id_user}?startDate=${formatISODate(selectedPeriode.tgl_awal)}&endDate=${formatISODate(selectedPeriode.tgl_akhir)}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
                                             className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition
-                                            ${selectedPeriode ? "bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}
+                                            ${isValidPeriode
+                                                    ? "bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                                    : "bg-gray-300 text-gray-500 pointer-events-none cursor-not-allowed"
+                                                }`}
                                         >
                                             <FontAwesomeIcon icon={faEye} className="text-[11px]" />
                                             <span>Detail</span>
-                                        </button>
+                                        </a>
                                     </td>
+
                                 </tr>
                             ))}
                     </tbody>

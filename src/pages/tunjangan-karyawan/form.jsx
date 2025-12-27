@@ -57,24 +57,11 @@ const TunjanganForm = ({ editData, onSuccess }) => {
                     setUserOptions(
                         json.data.map((u) => ({
                             value: u.id_user,
-                            label: (
-                                <div className="flex justify-between items-start gap-4 leading-tight">
-                                    <div>
-                                        <div className="font-medium text-gray-800 text-xs">
-                                            {u.nama_user}
-                                        </div>
-                                        <div className="text-xs text-gray-500">
-                                            {u.nip} • {u.role}
-                                        </div>
-                                    </div>
-                                    <div className="text-xs text-gray-500 text-right whitespace-nowrap">
-                                        {u.perusahaan}
-                                    </div>
-                                </div>
-                            ),
+                            label: `${u.nama_user} (${u.nip})`,
                             raw: u,
                         }))
                     );
+
                 }
             } finally {
                 setLoadingUser(false);
@@ -201,11 +188,25 @@ const TunjanganForm = ({ editData, onSuccess }) => {
                             value={form.user}
                             isLoading={loadingUser}
                             placeholder="Ketik nama atau NIP karyawan..."
-                            onChange={(opt) =>
-                                setForm({ ...form, user: opt })
-                            }
+                            onChange={(opt) => setForm({ ...form, user: opt })}
                             styles={selectStyles}
+                            formatOptionLabel={(opt) => (
+                                <div className="flex justify-between items-start gap-4 leading-tight">
+                                    <div>
+                                        <div className="font-medium text-gray-800 text-xs">
+                                            {opt.raw.nama_user}
+                                        </div>
+                                        <div className="text-xs text-gray-500">
+                                            {opt.raw.nip} • {opt.raw.role}
+                                        </div>
+                                    </div>
+                                    <div className="text-xs text-gray-500 text-right whitespace-nowrap">
+                                        {opt.raw.perusahaan}
+                                    </div>
+                                </div>
+                            )}
                         />
+
 
                     </div>
 

@@ -1,13 +1,13 @@
 // components/DetailKadiv.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUserTie, faBuilding, faUsers, faUserShield, faTrash, faPlus, faUserPlus, faUser, faUserMinus, faUserGroup, faUserGear, faRightLeft } from "@fortawesome/free-solid-svg-icons";
+import { faUserTie, faBuilding, faUsers, faUserShield, faTrash, faUserPlus, faUserGroup, faRightLeft } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { LoadingSpinner, ErrorState, EmptyState } from "../../components";
 import { toast } from "react-hot-toast";
 import Swal from "sweetalert2";
 import MutasiMember from "./MutasiMember";
-
+import Select from "react-select";
 
 const DetailKadiv = ({ data }) => {
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -17,8 +17,6 @@ const DetailKadiv = ({ data }) => {
     const [loadingGroup, setLoadingGroup] = useState(false);
     const [showAddMember, setShowAddMember] = useState(false);
     const [userList, setUserList] = useState([]);
-    const [selectedUserId, setSelectedUserId] = useState("");
-    const [loadingAdd, setLoadingAdd] = useState(false);
     const [selectedMembers, setSelectedMembers] = useState([]);
     const [submitting, setSubmitting] = useState(false);
     const [showAddGroup, setShowAddGroup] = useState(false);
@@ -27,13 +25,16 @@ const DetailKadiv = ({ data }) => {
     const [searchMember, setSearchMember] = useState("");
     const [showMutasi, setShowMutasi] = useState(false);
     const [memberToMutate, setMemberToMutate] = useState(null);
+    const [selectedDivisi, setSelectedDivisi] = useState(null);
 
-    const [kadivList, setKadivList] = useState([]);
-    const [teamList, setTeamList] = useState([]);
 
-    const [targetKadiv, setTargetKadiv] = useState("");
-    const [targetTeam, setTargetTeam] = useState("");
-    const [targetLevel, setTargetLevel] = useState(2);
+    const divisiOptions = useMemo(() => {
+        const uniqueRoles = [...new Set(userList.map(u => u.role).filter(Boolean))];
+        return uniqueRoles.map(role => ({
+            value: role,
+            label: role,
+        }));
+    }, [userList]);
 
 
     /* INIT TEAMS */
@@ -283,15 +284,42 @@ const DetailKadiv = ({ data }) => {
         }
     };
 
-    const filteredUserList = userList.filter(u =>
-        u.nama.toLowerCase().includes(searchMember.toLowerCase()) ||
-        u.nip?.toLowerCase().includes(searchMember.toLowerCase()) ||
-        u.perusahaan?.toLowerCase().includes(searchMember.toLowerCase())
-    );
+    const filteredUserList = userList.filter(u => {
+        const matchSearch =
+            u.nama.toLowerCase().includes(searchMember.toLowerCase()) ||
+            u.nip?.toLowerCase().includes(searchMember.toLowerCase()) ||
+            u.perusahaan?.toLowerCase().includes(searchMember.toLowerCase());
 
-    const selectedTeam = teamList.find(t => t.id_group === Number(targetTeam));
-    const hasLeader = selectedTeam?.team_lead?.length > 0;
+        const matchDivisi = selectedDivisi
+            ? u.role === selectedDivisi.value
+            : true;
 
+        return matchSearch && matchDivisi;
+    });
+
+    const filteredIds = filteredUserList.map(u => u.id);
+
+
+    const isAllSelected =
+        filteredIds.length > 0 &&
+        filteredIds.every(id => selectedMembers.includes(id));
+
+    const isSomeSelected =
+        filteredIds.some(id => selectedMembers.includes(id)) && !isAllSelected;
+
+    const handleToggleSelectAll = () => {
+        setSelectedMembers(prev => {
+            if (isAllSelected) {
+                // UNSELECT semua yang sedang tampil
+                return prev.filter(id => !filteredIds.includes(id));
+            } else {
+                // SELECT semua yang sedang tampil (merge, no duplicate)
+                return Array.from(new Set([...prev, ...filteredIds]));
+            }
+        });
+    };
+
+    const hasTeamLeader = Boolean(groupDetail?.team_lead);
 
     return (
         <div className="space-y-6">
@@ -355,7 +383,6 @@ const DetailKadiv = ({ data }) => {
                                 Simpan
                             </button>
                         </div>
-
                     </div>
                 )}
 
@@ -372,8 +399,7 @@ const DetailKadiv = ({ data }) => {
                                 : null;
 
                             return (
-                                <button key={team.id_group} onClick={() => loadGroupDetail(team.id_group)}
-                                    className={` text-left rounded-xl border p-3 sm:p-4 transition-all duration-200 hover:shadow-md
+                                <button key={team.id_group} onClick={() => loadGroupDetail(team.id_group)} className={` text-left rounded-xl border p-3 sm:p-4 transition-all duration-200 hover:shadow-md
                                     ${selectedGroupId === team.id_group ? "border-green-600 bg-green-50" : "border-gray-200 bg-white"}
                                     `}
                                 >
@@ -448,7 +474,6 @@ const DetailKadiv = ({ data }) => {
 
                                     <div className="relative overflow-hidden rounded-2xl border border-blue-300 bg-gradient-to-br from-blue-50 to-white p-4 shadow-sm">
                                         <div className="absolute inset-y-0 left-0 w-1 bg-blue-600" />
-
                                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                             <div className="pl-3 min-w-0">
                                                 <div className="flex items-center gap-2">
@@ -466,14 +491,8 @@ const DetailKadiv = ({ data }) => {
 
                                             {/* ACTION */}
                                             <div className="flex items-center gap-2 self-end sm:self-auto">
-                                                {/* LEVEL */}
                                                 <select value={groupDetail.team_lead.level}
-                                                    onChange={e =>
-                                                        handleUpdateLevel(
-                                                            groupDetail.team_lead,
-                                                            Number(e.target.value)
-                                                        )
-                                                    }
+                                                    onChange={e => handleUpdateLevel( groupDetail.team_lead, Number(e.target.value))}
                                                     className="text-xs border rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                 >
                                                     <option value={1}>Tim Leader</option>
@@ -493,7 +512,6 @@ const DetailKadiv = ({ data }) => {
 
                             {showAddMember && (
                                 <div className="border rounded-xl p-4 mb-4 bg-gray-50">
-                                    {/* HEADER */}
                                     <div className="flex items-center justify-between mb-3">
                                         <p className="text-sm font-semibold text-gray-800">
                                             Tambah Anggota (Per Batch)
@@ -503,10 +521,26 @@ const DetailKadiv = ({ data }) => {
                                         </span>
                                     </div>
 
-                                    {/* SEARCH */}
-                                    <input type="text" value={searchMember} onChange={e => setSearchMember(e.target.value)} placeholder="Cari nama / NIP / perusahaan..." className="w-full mb-3 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" />
+                                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-3 items-center">
+                                        {/* SELECT ALL */}
+                                        <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+                                            <input
+                                                type="checkbox"
+                                                checked={isAllSelected}
+                                                ref={el => {
+                                                    if (el) el.indeterminate = isSomeSelected;
+                                                }}
+                                                onChange={handleToggleSelectAll}
+                                                className="accent-green-600 w-4 h-4"
+                                            />
+                                            <span>Pilih Semua</span>
+                                        </label>
 
-                                    {/* LIST */}
+                                        <input type="text" value={searchMember} onChange={e => setSearchMember(e.target.value)} placeholder="Cari nama / NIP / perusahaan..." className="sm:col-span-2 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"/>
+                                        <Select options={divisiOptions} value={selectedDivisi} onChange={setSelectedDivisi} isClearable placeholder="Filter Divisi" className="text-sm" classNamePrefix="react-select"/>
+                                    </div>
+
+
                                     <div className="max-h-72 overflow-y-auto border rounded-lg bg-white divide-y">
                                         {filteredUserList.length === 0 && (
                                             <p className="text-sm text-gray-500 p-4 text-center">
@@ -516,7 +550,6 @@ const DetailKadiv = ({ data }) => {
 
                                         {filteredUserList.map(u => (
                                             <label key={u.id} className="flex items-center gap-4 px-4 py-3 rounded-lg cursor-pointer transition hover:bg-gray-50">
-                                                {/* CHECKBOX */}
                                                 <input type="checkbox" checked={selectedMembers.includes(u.id)} onChange={() => {
                                                     setSelectedMembers(prev =>
                                                         prev.includes(u.id)
@@ -529,7 +562,6 @@ const DetailKadiv = ({ data }) => {
 
                                                 {/* CONTENT */}
                                                 <div className="flex-1 min-w-0">
-                                                    {/* ROW 1 */}
                                                     <div className="flex items-center justify-between gap-4">
                                                         <p className="text-sm font-semibold text-gray-900 truncate">
                                                             {u.nama}
@@ -540,7 +572,6 @@ const DetailKadiv = ({ data }) => {
                                                         </span>
                                                     </div>
 
-                                                    {/* ROW 2 */}
                                                     <div className="flex items-center justify-between mt-1 text-xs text-gray-500">
                                                         <span className="truncate">
                                                             {u.perusahaan}
@@ -552,21 +583,14 @@ const DetailKadiv = ({ data }) => {
                                                 </div>
                                             </label>
                                         ))}
-
                                     </div>
 
                                     {/* ACTION */}
                                     <div className="flex justify-end gap-2 mt-4">
-                                        <button
-                                            onClick={() => {
-                                                setShowAddMember(false);
-                                                setSelectedMembers([]);
-                                                setSearchMember("");
-                                            }}
-                                            className="px-4 py-2 text-sm bg-gray-300 rounded hover:bg-gray-400"
-                                        >
+                                        <button onClick={() => { setShowAddMember(false); setSelectedMembers([]); setSearchMember(""); setSelectedDivisi(null); }} className="px-4 py-2 text-sm bg-gray-300 rounded hover:bg-gray-400">
                                             Batal
                                         </button>
+
 
                                         <button onClick={handleSubmitBatch} disabled={selectedMembers.length === 0 || submitting} className="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50">
                                             Tambahkan ({selectedMembers.length})
@@ -610,10 +634,19 @@ const DetailKadiv = ({ data }) => {
                                                 </div>
 
                                                 <div className="flex items-center gap-2 self-end sm:self-auto">
-                                                    <select value={m.level} onChange={e => handleUpdateLevel(m, Number(e.target.value))} className="text-xs border rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-green-500">
+                                                    <select
+                                                        value={m.level}
+                                                        disabled={hasTeamLeader && m.level !== 1}
+                                                        onChange={e => {
+                                                            if (hasTeamLeader && m.level !== 1) return;
+                                                            handleUpdateLevel(m, Number(e.target.value));
+                                                        }}
+                                                        className={`text-xs border rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-green-500 ${hasTeamLeader && m.level !== 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}    `}
+                                                    >
                                                         <option value={1}>Tim Leader</option>
                                                         <option value={2}>Anggota</option>
                                                     </select>
+
                                                     <button onClick={() => { setMemberToMutate(m); setShowMutasi(true); }} className="w-8 h-8 flex items-center justify-center bg-yellow-600 text-white rounded-md hover:bg-yellow-700" title="Mutasi Anggota">
                                                         <FontAwesomeIcon icon={faRightLeft} size="sm" />
                                                     </button>

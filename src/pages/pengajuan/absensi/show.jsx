@@ -488,18 +488,18 @@ const DetailAbsensi = () => {
       <Pagination currentPage={currentPage} totalItems={filteredAbsen.length} itemsPerPage={itemsPerPage} onPageChange={(page) => setCurrentPage(page)} className="mt-6" />
 
       <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="Detail Absensi" note="Periksa dengan cermat sebelum memberikan keputusan." size="xl"
-        footer={
-          (user.id_role === 1 || user.id_role === 4) && selectedAbsen?.status === 0 && (
-            <div className="flex flex-wrap justify-end gap-3">
-              <button onClick={() => handleReject(selectedAbsen?.id_absen)} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition" disabled={isLoading}>
-                Tolak Absensi
-              </button>
-              <button onClick={() => handleStatusUpdate(selectedAbsen?.id_absen)} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition" disabled={isLoading}>
-                Setujui Absensi
-              </button>
-            </div>
-          )
-        }
+        // footer={
+        //   (user.id_role === 1 || user.id_role === 4) && selectedAbsen?.status === 0 && (
+        //     <div className="flex flex-wrap justify-end gap-3">
+        //       <button onClick={() => handleReject(selectedAbsen?.id_absen)} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition" disabled={isLoading}>
+        //         Tolak Absensi
+        //       </button>
+        //       <button onClick={() => handleStatusUpdate(selectedAbsen?.id_absen)} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition" disabled={isLoading}>
+        //         Setujui Absensi
+        //       </button>
+        //     </div>
+        //   )
+        // }
       >
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden text-gray-700">
 

@@ -3,30 +3,25 @@ import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { fetchWithJwt } from "../../../utils/jwtHelper";
 import SectionHeader from "../../../components/desktop/SectionHeader";
 import { LoadingSpinner, ErrorState, EmptyState, SearchBar } from "../../../components";
-import { formatLongDate, formatTime } from "../../../utils/dateUtils";
+import { formatDate, formatFullDate, formatLongDate, formatTime } from "../../../utils/dateUtils";
 import { faCheckCircle, faXmarkCircle, faGasPump, faHotel, } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const RiwayatPersetujuanDetail = () => {
     const { id_user } = useParams();
     const [params] = useSearchParams();
+
+    const startDate = params.get("startDate");
+    const endDate = params.get("endDate");
+
     const navigate = useNavigate();
     const [search, setSearch] = useState("");
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [startDate, setStartDate] = useState(params.get("startDate"));
-    const [endDate, setEndDate] = useState(params.get("endDate"));
     const [periodeList, setPeriodeList] = useState([]);
     const [selectedPeriode, setSelectedPeriode] = useState(null);
-
-
-    const handleChangePeriode = (start, end) => {
-        setStartDate(start);
-        setEndDate(end);
-        navigate( `/pengajuan-absensi/riwayat/${id_user}?startDate=${start}&endDate=${end}`, { replace: true });
-    };
 
 
     const fetchDetail = async (start, end) => {
@@ -52,48 +47,38 @@ const RiwayatPersetujuanDetail = () => {
 
 
     useEffect(() => {
-        if (!selectedPeriode) return;
+        if (!startDate || !endDate || !id_user) return;
 
-        const start = selectedPeriode.tgl_awal.split("T")[0];
-        const end = selectedPeriode.tgl_akhir.split("T")[0];
+        fetchDetail(startDate, endDate);
+    }, [startDate, endDate, id_user]);
 
-        fetchDetail(start, end);
-        // eslint-disable-next-line
-    }, [selectedPeriode, id_user]);
 
 
     const fetchPeriode = async () => {
         try {
             const res = await fetchWithJwt(`${apiUrl}/penggajian/periode`);
             if (!res.ok) throw new Error("Gagal memuat periode");
-
             const json = await res.json();
             const today = new Date();
-
             const nonActive = json.data.filter((p) => {
                 const start = new Date(p.tgl_awal);
                 const end = new Date(p.tgl_akhir);
                 return !(today >= start && today <= end);
             });
-
             const lastThree = nonActive.slice(-3);
             setPeriodeList(lastThree);
-
-            if (lastThree.length) {
-                const fromUrl = lastThree.find(
-                    (p) =>
-                        p.tgl_awal.startsWith(startDate) &&
-                        p.tgl_akhir.startsWith(endDate)
-                );
-
-                // prioritas: URL → fallback terakhir
-                setSelectedPeriode(fromUrl || lastThree[lastThree.length - 1]);
-            }
-
+            if (!startDate || !endDate) return;
+            const matched = lastThree.find(
+                (p) =>
+                    p.tgl_awal.split("T")[0] === startDate &&
+                    p.tgl_akhir.split("T")[0] === endDate
+            );
+            setSelectedPeriode(matched || null);
         } catch (err) {
             console.error(err);
         }
     };
+
 
 
     useEffect(() => {
@@ -132,7 +117,7 @@ const RiwayatPersetujuanDetail = () => {
 
     return (
         <div className="flex flex-col gap-4">
-            <SectionHeader title="Riwayat Persetujuan Absensi" subtitle="Detail Absensi Pengajuan Absensi Pengguna Pengajuan Absensi" onBack={() => navigate(-1)} />
+            <SectionHeader title="Riwayat Persetujuan Absensi" subtitle="Detail Absensi Pengajuan Absensi Pengguna Pengajuan Absensi" onBack={() => navigate("/pengajuan-absensi")} />
 
             <div className="bg-white border rounded-lg px-4 py-3">
                 <h2 className="text-base font-semibold text-gray-900">
@@ -153,12 +138,18 @@ const RiwayatPersetujuanDetail = () => {
                         Pilih Periode
                     </label>
 
-                    <select value={selectedPeriode?.id || ""} onChange={(e) => {
-                        const p = periodeList.find(
-                            (x) => x.id === Number(e.target.value)
-                        );
-                        setSelectedPeriode(p);
-                    }}
+                    <select
+                        value={selectedPeriode?.id || ""}
+                        onChange={(e) => {
+                            const p = periodeList.find(
+                                (x) => x.id === Number(e.target.value)
+                            );
+                            if (!p) return;
+                            const start = p.tgl_awal.split("T")[0];
+                            const end = p.tgl_akhir.split("T")[0];
+                            setSelectedPeriode(p);
+                            navigate( `/pengajuan-absensi/riwayat/${id_user}?startDate=${start}&endDate=${end}`, { replace: true });
+                        }}
                         className="inline-block w-auto min-w-[220px] border-2 border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-green-500"
                     >
                         {periodeList.map((p) => (
@@ -174,8 +165,8 @@ const RiwayatPersetujuanDetail = () => {
                 <table className="w-full text-sm">
                     <thead className="bg-green-600 text-white">
                         <tr>
-                            <th className="px-4 py-3 text-left">Shift</th>
                             <th className="px-4 py-3 text-left">Tanggal</th>
+                            <th className="px-4 py-3 text-left">Shift</th>
                             <th className="px-4 py-3 text-left">Lokasi Mulai</th>
                             <th className="px-4 py-3 text-left">Lokasi Selesai</th>
                             <th className="px-4 py-3 text-center">Jam Masuk</th>
@@ -194,7 +185,10 @@ const RiwayatPersetujuanDetail = () => {
 
                             return (
                                 <tr key={a.id_absen} className="border-t hover:bg-green-50 transition">
-                                    <td className="px-4 py-3 font-semibold text-gray-800">
+                                    <td className="px-4 py-3 text-xs text-gray-700 font-semibold">
+                                        {formatFullDate(a.jam_mulai)}
+                                    </td>
+                                    <td className="px-4 py-3 text-gray-800">
                                         {renderNA(a.shift)}
                                     </td>
                                     <td className="px-4 py-3 text-xs text-gray-700">
