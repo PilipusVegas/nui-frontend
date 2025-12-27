@@ -76,7 +76,7 @@ const DetailKadiv = ({ data }) => {
         if (!result.isConfirmed) return;
         try {
             const res = await fetchWithJwt(
-                `${apiUrl}/profil/kadiv-access/group/kadiv/${groupDetail.id}`,
+                `${apiUrl}/profil/kadiv-access/group/${groupDetail.id}`,
                 { method: "DELETE" }
             );
             const json = await res.json();
