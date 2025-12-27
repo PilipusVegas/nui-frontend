@@ -192,7 +192,7 @@ const DetailKaryawan = () => {
               <DataGrid>
                 <DataItem icon={faBuilding} label="Perusahaan" value={safeText(karyawan.perusahaan)} />
                 <DataItem icon={faClock} label="Shift Kerja" value={safeText(karyawan.shift)} />
-                <DataItem icon={faCarSide} label="Status Kendaraan" value={statusKendaraan(karyawan.status_kendaraan)} />
+                {/* <DataItem icon={faCarSide} label="Status Kendaraan" value={statusKendaraan(karyawan.status_kendaraan)} /> */}
               </DataGrid>
             </DataSection>
           </div>
