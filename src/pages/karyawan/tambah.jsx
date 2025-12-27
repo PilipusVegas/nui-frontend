@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash, faChevronDown, faInfoCircle, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
-import { fetchWithJwt } from "../../utils/jwtHelper";
+import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { SectionHeader, Modal } from "../../components";
 import TunjanganForm from "../tunjangan-karyawan/form";
 import Select from "react-select";
@@ -23,6 +23,20 @@ const TambahKaryawan = () => {
   const [openTunjangan, setOpenTunjangan] = useState(false);
   const [userId, setUserId] = useState(null);
   const [editTunjanganData, setEditTunjanganData] = useState(null);
+  const [loginUser, setLoginUser] = useState(null);
+  const allowKadivInput =
+    loginUser &&
+    [1, 4].includes(Number(loginUser.id_perusahaan));
+  const allowTunjangan =
+    loginUser &&
+    [1, 4].includes(Number(loginUser.id_perusahaan));
+
+
+
+  useEffect(() => {
+    const user = getUserFromToken();
+    setLoginUser(user);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -100,13 +114,18 @@ const TambahKaryawan = () => {
       return Swal.fire("Peringatan", "Kolom nama, perusahaan, role, dan shift harus diisi.", "warning");
     }
 
-    if (currentUser.id_kadiv && !currentUser.id_kadiv_group) {
+    if (
+      allowKadivInput &&
+      currentUser.id_kadiv &&
+      !currentUser.id_kadiv_group
+    ) {
       return Swal.fire(
         "Peringatan",
         "Grup Kepala Divisi wajib dipilih.",
         "warning"
       );
     }
+
 
     try {
       const payload = {
@@ -121,18 +140,28 @@ const TambahKaryawan = () => {
       });
       const result = await res.json();
       if (result.success) {
-        const tunjanganId = result.id_user_tunjangan;
         const userId = result.id_user;
+        setUserId(userId);
 
-        if (!tunjanganId || !userId) {
-          Swal.fire("Error", "ID user / tunjangan tidak ditemukan", "error");
+        if (!allowTunjangan) {
+          Swal.fire({
+            icon: "success",
+            title: "Berhasil",
+            text: "Data karyawan berhasil disimpan",
+          }).then(() => {
+            navigate(`/karyawan/show/${userId}`);
+          });
           return;
         }
 
-        setUserId(userId);
+        const tunjanganId = result.id_user_tunjangan;
+        if (!tunjanganId) {
+          Swal.fire("Error", "ID tunjangan tidak ditemukan", "error");
+          return;
+        }
 
         setEditTunjanganData({
-          id: tunjanganId,       // PENTING → dipakai PUT
+          id: tunjanganId,
           id_user: userId,
           bensin: 0,
           makan: 0,
@@ -146,6 +175,7 @@ const TambahKaryawan = () => {
 
         setOpenTunjangan(true);
       }
+
       else {
         Swal.fire("Gagal", result.message, "error");
       }
@@ -332,7 +362,7 @@ const TambahKaryawan = () => {
           </div>
 
           {/* Select Kepala Divisi */}
-          {Number.isInteger(currentUser.id_role) && !currentUser.is_kadiv && (
+          {allowKadivInput && Number.isInteger(currentUser.id_role) && (
             <div className="mb-4">
               <label className="block mb-1 font-medium text-gray-700">
                 Pilih Kepala Divisi <span className="text-red-500">*</span>
@@ -580,17 +610,17 @@ const TambahKaryawan = () => {
         </div>
       </form>
 
-      <Modal isOpen={openTunjangan} onClose={() => { setOpenTunjangan(false); navigate(`/karyawan/show/${userId}`);}} title="Atur Tunjangan Karyawan" size="md">
+      <Modal isOpen={openTunjangan} onClose={() => { setOpenTunjangan(false); navigate(`/karyawan/show/${userId}`); }} title="Atur Tunjangan Karyawan" size="md">
         <TunjanganForm editData={editTunjanganData} onSuccess={() => {
-            setOpenTunjangan(false);
-            Swal.fire({
-              icon: "success",
-              title: "Berhasil",
-              text: "Tunjangan karyawan berhasil disimpan",
-            }).then(() => {
-              navigate(`/karyawan/show/${userId}`);
-            });
-          }}
+          setOpenTunjangan(false);
+          Swal.fire({
+            icon: "success",
+            title: "Berhasil",
+            text: "Tunjangan karyawan berhasil disimpan",
+          }).then(() => {
+            navigate(`/karyawan/show/${userId}`);
+          });
+        }}
         />
 
       </Modal>

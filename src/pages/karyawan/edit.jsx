@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash, faInfoCircle, faSave, faTimes, faChevronDown } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
-import { fetchWithJwt } from "../../utils/jwtHelper";
+import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { SectionHeader } from "../../components";
 import Select from "react-select";
 
@@ -20,6 +20,11 @@ const EditKaryawan = () => {
     const [kadivList, setKadivList] = useState([]);
     const [groupList, setGroupList] = useState([]);
     const [initialPlacement, setInitialPlacement] = useState(null);
+    const [loginUser, setLoginUser] = useState(null);
+    const allowKadivInput =
+        loginUser &&
+        [1, 4].includes(Number(loginUser.id_perusahaan));
+
     const isMovedPlacement =
         initialPlacement &&
         (
@@ -36,6 +41,10 @@ const EditKaryawan = () => {
 
     const disableLeaderSelect = groupHasLeader;
 
+    useEffect(() => {
+        const user = getUserFromToken();
+        setLoginUser(user);
+    }, []);
 
 
 
@@ -222,25 +231,19 @@ const EditKaryawan = () => {
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">
                             Masukkan Nomor Pokok Wajib Pajak (NPWP).
                         </p>
-                        <input type="text" name="npwp" value={currentUser.npwp} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"/>
+                        <input type="text" name="npwp" value={currentUser.npwp} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     </div>
 
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">No. Telepon</label>
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">Masukkan nomor telepon aktif.</p>
-                        <input type="text" name="telp" value={currentUser.telp} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"/>
+                        <input type="text" name="telp" value={currentUser.telp} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     </div>
 
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">Nomor Rekening</label>
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">Masukkan Nomor Rekening Karyawan.</p>
-                        <input
-                            type="text"
-                            name="no_rek"
-                            value={currentUser.no_rek}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                        />
+                        <input type="text" name="no_rek" value={currentUser.no_rek} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                     </div>
 
                     <div>
@@ -268,35 +271,6 @@ const EditKaryawan = () => {
                             <input type="number" name="jml_anak" value={currentUser.jml_anak || ""} onChange={handleChange} min="0" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
                         </div>
                     )}
-
-                    {/* <div>
-                        <label className="block mb-1 font-medium text-gray-700">
-                            Status Kendaraan <span className="text-gray-400 text-sm font-normal">(Opsional)</span>
-                        </label>
-                        <p className="text-sm text-gray-600 mb-2 -mt-1.5">
-                            Pilih jenis kendaraan untuk menentukan tunjangan transportasi. Kosongkan jika tidak
-                            menerima tunjangan.
-                        </p>
-
-                        <select
-                            name="status_kendaraan"
-                            value={
-                                currentUser.status_kendaraan !== undefined && currentUser.status_kendaraan !== null
-                                    ? currentUser.status_kendaraan
-                                    : 0
-                            }
-                            onChange={(e) => {
-                                const value = e.target.value === "" ? 0 : parseInt(e.target.value);
-                                handleChange({ target: { name: "status_kendaraan", value } });
-                            }}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                        >
-                            <option value="0">Tidak Menerima Tunjangan Transportasi</option>
-                            <option value="1">Menggunakan Kendaraan Pribadi (Menerima Tunjangan)</option>
-                            <option value="3">Menggunakan Kendaraan Umum (Menerima Tunjangan)</option>
-                            <option value="2">Menggunakan Kendaraan Kantor (Tidak Menerima Tunjangan)</option>
-                        </select>
-                    </div> */}
 
                     <div className="col-span-full flex flex-col mt-4">
                         <div className="flex items-center">
@@ -364,7 +338,7 @@ const EditKaryawan = () => {
                     )}
 
 
-                    {Number.isInteger(currentUser.id_role) && !currentUser.is_kadiv && (
+                    {allowKadivInput && Number.isInteger(currentUser.id_role) && !currentUser.is_kadiv && (
                         <div className="space-y-2">
                             <label className="block text-sm font-medium text-gray-700">
                                 Kepala Divisi
@@ -400,7 +374,7 @@ const EditKaryawan = () => {
                     )}
 
 
-                    {Number.isInteger(currentUser.id_kadiv) && (
+                    {allowKadivInput && Number.isInteger(currentUser.id_kadiv) && (
                         <div>
                             <label className="block mb-1 font-medium text-gray-700">Tim / Grup</label>
                             <select
@@ -427,7 +401,7 @@ const EditKaryawan = () => {
                         </div>
                     )}
 
-                    {Number.isInteger(currentUser.id_kadiv_group) && (
+                    {allowKadivInput && Number.isInteger(currentUser.id_kadiv_group) && (
                         <div>
                             <label className="block mb-1 font-medium text-gray-700">
                                 Peran di Tim

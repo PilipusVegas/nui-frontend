@@ -171,6 +171,7 @@ export const menuConfig = [
                 label: "Lembur",
                 icon: faBusinessTime,
                 roles: [1, 4, 5, 6, 20],
+                perusahaan: [1, 4],
                 submenu: [
                     {
                         label: "Daftar Pengajuan Lembur",   
@@ -190,6 +191,7 @@ export const menuConfig = [
                 label: "Dinas",
                 icon: faFileSignature,
                 roles: [1, 4, 5, 6, 20],
+                perusahaan: [1, 4],
                 submenu: [
                     {
                         label: "Daftar Pengajuan Dinas",

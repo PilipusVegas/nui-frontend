@@ -284,8 +284,8 @@ const App = () => {
     { path: "/tunjangan-karyawan", component: <TunjanganKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },    
     { path: "/rekap-tunjangan", component: <RekapTunjangan />, roles: ["1", "4", "6"] },    
     { path: "/log-sistem", component: <LogSistem />, roles: ["1", "4", "6"], layout: SidebarLayout },
-    { path: "/pengajuan-absensi/riwayat", component: <RiwayatAbsensi />, roles: ["1", "4", "6"], layout: SidebarLayout },
-    { path: "/pengajuan-absensi/riwayat/:id_user", component: <RiwayatAbsensiDetail />, roles: ["1", "4", "6"], layout: SidebarLayout },
+    { path: "/pengajuan-absensi/riwayat", component: <RiwayatAbsensi />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+    { path: "/pengajuan-absensi/riwayat/:id_user", component: <RiwayatAbsensiDetail />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
   ];
 
   return (

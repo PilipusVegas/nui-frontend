@@ -50,13 +50,16 @@ const DetailKadiv = ({ data }) => {
             const json = await res.json();
 
             if (json.success) {
-                const filtered = json.data.filter(u => !u.is_member);
+                const filtered = json.data.filter(
+                    u => !u.is_member && u.status === 1
+                );
                 setUserList(filtered);
             }
         } catch {
             toast.error("Gagal memuat daftar user");
         }
     };
+
 
     const handleDeleteGroup = async () => {
         if (!groupDetail) return;
@@ -492,7 +495,7 @@ const DetailKadiv = ({ data }) => {
                                             {/* ACTION */}
                                             <div className="flex items-center gap-2 self-end sm:self-auto">
                                                 <select value={groupDetail.team_lead.level}
-                                                    onChange={e => handleUpdateLevel( groupDetail.team_lead, Number(e.target.value))}
+                                                    onChange={e => handleUpdateLevel(groupDetail.team_lead, Number(e.target.value))}
                                                     className="text-xs border rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                 >
                                                     <option value={1}>Tim Leader</option>
@@ -536,8 +539,8 @@ const DetailKadiv = ({ data }) => {
                                             <span>Pilih Semua</span>
                                         </label>
 
-                                        <input type="text" value={searchMember} onChange={e => setSearchMember(e.target.value)} placeholder="Cari nama / NIP / perusahaan..." className="sm:col-span-2 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"/>
-                                        <Select options={divisiOptions} value={selectedDivisi} onChange={setSelectedDivisi} isClearable placeholder="Filter Divisi" className="text-sm" classNamePrefix="react-select"/>
+                                        <input type="text" value={searchMember} onChange={e => setSearchMember(e.target.value)} placeholder="Cari nama / NIP / perusahaan..." className="sm:col-span-2 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" />
+                                        <Select options={divisiOptions} value={selectedDivisi} onChange={setSelectedDivisi} isClearable placeholder="Filter Divisi" className="text-sm" classNamePrefix="react-select" />
                                     </div>
 
 

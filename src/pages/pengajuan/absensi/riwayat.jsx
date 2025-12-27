@@ -1,22 +1,15 @@
 import React, { useEffect, useMemo, useState } from "react";
-import {
-    faEye,
-    faClockRotateLeft,
-    faUsers,
-    faCalendarCheck,
-} from "@fortawesome/free-solid-svg-icons";
+import {faEye,} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
 import { fetchWithJwt } from "../../../utils/jwtHelper";
 
 import SectionHeader from "../../../components/desktop/SectionHeader";
-import {
-    LoadingSpinner,
+import { LoadingSpinner,
     ErrorState,
     SearchBar,
     Pagination,
     EmptyState,
-    SummaryCard,
 } from "../../../components";
 import {
     formatLongDate,
@@ -152,8 +145,7 @@ const RiwayatPersetujuanAbsensi = () => {
                     <label className="text-xs font-semibold text-gray-600 mb-1 block sm:text-right">
                         Tentukan Periode
                     </label>
-                    <select
-                        value={selectedPeriode?.id || ""}
+                    <select value={selectedPeriode?.id || ""}
                         onChange={(e) => {
                             const p = periodeList.find((x) => x.id === Number(e.target.value));
                             setSelectedPeriode(p);
@@ -223,16 +215,12 @@ const RiwayatPersetujuanAbsensi = () => {
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition
-                                            ${isValidPeriode
-                                                    ? "bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                                                    : "bg-gray-300 text-gray-500 pointer-events-none cursor-not-allowed"
-                                                }`}
+                                            ${isValidPeriode ? "bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300" : "bg-gray-300 text-gray-500 pointer-events-none cursor-not-allowed"}`}
                                         >
                                             <FontAwesomeIcon icon={faEye} className="text-[11px]" />
                                             <span>Detail</span>
                                         </a>
                                     </td>
-
                                 </tr>
                             ))}
                     </tbody>

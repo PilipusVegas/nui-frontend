@@ -2,18 +2,12 @@ import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faEdit, faTrash, faPlus, faInfoCircle, faSortUp, faSortDown, faSort, faCheckCircle, faExclamationCircle, faEye, faGasPump,
-  faUtensils,
-  faSuitcaseRolling,
-  faHotel,
-} from "@fortawesome/free-solid-svg-icons";
+import { faEdit, faTrash, faPlus, faInfoCircle, faSortUp, faSortDown, faSort, faCheckCircle, faExclamationCircle, faEye, } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { LoadingSpinner, EmptyState, ErrorState, Pagination, SearchBar, SectionHeader, Modal } from "../../components/";
 import Select from "react-select";
 
 const DataKaryawan = () => {
-  const [editable] = useState(() => getUserFromToken());
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
