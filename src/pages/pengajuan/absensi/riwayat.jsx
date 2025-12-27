@@ -18,7 +18,11 @@ import {
     EmptyState,
     SummaryCard,
 } from "../../../components";
-import { formatISODate, formatLongDate } from "../../../utils/dateUtils";
+import {
+    formatLongDate,
+    toLocalISODate
+} from "../../../utils/dateUtils";
+
 
 const RiwayatPersetujuanAbsensi = () => {
     const navigate = useNavigate();
@@ -85,8 +89,9 @@ const RiwayatPersetujuanAbsensi = () => {
             setLoading(true);
             setError(null);
 
-            const startDate = periode.tgl_awal.split("T")[0];
-            const endDate = periode.tgl_akhir.split("T")[0];
+            const startDate = toLocalISODate(periode.tgl_awal);
+            const endDate = toLocalISODate(periode.tgl_akhir);
+
 
             const res = await fetchWithJwt(
                 `${apiUrl}/absen/riwayat?startDate=${startDate}&endDate=${endDate}`
@@ -214,7 +219,7 @@ const RiwayatPersetujuanAbsensi = () => {
                                     <td className="text-center text-sm">{item.total_absen} Hari</td>
                                     <td className="text-center">
                                         <a
-                                            href={`/pengajuan-absensi/riwayat/${item.id_user}?startDate=${formatISODate(selectedPeriode.tgl_awal)}&endDate=${formatISODate(selectedPeriode.tgl_akhir)}`}
+                                            href={`/pengajuan-absensi/riwayat/${item.id_user}?startDate=${toLocalISODate(selectedPeriode.tgl_awal)}&endDate=${toLocalISODate(selectedPeriode.tgl_akhir)}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition

@@ -3,7 +3,14 @@ import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { fetchWithJwt } from "../../../utils/jwtHelper";
 import SectionHeader from "../../../components/desktop/SectionHeader";
 import { LoadingSpinner, ErrorState, EmptyState, SearchBar } from "../../../components";
-import { formatDate, formatFullDate, formatLongDate, formatTime } from "../../../utils/dateUtils";
+import {
+    formatDate,
+    formatFullDate,
+    formatLongDate,
+    formatTime,
+    toLocalISODate
+} from "../../../utils/dateUtils";
+
 import { faCheckCircle, faXmarkCircle, faGasPump, faHotel, } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -70,8 +77,8 @@ const RiwayatPersetujuanDetail = () => {
             if (!startDate || !endDate) return;
             const matched = lastThree.find(
                 (p) =>
-                    p.tgl_awal.split("T")[0] === startDate &&
-                    p.tgl_akhir.split("T")[0] === endDate
+                    toLocalISODate(p.tgl_awal) === startDate &&
+                    toLocalISODate(p.tgl_akhir) === endDate
             );
             setSelectedPeriode(matched || null);
         } catch (err) {
@@ -138,17 +145,16 @@ const RiwayatPersetujuanDetail = () => {
                         Pilih Periode
                     </label>
 
-                    <select
-                        value={selectedPeriode?.id || ""}
+                    <select value={selectedPeriode?.id || ""}
                         onChange={(e) => {
                             const p = periodeList.find(
                                 (x) => x.id === Number(e.target.value)
                             );
                             if (!p) return;
-                            const start = p.tgl_awal.split("T")[0];
-                            const end = p.tgl_akhir.split("T")[0];
+                            const start = toLocalISODate(p.tgl_awal);
+                            const end = toLocalISODate(p.tgl_akhir);
                             setSelectedPeriode(p);
-                            navigate( `/pengajuan-absensi/riwayat/${id_user}?startDate=${start}&endDate=${end}`, { replace: true });
+                            navigate(`/pengajuan-absensi/riwayat/${id_user}?startDate=${start}&endDate=${end}`, { replace: true });
                         }}
                         className="inline-block w-auto min-w-[220px] border-2 border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-green-500"
                     >

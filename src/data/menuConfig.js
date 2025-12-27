@@ -255,19 +255,19 @@ export const menuConfig = [
             {
                 label: "Reminder",
                 icon: faTasks,
-                roles: [1, 4, 5, 20],
+                roles: [1, 5, 20],
                 submenu: [
                     {
                         label: "Daftar Reminder",
                         icon: faListCheck,
                         path: "/penugasan",
-                        roles: [1, 4, 5, 20],
+                        roles: [1, 5, 20],
                     },
                     {
                         label: "Riwayat Reminder",
                         icon: faFolderOpen,
                         path: "/penugasan/riwayat",
-                        roles: [1, 4, 5, 20],
+                        roles: [1, 5, 20],
                     },
                 ],
             },
