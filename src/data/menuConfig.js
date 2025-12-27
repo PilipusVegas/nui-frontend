@@ -212,7 +212,7 @@ export const menuConfig = [
 
     // PENGGAJIAN & TUNJANGAN
     {
-        sectionTitle: "Penggajian & Tunjangan",
+        sectionTitle: "Penggajian & Jam Kerja",
         items: [
             {
                 label: "Rekap Tunjangan",
