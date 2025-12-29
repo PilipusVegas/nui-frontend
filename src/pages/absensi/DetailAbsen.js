@@ -30,6 +30,8 @@ const DetailAbsen = ({ formData = {} }) => {
     shift = null,
     tipe_absensi = "",
     timezone = "",
+    is_valid = 1,
+    reason = "",
   } = formData;
 
   /** Detail grup */
@@ -168,6 +170,9 @@ const DetailAbsen = ({ formData = {} }) => {
           formDataToSend.append("lat", String(titikSelesai.latitude));
           formDataToSend.append("lon", String(titikSelesai.longitude));
         }
+        formDataToSend.append("is_valid", String(is_valid));
+        formDataToSend.append("reason", reason || "");
+
       } else {
         endpoint = "/absen/mulai";
         notificationTitle = "Absen Mulai Berhasil!";
@@ -183,6 +188,10 @@ const DetailAbsen = ({ formData = {} }) => {
           formDataToSend.append("lat", String(titikMulai.latitude));
           formDataToSend.append("lon", String(titikMulai.longitude));
         }
+
+        formDataToSend.append("is_valid", String(is_valid));
+        formDataToSend.append("reason", reason || "");
+
 
         if (fotoMulai?.startsWith?.("blob:")) {
           const file = await blobUrlToFile(fotoMulai, "fotoMulai.jpg");
@@ -278,7 +287,7 @@ const DetailAbsen = ({ formData = {} }) => {
                   </p>
                   <div className="flex justify-center">
                     <div className="w-40 h-52 rounded-xl overflow-hidden border bg-gray-100 shadow group">
-                      <img src={fotoMulai instanceof File ? URL.createObjectURL(fotoMulai) : fotoMulai} alt="Absen Mulai" className="w-full h-full object-cover transition scale-x-[-1]"/>
+                      <img src={fotoMulai instanceof File ? URL.createObjectURL(fotoMulai) : fotoMulai} alt="Absen Mulai" className="w-full h-full object-cover transition scale-x-[-1]" />
                     </div>
                   </div>
                 </div>

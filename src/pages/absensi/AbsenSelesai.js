@@ -7,6 +7,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRotateBack, faMapMarkerAlt, faSpinner, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { formatFullDate, formatTime } from "../../utils/dateUtils";
 import { fetchWithJwt } from "../../utils/jwtHelper";
+import { useFakeGpsDetector } from "../../hooks/gps/useFakeGpsDetector";
+
 
 const AbsenSelesai = ({ handleNextStepData }) => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -19,6 +21,60 @@ const AbsenSelesai = ({ handleNextStepData }) => {
   const [userCoords, setUserCoords] = useState({ latitude: null, longitude: null, });
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [facingMode, setFacingMode] = useState("user");
+  const { analyze } = useFakeGpsDetector();
+  const [gpsValidation, setGpsValidation] = useState({
+    is_valid: 1,
+    reason: "",
+  });
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+
+    setLoadingLocation(true);
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserCoords({
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        });
+        setLoadingLocation(false);
+      },
+      () => setLoadingLocation(false),
+      {
+        enableHighAccuracy: false,
+        maximumAge: 60000,
+        timeout: 3000,
+      }
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        const { suspicious, reason } = analyze(position);
+
+        setGpsValidation({
+          is_valid: suspicious ? 0 : 1,
+          reason: reason.join(" | "),
+        });
+      },
+      (err) => {
+        console.error("GPS watch error:", err);
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 10000,
+      }
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, []);
+
+
 
   useEffect(() => {
     fetchWithJwt(`${apiUrl}/lokasi`)
@@ -70,7 +126,6 @@ const AbsenSelesai = ({ handleNextStepData }) => {
       setFotoFile(file);
       setFotoPreview(imageSrc);
       setJamSelesai(new Date());
-      getLocation();
     }
   };
 
@@ -107,6 +162,8 @@ const AbsenSelesai = ({ handleNextStepData }) => {
         hour12: false,
       }),
       koordinatSelesai: `${userCoords.latitude}, ${userCoords.longitude}`,
+      is_valid: gpsValidation.is_valid,   // 🔥 TAMBAH
+      reason: gpsValidation.reason,
     });
   };
 

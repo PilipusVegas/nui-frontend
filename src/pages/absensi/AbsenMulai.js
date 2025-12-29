@@ -7,8 +7,8 @@ import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { faArrowRight, faChevronRight, faChevronUp, faMapMarkerAlt, faSpinner, faTimesCircle, } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 import { formatFullDate, formatTime } from "../../utils/dateUtils";
-import {getDistanceMeters} from "../../utils/locationUtils";
-
+import { getDistanceMeters } from "../../utils/locationUtils";
+import { useFakeGpsDetector } from "../../hooks/gps/useFakeGpsDetector";
 
 const AbsenMulai = ({ handleNextStepData }) => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -26,6 +26,12 @@ const AbsenMulai = ({ handleNextStepData }) => {
   const [fotoMulai, setFotoMulai] = useState(null);
   const [jamMulai, setJamMulai] = useState(null);
   const [facingMode, setFacingMode] = useState("user");
+  const { analyze } = useFakeGpsDetector();
+
+  const [gpsValidation, setGpsValidation] = useState({
+    is_valid: 1,
+    reason: "",
+  });
 
   const isFormValid = () =>
     selectedLocation && selectedShift && fotoMulai && jamMulai;
@@ -51,29 +57,40 @@ const AbsenMulai = ({ handleNextStepData }) => {
     }
   }, []);
 
-  // koordinat GPS
+
   useEffect(() => {
-    if (navigator.geolocation) {
-      setLoadingLocation(true);
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserCoords({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          });
-          setLoadingLocation(false);
-        },
-        (err) => {
-          console.error("Gagal mendapatkan lokasi:", err);
-          setLoadingLocation(false);
-        },
-        { enableHighAccuracy: false, maximumAge: 0 }
-      );
-    } else {
-      console.error("Geolocation tidak didukung browser ini.");
-      setLoadingLocation(false);
-    }
+    if (!navigator.geolocation) return;
+
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        const { suspicious, reason } = analyze(position);
+
+        setUserCoords({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+
+        setGpsValidation({
+          is_valid: suspicious ? 0 : 1,
+          reason: reason.join(" | "),
+        });
+
+        setLoadingLocation(false); // 🔥 INI YANG HILANG
+      },
+      (err) => {
+        console.error("GPS error:", err);
+        setLoadingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 10000,
+      }
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
   }, []);
+
 
   // fetch lokasi & shift
   useEffect(() => {
@@ -126,6 +143,8 @@ const AbsenMulai = ({ handleNextStepData }) => {
       fotoMulai,
       tipe_absensi: 1,
       timezone: selectedLocation?.timezone || "",
+      is_valid: gpsValidation.is_valid,
+      reason: gpsValidation.reason,
     };
 
     handleNextStepData(formData);

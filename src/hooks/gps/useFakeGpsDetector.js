@@ -18,7 +18,7 @@ export const useFakeGpsDetector = () => {
                 longitude
             );
 
-            const timeDiff = (now - last.current.time) / 3000; // detik
+            const timeDiff = (now - last.current.time) / 1000; // detik
             const speed = (dist / timeDiff) * 3.6; // km/jam
 
             if (dist > 500 && timeDiff < 10) {
