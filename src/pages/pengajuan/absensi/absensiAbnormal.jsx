@@ -18,7 +18,6 @@ const AbsensiAbnormal = () => {
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const [searchQuery, setSearchQuery] = useState("");
     const [lightboxIndex, setLightboxIndex] = useState(0);
-    const [openDetailMap, setOpenDetailMap] = useState({});
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxImages, setLightboxImages] = useState([]);
     const [expandedUserId, setExpandedUserId] = useState(null);
@@ -27,20 +26,27 @@ const AbsensiAbnormal = () => {
     const absenRefs = React.useRef({});
     const successApproveMessage = "Absensi berhasil disetujui. Terima kasih sudah melakukan verifikasi";
 
-
     const getAbnormalReason = (absen) => {
         const reasons = [];
+
         if (absen.jarak_mulai >= 60) {
-            reasons.push("Jarak absen terlalu jauh!");
+            reasons.push("Jarak absen masuk terlalu jauh!");
+        }
+        if (absen.jarak_selesai >= 60) {
+            reasons.push("Jarak absen pulang terlalu jauh!");
         }
         if (!absen.foto_mulai) {
-            reasons.push("Foto absen tidak tersedia!");
+            reasons.push("Foto absen masuk tidak tersedia!");
+        }
+        if (absen.absen_pulang && !absen.foto_selesai) {
+            reasons.push("Foto absen pulang tidak tersedia!");
         }
         if (!absen.absen_pulang) {
             reasons.push("Belum absen pulang!");
         }
         return reasons;
     };
+
 
 
     const getAbnormalBadgeStyle = (reason) => {
@@ -281,31 +287,20 @@ const AbsensiAbnormal = () => {
 
 
     const toggleUserCard = (user) => {
-        setExpandedUserId((prev) => {
-            if (prev === user.id_user) {
-                return null;
-            }
-            setOpenDetailMap((m) => ({
-                ...m,
-                [user.id_user]: user.absen.map((a) => a.id),
-            }));
-
-            return user.id_user;
-        });
+        setExpandedUserId((prev) =>
+            prev === user.id_user ? null : user.id_user
+        );
     };
 
 
 
     useEffect(() => {
         if (!expandedUserId) return;
-
         const user = filteredData.find((u) => u.id_user === expandedUserId);
         if (!user || user.absen.length === 0) return;
-
         const firstAbsenId = user.absen[0].id;
         const el = absenRefs.current[firstAbsenId];
         if (!el) return;
-
         // tunggu DOM settle (render + height final)
         requestAnimationFrame(() => {
             el.scrollIntoView({
@@ -358,7 +353,6 @@ const AbsensiAbnormal = () => {
                 {filteredData.map((user) => {
                     return (
                         <div key={user.id_user} className="rounded-xl overflow-hidden shadow-lg transition hover:shadow-xl">
-
                             <div onClick={(e) => { e.stopPropagation(); toggleUserCard(user); }}
                                 className={`relative w-full cursor-pointer rounded-2xl border px-5 py-4 bg-white transition-all duration-200 hover:shadow-md ${expandedUserId === user.id_user ? "border-emerald-300 shadow-sm" : "border-gray-200"}`}
                             >
@@ -367,7 +361,6 @@ const AbsensiAbnormal = () => {
                                         <div className={` w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold ${expandedUserId === user.id_user ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-600"}`}>
                                             {user.nama?.charAt(0)}
                                         </div>
-
                                         <div className="flex flex-col">
                                             <p className="text-sm sm:text-base font-semibold text-gray-900 leading-tight">
                                                 {user.nama}
@@ -377,21 +370,18 @@ const AbsensiAbnormal = () => {
                                             </p>
                                         </div>
                                     </div>
-
                                     <div className="flex items-center gap-3 sm:gap-4">
                                         <div className="flex gap-2 overflow-x-auto no-scrollbar">
                                             <span className="px-3 py-1 text-xs font-medium rounded bg-gray-100 text-gray-700">
                                                 {user.absen.filter((a) => a.status === 0).length} Total Absensi Abnormal
                                             </span>
                                         </div>
-
                                         <button onClick={(e) => { e.stopPropagation(); toggleUserCard(user); }} className={`flex items-center justify-center w-8 h-8 rounded-full transition-all ${expandedUserId === user.id_user ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}>
                                             <FontAwesomeIcon icon={expandedUserId === user.id_user ? faChevronUp : faChevronDown} className="text-xs" />
                                         </button>
                                     </div>
                                 </div>
                             </div>
-
                             {expandedUserId === user.id_user && (
                                 <div className="divide-y divide-gray-200 bg-gray-50">
                                     {user.absen.map((a) => {
@@ -400,20 +390,14 @@ const AbsensiAbnormal = () => {
                                                 <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition p-4 sm:p-5">
                                                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                                         <div className="flex-1 space-y-1">
-
-                                                            {/* Tanggal */}
                                                             <p className="text-sm sm:text-base font-semibold text-gray-800 leading-tight">
                                                                 {formatFullDate(a.tanggal_absen)}
                                                             </p>
-
-                                                            {/* Analisa Sistem */}
                                                             {getAbnormalReason(a).length > 0 && (
                                                                 <div className="flex flex-wrap items-center gap-1.5">
-
                                                                     <span className="text-[11px] font-semibold text-gray-800 whitespace-nowrap">
                                                                         Analisa Sistem:
                                                                     </span>
-
                                                                     {getAbnormalReason(a).map((reason, idx) => (
                                                                         <span key={idx} className={`px-2 py-0.5 rounded border text-[10px] font-semibold leading-tight ${getAbnormalBadgeStyle(reason)}`}>
                                                                             {reason}
@@ -500,8 +484,6 @@ const AbsensiAbnormal = () => {
                                                                                 </div>
                                                                             )}
                                                                         </div>
-
-                                                                        {/* Info */}
                                                                         <div className="flex-1 text-sm text-gray-800 space-y-1 break-words">
                                                                             <p>
                                                                                 <span className="font-medium">Waktu:</span>{" "}
@@ -540,16 +522,10 @@ const AbsensiAbnormal = () => {
                                                                     <p className="font-semibold text-rose-700 text-base">
                                                                         Absen Pulang
                                                                     </p>
-
                                                                     <div className="flex flex-col sm:flex-row gap-4">
-
-                                                                        {/* Foto */}
                                                                         <div className="flex-shrink-0">
                                                                             {a.absen_pulang && a.foto_selesai ? (
-                                                                                <img
-                                                                                    src={a.foto_selesai}
-                                                                                    alt="Foto Absen Pulang"
-                                                                                    className="w-28 h-28 object-cover rounded-lg border border-rose-300 cursor-pointer hover:opacity-90 transition"
+                                                                                <img src={a.foto_selesai} alt="Foto Absen Pulang" className="w-28 h-28 object-cover rounded-lg border border-rose-300 cursor-pointer hover:opacity-90 transition"
                                                                                     onClick={() =>
                                                                                         handleOpenLightbox(
                                                                                             [a.foto_mulai, a.foto_selesai].filter(Boolean),
@@ -640,12 +616,8 @@ const AbsensiAbnormal = () => {
                 }
             >
                 <div className="space-y-4 text-sm text-gray-700 leading-relaxed">
-                    {/* Header */}
                     <div className="flex items-start gap-3">
-                        <FontAwesomeIcon
-                            icon={faInfoCircle}
-                            className="text-blue-600 text-lg mt-0.5"
-                        />
+                        <FontAwesomeIcon icon={faInfoCircle} className="text-blue-600 text-lg mt-0.5" />
                         <div>
                             <p className="font-semibold text-gray-900">
                                 Panduan Halaman Absensi Abnormal
