@@ -5,7 +5,6 @@ import "sweetalert2/dist/sweetalert2.min.css";
 import { useNavigate } from "react-router-dom";
 import { formatFullDate } from "../../../utils/dateUtils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { getDefaultPeriod } from "../../../utils/getDefaultPeriod";
 import { fetchWithJwt } from "../../../utils/jwtHelper";
 import { faCheck, faInfoCircle, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { SectionHeader, Modal, LoadingSpinner, ErrorState, EmptyState, SearchBar, Pagination } from "../../../components";
@@ -38,21 +37,34 @@ const PersetujuanLembur = () => {
     try {
       setIsLoading(true);
       setErrorMessage("");
+
       const res = await fetchWithJwt(`${apiUrl}/lembur/approve`);
-      if (!res.ok) throw new Error("Gagal mengambil data.");
+
+      // === KHUSUS 404: anggap data kosong ===
+      if (res.status === 404) {
+        setApprovalData([]);
+        return;
+      }
+
+      // === ERROR SELAIN 404 ===
+      if (!res.ok) {
+        throw new Error("Gagal mengambil data lembur.");
+      }
+
       const result = await res.json();
+
       if (Array.isArray(result.data)) {
         setApprovalData(result.data);
       } else {
-        setErrorMessage("Format respons tidak sesuai, mungkin sebagian data hilang.");
-        setApprovalData(result.data || []);
+        setApprovalData([]);
       }
     } catch (err) {
-      setErrorMessage(err.message);
+      setErrorMessage(err.message || "Terjadi kesalahan sistem.");
     } finally {
       setIsLoading(false);
     }
   };
+
 
   useEffect(() => {
     fetchApprovalData();
@@ -153,7 +165,7 @@ const PersetujuanLembur = () => {
               ) : paginatedData.data.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-16">
-                    <EmptyState title="Tidak ada pengajuan lembur" description="Belum ada pengajuan lembur untuk periode ini." />
+                    <EmptyState title="Belum ada pengajuan lembur" description="Saat ini tidak ada pengajuan lembur yang perlu diproses."/>
                   </td>
                 </tr>
               ) : (
@@ -208,11 +220,7 @@ const PersetujuanLembur = () => {
       <div className="lg:hidden space-y-3 mb-10">
         {paginatedData.data.length > 0 ? (
           paginatedData.data.map((item) => (
-            <div
-              key={item.id_lembur}
-              className="bg-white rounded-lg shadow-sm border border-gray-100 p-3 text-sm"
-            >
-              {/* Header */}
+            <div key={item.id_lembur} className="bg-white rounded-lg shadow-sm border border-gray-100 p-3 text-sm">
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <p className="font-semibold text-gray-800">{item.nama_user}</p>
@@ -222,7 +230,6 @@ const PersetujuanLembur = () => {
                 <span className="text-[11px] text-gray-400">{formatFullDate(item.tanggal)}</span>
               </div>
 
-              {/* Lembur Info */}
               <div className="text-gray-700 mb-2">
                 <p className="font-medium">{item.jam_mulai} – {item.jam_selesai}</p>
                 <p className="text-xs text-gray-500">Total: {item.total_lembur} jam</p>
@@ -230,31 +237,20 @@ const PersetujuanLembur = () => {
 
               <hr className="border-gray-100 mb-2" />
 
-              {/* Footer: Detail + Actions */}
               <div className="flex justify-between items-center">
-                {/* Detail Button */}
-                <button
-                  onClick={() => openModalWithDescription(item.deskripsi)}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:underline"
-                >
+                <button onClick={() => openModalWithDescription(item.deskripsi)} className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:underline">
                   <FontAwesomeIcon icon={faInfoCircle} />
                   Detail
                 </button>
 
                 {/* Approve / Reject Buttons */}
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => handleApprove(item)}
-                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-md bg-green-600 text-white hover:bg-green-700 transition"
-                  >
+                  <button onClick={() => handleApprove(item)} className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-md bg-green-600 text-white hover:bg-green-700 transition">
                     <FontAwesomeIcon icon={faCheck} />
                     Approve
                   </button>
 
-                  <button
-                    onClick={() => handleReject(item)}
-                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-md bg-red-600 text-white hover:bg-red-700 transition"
-                  >
+                  <button onClick={() => handleReject(item)} className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-md bg-red-600 text-white hover:bg-red-700 transition">
                     <FontAwesomeIcon icon={faTimes} />
                     Reject
                   </button>
@@ -266,7 +262,6 @@ const PersetujuanLembur = () => {
           <p className="text-center text-gray-400 text-sm">Tidak ada data lembur.</p>
         )}
       </div>
-
 
 
       {paginatedData.total > itemsPerPage && (

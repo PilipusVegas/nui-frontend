@@ -1,20 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
-import {faEye,} from "@fortawesome/free-solid-svg-icons";
+import { faEye, } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
 import { fetchWithJwt } from "../../../utils/jwtHelper";
-
 import SectionHeader from "../../../components/desktop/SectionHeader";
-import { LoadingSpinner,
-    ErrorState,
-    SearchBar,
-    Pagination,
-    EmptyState,
-} from "../../../components";
-import {
-    formatLongDate,
-    toLocalISODate
-} from "../../../utils/dateUtils";
+import { LoadingSpinner, ErrorState, SearchBar, Pagination, EmptyState, } from "../../../components";
+import { formatLongDate, toLocalISODate } from "../../../utils/dateUtils";
 
 
 const RiwayatPersetujuanAbsensi = () => {
@@ -34,16 +25,17 @@ const RiwayatPersetujuanAbsensi = () => {
         try {
             setLoading(true);
             setError(null);
-
             const res = await fetchWithJwt(`${apiUrl}/penggajian/periode`);
-
+            if (res.status === 404) {
+                setPeriodeList([]);
+                setSelectedPeriode(null);
+                return;
+            }
             if (!res.ok) {
                 throw new Error("Gagal memuat periode penggajian");
-            }
-
+            }   
             const json = await res.json();
             const today = new Date();
-
             const nonActive = json.data.filter((p) => {
                 const start = new Date(p.tgl_awal);
                 const end = new Date(p.tgl_akhir);
@@ -51,18 +43,11 @@ const RiwayatPersetujuanAbsensi = () => {
             });
 
             const lastThree = nonActive.slice(-3);
-
             setPeriodeList(lastThree);
-
-            // aman: cek ada datanya dulu
-            if (lastThree.length > 0) {
-                setSelectedPeriode(lastThree[lastThree.length - 1]);
-            } else {
-                setSelectedPeriode(null);
-            }
+            setSelectedPeriode(lastThree.length ? lastThree[lastThree.length - 1] : null);
         } catch (err) {
             console.error("fetchPeriode error:", err);
-            setError("Gagal memuat periode penggajian");
+            setError(err.message || "Terjadi kesalahan sistem");
             setPeriodeList([]);
             setSelectedPeriode(null);
         } finally {
@@ -70,10 +55,10 @@ const RiwayatPersetujuanAbsensi = () => {
         }
     };
 
+
     /* ===================== FETCH RIWAYAT ===================== */
     const fetchRiwayat = async (periode) => {
         if (!periode?.tgl_awal || !periode?.tgl_akhir) {
-            console.warn("Periode tidak valid:", periode);
             setData([]);
             return;
         }
@@ -85,23 +70,30 @@ const RiwayatPersetujuanAbsensi = () => {
             const startDate = toLocalISODate(periode.tgl_awal);
             const endDate = toLocalISODate(periode.tgl_akhir);
 
-
             const res = await fetchWithJwt(
                 `${apiUrl}/absen/riwayat?startDate=${startDate}&endDate=${endDate}`
             );
 
-            if (!res.ok) throw new Error("Gagal memuat riwayat absensi");
+            if (res.status === 404) {
+                setData([]);
+                return;
+            }
+
+            if (!res.ok) {
+                throw new Error("Gagal memuat riwayat absensi");
+            }
 
             const json = await res.json();
             setData(Array.isArray(json.data) ? json.data : []);
         } catch (err) {
             console.error("fetchRiwayat error:", err);
-            setError("Gagal memuat riwayat absensi");
+            setError(err.message || "Terjadi kesalahan sistem");
             setData([]);
         } finally {
             setLoading(false);
         }
     };
+
 
 
     useEffect(() => {
@@ -115,7 +107,6 @@ const RiwayatPersetujuanAbsensi = () => {
         }
     }, [selectedPeriode]);
 
-    /* ===================== FILTER ===================== */
     const filteredData = useMemo(() => {
         return data.filter(
             (d) =>
@@ -210,10 +201,7 @@ const RiwayatPersetujuanAbsensi = () => {
                                     </td>
                                     <td className="text-center text-sm">{item.total_absen} Hari</td>
                                     <td className="text-center">
-                                        <a
-                                            href={`/pengajuan-absensi/riwayat/${item.id_user}?startDate=${toLocalISODate(selectedPeriode.tgl_awal)}&endDate=${toLocalISODate(selectedPeriode.tgl_akhir)}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
+                                        <a href={`/pengajuan-absensi/riwayat/${item.id_user}?startDate=${toLocalISODate(selectedPeriode.tgl_awal)}&endDate=${toLocalISODate(selectedPeriode.tgl_akhir)}`} target="_blank" rel="noopener noreferrer"
                                             className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition
                                             ${isValidPeriode ? "bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300" : "bg-gray-300 text-gray-500 pointer-events-none cursor-not-allowed"}`}
                                         >

@@ -1,30 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCheck,
-  faInfoCircle,
-  faSpinner,
-  faCircleInfo,
-  faTimes,
-  faCalendarAlt,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faInfoCircle, faSpinner, faCircleInfo, faTimes, faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
 import toast from "react-hot-toast";
-import { fetchWithJwt, getUserFromToken } from "../../../utils/jwtHelper";
+import { fetchWithJwt } from "../../../utils/jwtHelper";
 import { formatFullDate } from "../../../utils/dateUtils";
-import {
-  SectionHeader,
-  LoadingSpinner,
-  SearchBar,
-  EmptyState,
-  ErrorState,
-  Pagination,
-  Modal,
-} from "../../../components";
+import { SectionHeader, LoadingSpinner, SearchBar, EmptyState, ErrorState, Pagination, Modal, } from "../../../components";
 
 const SuratDinas = () => {
   const itemsPerPage = 10;
-  const user = getUserFromToken();
   const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
@@ -42,32 +26,44 @@ const SuratDinas = () => {
 
     try {
       const res = await fetchWithJwt(`${apiUrl}/surat-dinas`);
-      if (!res.ok) throw new Error("Gagal memuat data surat dinas");
-
+      if (res.status === 404) {
+        setData([]);
+        return;
+      }
+      if (!res.ok) {
+        throw new Error("Gagal memuat data surat dinas");
+      }
       const result = await res.json();
-      setData(result.data || []);
+      setData(Array.isArray(result.data) ? result.data : []);
     } catch (err) {
       console.error(err);
-      setError(err.message);
-      toast.error(
-        err.message || "Terjadi kesalahan saat memuat data surat dinas"
-      );
+      setError(err.message || "Terjadi kesalahan sistem");
+      toast.error(err.message || "Terjadi kesalahan sistem");
     } finally {
       setLoading(false);
     }
   };
 
+
+
   const refreshData = async () => {
     try {
       const res = await fetchWithJwt(`${apiUrl}/surat-dinas`);
-      if (!res.ok) throw new Error("Gagal memuat data surat dinas");
+      if (res.status === 404) {
+        setData([]);
+        return;
+      }
+      if (!res.ok) {
+        throw new Error("Gagal memuat data surat dinas");
+      }
       const result = await res.json();
-      setData(result.data || []);
+      setData(Array.isArray(result.data) ? result.data : []);
     } catch (err) {
       console.error(err);
-      toast.error(err.message || "Terjadi kesalahan saat memuat data surat dinas");
+      toast.error(err.message || "Terjadi kesalahan sistem");
     }
   };
+
 
   const handleApprove = async (item) => {
     setApprovingId(item.id);
