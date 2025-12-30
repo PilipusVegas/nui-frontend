@@ -16,15 +16,11 @@ const Modal = ({ isOpen, onClose, title, note, children, size = "md", footer }) 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-3">
             <div className={`bg-white rounded-2xl shadow-lg w-full ${sizeClass} relative flex flex-col max-h-[90vh]`}>
-                <div
-                    id="modal-header"
-                    className="px-4 py-2 sm:py-3 sm:px-6 bg-green-600 text-white rounded-t-2xl sticky top-0 z-20"
-                >
-
+                <div id="modal-header" className="px-4 py-2 sm:py-3 sm:px-6 bg-green-600 text-white rounded-t-2xl sticky top-0 z-20">
                     <div className="pr-10">
                         <h2 className="text-base sm:text-lg font-semibold">{title}</h2>
                         {note && (
-                            <p className="text-[10px] sm:text-sm text-white/80 mt-1 leading-relaxed">
+                            <p className="text-[14px] sm:text-sm text-white/80 mt-0.5 leading-relaxed">
                                 {note}
                             </p>
                         )}
@@ -33,9 +29,7 @@ const Modal = ({ isOpen, onClose, title, note, children, size = "md", footer }) 
                         <FontAwesomeIcon icon={faTimes} size="2xl" />
                     </button>
                 </div>
-
                 <div className="p-6 overflow-y-auto scrollbar-green flex-1">{children}</div>
-
                 {footer && (
                     <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-3 rounded-b-2xl flex justify-end z-20">
                         {footer}
