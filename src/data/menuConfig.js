@@ -79,6 +79,13 @@ export const menuConfig = [
                         roles: [1, 4, 6],
                         perusahaan: [1, 4],
                     },
+                    {
+                        label: "Kelola Jadwal Karyawan",
+                        icon: faCalendarCheck,
+                        path: "/penjadwalan-karyawan",
+                        roles: [1, 5, 20],
+                        perusahaan: [1, 4],
+                    },
 
                 ]
             },

@@ -66,10 +66,11 @@ import TunjanganKaryawan from "./pages/tunjangan-karyawan";
 import LogSistem from "./pages/log-sistem/LogPage";
 import RiwayatAbsensi from "./pages/pengajuan/absensi/riwayat";
 import RiwayatAbsensiDetail from "./pages/pengajuan/absensi/riwayatDetail";
+import PenjadwalanKaryawan from "./pages/penjadwalan-karyawan";
+
 
 
 // ===================== MOBILE USERS ========================
-// RIWAYAT
 import RiwayatPengguna from "./pages/riwayat-user/riwayat-pengguna";
 
 
@@ -170,7 +171,6 @@ const App = () => {
     return (
       <div className="min-h-screen bg-green-900 p-1 gap-2 overflow-x-clip">
         <div className="bg-transparent rounded-2xl flex flex-col h-[calc(100vh-0.7rem)] overflow-hidden">
-          {/* Header */}
           <div className="h-14 bg-green-900 z-50">
             <Header toggleSidebar={toggleSidebar} isSidebarOpen={isMobile ? isSidebarMobileOpen : isSidebarDesktopOpen} />
           </div>
@@ -286,6 +286,7 @@ const App = () => {
     { path: "/log-sistem", component: <LogSistem />, roles: ["1", "4", "6"], layout: SidebarLayout },
     { path: "/pengajuan-absensi/riwayat", component: <RiwayatAbsensi />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
     { path: "/pengajuan-absensi/riwayat/:id_user", component: <RiwayatAbsensiDetail />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+    { path: "/penjadwalan-karyawan", component: <PenjadwalanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
   ];
 
   return (

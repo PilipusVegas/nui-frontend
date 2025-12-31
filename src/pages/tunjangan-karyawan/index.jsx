@@ -1,27 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faEye,
-    faPlus,
-    faEdit,
-    faGasPump,
-    faUtensils,
-    faHotel,
-    faBriefcase,
-    faInfo,
-    faTrash,
-} from "@fortawesome/free-solid-svg-icons";
+import { faEye, faPlus, faEdit, faGasPump, faUtensils, faHotel, faBriefcase, faInfo, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import { fetchWithJwt } from "../../utils/jwtHelper";
-import {
-    SectionHeader,
-    LoadingSpinner,
-    ErrorState,
-    EmptyState,
-    SearchBar,
-    Modal,
-    Pagination,
-} from "../../components";
+import { SectionHeader, LoadingSpinner, ErrorState, EmptyState, SearchBar, Modal, Pagination } from "../../components";
 import TunjanganDetail from "./show";
 import TunjanganForm from "./form";
 import Swal from "sweetalert2";
@@ -275,8 +257,8 @@ const TunjanganKaryawan = () => {
                                         {/* STATUS (optional, kalau mau ditampilkan) */}
                                         <span
                                             className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium ${item.status
-                                                    ? "bg-green-100 text-green-700"
-                                                    : "bg-gray-100 text-gray-500"
+                                                ? "bg-green-100 text-green-700"
+                                                : "bg-gray-100 text-gray-500"
                                                 }`}
                                         >
                                             {item.status ? "Aktif" : "Non-Aktif"}
@@ -289,26 +271,10 @@ const TunjanganKaryawan = () => {
                                     {/* TUNJANGAN */}
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3 text-sm">
-                                            <FontAwesomeIcon
-                                                icon={faGasPump}
-                                                title="Uang Bensin"
-                                                className={item.bensin ? "text-orange-500" : "text-gray-300"}
-                                            />
-                                            <FontAwesomeIcon
-                                                icon={faUtensils}
-                                                title="Voucher Makan"
-                                                className={item.makan ? "text-green-500" : "text-gray-300"}
-                                            />
-                                            <FontAwesomeIcon
-                                                icon={faHotel}
-                                                title="Penginapan"
-                                                className={item.penginapan ? "text-indigo-500" : "text-gray-300"}
-                                            />
-                                            <FontAwesomeIcon
-                                                icon={faBriefcase}
-                                                title="Perjalanan Dinas"
-                                                className={item.dinas ? "text-blue-500" : "text-gray-300"}
-                                            />
+                                            <FontAwesomeIcon icon={faGasPump} title="Uang Bensin" className={item.bensin ? "text-orange-500" : "text-gray-300"} />
+                                            <FontAwesomeIcon icon={faUtensils} title="Voucher Makan" className={item.makan ? "text-green-500" : "text-gray-300"} />
+                                            <FontAwesomeIcon icon={faHotel} title="Penginapan" className={item.penginapan ? "text-indigo-500" : "text-gray-300"} />
+                                            <FontAwesomeIcon icon={faBriefcase} title="Perjalanan Dinas" className={item.dinas ? "text-blue-500" : "text-gray-300"} />
                                         </div>
 
                                         {/* ACTION ICON */}
@@ -367,150 +333,120 @@ const TunjanganKaryawan = () => {
             </Modal>
 
             {/* INFORMASI */}
-            <Modal isOpen={infoOpen} onClose={() => setInfoOpen(false)} title="Informasi Tunjangan Karyawan" note="Penjelasan jenis tunjangan, arti ikon, serta ketentuan umum pemberian tunjangan karyawan." size="lg">
-                <div className="space-y-4 text-sm text-gray-700 leading-relaxed">
+            <Modal isOpen={infoOpen} onClose={() => setInfoOpen(false)} title="Informasi Tunjangan Karyawan" note="Penjelasan jenis tunjangan, syarat pemberian, serta ketentuan perhitungan dalam sistem." size="lg">
+                <div className="space-y-5 text-sm text-gray-700 leading-relaxed">
+
+                    {/* GAMBARAN UMUM */}
                     <div>
                         <p className="font-medium text-gray-800 mb-1">Gambaran Umum</p>
                         <p>
-                            Menu <b>Tunjangan Karyawan</b> digunakan untuk mengatur hak tunjangan yang diterima
-                            setiap karyawan berdasarkan peran, kebutuhan operasional, serta kebijakan perusahaan
-                            yang berlaku.
+                            Menu <b>Tunjangan Karyawan</b> digunakan untuk mengatur hak tunjangan yang diterima karyawan
+                            berdasarkan aktivitas kerja, lokasi penugasan, serta persetujuan absensi atau lembur.
+                            Seluruh tunjangan hanya akan dihitung apabila <b>memenuhi syarat</b> dan <b>disetujui</b>.
                         </p>
                     </div>
+
+                    {/* DAFTAR TUNJANGAN */}
                     <div>
-                        <p className="font-medium text-gray-800 mb-2">Arti Ikon & Ketentuan Tunjangan</p>
-                        <ul className="space-y-3 text-sm text-gray-700 leading-relaxed">
-                            <li className="flex items-start gap-2">
+                        <p className="font-medium text-gray-800 mb-2">Jenis Tunjangan & Ketentuan</p>
+
+                        <ul className="space-y-4">
+
+                            {/* VOUCHER MAKAN */}
+                            <li className="flex items-start gap-3">
                                 <FontAwesomeIcon icon={faUtensils} className="text-green-500 mt-1" />
-                                <span>
-                                    <b>Voucher Makan</b> diberikan apabila:
+                                <div>
+                                    <p className="font-semibold">Tunjangan Voucher Makan</p>
                                     <ul className="list-disc pl-5 mt-1 space-y-1">
-                                        <li>
-                                            Karyawan <b>sudah ditandai berhak menerima tunjangan</b>.
-                                        </li>
-                                        <li>
-                                            Melakukan <b>lembur minimal 5 jam</b>.
-                                        </li>
-                                        <li>
-                                            Lembur dilakukan di <b>lokasi kerja lapangan (gerai)</b>.
-                                        </li>
-                                        <li>
-                                            <b>Tidak berlaku</b> untuk lokasi kantor: Kantor Palem, Utan Jati, dan Garuda.
-                                        </li>
-                                        <li>
-                                            <b>Tidak berlaku</b> untuk lembur pada hari Minggu.
-                                        </li>
+                                        <li>Karyawan <b>telah ditandai berhak</b> menerima tunjangan voucher makan.</li>
+                                        <li>Melakukan <b>lembur minimal 5 jam</b> di <b>gerai Jabodetabek</b>.</li>
+                                        <li>Karyawan <b>tidak sedang melakukan perjalanan dinas</b>.</li>
+                                        <li><b>Tidak berlaku</b> untuk lembur pada hari Minggu.</li>
+                                        <li>Tunjangan <b>hanya dihitung</b> jika lembur <b>disetujui</b>.</li>
+                                        <li>Apabila lembur <b>ditolak (reject)</b>, maka tunjangan <b>hangus</b> dan tidak masuk rekap.</li>
                                     </ul>
-                                </span>
+                                </div>
                             </li>
 
-                            <li className="flex items-start gap-2">
-                                <FontAwesomeIcon icon={faBriefcase} className="text-blue-500 mt-1" />
-                                <span>
-                                    <b>Perjalanan Dinas</b> diberikan apabila:
-                                    <ul className="list-disc pl-5 mt-1 space-y-1">
-                                        <li>
-                                            Karyawan <b>sudah ditandai berhak menerima tunjangan</b>.
-                                        </li>
-                                        <li>
-                                            Melakukan <b>perjalanan dinas ke luar kota</b>.
-                                        </li>
-                                        <li>
-                                            <b>Melakukan absensi</b> pada hari perjalanan dinas tersebut.
-                                        </li>
-                                        <li>
-                                            Jika karyawan <b>tidak masuk atau tidak absen</b>, maka tunjangan{" "}
-                                            <b>dibatalkan</b>.
-                                        </li>
-                                        <li>
-                                            <b>Tidak berlaku</b> untuk hari Minggu.
-                                        </li>
-                                    </ul>
-                                </span>
-                            </li>
-
-                            <li className="flex items-start gap-2">
+                            {/* UANG BENSIN */}
+                            <li className="flex items-start gap-3">
                                 <FontAwesomeIcon icon={faGasPump} className="text-orange-500 mt-1" />
-                                <span>
-                                    <b>Uang Bensin</b> diberikan apabila:
+                                <div>
+                                    <p className="font-semibold">Tunjangan Uang Bensin</p>
                                     <ul className="list-disc pl-5 mt-1 space-y-1">
-                                        <li>
-                                            Karyawan <b>sudah ditandai berhak menerima tunjangan</b>.
-                                        </li>
-                                        <li>
-                                            Menggunakan <b>kendaraan pribadi</b>.
-                                        </li>
-                                        <li>
-                                            Bekerja dan melakukan absensi di <b>gerai</b>.
-                                        </li>
-                                        <li>
-                                            <b>Tidak berlaku</b> untuk lokasi kantor: Kantor Palem, Utan Jati, dan Garuda.
-                                        </li>
-                                        <li>
-                                            Absensi dinyatakan <b>sesuai dan memenuhi syarat</b>.
-                                        </li>
+                                        <li>Karyawan <b>telah ditandai berhak</b> menerima uang bensin.</li>
+                                        <li>Melakukan <b>absensi di gerai</b> (bukan kantor).</li>
+                                        <li>Lokasi kerja berada di <b>gerai wilayah Jabodetabek</b>.</li>
+                                        <li>Karyawan <b>tidak sedang melakukan perjalanan dinas</b>.</li>
+                                        <li>Tunjangan <b>hanya dihitung</b> jika absensi <b>disetujui</b>.</li>
+                                        <li>Jika absensi <b>ditolak</b>, maka tunjangan <b>hangus</b> dan tidak masuk rekap.</li>
                                     </ul>
-                                </span>
+                                </div>
                             </li>
 
-                            <li className="flex items-start gap-2">
+                            {/* BIAYA PENGINAPAN */}
+                            <li className="flex items-start gap-3">
                                 <FontAwesomeIcon icon={faHotel} className="text-indigo-500 mt-1" />
-                                <span>
-                                    <b>Biaya Penginapan</b> diberikan apabila:
+                                <div>
+                                    <p className="font-semibold">Tunjangan Biaya Penginapan</p>
                                     <ul className="list-disc pl-5 mt-1 space-y-1">
-                                        <li>
-                                            Karyawan <b>sudah ditandai berhak menerima tunjangan</b>.
-                                        </li>
-                                        <li>
-                                            Melakukan <b>absensi shift malam</b>.
-                                        </li>
-                                        <li>
-                                            Bekerja di <b>gerai</b>, bukan kantor.
-                                        </li>
-                                        <li>
-                                            <b>Tidak berlaku</b> untuk lokasi kantor: Kantor Palem, Utan Jati, dan Garuda.
-                                        </li>
+                                        <li>Karyawan <b>telah ditandai berhak</b> menerima biaya penginapan.</li>
+                                        <li>Melakukan <b>absensi shift malam 1 atau shift malam 2</b>.</li>
+                                        <li>Absensi dilakukan di <b>gerai wilayah Jabodetabek</b>.</li>
+                                        <li>Karyawan <b>tidak sedang berdinas</b>.</li>
+                                        <li>Tunjangan <b>hanya dihitung</b> jika absensi <b>disetujui</b>.</li>
+                                        <li>Jika absensi <b>ditolak</b>, maka tunjangan <b>hangus</b> dan tidak masuk rekap.</li>
                                     </ul>
-                                </span>
+                                </div>
                             </li>
+
+                            {/* PERJALANAN DINAS */}
+                            <li className="flex items-start gap-3">
+                                <FontAwesomeIcon icon={faBriefcase} className="text-blue-500 mt-1" />
+                                <div>
+                                    <p className="font-semibold">Tunjangan Perjalanan Dinas</p>
+                                    <ul className="list-disc pl-5 mt-1 space-y-1">
+                                        <li>Diberikan kepada karyawan yang <b>melakukan tugas dinas ke luar Jabodetabek</b>.</li>
+                                        <li>Pada hari dinas, <b>hanya tunjangan perjalanan dinas</b> yang berlaku.</li>
+                                        <li>Tunjangan lain (voucher makan, bensin, penginapan) <b>tidak berlaku</b>.</li>
+                                        <li>Karyawan <b>wajib melakukan absensi</b> pada hari dinas.</li>
+                                        <li>Jika <b>tidak absen</b> atau absensi <b>ditolak</b>, tunjangan dinas <b>hangus</b>.</li>
+                                        <li>Tunjangan ini <b>tidak berlaku</b> untuk dinas di dalam Jabodetabek.</li>
+                                    </ul>
+                                </div>
+                            </li>
+
                         </ul>
                     </div>
+
+                    {/* STATUS IKON */}
                     <div>
                         <p className="font-medium text-gray-800 mb-2">Status Ikon</p>
-
-                        <ul className="space-y-2 text-sm text-gray-700">
+                        <ul className="space-y-2">
                             <li className="flex items-center gap-2">
                                 <FontAwesomeIcon icon={faGasPump} className="text-orange-500" />
-                                <span>
-                                    <b>Ikon berwarna</b> menandakan tunjangan <b>aktif</b> dan berlaku untuk karyawan
-                                    tersebut.
-                                </span>
+                                <span>Ikon berwarna menandakan tunjangan <b>aktif dan berlaku</b>.</span>
                             </li>
-
                             <li className="flex items-center gap-2">
                                 <FontAwesomeIcon icon={faGasPump} className="text-gray-300" />
-                                <span>
-                                    <b>Ikon abu-abu</b> menandakan tunjangan <b>tidak aktif</b> atau tidak diberikan.
-                                </span>
+                                <span>Ikon abu-abu menandakan tunjangan <b>tidak aktif</b> atau tidak diberikan.</span>
                             </li>
                         </ul>
                     </div>
 
+                    {/* CATATAN PENTING */}
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                         <p className="font-medium text-blue-800 mb-1">Catatan Penting</p>
                         <ul className="list-disc pl-5 text-blue-800 space-y-1">
-                            <li>Setiap karyawan hanya dapat memiliki satu konfigurasi tunjangan aktif.</li>
-                            <li>
-                                Perubahan tunjangan akan langsung memengaruhi perhitungan hak karyawan terkait.
-                            </li>
-                            <li>
-                                Pastikan data karyawan dan kebijakan perusahaan sudah sesuai sebelum menyimpan
-                                perubahan.
-                            </li>
+                            <li>Seluruh tunjangan hanya dihitung jika <b>status disetujui</b>.</li>
+                            <li>Status <b>reject</b> secara otomatis menyebabkan tunjangan <b>hangus</b>.</li>
+                            <li>Pastikan penandaan hak tunjangan dilakukan dengan benar sebelum proses berjalan.</li>
                         </ul>
                     </div>
+
                 </div>
             </Modal>
+
         </div>
     );
 };

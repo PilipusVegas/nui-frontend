@@ -292,7 +292,6 @@ const DetailAbsen = ({ formData = {} }) => {
                   </div>
                 </div>
 
-                {/* Detail */}
                 <div>
                   <p className="text-sm font-semibold text-gray-700 mb-3 border-b pb-1">
                     Detail Informasi Absen Mulai
@@ -313,9 +312,7 @@ const DetailAbsen = ({ formData = {} }) => {
           {/* Absen Selesai */}
           {fotoSelesai && (
             <div className="bg-white rounded-2xl shadow-md border overflow-hidden hover:shadow-lg transition">
-              {/* Isi */}
               <div className="p-6 py-4 space-y-4">
-                {/* Foto */}
                 <div>
                   <p className="text-sm font-semibold text-gray-700 mb-6 border-b pb-1">
                     Dokumentasi Absen Selesai

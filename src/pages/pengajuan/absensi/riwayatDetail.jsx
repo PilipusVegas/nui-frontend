@@ -3,15 +3,8 @@ import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { fetchWithJwt } from "../../../utils/jwtHelper";
 import SectionHeader from "../../../components/desktop/SectionHeader";
 import { LoadingSpinner, ErrorState, EmptyState, SearchBar } from "../../../components";
-import {
-    formatDate,
-    formatFullDate,
-    formatLongDate,
-    formatTime,
-    toLocalISODate
-} from "../../../utils/dateUtils";
-
-import { faCheckCircle, faXmarkCircle, faGasPump, faHotel, } from "@fortawesome/free-solid-svg-icons";
+import { formatFullDate, formatLongDate, formatTime, toLocalISODate} from "../../../utils/dateUtils";
+import { faCheckCircle, faXmarkCircle, faGasPump, faHotel, faBriefcase, } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const RiwayatPersetujuanDetail = () => {
@@ -124,7 +117,7 @@ const RiwayatPersetujuanDetail = () => {
 
     return (
         <div className="flex flex-col gap-4">
-            <SectionHeader title="Riwayat Persetujuan Absensi" subtitle="Detail Absensi Pengajuan Absensi Pengguna Pengajuan Absensi" onBack={() => navigate("/pengajuan-absensi")} />
+            <SectionHeader title="Riwayat Persetujuan Absensi" subtitle="Detail Absensi Pengajuan Absensi Pengguna Pengajuan Absensi" onBack={() => navigate("/pengajuan-absensi/riwayat")} />
 
             <div className="bg-white border rounded-lg px-4 py-3">
                 <h2 className="text-base font-semibold text-gray-900">
@@ -187,6 +180,7 @@ const RiwayatPersetujuanDetail = () => {
                             const tunjangan = a.tunjangan || {};
                             const hasTransport = Boolean(tunjangan.transport);
                             const hasNightShift = Boolean(tunjangan.night_shift);
+                            const hasDinas = Boolean(tunjangan.dinas);
                             const hasTunjangan = hasTransport || hasNightShift;
 
                             return (
@@ -211,12 +205,15 @@ const RiwayatPersetujuanDetail = () => {
                                     </td>
                                     <td className="px-4 py-3 text-center">
                                         {hasTunjangan ? (
-                                            <div className="inline-flex items-center gap-2 text-green-600">
+                                            <div className="inline-flex items-center gap-2">
                                                 {hasTransport && (
-                                                    <FontAwesomeIcon icon={faGasPump} title="Tunjangan Transport" />
+                                                    <FontAwesomeIcon icon={faGasPump} title="Tunjangan Transport" className="text-orange-500" />
                                                 )}
                                                 {hasNightShift && (
-                                                    <FontAwesomeIcon icon={faHotel} title="Tunjangan Shift Malam" />
+                                                    <FontAwesomeIcon icon={faHotel} title="Tunjangan Shift Malam" className="text-indigo-500"/>
+                                                )}
+                                                {hasDinas && (
+                                                    <FontAwesomeIcon icon={faBriefcase} title="Tunjangan Shift Malam" className="text-blue-500" />
                                                 )}
                                             </div>
                                         ) : (

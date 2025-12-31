@@ -6,10 +6,8 @@ import { menuConfig } from "../data/menuConfig";
 
 const IconButton = ({ icon, label, onClick, isActive }) => (
   <button onClick={onClick} aria-label={label}
-    className={`flex items-center w-full p-2.5 my-1 rounded-xl text-sm font-medium tracking-wide transition-all duration-200 ease-in-out overflow-hidden
-        ${isActive
-        ? `bg-white/20 backdrop-blur-xl border border-white/20 shadow-sm shadow-black/20 text-white font-semibold ring-1 ring-white/10`
-        : `text-white/80 hover:text-white hover:bg-white/10 hover:backdrop-blur-sm hover:shadow-md hover:shadow-black/10`
+    className={`flex items-center w-full p-2 my-1 rounded-lg text-sm font-medium tracking-wide transition-all duration-200 ease-in-out overflow-hidden
+        ${isActive ? `bg-white/20 backdrop-blur-xl border border-white/20 shadow-sm shadow-black/20 text-white font-semibold ring-1 ring-white/10` : `text-white/80 hover:text-white hover:bg-white/10 hover:backdrop-blur-sm hover:shadow-md hover:shadow-black/10`
       }
       `}
   >
@@ -46,7 +44,7 @@ const MenuSidebar = ({ perusahaanId, roleId, isOpen, toggleSidebar, isMobile }) 
               {group.sectionTitle && (
                 <div className="mb-3 select-none">
                   <div className="flex items-center">
-                    <div className="w-1 h-4 bg-gradient-to-b from-green-400 via-green-300 to-white/60 rounded-xl mr-2 shadow-sm"></div>
+                    <div className="w-1 h-4 bg-gradient-to-b from-green-400 via-green-300 to-white/60 rounded-lg mr-2 shadow-sm"></div>
                     <p className="text-xs text-white/95 tracking-widest font-semibold uppercase drop-shadow-sm">
                       {group.sectionTitle}
                     </p>
@@ -77,7 +75,7 @@ const MenuSidebar = ({ perusahaanId, roleId, isOpen, toggleSidebar, isMobile }) 
                       />
                     ) : (
                       <>
-                          <button onClick={() => setOpenSubmenu(isSubmenuOpen ? null : submenuKey)} className={`w-full flex items-center justify-between p-2.5 my-0.5 rounded-xl transition-all duration-300 ${hasActiveSubmenu ? "bg-green-400/30 backdrop-blur-md border border-white/30 text-white font-extrabold shadow-xl shadow-green-500/20" : "hover:bg-white/10 text-white/90"}`}>
+                          <button onClick={() => setOpenSubmenu(isSubmenuOpen ? null : submenuKey)} className={`w-full flex items-center justify-between p-2 my-0.5 rounded-lg transition-all duration-300 ${hasActiveSubmenu ? "bg-green-400/30 backdrop-blur-md border border-white/30 text-white font-extrabold shadow-xl shadow-green-500/20" : "hover:bg-white/10 text-white/90"}`}>
                           <div className="flex items-center gap-2">
                             <div className="w-6 h-6 flex items-center justify-center">
                               <FontAwesomeIcon icon={menu.icon} className="text-lg" />
@@ -115,7 +113,7 @@ const MenuSidebar = ({ perusahaanId, roleId, isOpen, toggleSidebar, isMobile }) 
                                       }
                                       if (isMobile) toggleSidebar();
                                     }}  
-                                      className={`group flex items-center w-full text-left text-sm rounded-xl p-2.5 pl-5 transition-all duration-300 ${isActiveSubmenu ? `bg-white/25 backdrop-blur-lg border border-white/20 shadow-md shadow-green-400/30 text-white font-semibold ring-1 ring-white/10` : `hover:bg-white/10 hover:backdrop-blur-sm text-white/80 hover:text-white`}`}>
+                                      className={`group flex items-center w-full text-left text-sm rounded-lg p-2 pl-3 transition-all duration-300 ${isActiveSubmenu ? `bg-white/25 backdrop-blur-lg border border-white/20 shadow-md shadow-green-400/30 text-white font-semibold ring-1 ring-white/10` : `hover:bg-white/10 hover:backdrop-blur-sm text-white/80 hover:text-white`}`}>
                                       <FontAwesomeIcon icon={faArrowRight} className={`mr-1.5 text-xs transition-transform duration-300  ${isActiveSubmenu ? "text-white rotate-0" : "group-hover:translate-x-1"}`} />
                                       <span className={`transition-transform duration-300  ${isActiveSubmenu ? "translate-x-1" : "group-hover:translate-x-1"}`}>
                                         {sub.label}
