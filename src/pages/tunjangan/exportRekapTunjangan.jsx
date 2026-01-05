@@ -2,7 +2,7 @@ import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import { formatLongDate } from "../../utils/dateUtils";
 
-export const exportRekapTunjangan = async ( dataTunjangan, tanggalArray, namaUser) => {
+export const exportRekapTunjangan = async (dataTunjangan, tanggalArray, namaUser) => {
   try {
     if (!dataTunjangan?.length) {
       alert("Tidak ada data untuk diekspor!");
@@ -36,7 +36,7 @@ export const exportRekapTunjangan = async ( dataTunjangan, tanggalArray, namaUse
     // Baris 5: Keterangan singkatan tunjangan
     sheet.mergeCells("B5:Z5");
     sheet.getCell("B5").value =
-      "Keterangan: TUM = Tunjangan Uang Makan | TSM = Tunjangan Shift Malam | TKP = Tunjangan Kendaraan Pribadi";
+      "Keterangan: TUM = Tunjangan Uang Makan | TSM = Tunjangan Shift Malam | TKP = Tunjangan Kendaraan Pribadi | TDP = Tunjangan Dinas Perjalanan";
     sheet.getCell("B5").font = { italic: true };
     sheet.getCell("B5").alignment = { horizontal: "left", vertical: "middle" };
 
@@ -46,17 +46,23 @@ export const exportRekapTunjangan = async ( dataTunjangan, tanggalArray, namaUse
     sheet.mergeCells("B7:C7");
     sheet.getCell("B7").value = "PEGAWAI";
 
-    sheet.mergeCells("D7:G7");
+    sheet.mergeCells("D7:H7");
     sheet.getCell("D7").value = "JUMLAH";
 
     // Merge header tanggal
-    let colIndex = 9; // kolom setelah G
+    let colIndex = 9; // mulai setelah kolom Nominal (H)
+
     tanggalArray.forEach((tgl) => {
       const formattedDate = formatLongDate(tgl);
-      sheet.mergeCells(7, colIndex, 7, colIndex + 2);
+
+      // merge 4 kolom
+      sheet.mergeCells(7, colIndex, 7, colIndex + 3);
       sheet.getCell(7, colIndex).value = formattedDate;
-      colIndex += 3;
+      sheet.getCell(7, colIndex).alignment = { horizontal: "center", vertical: "middle" };
+
+      colIndex += 4;
     });
+
 
     // === SUBHEADER (Baris 8) ===
     const subHeader = [
@@ -144,7 +150,7 @@ export const exportRekapTunjangan = async ( dataTunjangan, tanggalArray, namaUse
     });
 
     // === FORMAT NOMINAL (kolom G = ke-7) ===
-    sheet.getColumn(7).numFmt = '"Rp"#,##0;[Red]-"Rp"#,##0';
+    sheet.getColumn(8).numFmt = '"Rp"#,##0;[Red]-"Rp"#,##0';
 
     // === SIMPAN FILE ===
     const buffer = await workbook.xlsx.writeBuffer();

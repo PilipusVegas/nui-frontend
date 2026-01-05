@@ -27,8 +27,17 @@ const DataRekapTunjangan = () => {
     const [isDateSelected, setIsDateSelected] = useState(false);
     const [showEditNominal, setShowEditNominal] = useState(false);
 
+
+    useEffect(() => {
+        if (startDate && endDate && endDate < startDate) {
+            setEndDate(startDate);
+        }
+    }, [startDate, endDate]);
+
+
     const fetchTunjanganData = async () => {
         if (!startDate || !endDate) return;
+        if (endDate < startDate) return;
         setLoading(true);
         setError(null);
         try {
@@ -90,7 +99,8 @@ const DataRekapTunjangan = () => {
     const handleMouseLeave = () => {
         setHoveredData(null);
     };
-    console.log(user);
+
+
     return (
         <div className="min-h-screen flex flex-col justify-start p-5">
             <SectionHeader title="Rekap Tunjangan Karyawan" subtitle="Menampilkan Rekap Tunjangan Perminggu Secara Otomatis dan Sistematis." onBack={() => Navigate("/")}
@@ -132,9 +142,24 @@ const DataRekapTunjangan = () => {
             <div className="w-full flex flex-row flex-wrap items-center justify-between gap-4 mb-4">
                 <SearchBar placeholder="Cari Karyawan..." className="flex-1 min-w-[200px]" onSearch={(val) => setSearchName(val)} />
                 <div className="flex items-center gap-1">
-                    <input type="date" className="border-2 border-gray-300 rounded-md px-2 py-2.5 text-sm" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                    <input
+                        type="date"
+                        className="border-2 border-gray-300 rounded-md px-2 py-2.5 text-sm"
+                        value={startDate}
+                        max={endDate || undefined}
+                        onChange={(e) => setStartDate(e.target.value)}
+                    />
+
                     <span className="mx-1 text-gray-600">s/d</span>
-                    <input type="date" className="border-2 border-gray-300 rounded-md px-2 py-2.5 text-sm" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+
+                    <input
+                        type="date"
+                        className="border-2 border-gray-300 rounded-md px-2 py-2.5 text-sm"
+                        value={endDate}
+                        min={startDate || undefined}
+                        onChange={(e) => setEndDate(e.target.value)}
+                    />
+
                 </div>
             </div>
 

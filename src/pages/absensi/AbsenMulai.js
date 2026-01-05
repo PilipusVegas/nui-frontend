@@ -24,7 +24,7 @@ const AbsenMulai = ({ handleNextStepData }) => {
   const [userCoords, setUserCoords] = useState({ latitude: null, longitude: null });
   const webcamRef = useRef(null);
   const [fotoMulai, setFotoMulai] = useState(null);
-  const [jamMulai, setJamMulai] = useState(null);
+  const [jamMulai, setJamMulai] = useState(null); 
   const [facingMode, setFacingMode] = useState("user");
   const { analyze } = useFakeGpsDetector();
 

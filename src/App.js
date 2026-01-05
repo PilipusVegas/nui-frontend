@@ -68,8 +68,6 @@ import RiwayatAbsensi from "./pages/pengajuan/absensi/riwayat";
 import RiwayatAbsensiDetail from "./pages/pengajuan/absensi/riwayatDetail";
 import PenjadwalanKaryawan from "./pages/penjadwalan-karyawan";
 
-
-
 // ===================== MOBILE USERS ========================
 import RiwayatPengguna from "./pages/riwayat-user/riwayat-pengguna";
 
