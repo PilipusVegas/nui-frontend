@@ -35,7 +35,7 @@ const DetailPenugasan = () => {
         }
 
         const images = submissionList.map((s) => ({
-            src: `${apiUrl}/uploads/img/tugas/${s.bukti_foto}`, // path disamakan
+            src: `${apiUrl}/uploads/img/tugas/${s.bukti_foto}`,
         }));
 
         const index = images.findIndex((img) => img.src === clickedImage);
@@ -260,13 +260,21 @@ const DetailPenugasan = () => {
         }
     }
 
+    const StatusBadge = ({ label, value, border, text }) => (
+        <div className={`flex items-center justify-between gap-2 px-3 py-1.5 bg-white rounded-md border-l-4 ${border} shadow-sm`}>
+            <span className="text-gray-500">{label}</span>
+            <span className={`font-semibold ${text}`}>{value}</span>
+        </div>
+    );
+
+
     return (
         <div>
             <SectionHeader title="Detail Penugasan" subtitle="Informasi lengkap penugasan dan pekerja terkait" onBack={() => navigate(-1)}
                 actions={
                     <div>
                         <button onClick={handleRefresh} className="flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md border border-blue-300 bg-blue-500 text-white hover:bg-blue-600 hover:shadow-sm transition-all" title="Segarkan Data">
-                            <FontAwesomeIcon icon={faRotateRight} className="w-4 h-4" />
+                            <FontAwesomeIcon icon={faRotateRight} className="w-4 h-5 sm:w-5 sm:h-5" />
                             <span className="hidden sm:inline">Segarkan</span>
                         </button>
                     </div>
@@ -289,14 +297,8 @@ const DetailPenugasan = () => {
                                     </h3>
                                     <div className="mt-2 sm:mt-0">
                                         {tugas.category ? (
-                                            <span
-                                                className={`inline-flex items-center gap-1.5 px-3 py-[3px] rounded-full text-xs font-semibold border
-                                                    ${tugas.category === "urgent"
-                                                        ? "bg-red-100 text-red-700 border-red-200"
-                                                        : tugas.category === "daily"
-                                                            ? "bg-emerald-100 text-emerald-700 border-emerald-200"
-                                                            : "bg-blue-100 text-blue-700 border-blue-200"
-                                                    }`}
+                                            <span className={`inline-flex items-center gap-1.5 px-3 py-[3px] rounded-full text-xs font-semibold border
+                                                ${tugas.category === "urgent" ? "bg-red-100 text-red-700 border-red-200" : tugas.category === "daily" ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-blue-100 text-blue-700 border-blue-200"}`}
                                             >
                                                 {tugas.category?.toUpperCase()}
                                             </span>
@@ -308,7 +310,7 @@ const DetailPenugasan = () => {
                             </div>
 
                             <div className="mb-5 px-0 sm:px-6">
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 mb-5">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4">
                                     <div>
                                         <p className="text-xs uppercase text-gray-500 tracking-wide mb-1">TUGAS</p>
                                         <h3 className="text-md font-semibold text-gray-900 leading-snug tracking-tight break-words capitalize">
@@ -317,9 +319,43 @@ const DetailPenugasan = () => {
                                     </div>
                                 </div>
 
+                                <div className="mb-6">
+                                    <h3 className="text-xs uppercase text-gray-500 tracking-wide mb-1">
+                                        Deskripsi Tugas
+                                    </h3>
+                                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                                        {tugas.deskripsi || "Tidak ada deskripsi tugas."}
+                                    </p>
+                                </div>
+
+                                {tugas?.attachment && tugas.attachment.length > 0 && (
+                                    <div className="mb-8">
+                                        <h3 className="text-xs uppercase text-gray-500 tracking-wide mb-3">
+                                            Lampiran
+                                        </h3>
+
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                            {tugas.attachment
+                                                .filter((img) => img.tipe_foto === 1)
+                                                .map((img) => {
+                                                    const src = `${apiUrl}/uploads/img/tugas/${img.bukti_foto}`;
+                                                    return (
+                                                        <div key={img.id} className="cursor-pointer group" onClick={() =>
+                                                                handleOpenLightbox( src, tugas.attachment.filter((i) => i.tipe_foto === 1))
+                                                            }
+                                                        >
+                                                            <div className="relative w-full h-32 rounded-lg overflow-hidden border bg-gray-100 flex items-center justify-center">
+                                                                <img src={src} alt="Foto Pendukung" className="max-w-full max-h-full object-contain transition-transform duration-300 group-hover:scale-105"/>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                        </div>
+                                    </div>
+                                )}
+
                                 {(() => {
                                     const progress = tugas.details && tugas.details.length > 0 ? (tugas.details.filter((d) => d.status === 1).length / tugas.details.length) * 100 : 0;
-
                                     return (
                                         <div className="grid grid-cols-1 sm:grid-cols-4 gap-5 text-sm text-gray-700">
                                             <div>
@@ -365,93 +401,25 @@ const DetailPenugasan = () => {
                                     </button>
                                 </div>
 
-                                {tugas?.attachment && tugas.attachment.length > 0 && (
-                                    <div className="mb-8 mt-6 border-t border-gray-200 pt-6">
-                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                            <div className="lg:col-span-2 space-y-3">
-                                                <h3 className="text-xs uppercase text-gray-500 tracking-wide mb-1">
-                                                    Deskripsi Tugas
-                                                </h3>
-                                                <p className="text-sm text-gray-700 leading-relaxed">
-                                                    {tugas.deskripsi}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <h3 className="text-xs uppercase text-gray-500 tracking-wide mb-1">
-                                                    Lampiran
-                                                </h3>
-
-                                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                                    {tugas.attachment
-                                                        .filter((img) => img.tipe_foto === 1)
-                                                        .map((img) => {
-                                                            const src = `${apiUrl}/uploads/img/tugas/${img.bukti_foto}`;
-
-                                                            return (
-                                                                <div key={img.id} className="cursor-pointer group" onClick={() => handleOpenLightbox(src, tugas.attachment.filter((i) => i.tipe_foto === 1))}>
-                                                                    <div className="relative w-full h-32 rounded-lg overflow-hidden border bg-gray-100 flex items-center justify-center">
-                                                                        <img src={src} alt="Foto Pendukung" className="max-w-full max-h-full object-contain transition-transform duration-300 group-hover:scale-105" />
-                                                                    </div>
-                                                                </div>
-                                                            );
-                                                        })}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         </div>
 
                         <div className="mt-5">
-                            <h3 className="text-md font-bold text-green-600 border-b border-gray-200 pb-2 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                                <div className="flex items-center gap-2">
-                                    <FontAwesomeIcon icon={faUserGroup} />
-                                    DAFTAR PEKERJA
-                                </div>
-                                <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm">
-
-                                    {/* TOTAL */}
-                                    <div className="flex items-center gap-2 px-3 border-l-4 border-gray-400 text-gray-700 bg-white">
-                                        <span>Total</span>
-                                        <span className="font-semibold text-gray-900">
-                                            {tugas.details?.length || 0}
-                                        </span>
-                                    </div>
-
-                                    {/* SELESAI */}
-                                    <div className="flex items-center gap-2 px-3 border-l-4 border-emerald-500 text-emerald-700 bg-white">
-                                        <span>Selesai</span>
-                                        <span className="font-semibold">
-                                            {tugas.details?.filter(d => d.status === 1).length || 0}
-                                        </span>
-                                    </div>
-
-                                    {/* PENDING */}
-                                    <div className="flex items-center gap-2 px-3 border-l-4 border-amber-500 text-amber-700 bg-white">
-                                        <span>Pending</span>
-                                        <span className="font-semibold">
-                                            {tugas.details?.filter(d => d.status === 0).length || 0}
-                                        </span>
-                                    </div>
-
-                                    {/* DITOLAK */}
-                                    <div className="flex items-center gap-2 px-3 border-l-4 border-red-500 text-red-700 bg-white">
-                                        <span>Ditolak</span>
-                                        <span className="font-semibold">
-                                            {tugas.details?.filter(d => d.status === 2).length || 0}
-                                        </span>
-                                    </div>
-
-                                    {/* PAUSE */}
-                                    <div className="flex items-center gap-2 px-3 border-l-4 border-orange-500 text-orange-700 bg-white">
-                                        <span>Pause</span>
-                                        <span className="font-semibold">
-                                            {tugas.details?.filter(d => d.is_paused === 1).length || 0}
-                                        </span>
+                            <div className="border-b border-gray-200 pb-3 mb-3">
+                                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                                    <h3 className="flex items-center gap-2 text-md font-bold text-green-600">
+                                        <FontAwesomeIcon icon={faUserGroup} />
+                                        DAFTAR PEKERJA
+                                    </h3>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:flex gap-2 text-xs sm:text-sm">
+                                        <StatusBadge label="Total" value={tugas.details?.length || 0} border="border-gray-400" text="text-gray-800" />
+                                        <StatusBadge label="Selesai" value={tugas.details?.filter(d => d.status === 1).length || 0} border="border-emerald-500" text="text-emerald-700" />
+                                        <StatusBadge label="Pending" value={tugas.details?.filter(d => d.status === 0).length || 0} border="border-amber-500" text="text-amber-700" />
+                                        <StatusBadge label="Ditolak" value={tugas.details?.filter(d => d.status === 2).length || 0} border="border-red-500" text="text-red-700" />
+                                        <StatusBadge label="Pause" value={tugas.details?.filter(d => d.is_paused === 1).length || 0} border="border-orange-500" text="text-orange-700" />
                                     </div>
                                 </div>
-                            </h3>
+                            </div>
 
                             {tugas.details?.length > 0 ? (
                                 <div className="divide-y divide-gray-200 max-h-[100vh] overflow-y-auto scrollbar-green mt-2 px-2">
@@ -475,10 +443,8 @@ const DetailPenugasan = () => {
 
                                                     {openLogs === item.id && (
                                                         <div className="mt-4 max-h-[30vh] overflow-y-auto scrollbar-green rounded-md border border-gray-200 bg-gray-50">
-
                                                             {item.logs?.length > 0 ? (
                                                                 <div className="divide-y divide-gray-200">
-
                                                                     {item.logs.map((log) => {
                                                                         let icon, iconColor;
                                                                         switch (log.status) {
@@ -582,10 +548,10 @@ const DetailPenugasan = () => {
                     selectedDetail?.finished_at &&
                     (selectedDetail.status === 0 ? (
                         <div className="flex justify-end gap-2">
-                            <button onClick={() => handleApproval(selectedDetail.id, 2)} className="px-4 py-2 text-sm font-medium rounded-md bg-red-50 text-red-600 hover:bg-red-100">
+                            <button onClick={() => handleApproval(selectedDetail.id, 2)} className="px-4 py-2 text-sm font-medium rounded-md bg-red-500 text-white hover:bg-red-600">
                                 Tolak
                             </button>
-                            <button onClick={() => handleApproval(selectedDetail.id, 1)} className="px-4 py-2 text-sm font-medium rounded-md bg-emerald-600 text-white hover:bg-emerald-700">
+                            <button onClick={() => handleApproval(selectedDetail.id, 1)} className="px-4 py-2 text-sm font-medium rounded-md bg-green-500 text-white hover:bg-green-600">
                                 Setujui
                             </button>
                         </div>
@@ -597,15 +563,17 @@ const DetailPenugasan = () => {
                 }
             >
                 {selectedDetail ? (
-                    <div className="space-y-5 text-sm text-gray-800">
-                        <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="text-sm text-gray-800 space-y-4">
+                        <div className="flex flex-wrap items-start justify-between gap-3 pb-3 border-b">
                             <div>
-                                <p className="text-xs text-gray-500">Karyawan</p>
-                                <p className="font-semibold text-base">{selectedDetail.nama_user}</p>
+                                <p className="text-xs text-gray-500">Nama Karyawan</p>
+                                <p className="font-semibold text-base">
+                                    {selectedDetail.nama_user}
+                                </p>
                             </div>
 
                             <div>
-                                <p className="text-xs text-gray-500">Waktu Penyelesaian</p>
+                                <p className="text-xs text-gray-500">Diselesaikan Pada</p>
                                 <p className="font-medium">
                                     {selectedDetail.finished_at ? formatFullDate(selectedDetail.finished_at) : "Belum selesai"}
                                 </p>
@@ -616,61 +584,68 @@ const DetailPenugasan = () => {
                             </span>
                         </div>
 
-                        <div>
-                            <p className="text-xs font-semibold text-gray-500 mb-1">
+                        <div className="space-y-1">
+                            <p className="text-xs font-semibold text-gray-500">
                                 Deskripsi Tugas
                             </p>
-                            <div className="whitespace-pre-line text-gray-700">
+                            <p className="whitespace-pre-line text-gray-700 leading-relaxed">
                                 {selectedDetail.deskripsi || "Tidak ada deskripsi tugas."}
-                            </div>
+                            </p>
                         </div>
 
                         {selectedDetail.status === 2 && (
-                            <div className="bg-red-50/70 px-3 py-2 rounded-md">
-                                <p className="text-xs font-semibold text-red-700 mb-1">
+                            <div className="space-y-1">
+                                <p className="text-xs font-semibold text-red-600">
                                     Alasan Penolakan
                                 </p>
-                                <p className="text-red-700 whitespace-pre-line">
+                                <p className="whitespace-pre-line text-red-700 leading-relaxed">
                                     {selectedDetail.deskripsi_penolakan || "Tidak ada alasan penolakan."}
                                 </p>
                             </div>
                         )}
 
-                        <div>
-                            <p className="text-xs font-semibold text-gray-500 mb-2">
+                        <div className="space-y-2">
+                            <p className="text-xs font-semibold text-gray-500">
                                 Bukti Foto Penyelesaian
                             </p>
-
                             {selectedDetail.submission?.length > 0 ? (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
                                     {selectedDetail.submission.map((sub) => (
-                                        <div key={sub.id} className="aspect-square rounded-md border bg-gray-50 flex items-center justify-center overflow-hidden cursor-pointer hover:shadow-sm transition" onClick={() => handleOpenLightbox( `${apiUrl}/uploads/img/tugas/${sub.bukti_foto}`, selectedDetail.submission)}>
+                                        <div key={sub.id} className="aspect-square rounded border bg-gray-50 flex items-center justify-center overflow-hidden cursor-pointer hover:shadow-sm transition"
+                                            onClick={() =>
+                                                handleOpenLightbox(
+                                                    `${apiUrl}/uploads/img/tugas/${sub.bukti_foto}`,
+                                                    selectedDetail.submission
+                                                )
+                                            }
+                                        >
                                             <img src={`${apiUrl}/uploads/img/tugas/${sub.bukti_foto}`} alt="Bukti" className="max-w-full max-h-full object-contain"/>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-gray-500 italic">
+                                <p className="text-gray-400 italic">
                                     Tidak ada bukti foto.
                                 </p>
                             )}
                         </div>
 
-                        <div>
-                            <p className="text-xs font-semibold text-gray-500 mb-1">
+                        <div className="space-y-1 pt-2 border-t">
+                            <p className="text-xs font-semibold text-gray-500">
                                 Deskripsi Pengajuan Karyawan
                             </p>
-                            <div className="whitespace-pre-line text-gray-700">
-                                {selectedDetail.deskripsi_pengajuan || "Tidak ada deskripsi pengajuan."}
-                            </div>
+                            <p className="whitespace-pre-line text-gray-700 leading-relaxed">
+                                {selectedDetail.deskripsi_pengajuan ||
+                                    "Tidak ada deskripsi pengajuan."}
+                            </p>
                         </div>
                     </div>
                 ) : (
-                    <p className="text-gray-500">Tidak ada detail yang dipilih.</p>
+                    <p className="text-gray-500 text-sm">
+                        Tidak ada detail yang dipilih.
+                    </p>
                 )}
             </Modal>
-
-
 
             <Lightbox open={openLightbox} close={() => setOpenLightbox(false)} slides={lightboxImages} index={lightboxIndex} />
         </div>

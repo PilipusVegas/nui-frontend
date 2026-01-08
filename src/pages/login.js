@@ -6,7 +6,7 @@ import { faEye, faEyeSlash, faUser, faLock } from "@fortawesome/free-solid-svg-i
 import toast from "react-hot-toast";
 import { getUserFromToken } from "../utils/jwtHelper";
 
-const Login = ({ onLoginSuccess }) => {
+const Login = () => {
   const navigate = useNavigate();
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const [username, setUsername] = useState("");
@@ -18,28 +18,32 @@ const Login = ({ onLoginSuccess }) => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     try {
       const response = await fetch(`${apiUrl}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
+
       const data = await response.json();
+
       if (!response.ok || !data.token) {
         toast.error(data?.message || "Username atau password salah.");
-        setLoading(false);
         return;
       }
+
       localStorage.setItem("token", data.token);
+
       const user = getUserFromToken();
       if (!user) {
         toast.error("Sesi tidak valid. Silakan login ulang.");
-        setLoading(false);
         return;
       }
+
       toast.success("Login berhasil! Selamat Bekerja");
-      onLoginSuccess();
-      navigate("/home");
+      navigate("/home", { replace: true });
+
     } catch (error) {
       console.error("Login error:", error);
       toast.error("Gagal menghubungi server. Silakan coba beberapa saat lagi.");
@@ -61,8 +65,8 @@ const Login = ({ onLoginSuccess }) => {
           <div className="relative">
             <label className="block text-sm font-semibold text-gray-700 mb-1">Username</label>
             <div className="relative">
-              <FontAwesomeIcon icon={faUser} className="absolute left-4 top-3.5 text-green-700 text-sm"/>
-              <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Masukkan Username" required className="w-full pl-10 pr-4 py-2.5 text-sm rounded-lg border border-green-600  focus:outline-none focus:ring-2 focus:ring-green-700  placeholder:text-gray-500 placeholder:font-semibold  transition duration-200 shadow-sm focus:shadow-md"/>
+              <FontAwesomeIcon icon={faUser} className="absolute left-4 top-3.5 text-green-700 text-sm" />
+              <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Masukkan Username" required className="w-full pl-10 pr-4 py-2.5 text-sm rounded-lg border border-green-600  focus:outline-none focus:ring-2 focus:ring-green-700  placeholder:text-gray-500 placeholder:font-semibold  transition duration-200 shadow-sm focus:shadow-md" />
             </div>
           </div>
 
@@ -70,14 +74,14 @@ const Login = ({ onLoginSuccess }) => {
           <div className="relative">
             <label className="block text-sm font-semibold text-gray-700 mb-1">Password</label>
             <div className="relative">
-              <FontAwesomeIcon icon={faLock} className="absolute left-4 top-3.5 text-green-700 text-sm"/>
-              <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Masukkan Password" required className="w-full pl-10 pr-10 py-2.5 text-sm rounded-lg border border-green-600  focus:outline-none focus:ring-2 focus:ring-green-700  placeholder:text-gray-500 placeholder:font-semibold  transition duration-200 shadow-sm focus:shadow-md"/>
-              <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} onClick={togglePasswordVisibility} className="absolute right-3 top-3.5 text-green-700 text-md cursor-pointer hover:scale-110 transition-transform"/>
+              <FontAwesomeIcon icon={faLock} className="absolute left-4 top-3.5 text-green-700 text-sm" />
+              <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Masukkan Password" required className="w-full pl-10 pr-10 py-2.5 text-sm rounded-lg border border-green-600  focus:outline-none focus:ring-2 focus:ring-green-700  placeholder:text-gray-500 placeholder:font-semibold  transition duration-200 shadow-sm focus:shadow-md" />
+              <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} onClick={togglePasswordVisibility} className="absolute right-3 top-3.5 text-green-700 text-md cursor-pointer hover:scale-110 transition-transform" />
             </div>
           </div>
 
           {/* Submit */}
-          <button type="submit" disabled={loading} className={`w-full mt-6 py-2.5 font-bold text-white rounded-lg shadow-md transition-all duration-300  ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-gradient-to-r from-[#326058] to-green-700 hover:brightness-110" }`}>
+          <button type="submit" disabled={loading} className={`w-full mt-6 py-2.5 font-bold text-white rounded-lg shadow-md transition-all duration-300  ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-gradient-to-r from-[#326058] to-green-700 hover:brightness-110"}`}>
             {loading ? "Loading..." : "Login"}
           </button>
         </form>

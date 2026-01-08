@@ -1,34 +1,26 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import HomeMobile from "../layouts/homeMobile";
-import HomeDesktop from "../layouts/homeDesktop";
+import SidebarLayout from "../layouts/SidebarLayout";
 import { getUserFromToken } from "../utils/jwtHelper";
+import { Navigate } from "react-router-dom";
+import HomeDesktop from "../layouts/homeDesktop";
+import HomeMobile from "../layouts/homeMobile";
 
-const Home = ({ onLogout }) => {
-  const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  useEffect(() => {
-    const userData = getUserFromToken();
-    if (!userData) {  
-      onLogout();
-      navigate("/logout");
-    } else {
-      setUser({
-        id: userData.id_user,
-        username: userData.nama_user,
-        roleId: userData.id_role,
-        role: userData.role,
-      });
-    }
-  }, [navigate, onLogout]);
 
-  if (!user) return <div>Memuat...</div>;
+const HomeRedirect = () => {
+  const user = getUserFromToken();
 
-  return [1, 4, 5, 6, 18, 20, 27, 28].includes(user.roleId) ? (
-    <HomeDesktop username={user.username} roleId={user.roleId} handleLogout={onLogout}/>
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const desktopRoles = [1, 4, 5, 6, 18, 20, 27, 28];
+
+  return desktopRoles.includes(user.id_role) ? (
+    <SidebarLayout>
+      <HomeDesktop />
+    </SidebarLayout>
   ) : (
-    <HomeMobile username={user.username} roleId={user.roleId} handleLogout={onLogout}/>
+    <HomeMobile />
   );
 };
 
-export default Home;
+export default HomeRedirect;

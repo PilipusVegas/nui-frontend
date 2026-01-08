@@ -325,7 +325,7 @@ const Penugasan = () => {
                 )}
             </div>
 
-            <Modal isOpen={openPekerjaModal} onClose={() => { setOpenPekerjaModal(false); setSelectedTugas(null);}} title="Detail Penugasan" note={selectedTugas?.nama}>
+            <Modal isOpen={openPekerjaModal} onClose={() => { setOpenPekerjaModal(false); setSelectedTugas(null);}} title="Detail Penugasan" note={selectedTugas?.nama} size="lg">
                 {!selectedTugas ? (
                     <div className="py-10 text-center text-sm text-gray-500">
                         Tidak ada data untuk ditampilkan.

@@ -8,6 +8,7 @@ import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { faFolderOpen, faFileExcel, faCircleInfo, faCheckCircle, faExpandArrowsAlt, faMoneyBillWave, faSpinner, faRotateRight } from "@fortawesome/free-solid-svg-icons";
 import { LoadingSpinner, SectionHeader, EmptyState, ErrorState, SearchBar, Modal } from "../../components";
 import { formatLongDate } from "../../utils/dateUtils";
+import toast from "react-hot-toast";
 
 const DataRekapTunjangan = () => {
     const Navigate = useNavigate();
@@ -26,13 +27,29 @@ const DataRekapTunjangan = () => {
     const [showInfoModal, setShowInfoModal] = useState(false);
     const [isDateSelected, setIsDateSelected] = useState(false);
     const [showEditNominal, setShowEditNominal] = useState(false);
-
+    const [draftStartDate, setDraftStartDate] = useState("");
+    const [draftEndDate, setDraftEndDate] = useState("");
 
     useEffect(() => {
-        if (startDate && endDate && endDate < startDate) {
-            setEndDate(startDate);
+        const { start, end } = getDefaultPeriodWeek();
+        setStartDate(start);
+        setEndDate(end);
+        setDraftStartDate(start);
+        setDraftEndDate(end);
+    }, []);
+
+    const commitDateRange = () => {
+        if (!draftStartDate || !draftEndDate) return;
+
+        if (draftEndDate <= draftStartDate) {
+            toast.error("Tanggal selesai harus lebih besar dari tanggal mulai");
+            setDraftEndDate(endDate); // rollback aman
+            return;
         }
-    }, [startDate, endDate]);
+
+        setStartDate(draftStartDate);
+        setEndDate(draftEndDate);
+    };
 
 
     const fetchTunjanganData = async () => {
@@ -142,31 +159,15 @@ const DataRekapTunjangan = () => {
             <div className="w-full flex flex-row flex-wrap items-center justify-between gap-4 mb-4">
                 <SearchBar placeholder="Cari Karyawan..." className="flex-1 min-w-[200px]" onSearch={(val) => setSearchName(val)} />
                 <div className="flex items-center gap-1">
-                    <input
-                        type="date"
-                        className="border-2 border-gray-300 rounded-md px-2 py-2.5 text-sm"
-                        value={startDate}
-                        max={endDate || undefined}
-                        onChange={(e) => setStartDate(e.target.value)}
-                    />
-
+                    <input type="date" className="border-2 border-gray-300 rounded-md px-2 py-2 text-sm" value={draftStartDate} onChange={(e) => setDraftStartDate(e.target.value)} onBlur={commitDateRange}/>
                     <span className="mx-1 text-gray-600">s/d</span>
-
-                    <input
-                        type="date"
-                        className="border-2 border-gray-300 rounded-md px-2 py-2.5 text-sm"
-                        value={endDate}
-                        min={startDate || undefined}
-                        onChange={(e) => setEndDate(e.target.value)}
-                    />
-
+                    <input type="date" className="border-2 border-gray-300 rounded-md px-2 py-2 text-sm" value={draftEndDate} onChange={(e) => setDraftEndDate(e.target.value)} onBlur={commitDateRange}/>
                 </div>
             </div>
 
             {isDateSelected && !loading && !error && dataTunjangan.length > 0 && (
                 <div className="w-full bg-white shadow-md border border-gray-200 rounded-lg overflow-hidden relative">
                     <div className="flex w-full">
-
                         <div className="bg-white shrink-0 sticky left-0 z-30 border-r border-gray-300">
                             <table className="border-collapse w-full text-[13px]">
                                 <thead>
@@ -178,7 +179,6 @@ const DataRekapTunjangan = () => {
                                             JUMLAH
                                         </th>
                                     </tr>
-
                                     <tr>
                                         {["NIP", "Nama", "TKP", "TUM", "TSM", "TDP", "Nominal"].map((header) => {
                                             let widthStyle = {};
@@ -280,7 +280,6 @@ const DataRekapTunjangan = () => {
                         </div>
                     </div>
 
-                    {/* === TOOLTIP MODERN === */}
                     {hoveredData && (
                         <div className="fixed z-[99999] pointer-events-none"
                             style={{

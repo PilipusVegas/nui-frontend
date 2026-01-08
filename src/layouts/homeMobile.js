@@ -3,16 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Swal from "sweetalert2";
-import { faCalendarCheck, faBell, faHistory, faSignOutAlt, faMapMarkerAlt, faPenFancy, faPeopleGroup, faClockFour, faTasks, } from "@fortawesome/free-solid-svg-icons";
+import { faCalendarCheck, faHistory, faSignOutAlt, faMapMarkerAlt, faPenFancy, faPeopleGroup, faClockFour, faTasks, faMotorcycle, } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../utils/jwtHelper";
 import { FooterMainBar, TaskCardSlider } from "../components";
+import { useAuth } from "../hooks/useAuth";
 
-const HomeMobile = ({ handleLogout }) => {
+const HomeMobile = () => {
   const navigate = useNavigate();
   const [attendanceData, setAttendanceData] = useState([]);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const user = getUserFromToken();
   const [hasNewNotifications, setHasNewNotifications] = useState(false);
+  const { logout } = useAuth();
+
 
   useEffect(() => {
     const user = getUserFromToken();
@@ -67,19 +70,19 @@ const HomeMobile = ({ handleLogout }) => {
   const confirmLogout = () => {
     Swal.fire({
       title: "Konfirmasi Logout",
-      text: "Terimakasih atas kerja keras anda! Tetap semangat",
+      text: "Terima kasih atas kerja keras Anda!",
       icon: "question",
-      cancelButtonText: "Batal",
       showCancelButton: true,
       confirmButtonText: "Ya, logout",
-      confirmButtonColor: "#3085d6",
+      cancelButtonText: "Batal",
       reverseButtons: true,
     }).then((result) => {
       if (result.isConfirmed) {
-        handleLogout();
+        logout();
       }
     });
   };
+
 
   return (
     <div className="flex flex-col font-sans bg-gray-50 min-h-screen pb-40">
@@ -160,11 +163,12 @@ const HomeMobile = ({ handleLogout }) => {
         <span className="text-sm font-semibold pl-3">Menu Utama</span>
       </div>
       <div className="grid grid-cols-4 gap-2 px-3">
-        <MainMenuButton icon={faCalendarCheck} label="Absen" onClick={() => navigate("/absensi")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-emerald-600 hover:scale-105 transition" />
+        <MainMenuButton icon={faCalendarCheck} label="Absensi" onClick={() => navigate("/absensi")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-emerald-600 hover:scale-105 transition" />
         <MainMenuButton icon={faClockFour} label="Lembur" onClick={() => navigate("/lembur")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-teal-600 hover:scale-105 transition" />
         <MainMenuButton icon={faPenFancy} label="Dinas" onClick={() => navigate("/formulir-dinas-aplikasi")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-blue-600 hover:scale-105 transition" />
         <MainMenuButton icon={faTasks} label="Tugas" onClick={() => navigate("/tugas")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-lime-600 hover:scale-105 transition" />
-        <MainMenuButton icon={faBell} label="Notifikasi" onClick={handleNotificationClick} hasNotification={hasNewNotifications} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-amber-600 hover:scale-105 transition" />
+        {/* <MainMenuButton icon={faMotorcycle} label="Kunjungan" onClick={() => navigate("/riwayat-pengguna")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-indigo-600 hover:scale-105 transition" /> */}
+        {/* <MainMenuButton icon={faBell} label="Notifikasi" onClick={handleNotificationClick} hasNotification={hasNewNotifications} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-amber-600 hover:scale-105 transition" /> */}
         <MainMenuButton icon={faHistory} label="Riwayat" onClick={() => navigate("/riwayat-pengguna")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-indigo-600 hover:scale-105 transition" />
         <MainMenuButton image="/NOS.png" label="NOS" onClick={() => window.open("https://nos.nicourbanindonesia.com/mypanel/maintenance", "_blank")} color="rounded-xl bg-gradient-to-br from-green-50 to-green-200 hover:scale-105 transition" />
         {/* <MainMenuButton icon={faClipboardList} label="Cuti" onClick={() => navigate("/cuti")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-indigo-600 hover:scale-105 transition" /> */}

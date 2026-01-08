@@ -5,7 +5,7 @@ import AbsenMulai from "./AbsenMulai";
 import AbsenSelesai from "./AbsenSelesai";
 import DetailAbsen from "./DetailAbsen";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarCheck, faCalendarPlus, faClock, faArrowRight, faSignOutAlt, faCamera, faShieldAlt } from "@fortawesome/free-solid-svg-icons";
+import { faCalendarCheck, faCalendarPlus, faClock, faArrowRight, faSignOutAlt, faCamera, faShieldAlt, faCheckToSlot, faLocationDot } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { formatTime, formatFullDate } from "../../utils/dateUtils";
 import toast from "react-hot-toast";
@@ -99,7 +99,7 @@ const Absensi = () => {
             jam_mulai: detail.jam_mulai ? String(detail.jam_mulai) : null,
             jam_selesai: detail.jam_selesai ? String(detail.jam_selesai) : null,
             total_tugas_urgent: detail.total_tugas_urgent || 0,
-          }); 
+          });
           setIsSelesaiFlow(!!detail.jam_mulai && !detail.jam_selesai);
           setCurrentStep(null);
         } else {
@@ -140,7 +140,6 @@ const Absensi = () => {
       return false;
     }
   };
-
 
   const handlePermissionInfoClick = async () => {
     if (permissionReady) return;
@@ -226,13 +225,13 @@ const Absensi = () => {
                 </h2>
 
                 <button onClick={handlePermissionInfoClick} className={` w-full flex items-center gap-3 rounded-lg border px-4 py-3 text-left transition ${permissionReady ? "bg-emerald-50 border-emerald-400 text-emerald-800" : "bg-amber-50 border-amber-400 text-amber-800 hover:bg-amber-100"}`}>
-                  <FontAwesomeIcon icon={permissionReady ? faCalendarCheck : faCamera} className="text-lg shrink-0" />
+                  <FontAwesomeIcon icon={permissionReady ? faCheckToSlot : faCamera} className="text-xl shrink-0" />
                   <div>
                     <p className="text-sm font-semibold">
                       {permissionReady ? "Kamera & lokasi siap digunakan" : "Klik untuk izinkan kamera & lokasi"}
                     </p>
                     <p className="text-xs">
-                      {permissionReady ? "Silakan lanjutkan absensi" : "Izin diperlukan untuk absensi"}
+                      {permissionReady ? "Silakan Lanjutkan Absensi" : "Izin diperlukan untuk absensi"}
                     </p>
                   </div>
                 </button>
@@ -260,7 +259,7 @@ const Absensi = () => {
                       </div>
 
                       <div className="flex items-start gap-3 rounded-lg border border-emerald-500 bg-emerald-50 p-3">
-                        <FontAwesomeIcon icon={faCalendarPlus} className="text-emerald-700 mt-1" />
+                        <FontAwesomeIcon icon={faCalendarPlus} className="text-emerald-700 mt-1 p-1 text-3xl" />
 
                         <div className="flex-1">
                           <p className="text-xs font-semibold text-emerald-800">
@@ -286,7 +285,7 @@ const Absensi = () => {
                           )}
 
                           <p className="text-[11px] text-gray-600 mt-1">
-                            Lokasi:{" "}
+                            <FontAwesomeIcon icon={faLocationDot} className="text-[10px] text-green-800" />{" "}
                             <span className="font-medium text-gray-700">
                               {item.lokasi_absen_mulai || "N/A"}
                             </span>
@@ -295,7 +294,7 @@ const Absensi = () => {
                       </div>
 
                       <div className="flex items-start gap-3 rounded-lg border border-orange-500 bg-orange-50 p-3">
-                        <FontAwesomeIcon icon={faSignOutAlt} className="text-orange-700 rotate-180 mt-1" />
+                        <FontAwesomeIcon icon={faSignOutAlt} className="text-orange-700 rotate-180 mt-1 p-1 text-3xl" />
                         <div className="flex-1">
                           <p className="text-xs font-semibold text-orange-800">
                             Absen Pulang
@@ -312,7 +311,7 @@ const Absensi = () => {
                           )}
 
                           <p className="text-[11px] text-gray-600 mt-1">
-                            Lokasi:{" "}
+                            <FontAwesomeIcon icon={faLocationDot} className="text-[10px] text-orange-800" />{" "}
                             <span className="font-medium text-gray-700">
                               {item.lokasi_absen_selesai ||
                                 (item.jam_selesai ? "Belum tersedia" : "—")}
@@ -329,7 +328,6 @@ const Absensi = () => {
                   </div>
                 )}
               </section>
-
 
               <section>
                 {isCheckingAttendance ? (

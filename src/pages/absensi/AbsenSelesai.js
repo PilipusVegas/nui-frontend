@@ -4,10 +4,11 @@ import Select from "react-select";
 import MobileLayout from "../../layouts/mobileLayout";
 import Swal from "sweetalert2";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRotateBack, faMapMarkerAlt, faSpinner, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
-import { formatFullDate, formatTime } from "../../utils/dateUtils";
-import { fetchWithJwt } from "../../utils/jwtHelper";
-import { useFakeGpsDetector } from "../../hooks/gps/useFakeGpsDetector";
+import { faChevronRight, faLocationDot, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
+import { formatTime } from "../../utils/dateUtils";
+import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
+import { useFakeGpsDetector } from "../../hooks/useFakeGpsDetector";
+import { getDistanceMeters } from "../../utils/locationUtils";
 
 
 const AbsenSelesai = ({ handleNextStepData }) => {
@@ -22,10 +23,72 @@ const AbsenSelesai = ({ handleNextStepData }) => {
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [facingMode, setFacingMode] = useState("user");
   const { analyze } = useFakeGpsDetector();
+  const [userId, setUserId] = useState(null);
+  const [isKadiv, setIsKadiv] = useState(false);
+  const [jadwal, setJadwal] = useState(null);
+  const [lockLocation, setLockLocation] = useState(false);
+  const [username, setUsername] = useState("");
+  const [roleName, setRoleName] = useState("");
+  const [distance, setDistance] = useState(null);
+
+
   const [gpsValidation, setGpsValidation] = useState({
     is_valid: 1,
     reason: "",
   });
+
+  useEffect(() => {
+    const user = getUserFromToken();
+    if (user) {
+      setUserId(user.id_user);
+      setUsername(user.nama_user?.trim() || "");
+      setRoleName(user.role || "");
+      setIsKadiv(!!user.is_kadiv);
+    }
+  }, []);
+
+
+  useEffect(() => {
+    if (!userId || isKadiv) return;
+
+    const fetchJadwal = async () => {
+      try {
+        const res = await fetchWithJwt(`${apiUrl}/jadwal/cek/${userId}`);
+
+        if (res.status === 404) {
+          // fallback bebas
+          setLockLocation(false);
+          return;
+        }
+
+        if (!res.ok) throw new Error("Gagal ambil jadwal");
+
+        const json = await res.json();
+        const data = json.data;
+
+        setJadwal(data);
+
+        // ===== LOKASI =====
+        if (data.lokasi?.length === 1) {
+          const loc = data.lokasi[0];
+          setSelectedLocation({
+            value: loc.id_lokasi,
+            label: loc.nama,
+          });
+          setLockLocation(true);
+        } else if (data.lokasi?.length > 1) {
+          setLockLocation(false);
+        }
+
+      } catch (err) {
+        console.error("Cek jadwal selesai error:", err);
+        setLockLocation(false);
+      }
+    };
+
+    fetchJadwal();
+  }, [userId, isKadiv, apiUrl]);
+
 
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -74,8 +137,6 @@ const AbsenSelesai = ({ handleNextStepData }) => {
     return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
-
-
   useEffect(() => {
     fetchWithJwt(`${apiUrl}/lokasi`)
       .then((res) => res.json())
@@ -96,28 +157,6 @@ const AbsenSelesai = ({ handleNextStepData }) => {
       .catch(() => Swal.fire("Error", "Gagal memuat daftar lokasi", "error"));
   }, [apiUrl]);
 
-
-  const getLocation = () => {
-    if (!navigator.geolocation) {
-      Swal.fire("Error", "Browser tidak mendukung geolocation", "error");
-      return;
-    }
-    setLoadingLocation(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        setUserCoords({ latitude, longitude });
-        setLoadingLocation(false);
-      },
-      () => {
-        setLoadingLocation(false);
-        Swal.fire("Error", "Gagal mendapatkan lokasi", "error");
-      },
-      { enableHighAccuracy: true }
-    );
-  };
-
-
   const handleAmbilFoto = () => {
     if (!webcamRef.current) return;
     const imageSrc = webcamRef.current.getScreenshot();
@@ -134,8 +173,6 @@ const AbsenSelesai = ({ handleNextStepData }) => {
     setFotoFile(null);
     setFotoPreview(null);
     setJamSelesai(null);
-    setUserCoords({ latitude: null, longitude: null });
-    setSelectedLocation(null);
   };
 
 
@@ -176,23 +213,6 @@ const AbsenSelesai = ({ handleNextStepData }) => {
     return new File([u8arr], filename, { type: mime });
   };
 
-  const getDistanceMeters = (lat1, lon1, lat2, lon2) => {
-    const R = 6371000; // radius bumi dalam meter
-    const toRad = (deg) => (deg * Math.PI) / 180;
-
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
-
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLon / 2) ** 2;
-
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    return R * c; // hasil meter
-  };
 
   const showRadiusWarning = (dist) => {
     const displayDist = dist < 1000
@@ -222,96 +242,157 @@ const AbsenSelesai = ({ handleNextStepData }) => {
 
     const jarak = getDistanceMeters(userLat, userLon, loc.lat, loc.lon);
 
+    setDistance(jarak);
+
     if (jarak > 60) {
       showRadiusWarning(jarak);
     }
   };
 
+  const filteredLocations =
+    jadwal && jadwal.lokasi && !isKadiv
+      ? locations.filter((loc) =>
+        jadwal.lokasi.some((j) => j.id_lokasi === loc.value)
+      )
+      : locations;
+
   return (
-    <MobileLayout title="Absen Selesai">
-      <form onSubmit={handleSubmit} className="max-w-lg mx-auto p-4 space-y-6 bg-white rounded-xl shadow">
-        {!fotoFile ? (
-          <div className="space-y-4">
-            <div className="aspect-[3/4] w-full bg-gray-100 rounded-xl overflow-hidden shadow">
-              <Webcam ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode }} className="w-full h-full object-cover scale-x-[-1]" />
-            </div>
-            <p className="text-[10px] text-gray-600 text-center leading-snug">
-              Silakan ambil foto sebagai bukti selesai bekerja. Pastikan wajah terlihat jelas dan cahaya memadai. Anda dapat menukar kamera depan/belakang sesuai kebutuhan.
-            </p>
-            <div className="flex gap-3">
-              <button type="button" onClick={() => setFacingMode((p) => (p === "user" ? "environment" : "user"))} className="flex-1 py-3 bg-blue-500 text-white rounded-lg">
-                Balik Kamera
-              </button>
-              <button type="button" onClick={handleAmbilFoto} className="flex-1 py-3 bg-green-500 text-white rounded-lg">
-                Ambil Foto
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-5">
-            <div className="relative aspect-[3/4] w-full rounded-xl overflow-hidden border shadow">
-              <img src={fotoPreview} alt="Preview" className="w-full h-full object-cover scale-x-[-1]" />
-              <div className="absolute bottom-0 w-full bg-black/60 text-white p-2 text-center text-xs">
-                {formatFullDate(jamSelesai)} • {formatTime(jamSelesai)}
+    <MobileLayout title="Absen Selesai" className="bg-gray-100">
+      <div className="flex justify-center">
+        <form onSubmit={handleSubmit} className="w-full max-w-lg pb-28 space-y-6">
+
+          {/* ================= FOTO SELESAI ================= */}
+          <section className="bg-white rounded-xl border shadow-sm p-4 space-y-3">
+            <div className="flex items-start justify-between gap-3">
+              {/* KIRI: Judul & Deskripsi */}
+              <div>
+                <label className="text-sm font-semibold">
+                  Foto Selesai Bekerja <span className="text-red-500">*</span>
+                </label>
+                <p className="text-[11px] text-gray-500 mt-0.5">
+                  Ambil foto sebagai bukti selesai bekerja.
+                </p>
               </div>
+
+              {/* KANAN: Icon Ulangi */}
+              {fotoFile && (
+                <button type="button" onClick={handleUlangi} className="p-2 px-3 rounded-md border border-red-300 text-red-500 hover:bg-red-50 transition" title="Ambil ulang foto" aria-label="Ambil ulang foto">
+                  <FontAwesomeIcon icon={faRotateLeft} />
+                </button>
+              )}
             </div>
 
+
+            {!fotoFile ? (
+              <>
+                <div className="aspect-[3/4] w-full bg-gray-100 rounded-lg overflow-hidden">
+                  <Webcam ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode }} className="w-full h-full object-cover scale-x-[-1]" />
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <button type="button" onClick={() => setFacingMode((p) => p === "user" ? "environment" : "user")} className="flex-1 py-3 font-semibold text-sm rounded-lg border bg-blue-500 hover:bg-blue-600 text-white">
+                    Putar Kamera
+                  </button>
+                  <button type="button" onClick={handleAmbilFoto} className="flex-1 py-3 font-semibold text-sm rounded-lg bg-green-500 text-white hover:bg-green-600">
+                    Ambil Foto
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="relative aspect-[3/4] w-full rounded-lg overflow-hidden border">
+                  <img src={fotoPreview} alt="Foto Selesai" className="w-full h-full object-cover scale-x-[-1]" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
+                  <div className="absolute bottom-5 left-5 right-3 text-white">
+                    <p className="text-base font-bold leading-tight">
+                      {username}
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-gray-200">
+                      <span>{roleName}</span>
+                      <span className="opacity-60">•</span>
+                      <span>{formatTime(jamSelesai)}</span>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </section>
+
+          {/* ================= LOKASI ================= */}
+          <section className="bg-white rounded-xl border shadow-sm p-4 space-y-3">
             <div>
-              <label className="block text-xs font-bold">
-                Lokasi Selesai Bekerja<span className="text-red-500">*</span>
+              <label className="text-sm font-semibold">
+                Lokasi Selesai Bekerja <span className="text-red-500">*</span>
               </label>
-              <p className="text-[10px] text-gray-500 mb-2 leading-snug">
-                <span className="text-[10px] text-gray-400">
-                  (Pastikan fitur GPS di ponsel aktif dan sinyal kuat agar lokasi terdeteksi akurat.)
+              <p className="text-[11px] text-gray-500 mt-0.5">
+                Lokasi disesuaikan dengan posisi GPS Anda.
+              </p>
+            </div>
+
+            <Select options={filteredLocations} value={selectedLocation} isDisabled={lockLocation} isSearchable placeholder={lockLocation ? "Lokasi sudah ditentukan" : "Pilih lokasi"}
+              className="text-sm"
+              onChange={(loc) => {
+                setSelectedLocation(loc);
+                checkLocationRadius(
+                  userCoords.latitude,
+                  userCoords.longitude,
+                  loc
+                );
+              }}
+            />
+
+            <div className="flex items-center gap-2 text-[10px] flex-wrap">
+              {loadingLocation && (
+                <span className="text-gray-500">Mencari lokasi GPS…</span>
+              )}
+
+              {!loadingLocation && userCoords.latitude && (
+                <>
+                  <span className="text-green-600 bg-green-100 px-2 py-0.5 rounded flex items-center gap-1">
+                    <FontAwesomeIcon icon={faLocationDot} className="animate-bounce" />
+                    Berhasil Melacak Titik Lokasi Anda
+                  </span>
+
+                  {distance !== null && (
+                    <span className={`px-2 py-0.5 rounded font-semibold ${distance <= 60 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                      Jarak: {distance < 1000 ? `${Math.floor(distance)} m` : `${(distance / 1000).toFixed(2)} km`}
+                    </span>
+                  )}
+                </>
+              )}
+
+              {!loadingLocation && !userCoords.latitude && (
+                <span className="text-red-500">
+                  GPS tidak tersedia. Aktifkan GPS.
                 </span>
-              </p>
-
-              <Select options={locations} value={selectedLocation} onChange={(loc) => { setSelectedLocation(loc); checkLocationRadius(userCoords.latitude, userCoords.longitude, loc); }} placeholder="Pilih lokasi..." isSearchable className="text-xs" />
-
-              <div className="flex items-center mt-1 text-[9px]">
-                {loadingLocation ? (
-                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-100 text-gray-500">
-                    <FontAwesomeIcon icon={faSpinner} className="text-gray-400 text-xs animate-spin" />
-                    <span className="font-medium">
-                      Mencari titik lokasi GPS anda...
-                    </span>
-                  </div>
-                ) : userCoords.latitude && userCoords.longitude ? (
-                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-green-50 text-green-600">
-                    <FontAwesomeIcon icon={faMapMarkerAlt} className="text-green-600 text-xs animate-bounce" />
-                    <span className="font-semibold">
-                      Lokasi GPS berhasil ditemukan
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-red-50 text-red-500">
-                    <FontAwesomeIcon icon={faTimesCircle} className="text-red-500 text-xs" />
-                    <span className="font-semibold">
-                      Lokasi GPS tidak tersedia. Aktifkan GPS dan coba ulangi.
-                    </span>
-                  </div>
-                )}
-              </div>
+              )}
             </div>
 
-            <div className="flex flex-col gap-3">
-              <p className="text-[10px] text-gray-500 text-center">
-                Pastikan foto dan lokasi sudah sesuai sebelum melanjutkan.
-              </p>
+          </section>
+
+          {/* ================= AKSI ================= */}
+          {fotoFile && (
+            <section className="space-y-3">
+              {!isValid() && (
+                <p className="text-[10px] text-gray-500 text-center">
+                  Pastikan foto dan lokasi sudah sesuai sebelum melanjutkan.
+                </p>
+              )}
+
               <div className="flex gap-3">
-                <button type="button" onClick={handleUlangi} className="flex-1 border border-red-500 text-red-500 rounded-lg py-3">
-                  <FontAwesomeIcon icon={faArrowRotateBack} /> Ulangi
-                </button>
-                <button type="submit" disabled={!isValid()} className={`flex-1 py-3 rounded-lg text-white font-medium ${isValid() ? "bg-green-600 hover:bg-green-700" : "bg-gray-300 cursor-not-allowed"}`}>
-                  Lanjut
+                <button type="submit" disabled={!isValid()} className={`flex-1 py-4 rounded-lg font-semibold transition
+                  ${isValid() ? "bg-green-500 text-white hover:bg-green-600" : "bg-gray-300 text-gray-600 cursor-not-allowed"}`}
+                >
+                  Lihat Detail Absen Pulang <FontAwesomeIcon icon={faChevronRight} className="ml-2" />
                 </button>
               </div>
-            </div>
-          </div>
-        )}
-      </form>
+            </section>
+          )}
+
+        </form>
+      </div>
     </MobileLayout>
   );
+
 };
 
 export default AbsenSelesai;

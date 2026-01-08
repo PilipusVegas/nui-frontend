@@ -4,21 +4,10 @@ import { saveAs } from "file-saver";
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload, faSort, faSortUp, faSortDown, faSortAlphaAsc, faSortAlphaDesc, faInfo,} from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faSort, faSortUp, faSortDown, faSortAlphaAsc, faSortAlphaDesc, faInfo, } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
-import {
-    SectionHeader,
-    SearchBar,
-    EmptyState,
-    LoadingSpinner,
-    ErrorState,
-    Modal,
-} from "../../components";
-import {
-    formatLongDate,
-    formatFullDate,
-    formatISODate,
-} from "../../utils/dateUtils";
+import { SectionHeader, SearchBar, EmptyState, LoadingSpinner, ErrorState, Modal } from "../../components";
+import { formatLongDate, formatFullDate, formatISODate } from "../../utils/dateUtils";
 
 const RiwayatPenggajian = () => {
     const allowedRoles = [1, 4, 6];
@@ -108,22 +97,12 @@ const RiwayatPenggajian = () => {
 
     const handleDownload = async () => {
         const selectedPeriodData = periodList.find((p) => p.id === selectedPeriod);
-
         if (!filteredData.length || !selectedPeriodData) return;
-
         const wb = new ExcelJS.Workbook();
         const ws = wb.addWorksheet("Laporan Penggajian");
+        const safeStartDate = formatLongDate(selectedPeriodData.tgl_awal).replace(/\s+/g, "_");
+        const safeEndDate = formatLongDate(selectedPeriodData.tgl_akhir).replace(/\s+/g, "_");
 
-        const startDate = new Date(selectedPeriodData.tgl_awal).toLocaleDateString("id-ID", {
-            day: "2-digit",
-            month: "long",
-            year: "numeric",
-        });
-        const endDate = new Date(selectedPeriodData.tgl_akhir).toLocaleDateString("id-ID", {
-            day: "2-digit",
-            month: "long",
-            year: "numeric",
-        });
 
         ws.mergeCells("B1:E1");
         ws.getCell("B1").value = "LAPORAN REKAPITULASI PENGGAJIAN KARYAWAN";
@@ -131,7 +110,7 @@ const RiwayatPenggajian = () => {
         ws.getCell("B1").alignment = { horizontal: "center", vertical: "middle" };
 
         ws.mergeCells("B2:E2");
-        ws.getCell("B2").value = `Periode: ${startDate} s/d ${endDate}`;
+        ws.getCell("B2").value = `Periode: ${safeStartDate} s/d ${safeEndDate}`;
         ws.getCell("B2").alignment = { horizontal: "center", vertical: "middle" };
 
         ws.mergeCells("B3:E3");
@@ -143,8 +122,8 @@ const RiwayatPenggajian = () => {
 
         const dicetakRow = ws.addRow([]);
         ws.mergeCells(`B${dicetakRow.number}:E${dicetakRow.number}`);
-        ws.getCell(`E${dicetakRow.number}`).value = `Dicetak pada: ${formatFullDate(new Date())}`;
-        ws.getCell(`E${dicetakRow.number}`).alignment = {
+        ws.getCell(`F${dicetakRow.number}`).value = `Dicetak pada: ${formatFullDate(new Date())}`;
+        ws.getCell(`F${dicetakRow.number}`).alignment = {
             horizontal: "right",
             vertical: "middle",
         };
@@ -153,6 +132,7 @@ const RiwayatPenggajian = () => {
             { key: "blank", width: 5 },
             { key: "nama", width: 30 },
             { key: "total_hari_kerja", width: 20 },
+            { key: "total_alpha", width: 20 },
             { key: "total_keterlambatan_menit", width: 30 },
             { key: "total_lembur_jam", width: 20 },
         ];
@@ -161,6 +141,7 @@ const RiwayatPenggajian = () => {
             "",
             "Nama Karyawan",
             "Total Hari Kerja",
+            "Total Alpha",
             "Total Keterlambatan (menit)",
             "Total Lembur (jam)",
         ]);
@@ -185,8 +166,9 @@ const RiwayatPenggajian = () => {
         filteredData.forEach((row) => {
             const newRow = ws.addRow({
                 blank: "",
-                nama: row.nama,
+                nama: row.nama?.toUpperCase(),
                 total_hari_kerja: row.total_hari_kerja,
+                total_alpha: row.total_alpha,
                 total_keterlambatan_menit: row.total_keterlambatan_menit,
                 total_lembur_jam: row.total_lembur_jam,
             });
@@ -207,36 +189,22 @@ const RiwayatPenggajian = () => {
             new Blob([buffer], {
                 type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             }),
-            `Laporan_Penggajian_${startDate}_sd_${endDate}.xlsx`
+            `Laporan_Penggajian_${safeStartDate}_s/d_${safeEndDate}.xlsx`
         );
     };
 
     return (
         <div className="flex flex-col">
-            <SectionHeader
-                title="Riwayat Penggajian"
-                subtitle={`Menampilkan data penggajian ${filteredData.length} karyawan berdasarkan periode yang telah berlalu.`}
-                onBack={() => navigate(-1)}
+            <SectionHeader title="Riwayat Penggajian" subtitle={`Menampilkan data penggajian ${filteredData.length} karyawan berdasarkan periode yang telah berlalu.`} onBack={() => navigate(-1)}
                 actions={
                     <div className="flex flex-wrap gap-2">
-                        <button
-                            onClick={() => setShowInfo(true)}
-                            className="flex items-center justify-center px-3 sm:px-4 py-2 rounded-md text-white bg-blue-500 hover:bg-blue-600 gap-1"
-                        >
+                        <button onClick={() => setShowInfo(true)} className="flex items-center justify-center px-3 sm:px-4 py-2 rounded-md text-white bg-blue-500 hover:bg-blue-600 gap-1">
                             <FontAwesomeIcon icon={faInfo} className="mr-0 sm:mr-1" />
                             <span className="hidden sm:inline">Informasi</span>
                         </button>
 
                         {canDownload && (
-                            <button
-                                onClick={handleDownload}
-                                disabled={!filteredData.length}
-                                className={`flex items-center justify-center px-3 sm:px-4 py-2 rounded-md text-white ${
-                                    !filteredData.length
-                                        ? "bg-gray-400 cursor-not-allowed"
-                                        : "bg-yellow-500 hover:bg-yellow-600"
-                                }`}
-                            >
+                            <button onClick={handleDownload} disabled={!filteredData.length} className={`flex items-center justify-center px-3 sm:px-4 py-2 rounded-md text-white ${!filteredData.length ? "bg-gray-400 cursor-not-allowed" : "bg-yellow-500 hover:bg-yellow-600"}`}>
                                 <FontAwesomeIcon icon={faDownload} className="mr-0 sm:mr-1" />
                                 <span className="hidden sm:inline">Unduh Excel</span>
                             </button>
@@ -250,11 +218,7 @@ const RiwayatPenggajian = () => {
                     <SearchBar placeholder="Cari nama karyawan..." onSearch={setSearchName} />
                 </div>
                 <div>
-                    <Select
-                        value={periodList.find((p) => p.id === selectedPeriod) || null}
-                        onChange={(option) => setSelectedPeriod(option.id)}
-                        isSearchable={false}
-                        options={periodList}
+                    <Select value={periodList.find((p) => p.id === selectedPeriod) || null} onChange={(option) => setSelectedPeriod(option.id)} isSearchable={false} options={periodList}
                         getOptionLabel={(p) =>
                             `Periode ${formatLongDate(p.tgl_awal)} s/d ${formatLongDate(
                                 p.tgl_akhir
@@ -278,76 +242,34 @@ const RiwayatPenggajian = () => {
                     <table className="min-w-full border-collapse">
                         <thead>
                             <tr className="bg-green-500 text-white text-sm">
-                                <th
-                                    className="px-3 py-2 cursor-pointer select-none text-center border-b"
-                                    onClick={() => handleSort("nama")}
-                                >
+                                <th className="px-3 py-2 cursor-pointer select-none text-center border-b" onClick={() => handleSort("nama")}>
                                     <div className="flex items-center justify-center gap-1">
                                         Nama Karyawan
-                                        <FontAwesomeIcon
-                                            icon={
-                                                sortKey !== "nama"
-                                                    ? faSort
-                                                    : sortOrder === "asc"
-                                                    ? faSortAlphaAsc
-                                                    : faSortAlphaDesc
-                                            }
-                                            className="text-xs"
-                                        />
+                                        <FontAwesomeIcon icon={sortKey !== "nama" ? faSort : sortOrder === "asc" ? faSortAlphaAsc : faSortAlphaDesc} className="text-xs" />
                                     </div>
                                 </th>
-                                <th
-                                    className="px-3 py-2 cursor-pointer select-none text-center border-b"
-                                    onClick={() => handleSort("total_hari_kerja")}
-                                >
+                                <th className="px-3 py-2 cursor-pointer select-none text-center border-b" onClick={() => handleSort("total_hari_kerja")}>
                                     <div className="flex items-center justify-center gap-1">
                                         Total Hari Kerja
-                                        <FontAwesomeIcon
-                                            icon={
-                                                sortKey !== "total_hari_kerja"
-                                                    ? faSort
-                                                    : sortOrder === "asc"
-                                                    ? faSortDown
-                                                    : faSortUp
-                                            }
-                                            className="text-xs"
-                                        />
+                                        <FontAwesomeIcon icon={sortKey !== "total_hari_kerja" ? faSort : sortOrder === "asc" ? faSortDown : faSortUp} className="text-xs" />
                                     </div>
                                 </th>
-                                <th
-                                    className="px-3 py-2 cursor-pointer select-none text-center border-b"
-                                    onClick={() => handleSort("total_keterlambatan_menit")}
-                                >
+                                <th className="px-3 py-2 cursor-pointer select-none text-center border-b" onClick={() => handleSort("total_alpha")}>
+                                    <div className="flex items-center justify-center gap-1">
+                                        Total Alpha
+                                        <FontAwesomeIcon icon={sortKey !== "total_alpha" ? faSort : sortOrder === "asc" ? faSortDown : faSortUp} className="text-xs" />
+                                    </div>
+                                </th>
+                                <th className="px-3 py-2 cursor-pointer select-none text-center border-b" onClick={() => handleSort("total_keterlambatan_menit")}>
                                     <div className="flex items-center justify-center gap-1">
                                         Total Keterlambatan
-                                        <FontAwesomeIcon
-                                            icon={
-                                                sortKey !== "total_keterlambatan_menit"
-                                                    ? faSort
-                                                    : sortOrder === "asc"
-                                                    ? faSortDown
-                                                    : faSortUp
-                                            }
-                                            className="text-xs"
-                                        />
+                                        <FontAwesomeIcon icon={sortKey !== "total_keterlambatan_menit" ? faSort : sortOrder === "asc" ? faSortDown : faSortUp} className="text-xs" />
                                     </div>
                                 </th>
-                                <th
-                                    className="px-3 py-2 cursor-pointer select-none text-center border-b"
-                                    onClick={() => handleSort("total_lembur_jam")}
-                                >
+                                <th className="px-3 py-2 cursor-pointer select-none text-center border-b" onClick={() => handleSort("total_lembur_jam")}>
                                     <div className="flex items-center justify-center gap-1">
                                         Total Lembur
-                                        <FontAwesomeIcon
-                                            icon={
-                                                sortKey !== "total_lembur_jam"
-                                                    ? faSort
-                                                    : sortOrder === "asc"
-                                                    ? faSortDown
-                                                    : faSortUp
-                                            }
-                                            className="text-xs"
-                                        />
+                                        <FontAwesomeIcon icon={sortKey !== "total_lembur_jam" ? faSort : sortOrder === "asc" ? faSortDown : faSortUp} className="text-xs" />
                                     </div>
                                 </th>
                             </tr>
@@ -356,19 +278,18 @@ const RiwayatPenggajian = () => {
                             {sortedData.map((item, i) => (
                                 <tr key={i} className="odd:bg-gray-50 even:bg-white hover:bg-gray-100 text-xs font-medium tracking-wide border-b">
                                     <td className="px-3 py-2 font-medium hover:underline hover:cursor-pointer">
-                                        <span
-                                            onClick={() => {
-                                                const selectedPeriodData = periodList.find(
-                                                    (p) => p.id === selectedPeriod
-                                                );
-                                                const startDate = selectedPeriodData?.tgl_awal;
-                                                const endDate = selectedPeriodData?.tgl_akhir;
+                                        <span onClick={() => {
+                                            const selectedPeriodData = periodList.find(
+                                                (p) => p.id === selectedPeriod
+                                            );
+                                            const startDate = selectedPeriodData?.tgl_awal;
+                                            const endDate = selectedPeriodData?.tgl_akhir;
 
-                                                const url = `/kelola-absensi/${item.id_user}?startDate=${formatISODate(
-                                                    startDate
-                                                )}&endDate=${formatISODate(endDate)}`;
-                                                window.open(url, "_blank");
-                                            }}
+                                            const url = `/kelola-absensi/${item.id_user}?startDate=${formatISODate(
+                                                startDate
+                                            )}&endDate=${formatISODate(endDate)}`;
+                                            window.open(url, "_blank");
+                                        }}
                                         >
                                             {item.nama}
                                         </span>
@@ -376,6 +297,9 @@ const RiwayatPenggajian = () => {
 
                                     <td className="px-3 py-2 text-center">
                                         {item.total_hari_kerja} Hari
+                                    </td>
+                                    <td className="px-3 py-2 text-center">
+                                        {item.total_alpha} Hari
                                     </td>
                                     <td className="px-3 py-2 text-center">
                                         {item.total_keterlambatan_menit} Menit
@@ -392,8 +316,7 @@ const RiwayatPenggajian = () => {
 
             <Modal isOpen={showInfo} onClose={() => setShowInfo(false)} title="Informasi Riwayat Penggajian">
                 <div className="text-sm leading-relaxed space-y-4">
-                    <p>
-                        Halaman <strong>Riwayat Penggajian</strong> menampilkan data rekap gaji
+                    <p> Halaman <strong>Riwayat Penggajian</strong> menampilkan data rekap gaji
                         karyawan berdasarkan <strong>periode-periode sebelumnya</strong>. Fitur ini
                         berguna untuk peninjauan, audit, dan dokumentasi historis.
                     </p>

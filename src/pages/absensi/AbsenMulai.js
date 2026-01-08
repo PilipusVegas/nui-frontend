@@ -4,11 +4,11 @@ import { useEffect, useState, useRef } from "react";
 import MobileLayout from "../../layouts/mobileLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
-import { faArrowRight, faChevronRight, faChevronUp, faMapMarkerAlt, faSpinner, faTimesCircle, } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRight, faLocationDot, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 import { formatFullDate, formatTime } from "../../utils/dateUtils";
 import { getDistanceMeters } from "../../utils/locationUtils";
-import { useFakeGpsDetector } from "../../hooks/gps/useFakeGpsDetector";
+import { useFakeGpsDetector } from "../../hooks/useFakeGpsDetector";
 
 const AbsenMulai = ({ handleNextStepData }) => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -24,14 +24,16 @@ const AbsenMulai = ({ handleNextStepData }) => {
   const [userCoords, setUserCoords] = useState({ latitude: null, longitude: null });
   const webcamRef = useRef(null);
   const [fotoMulai, setFotoMulai] = useState(null);
-  const [jamMulai, setJamMulai] = useState(null); 
+  const [jamMulai, setJamMulai] = useState(null);
   const [facingMode, setFacingMode] = useState("user");
   const { analyze } = useFakeGpsDetector();
-
-  const [gpsValidation, setGpsValidation] = useState({
-    is_valid: 1,
-    reason: "",
-  });
+  const [jadwal, setJadwal] = useState(null);
+  const [lockLocation, setLockLocation] = useState(false);
+  const [lockShift, setLockShift] = useState(false);
+  const [isKadiv, setIsKadiv] = useState(false);
+  const [roleName, setRoleName] = useState("");
+  const [distance, setDistance] = useState(null);
+  const [gpsValidation, setGpsValidation] = useState({ is_valid: 1, reason: "",});
 
   const isFormValid = () =>
     selectedLocation && selectedShift && fotoMulai && jamMulai;
@@ -54,8 +56,52 @@ const AbsenMulai = ({ handleNextStepData }) => {
     if (user) {
       setUserId(user.id_user);
       setUsername(user.nama_user?.trim());
+      setRoleName(user.role);
+      setIsKadiv(!!user.is_kadiv);
     }
   }, []);
+
+
+  useEffect(() => {
+    if (!userId || isKadiv) return;
+
+    const fetchJadwal = async () => {
+      try {
+        const res = await fetchWithJwt(`${apiUrl}/jadwal/cek/${userId}`);
+        if (res.status === 404) {
+          setLockLocation(false);
+          setLockShift(false);
+          return;
+        }
+        if (!res.ok) throw new Error("Gagal ambil jadwal");
+        const json = await res.json();
+        const data = json.data;
+        setJadwal(data);
+        setSelectedShift({
+          id: data.id_shift,
+          nama: data.nama_shift,
+        });
+        setLockShift(true);
+        if (data.lokasi?.length === 1) {
+          const loc = data.lokasi[0];
+          setSelectedLocation({
+            value: loc.id_lokasi,
+            label: loc.nama,
+          });
+          setLockLocation(true);
+        } else if (data.lokasi?.length > 1) {
+          setLockLocation(false);
+        }
+
+      } catch (err) {
+        console.error("Cek jadwal error:", err);
+        setLockLocation(false);
+        setLockShift(false);
+      }
+    };
+    fetchJadwal();
+  }, [userId, isKadiv, apiUrl]);
+
 
 
   useEffect(() => {
@@ -75,7 +121,7 @@ const AbsenMulai = ({ handleNextStepData }) => {
           reason: reason.join(" | "),
         });
 
-        setLoadingLocation(false); // 🔥 INI YANG HILANG
+        setLoadingLocation(false);
       },
       (err) => {
         console.error("GPS error:", err);
@@ -92,7 +138,6 @@ const AbsenMulai = ({ handleNextStepData }) => {
   }, []);
 
 
-  // fetch lokasi & shift
   useEffect(() => {
     const fetchData = async (endpoint, setter, mapper) => {
       try {
@@ -161,12 +206,13 @@ const AbsenMulai = ({ handleNextStepData }) => {
       Number(loc.lon)
     );
 
-    console.log("Jarak:", dist);
+    setDistance(dist);
 
     if (dist > 60) {
       showRadiusWarning(dist);
     }
   };
+
 
   const showRadiusWarning = (dist) => {
     let displayDist;
@@ -193,156 +239,188 @@ const AbsenMulai = ({ handleNextStepData }) => {
     });
   };
 
+  const filteredLocations =
+    jadwal && jadwal.lokasi && !isKadiv
+      ? locations.filter((loc) =>
+        jadwal.lokasi.some((j) => j.id_lokasi === loc.value)
+      )
+      : locations;
+
+
   return (
-    <MobileLayout title="Absen Masuk Kerja" className="bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
+    <MobileLayout title="Absen Masuk Kerja" className="bg-gray-100">
       <div className="flex justify-center">
-        <form className="w-full max-w-xl px-3 pb-28 space-y-8 tracking-wider" onSubmit={handleSubmit}>
-          <div className="mt-3">
-            <label className="block text-sm font-semibold">
-              Foto Kehadiran<span className="text-red-500">*</span>
-            </label>
-            <p className="text-[11px] text-gray-700 mb-2">
-              Pastikan wajah Anda terlihat jelas dan gunakan kamera depan atau belakang sesuai kebutuhan. <strong>jika sudah scroll kebawah</strong>
-            </p>
+        <form onSubmit={handleSubmit} className="w-full max-w-xl pb-28 space-y-6">
+
+          {/* ================= FOTO KEHADIRAN ================= */}
+          <section className="bg-white rounded-xl border shadow-sm p-4 space-y-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <label className="text-sm font-semibold">
+                  Foto Kehadiran <span className="text-red-500">*</span>
+                </label>
+                <p className="text-[11px] text-gray-500 mt-0.5">
+                  Ambil foto wajah sebagai bukti kehadiran.
+                </p>
+              </div>
+
+              {fotoMulai && (
+                <button type="button" onClick={() => setFotoMulai(null)} className="p-2 px-3 rounded-md border border-red-300 text-red-500 hover:bg-red-50 transition" title="Ambil ulang foto" aria-label="Ambil ulang foto">
+                  <FontAwesomeIcon icon={faRotateLeft} />
+                </button>
+              )}
+            </div>
+
 
             {!fotoMulai ? (
-              <div className="flex flex-col items-center">
-                <div className="relative w-full aspect-[3/4] bg-gray-100 rounded-xl overflow-hidden shadow-md">
+              <>
+                <div className="relative w-full aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden">
                   <Webcam ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode }} mirrored={false} className="w-full h-full object-cover scale-x-[-1]" />
                 </div>
 
-                <div className="flex gap-3 mt-4 w-full">
-                  <button type="button" onClick={switchCamera} className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-base font-medium shadow-sm transition">
-                    Switch Kamera
+                <div className="flex gap-2 pt-2">
+                  <button type="button" onClick={switchCamera} className="flex-1 py-3 text-md font-semibold rounded-lg border bg-blue-500 text-white hover:bg-blue-600">
+                    Putar Kamera
                   </button>
-                  <button type="button" onClick={capture} className="flex-1 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg text-base font-medium shadow-sm transition">
+                  <button type="button" onClick={capture} className="flex-1 py-3 text-md font-semibold rounded-lg bg-green-500 text-white hover:bg-green-600">
                     Ambil Foto
                   </button>
                 </div>
-              </div>
+              </>
             ) : (
-              <div className="text-center">
-                <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden shadow-lg border border-gray-200">
-                  <img src={fotoMulai} alt="Foto Mulai" className="w-full h-full object-cover scale-x-[-1]" />
-                  <div className="absolute bottom-0 w-full bg-gradient-to-t from-black/90 via-black/90 to-transparent px-3 py-2 text-white">
-                    <p className="text-sm font-semibold">
-                      Tanggal: {formatFullDate(jamMulai)}
+              <>
+                <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden border">
+                  <img src={fotoMulai} alt="Foto Kehadiran" className="w-full h-full object-cover scale-x-[-1]" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent" />
+                  <div className="absolute bottom-5 left-5 right-3 text-white">
+                    <p className="text-base font-bold leading-tight">
+                      {username}
                     </p>
-                    <p className="text-sm font-semibold">
-                      Waktu: {formatTime(jamMulai)}
-                    </p>
+                    <div className="flex items-center gap-2 text-xs text-gray-200">
+                      <span>{roleName}</span>
+                      <span className="opacity-60">•</span>
+                      <span>{formatTime(jamMulai)}</span>
+                    </div>
                   </div>
                 </div>
-
-                <div className="flex gap-3 mt-4">
-                  <button type="button" onClick={() => setFotoMulai(null)} className="flex-1 py-2 border border-red-500 text-red-500 hover:bg-red-50 rounded-lg text-sm font-medium transition">
-                    Ulangi
-                  </button>
-                </div>
-              </div>
+              </>
             )}
-          </div>
+          </section>
 
-          {/* Lokasi */}
-          <div>
-            <label className="block text-sm font-bold">
-              Lokasi Bekerja<span className="text-red-500">*</span>
-            </label>
-            <p className="text-[11px] text-gray-700 mb-2">
-              Pilih lokasi kerja sesuai titik GPS Anda saat ini.
-            </p>
-            <Select options={locations} value={selectedLocation} onChange={(loc) => { setSelectedLocation(loc); checkLocationRadius(loc); }} placeholder="Pilih lokasi..." isSearchable className="text-xs" />
+          <section className="bg-white rounded-xl border shadow-sm p-4 space-y-3">
+            <div>
+              <label className="text-sm font-semibold">
+                Lokasi Kerja <span className="text-red-500">*</span>
+              </label>
+              <p className="text-[11px] text-gray-500 mt-0.5">
+                Lokasi disesuaikan dengan posisi GPS Anda.
+              </p>
+            </div>
 
-            <div className="flex items-center mt-1 text-[9px]">
-              {loadingLocation ? (
-                <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-100 text-gray-700">
-                  <FontAwesomeIcon icon={faSpinner} className="text-gray-400 text-xs animate-spin" />
-                  <span className="font-medium">
-                    Mencari titik lokasi GPS anda...
+            <Select options={filteredLocations} value={selectedLocation} isDisabled={lockLocation} placeholder={lockLocation ? "Lokasi sudah ditentukan" : "Pilih lokasi"} className="text-sm"
+              onChange={(loc) => { setSelectedLocation(loc); checkLocationRadius(loc); }}
+            />
+
+            <div className="flex flex-wrap items-center gap-2 text-[10px]">
+              {loadingLocation && (
+                <span className="text-gray-500">Mencari lokasi GPS…</span>
+              )}
+
+              {!loadingLocation && userCoords.latitude && (
+                <>
+                  <span className="text-green-600 bg-green-100 border border-green-600 rounded px-2 py-0.5 font-semibold flex items-center gap-1 whitespace-nowrap">
+                    <FontAwesomeIcon icon={faLocationDot} className="animate-bounce" />
+                    Berhasil Melacak Titik Lokasi Anda
                   </span>
-                </div>
-              ) : userCoords.latitude && userCoords.longitude ? (
-                <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-green-50 text-green-600">
-                  <FontAwesomeIcon icon={faMapMarkerAlt} className="text-green-600 text-xs animate-bounce" />
-                  <span className="font-semibold">
-                    Lokasi GPS berhasil ditemukan
-                  </span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-red-50 text-red-500">
-                  <FontAwesomeIcon icon={faTimesCircle} className="text-red-500 text-xs" />
-                  <span className="font-semibold">
-                    Lokasi GPS tidak tersedia
-                  </span>
-                </div>
+
+                  {distance !== null && (
+                    <span className={`px-2 py-0.5 rounded font-semibold whitespace-nowrap
+                      ${distance <= 60 ? "bg-green-100 text-green-700 border border-green-300" : "bg-red-100 text-red-700 border border-red-300"}`}
+                    >
+                      Jarak: {distance < 1000 ? `${Math.floor(distance)} m` : `${(distance / 1000).toFixed(2)} km`}
+                    </span>
+                  )}
+                </>
+              )}
+
+              {!loadingLocation && !userCoords.latitude && (
+                <span className="text-red-500">GPS tidak tersedia</span>
               )}
             </div>
-          </div>
+          </section>
 
-          <div>
-            <label className="block text-sm font-bold">
-              Jadwal Kerja / Shift<span className="text-red-500">*</span>
-            </label>
-            <p className="text-[11px] text-gray-700 mb-2">
-              Pilih shift sesuai jadwal kerja yang sudah ditentukan.
-            </p>
+          <section className="bg-white rounded-xl border shadow-sm p-4 space-y-3">
+            <div>
+              <label className="text-sm font-semibold">
+                Shift Kerja <span className="text-red-500">*</span>
+              </label>
+
+              <p className="text-[11px] text-gray-500 mt-0.5">
+                {lockShift ? "Shift ini telah dijadwalkan oleh Kepala Divisi sesuai pengaturan kerja." : "Pilih shift sesuai jadwal kerja yang berlaku dan sesuai."}
+              </p>
+            </div>
+
             <Select options={shiftList.map((s) => ({ value: s.id, label: s.nama, }))}
-              value={
-                selectedShift
-                  ? { value: selectedShift.id, label: selectedShift.nama }
-                  : null
-              }
+              value={selectedShift ? { value: selectedShift.id, label: selectedShift.nama } : null}
+              isDisabled={lockShift}
+              placeholder={lockShift ? "Shift sudah dijadwalkan" : "Pilih shift"}
+              className="text-sm"
               onChange={(opt) => {
                 const found = shiftList.find((s) => s.id === opt.value);
                 setSelectedShift(found || null);
               }}
-              placeholder="Pilih Shift"
-              className="text-xs"
             />
-          </div>
 
-          {selectedShift?.detail && (
-            <div className="rounded-md overflow-hidden border border-green-500 bg-white shadow-sm">
-              <div className="flex justify-between items-center px-4 py-3 bg-green-600 text-white text-[11px] font-semibold cursor-pointer" onClick={() => setShowShiftDetail(!showShiftDetail)}>
-                <span>Lihat Jadwal {selectedShift.nama}</span>
-                <FontAwesomeIcon icon={showShiftDetail ? faChevronUp : faChevronRight} className="ml-3 text-xs" />
+            {lockShift && (
+              <div className="text-[10px] text-gray-400">
+                Jika terdapat ketidaksesuaian jadwal, silakan hubungi Kepala Divisi Anda.
               </div>
+            )}
 
-              {showShiftDetail && (
-                <ul className="divide-y divide-green-200 text-[9px]">
-                  {selectedShift.detail.map((item, i) => (
-                    <li key={i} className="flex justify-between items-center px-3 py-1 hover:bg-green-50 transition">
-                      <span className="font-semibold text-green-700">
-                        {item.hari}
-                      </span>
-                      <span className="font-medium text-gray-700">
-                        {item.jam_masuk} - {item.jam_pulang}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            {selectedShift?.detail && (
+              <button type="button" onClick={() => setShowShiftDetail(!showShiftDetail)} className="text-xs text-green-600 underline text-left">
+                {showShiftDetail ? "Sembunyikan detail shift" : "Lihat detail shift"}
+              </button>
+            )}
+
+            {showShiftDetail && selectedShift?.detail && (
+              <ul className="text-[10px] divide-y border rounded-lg">
+                {selectedShift.detail.map((d, i) => (
+                  <li key={i} className="flex justify-between px-3 py-1">
+                    <span className="font-medium">{d.hari}</span>
+                    <span>{d.jam_masuk} - {d.jam_pulang}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+
+          <section className="bg-white rounded-xl border shadow-sm p-4 space-y-2">
+            <label className="text-sm font-semibold">
+              Keterangan <span className="text-gray-400">(Opsional)</span>
+            </label>
+            <textarea rows="3" value={tugas} onChange={(e) => setTugas(e.target.value)} className="w-full text-sm p-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-green-400" placeholder="Tambahkan catatan jika diperlukan" />
+          </section>
+
+          {!isFormValid() && (
+            <p className="text-[10px] text-gray-500 text-center">
+              Lengkapi foto, lokasi, dan shift untuk melanjutkan.
+            </p>
           )}
 
-          <div>
-            <label htmlFor="tugas" className="block text-sm font-bold">
-              Keterangan
-            </label>
-            <p className="text-[10px] text-gray-700 mb-2">
-              Isi keterangan jika ada tugas atau catatan tambahan.
-            </p>
-            <textarea rows="3" id="tugas" name="tugas" value={tugas} className="w-full p-2 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 resize-vertical" onChange={(e) => setTugas(e.target.value)} />
-          </div>
-
-          <button type="submit" className={`w-full py-2 text-lg font-bold rounded-lg transition-all ${isFormValid() ? "bg-green-500 text-white hover:bg-green-600" : "bg-gray-300 text-gray-700 cursor-not-allowed"}`} disabled={!isFormValid()}>
-            Lanjut
+          <button type="submit" disabled={!isFormValid()} className={`w-full py-4 rounded-lg font-semibold transition
+            ${isFormValid() ? "bg-green-500 text-white hover:bg-green-600" : "bg-gray-300 text-gray-600 cursor-not-allowed"}`}
+          >
+            Lihat Detail Absen Masuk
             <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
           </button>
+
         </form>
       </div>
     </MobileLayout>
   );
+
 };
 
 export default AbsenMulai;

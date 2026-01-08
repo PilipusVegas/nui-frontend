@@ -151,16 +151,11 @@ export default function Lembur() {
               <h1 className="font-bold text-xl text-green-600">
                 Formulir Lembur
               </h1>
-              <button
-                type="button"
-                onClick={() => setInfoOpen(true)}
-                className="text-green-600 hover:text-green-800"
-              >
+              <button type="button" onClick={() => setInfoOpen(true)} className="text-green-600 hover:text-green-800">
                 <FontAwesomeIcon icon={faCircleInfo} size="lg" />
               </button>
             </div>
 
-            {/* NAMA */}
             <div className="space-y-1">
               <label className="text-sm font-medium">Nama</label>
               <div className="px-3 py-2 bg-gray-100 rounded-lg text-sm border">
@@ -168,17 +163,9 @@ export default function Lembur() {
               </div>
             </div>
 
-            {/* TANGGAL */}
             <div className="space-y-1">
               <label className="text-sm font-medium">Tanggal Lembur</label>
-              <input
-                type="date"
-                value={form.tanggal}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, tanggal: e.target.value }))
-                }
-                className="w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500"
-              />
+              <input type="date" value={form.tanggal} onChange={(e) => setForm((p) => ({ ...p, tanggal: e.target.value }))} className="w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-green-500" />
             </div>
 
             {/* JAM */}
@@ -245,22 +232,73 @@ export default function Lembur() {
       </MobileLayout>
 
       {/* MODAL INFO */}
+      {/* MODAL INFO */}
       <Modal
         isOpen={infoOpen}
         onClose={() => setInfoOpen(false)}
-        title="Ketentuan Lembur"
-        note="Harap dibaca sebelum mengajukan."
+        title="Ketentuan Pengajuan Lembur"
+        note="Baca & Pahami sebelum mengajukan Lembur."
         size="md"
       >
-        <div className="space-y-3 text-sm leading-relaxed">
+        <div className="space-y-4 text-sm leading-relaxed text-gray-800">
+
           <ul className="list-disc list-outside pl-5 space-y-2">
-            <li>Pengajuan lembur wajib sesuai jam kerja.</li>
-            <li>Jam mulai dan selesai tidak boleh sama.</li>
-            <li>Pastikan tidak bertabrakan dengan lembur lain.</li>
-            <li>Pengajuan tercatat di riwayat lembur.</li>
+            <li>
+              Pengajuan lembur <strong>HANYA BOLEH</strong> dilakukan di luar jam kerja normal.
+              Lembur yang diajukan pada jam kerja reguler <strong>TIDAK AKAN DIPROSES</strong>.
+            </li>
+
+            <li>
+              Jam lembur diisi dalam format <strong>JAM PENUH (BULAT KE BAWAH)</strong>.
+              <br />
+              Contoh:
+              <ul className="list-disc pl-5 mt-1">
+                <li>Mulai 18:45 → diisi <strong>18:00</strong></li>
+                <li>Selesai 21:30 → diisi <strong>21:00</strong></li>
+              </ul>
+            </li>
+
+            <li>
+              Jam mulai dan jam selesai <strong>TIDAK BOLEH SAMA</strong>.
+              Jika diisi sama, pengajuan akan <strong>DITOLAK OTOMATIS</strong>.
+            </li>
+
+            <li>
+              Rentang jam lembur <strong>TIDAK BOLEH BERTABRAKAN</strong> dengan:
+              <ul className="list-disc pl-5 mt-1">
+                <li>Lembur lain yang sudah diajukan</li>
+                <li>Jam kerja reguler</li>
+              </ul>
+            </li>
+
+            <li>
+              Lokasi lembur <strong>WAJIB</strong> dipilih sesuai tempat pelaksanaan lembur.
+              Kesalahan pemilihan lokasi menjadi <strong>TANGGUNG JAWAB PENGAJU</strong>.
+            </li>
+
+            <li>
+              Keterangan lembur harus diisi <strong>JELAS, SINGKAT, DAN SESUAI AKTIVITAS</strong>.
+              Keterangan yang kosong, tidak relevan, atau tidak jelas dapat menyebabkan pengajuan <strong>DITOLAK</strong>.
+            </li>
+
+            <li>
+              Seluruh pengajuan lembur akan <strong>TERCATAT</strong> dan dapat dilihat pada menu
+              <strong> Riwayat Lembur</strong>.
+            </li>
+
+            <li>
+              Pengajuan yang tidak sesuai ketentuan ini <strong>TIDAK AKAN DIPROSES</strong>,
+              tanpa pemberitahuan ulang.
+            </li>
           </ul>
+
+          <div className="pt-2 text-xs text-red-600 font-semibold">
+            Catatan Penting: Kesalahan pengisian data lembur sepenuhnya menjadi tanggung jawab pengaju.
+          </div>
+
         </div>
       </Modal>
+
     </>
   );
 }

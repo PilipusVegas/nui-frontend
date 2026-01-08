@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight, faAngleDown, } from "@fortawesome/free-solid-svg-icons";
 import { menuConfig } from "../data/menuConfig";
+import { getUserFromToken } from "../utils/jwtHelper";
 
 const IconButton = ({ icon, label, onClick, isActive }) => (
   <button onClick={onClick} aria-label={label}
@@ -21,18 +22,25 @@ const IconButton = ({ icon, label, onClick, isActive }) => (
 );
 
 
-const MenuSidebar = ({ perusahaanId, roleId, isOpen, toggleSidebar, isMobile }) => {
-  const navigate = useNavigate();
+const MenuSidebar = ({ user, isOpen, toggleSidebar, isMobile }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [openSubmenu, setOpenSubmenu] = useState(null);
+  if (!user) return null;
+  const role = Number(user.id_role);
+  const perusahaan = Number(user.id_perusahaan);
 
-  const filteredMenuGroups = menuConfig.map(group => {
-    const filteredItems = group.items.filter(item =>
-      item.roles.includes(roleId) &&
-      (!item.perusahaan || item.perusahaan.includes(perusahaanId))
-    );
-    return filteredItems.length ? { ...group, items: filteredItems } : null;
-  }).filter(Boolean);
+
+  const filteredMenuGroups = menuConfig
+    .map(group => {
+      const filteredItems = group.items.filter(item =>
+        item.roles.includes(role) &&
+        (!item.perusahaan || item.perusahaan.includes(perusahaan))
+      );
+      return filteredItems.length ? { ...group, items: filteredItems } : null;
+    })
+    .filter(Boolean);
+
 
 
   return (
@@ -75,7 +83,7 @@ const MenuSidebar = ({ perusahaanId, roleId, isOpen, toggleSidebar, isMobile }) 
                       />
                     ) : (
                       <>
-                          <button onClick={() => setOpenSubmenu(isSubmenuOpen ? null : submenuKey)} className={`w-full flex items-center justify-between p-2 my-0.5 rounded-lg transition-all duration-300 ${hasActiveSubmenu ? "bg-green-400/30 backdrop-blur-md border border-white/30 text-white font-extrabold shadow-xl shadow-green-500/20" : "hover:bg-white/10 text-white/90"}`}>
+                        <button onClick={() => setOpenSubmenu(isSubmenuOpen ? null : submenuKey)} className={`w-full flex items-center justify-between p-2 my-0.5 rounded-lg transition-all duration-300 ${hasActiveSubmenu ? "bg-green-400/30 backdrop-blur-md border border-white/30 text-white font-extrabold shadow-xl shadow-green-500/20" : "hover:bg-white/10 text-white/90"}`}>
                           <div className="flex items-center gap-2">
                             <div className="w-6 h-6 flex items-center justify-center">
                               <FontAwesomeIcon icon={menu.icon} className="text-lg" />
@@ -91,16 +99,16 @@ const MenuSidebar = ({ perusahaanId, roleId, isOpen, toggleSidebar, isMobile }) 
                           menu.submenu
                             .filter(
                               sub =>
-                                sub.roles.includes(roleId) &&
-                                (!sub.perusahaan || sub.perusahaan.includes(perusahaanId))
+                                sub.roles.includes(role) &&
+                                (!sub.perusahaan || sub.perusahaan.includes(perusahaan))
                             ).length > 0 &&
                           isSubmenuOpen && (
                             <div className="flex flex-col ml-3.5 mt-2 space-y-1">
                               {menu.submenu
                                 .filter(
                                   sub =>
-                                    sub.roles.includes(roleId) &&
-                                    (!sub.perusahaan || sub.perusahaan.includes(perusahaanId))
+                                    sub.roles.includes(role) &&
+                                    (!sub.perusahaan || sub.perusahaan.includes(perusahaan))
                                 )
                                 .map((sub, subIndex) => {
                                   const isActiveSubmenu = location.pathname === sub.path;
@@ -112,7 +120,7 @@ const MenuSidebar = ({ perusahaanId, roleId, isOpen, toggleSidebar, isMobile }) 
                                         navigate(sub.path);
                                       }
                                       if (isMobile) toggleSidebar();
-                                    }}  
+                                    }}
                                       className={`group flex items-center w-full text-left text-sm rounded-lg p-2 pl-3 transition-all duration-300 ${isActiveSubmenu ? `bg-white/25 backdrop-blur-lg border border-white/20 shadow-md shadow-green-400/30 text-white font-semibold ring-1 ring-white/10` : `hover:bg-white/10 hover:backdrop-blur-sm text-white/80 hover:text-white`}`}>
                                       <FontAwesomeIcon icon={faArrowRight} className={`mr-1.5 text-xs transition-transform duration-300  ${isActiveSubmenu ? "text-white rotate-0" : "group-hover:translate-x-1"}`} />
                                       <span className={`transition-transform duration-300  ${isActiveSubmenu ? "translate-x-1" : "group-hover:translate-x-1"}`}>

@@ -82,7 +82,7 @@ export const menuConfig = [
                     {
                         label: "Kelola Jadwal Karyawan",
                         icon: faCalendarCheck,
-                        path: "/penjadwalan-karyawan",
+                        path: "/penjadwalan",
                         roles: [1, 5, 20],
                         perusahaan: [1, 4],
                     },
@@ -172,7 +172,7 @@ export const menuConfig = [
 
     // PENGAJUAN & PERSETUJUAN (HRD / ATASAN)
     {
-        sectionTitle: "Pengajuan & Persetujuan",
+        sectionTitle: "Pengajuan & Riwayat",
         items: [
             {
                 label: "Lembur",
