@@ -43,7 +43,7 @@ export const menuConfig = [
             },
         ],
     },
-        
+
     // MANAJEMEN SDM
     {
         sectionTitle: "Manajemen SDM",
@@ -51,7 +51,7 @@ export const menuConfig = [
             {
                 label: "Kelola Karyawan",
                 icon: faPeopleGroup,
-                roles: [1, 4, 6],
+                roles: [1, 4, 5, 6, 20],
                 submenu: [
                     {
                         label: "Kelola Data Karyawan",
@@ -181,7 +181,7 @@ export const menuConfig = [
                 perusahaan: [1, 4],
                 submenu: [
                     {
-                        label: "Daftar Pengajuan Lembur",   
+                        label: "Daftar Pengajuan Lembur",
                         icon: faPenFancy,
                         path: "/pengajuan-lembur",
                         roles: [1, 4, 5, 6, 20],
