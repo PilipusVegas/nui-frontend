@@ -1,11 +1,7 @@
 // src/utils/exportExcelDetail.jsx
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
-import {
-    formatTime,
-    formatDateForFilename,
-    formatFullDate,
-} from "../../utils/dateUtils";
+import { formatTime, formatDateForFilename, formatFullDate,} from "../../utils/dateUtils";
 
 const getKategoriRemark = (remarkStatus) => {
     switch (remarkStatus) {
@@ -18,7 +14,6 @@ const getKategoriRemark = (remarkStatus) => {
         default: return "";
     }
 };
-
 
 export const exportExcelDetail = async ({
     dataUser,
@@ -68,7 +63,8 @@ export const exportExcelDetail = async ({
         ["Total Lembur", `${totalLembur}`],
         ["Alpha (Tidak Masuk)", `${dataUser?.total_alpha ?? 0} Hari`],
         ["Lupa Absen Pulang", `${dataUser?.total_empty_out ?? 0} Hari`],
-        ["Potongan", `Rp ${dataUser?.total_nominal_empty_out ?? 0}`],
+        // ["Jarak Tidak Valid (>60m)", `${dataUser?.total_distance_not_valid ?? 0} Hari`],
+        ["Potongan", `Rp ${dataUser?.total_nominal_cut ?? 0}`],
     ];
 
     // =====================================================================
@@ -140,8 +136,6 @@ export const exportExcelDetail = async ({
         "Terlambat",
         "Pulang",
         "Total Lembur",
-        // "Mulai Lembur",
-        // "Selesai Lembur",
         "Potongan",
         "Kategori Remark",
         "Remark",
@@ -190,7 +184,7 @@ export const exportExcelDetail = async ({
             typeof rec?.late === "number" ? rec.late : "",
             rec?.out ? formatTime(rec.out) : "",
             rec?.total_overtime ?? "",
-            rec?.nominal_empty_out ? `Rp ${rec.nominal_empty_out}` : "",
+            rec?.nominal_cut ? `Rp ${rec.nominal_cut}` : "",
             getKategoriRemark(rec?.remark_status),
             rec?.remark ?? "",
         ]);

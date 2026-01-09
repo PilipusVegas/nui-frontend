@@ -89,10 +89,10 @@ const PenjadwalanKaryawan = () => {
                             <FontAwesomeIcon icon={faPlus} />
                             Tambah
                         </button>
-                        <button className="flex items-center gap-2 px-4 py-2 text-sm text-white font-bold bg-blue-500 rounded">
+                        {/* <button className="flex items-center gap-2 px-4 py-2 text-sm text-white font-bold bg-blue-500 rounded">
                             <FontAwesomeIcon icon={faCloudDownload} />
                             Tarik SPK
-                        </button>
+                        </button> */}
                     </div>
                 }
             />

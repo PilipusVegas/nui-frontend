@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash, faUser, faLock } from "@fortawesome/free-solid-svg-icons";
@@ -14,6 +14,11 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
+  const user = getUserFromToken();
+  if (user) {
+    return <Navigate to="/home" replace />;
+  }
+
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -25,16 +30,12 @@ const Login = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
-
       const data = await response.json();
-
       if (!response.ok || !data.token) {
         toast.error(data?.message || "Username atau password salah.");
         return;
       }
-
       localStorage.setItem("token", data.token);
-
       const user = getUserFromToken();
       if (!user) {
         toast.error("Sesi tidak valid. Silakan login ulang.");

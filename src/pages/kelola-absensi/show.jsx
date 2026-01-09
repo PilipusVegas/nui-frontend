@@ -5,18 +5,7 @@ import { getDefaultPeriod } from "../../utils/getDefaultPeriod";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { formatFullDate, formatTime } from "../../utils/dateUtils";
-import {
-  faClock,
-  faExclamationTriangle,
-  faInfo,
-  faUserCheck,
-  faDownload,
-  faBusinessTime,
-  faUserTimes,
-  faExclamationCircle,
-  faMoneyBillWave,
-  faInfoCircle
-} from "@fortawesome/free-solid-svg-icons";
+import { faClock, faInfo, faUserCheck, faDownload, faBusinessTime, faUserTimes, faExclamationCircle, faLocationDot, faMoneyBillWave, faInfoCircle, faCalendarDays, faCircleExclamation, faChartColumn, faClipboardList, } from "@fortawesome/free-solid-svg-icons";
 import { LoadingSpinner, SectionHeader, EmptyState, ErrorState, Modal } from "../../components";
 import { exportExcelDetail } from "./exportExcelDetail";
 
@@ -92,17 +81,7 @@ const DetailKelolaPresensi = () => {
   const handleExport = async () => {
     try {
       toast.loading("Menyiapkan file Excel...");
-      await exportExcelDetail({
-        dataUser,
-        attendance,
-        dateRange,
-        period,
-        totalKehadiran,
-        totalKeterlambatan,
-        totalLembur,
-        customStartDate,
-        customEndDate,
-      });
+      await exportExcelDetail({ dataUser, attendance, dateRange, period, totalKehadiran, totalKeterlambatan, totalLembur, customStartDate, customEndDate, });
       toast.dismiss();
       toast.success("File Excel berhasil diunduh!");
     } catch (error) {
@@ -137,9 +116,7 @@ const DetailKelolaPresensi = () => {
       )}
 
       {!loading && error && <ErrorState message={error} onRetry={loadDefault} />}
-
       {!loading && !error && !dataUser && <EmptyState message="Data presensi tidak ditemukan." />}
-
       {!loading && !error && dataUser && (
         <>
           <div className="bg-white/90 backdrop-blur-sm border border-gray-200 shadow-sm rounded-2xl p-4 mb-4 transition-all duration-300">
@@ -166,14 +143,13 @@ const DetailKelolaPresensi = () => {
               </div>
             </div>
 
-            {/* Statistik Ringkas Presensi */}
             <div className="mt-4 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { label: "Total Kehadiran", value: `${totalKehadiran} Hari`, icon: faUserCheck, color: "text-green-600", bg: "bg-green-50", },
-                  { label: "Total Lembur", value: totalLembur, icon: faBusinessTime, color: "text-amber-600", bg: "bg-amber-50", },
-                  { label: "Total Keterlambatan", value: totalKeterlambatan, icon: faClock, color: "text-red-600", bg: "bg-red-50", },
-                  { label: "Total Alpha (Tidak Masuk)", value: `${dataUser?.total_alpha ?? 0} Hari`, icon: faUserTimes, color: "text-gray-700", bg: "bg-gray-50", },
+                  { label: "Total Kehadiran", value: `${totalKehadiran} Hari`, icon: faUserCheck, color: "text-green-600", bg: " ", },
+                  { label: "Total Alpha (Tidak Masuk)", value: `${dataUser?.total_alpha ?? 0} Hari`, icon: faUserTimes, color: "text-gray-700", bg: "", },
+                  { label: "Total Keterlambatan", value: totalKeterlambatan, icon: faClock, color: "text-red-600", bg: "", },
+                  { label: "Total Lembur", value: totalLembur, icon: faBusinessTime, color: "text-amber-600", bg: "", },
                 ].map((item, i) => (
                   <div key={i} className={`flex items-center gap-3 p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 ${item.bg}`}>
                     <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${item.color} bg-white shadow-inner`}>
@@ -187,21 +163,42 @@ const DetailKelolaPresensi = () => {
                 ))}
               </div>
 
-              <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-amber-100 p-4 rounded-xl text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm">
-                <p className="flex items-center gap-2 text-gray-700">
-                  <FontAwesomeIcon icon={faExclamationCircle} className="text-amber-500" />
-                  Total Hari <b>Lupa Absen Pulang:</b>{" "}
-                  <span className="font-semibold text-gray-800">
-                    {dataUser?.total_empty_out ?? 0} Hari
-                  </span>
-                </p>
-                <p className="flex items-center gap-2 text-gray-700">
-                  <FontAwesomeIcon icon={faMoneyBillWave} className="text-red-500" />
-                  Total Potongan:{" "}
-                  <span className="font-bold text-red-600">
-                    - Rp {dataUser?.total_nominal_empty_out?.toLocaleString("id-ID") ?? 0}
-                  </span>
-                </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex items-center gap-3 p-4 rounded-xl border border-amber-100 ">
+                  <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-white text-amber-500 shadow-inner">
+                    <FontAwesomeIcon icon={faExclamationCircle} />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600">Lupa Absen Pulang</p>
+                    <p className="text-base font-bold text-gray-800">
+                      {dataUser?.total_empty_out ?? 0} Hari
+                    </p>
+                  </div>
+                </div>
+
+                {/* <div className="flex items-center gap-3 p-4 rounded-xl border border-orange-100 ">
+                  <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-white text-orange-500 shadow-inner">
+                    <FontAwesomeIcon icon={faLocationDot} />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600">Jarak Tidak Valid (&gt;60m)</p>
+                    <p className="text-base font-bold text-gray-800">
+                      {dataUser?.total_distance_not_valid ?? 0} Hari
+                    </p>
+                  </div>
+                </div> */}
+
+                <div className="flex items-center gap-3 p-4 rounded-xl border border-red-100 ">
+                  <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-white text-red-500 shadow-inner">
+                    <FontAwesomeIcon icon={faMoneyBillWave} />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600">Total Potongan</p>
+                    <p className="text-base font-bold text-red-600">
+                      - Rp {dataUser?.total_nominal_cut?.toLocaleString("id-ID") ?? 0}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -216,8 +213,6 @@ const DetailKelolaPresensi = () => {
                 <th className="px-2 py-2 border-t border-b">Terlambat</th>
                 <th className="px-2 py-2 border-t border-b">Pulang</th>
                 <th className="px-2 py-2 border-t border-b">Total Lembur</th>
-                {/* <th className="px-2 py-2 border-t border-b">Mulai Lembur</th>
-                <th className="px-2 py-2 border-t border-b">Selesai Lembur</th> */}
                 <th className="px-2 py-2 border-t border-b">Potongan</th>
                 <th className="px-2 py-2 border-t border-b rounded-tr-xl">Remark</th>
               </tr>
@@ -266,15 +261,9 @@ const DetailKelolaPresensi = () => {
                         "-"
                       )}
                     </td>
-                    {/* <td className="px-4 py-2">
-                      {isSunday ? rec?.overtime_start ?? "-" : "-"}
-                    </td>
                     <td className="px-4 py-2">
-                      {isSunday ? rec?.overtime_end ?? "-" : "-"}
-                    </td> */}
-                    <td className="px-4 py-2">
-                      {rec?.nominal_empty_out && rec.nominal_empty_out !== 0
-                        ? `- Rp ${rec.nominal_empty_out.toLocaleString("id-ID")}`
+                      {rec?.nominal_cut && rec.nominal_cut !== 0
+                        ? `- Rp ${rec.nominal_cut.toLocaleString("id-ID")}`
                         : "-"}
                     </td>
                     <td className="px-4 py-2">
@@ -306,79 +295,34 @@ const DetailKelolaPresensi = () => {
         </>
       )}
 
-      <Modal isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} title="Informasi Halaman Presensi" note="Halaman ini menampilkan data kehadiran karyawan secara real-time dan terus diperbarui oleh sistem absensi." size="xl">
-        <div className="space-y-5 text-sm text-gray-700 bg-white leading-relaxed">
-          <p>
-            Halaman ini berfungsi untuk{" "}
-            <span className="font-semibold text-emerald-700">
-              memantau dan merekap presensi karyawan
-            </span>{" "}
-            setiap hari. Data yang ditampilkan mencakup jam masuk, jam pulang, keterlambatan,
-            lembur, serta catatan tambahan dari HRD atau sistem absensi otomatis.
-          </p>
-
-          <div className="space-y-3">
-            <div className="flex items-start gap-2 border border-gray-100 p-3 rounded-lg">
+      <Modal isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} title="Informasi Halaman Presensi" note="Menampilkan data kehadiran karyawan secara real-time." size="lg">
+        <div className="space-y-3 text-sm text-gray-700 leading-relaxed">
+          <p> Halaman ini digunakan untuk memantau presensi karyawan, termasuk jam masuk, pulang, keterlambatan, lembur, dan catatan HRD.</p>
+          <ul className="space-y-2">
+            <li className="flex items-start gap-2">
               <FontAwesomeIcon icon={faDownload} className="text-blue-500 mt-1" />
-              <p>
-                <span className="font-medium">Unduh Excel:</span> fitur ini digunakan untuk
-                mengekspor seluruh data presensi ke dalam format Excel yang telah diformat secara
-                rapi dan siap pakai untuk laporan kehadiran, administrasi HRD, maupun audit
-                kepegawaian.
-              </p>
-            </div>
-
-            <div className="flex items-start gap-2 border border-gray-100 p-3 rounded-lg">
-              <FontAwesomeIcon icon={faClock} className="text-green-500 mt-1" />
-              <p>
-                <span className="font-medium">Periode Tanggal:</span> memungkinkan pengguna untuk
-                menampilkan data presensi berdasarkan rentang waktu tertentu. Fitur ini berguna
-                untuk analisis periode kerja, evaluasi bulanan, maupun pengecekan absensi mingguan
-                secara spesifik.
-              </p>
-            </div>
-
-            <div className="flex items-start gap-2 border border-gray-100 p-3 rounded-lg">
-              <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-500 mt-1" />
-              <p>
-                <span className="font-medium">Warna Merah pada Baris Tabel:</span> menandakan bahwa
-                tanggal tersebut merupakan <b>hari Minggu</b> atau <b>hari non-kerja</b>. Data pada
-                hari ini tidak dihitung sebagai keterlambatan maupun alpha.
-                <br />
-                Selain itu, <b>Sabtu pertama di awal bulan</b> juga
-                <b> tidak dihitung sebagai Alpha.</b> mengikuti kebijakan perusahaan.
-              </p>
-            </div>
-
-            <div className="flex items-start gap-2 border border-gray-100 p-3 rounded-lg">
-              <FontAwesomeIcon icon={faUserCheck} className="text-amber-500 mt-1" />
-              <p>
-                <span className="font-medium">Statistik Ringkas:</span> bagian ini menampilkan
-                ringkasan kehadiran seperti total hari hadir, jumlah keterlambatan, dan total jam
-                lembur yang dihitung secara otomatis berdasarkan data presensi aktif dalam periode
-                yang dipilih.
-              </p>
-            </div>
-
-            <div className="flex items-start gap-4 border border-gray-100 p-3 rounded-lg">
-              <FontAwesomeIcon icon={faInfo} className="text-purple-500 mt-1" />
-              <p>
-                <span className="font-medium">Kolom Remark:</span> berisi catatan tambahan yang
-                diinput oleh HRD, seperti <b>izin, sakit, dinas luar, atau absen manual</b>.
-                Pengguna dapat meninjau detail remark dengan menekan tombol <b>“Lihat”</b> pada
-                setiap baris data.
-              </p>
-            </div>
-          </div>
-
-          {/* Catatan Penutup */}
-          <p className="text-xs text-gray-500 italic pt-3 border-t border-gray-200">
-            💡 <b>Tip:</b> Gunakan fitur <b>Filter Tanggal di kelola presensi</b> untuk meninjau
-            kehadiran berdasarkan periode tertentu, lalu ekspor hasilnya ke Excel untuk pelaporan
-            resmi atau evaluasi kinerja karyawan.
-          </p>
+              <span><b>Unduh Excel</b> – Ekspor data presensi ke laporan siap pakai.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <FontAwesomeIcon icon={faCalendarDays} className="text-green-500 mt-1" />
+              <span><b>Periode Tanggal</b> – Filter data berdasarkan rentang waktu.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <FontAwesomeIcon icon={faCircleExclamation} className="text-red-500 mt-1" />
+              <span><b>Baris Merah</b> – Hari Minggu / non-kerja (tidak dihitung alpha).</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <FontAwesomeIcon icon={faChartColumn} className="text-amber-500 mt-1" />
+              <span><b>Statistik</b> – Ringkasan hadir, terlambat, dan lembur.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <FontAwesomeIcon icon={faClipboardList} className="text-purple-500 mt-1" />
+              <span><b>Remark</b> – Catatan HRD seperti izin, sakit, atau dinas.</span>
+            </li>
+          </ul>
         </div>
       </Modal>
+
 
       <Modal isOpen={remarkModal.open} onClose={() => setRemarkModal({ open: false, remark: "", remarkBy: "", remarkStatus: null })} title="Detail Remark">
         <div className="p-6 text-sm text-gray-800 space-y-5">
@@ -425,121 +369,87 @@ const DetailKelolaPresensi = () => {
         </div>
       </Modal>
 
-      <Modal isOpen={overtimeModal.open} onClose={() => setOvertimeModal({ open: false, list: [] })} title={`Detail Lembur`} size="lg" note="Rangkuman lembur pada hari yang dipilih. Gunakan daftar di bawah untuk melihat waktu mulai, selesai, dan total jam lembur.">
+      <Modal
+        isOpen={overtimeModal.open}
+        onClose={() => setOvertimeModal({ open: false, list: [] })}
+        title="Detail Lembur"
+        note={`Tanggal: ${formatFullDate(overtimeModal.tanggal)}`}
+        size="lg"
+      >
         <div className="space-y-4 text-sm text-gray-700">
 
-          {/* ========================= RINGKASAN ========================= */}
-          <div className="rounded-md border border-gray-200 p-2 px-3 bg-white">
-            <p className="font-semibold text-sm mb-1 pb-1.5 border-b border-gray-200">
-              Ringkasan Lembur
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-gray-200">
-
-              <div className="py-1 text-center">
-                <p className="text-gray-600 text-xs mb-1">Total Pengajuan</p>
-                <p className="text-gray-900 font-semibold text-sm">
-                  {overtimeModal.list.length} Kali
-                </p>
-              </div>
-
-              <div className="py-1 text-center">
-                <p className="text-gray-600 text-xs mb-1">Total Jam Lembur</p>
-                <p className="text-gray-900 font-semibold text-sm">
-                  {overtimeModal.list.reduce((a, b) => a + (b.total_hour || 0), 0)} Jam
-                </p>
-              </div>
-
-              <div className="py-1 text-center">
-                <p className="text-gray-600 text-xs mb-1">Tanggal</p>
-                <p className="text-gray-900 font-semibold text-sm">
-                  {formatFullDate(overtimeModal.tanggal)}
-                </p>
-              </div>
+          {/* Ringkasan */}
+          <div className="grid grid-cols-2 bg-white border rounded-lg text-center">
+            <div className="p-3">
+              <p className="text-xs text-gray-500">Jumlah Pengajuan</p>
+              <p className="font-semibold text-gray-900">
+                {overtimeModal.list.length} Pengajuan
+              </p>
+            </div>
+            <div className="p-3 border-l">
+              <p className="text-xs text-gray-500">Total Jam Lembur</p>
+              <p className="font-semibold text-gray-900">
+                {overtimeModal.list.reduce((a, b) => a + (b.total_hour || 0), 0)} Jam
+              </p>
             </div>
           </div>
 
-          <div className="border border-blue-200 bg-blue-50 rounded-lg p-3 mb-3">
-            <p className="flex items-center gap-2 font-semibold text-blue-700 mb-1">
-              <FontAwesomeIcon icon={faInfoCircle} className="text-blue-600 pb-0.5" />
-              Informasi
-            </p>
-            <p className="text-[13px] text-blue-900 leading-relaxed">
-              Data lembur yang tampil di bawah ini adalah data yang <span className="font-semibold">sudah diajukan oleh karyawan, disetujui, dan diverifikasi</span> oleh kepala divisi masing-masing.
-              Seluruh informasi ini <span className="font-semibold">valid</span> dan telah melewati prosedur resmi perusahaan.
-            </p>
+          {/* Informasi Status */}
+          <div className="flex items-center gap-2 p-3 text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded-lg">
+            <FontAwesomeIcon icon={faInfoCircle} />
+            <span>Seluruh pengajuan lembur pada tanggal ini telah disetujui dan diverifikasi.</span>
           </div>
 
+          {/* Data Lembur */}
           {overtimeModal.list.length === 0 ? (
-            <p className="text-center text-gray-500 py-6">Tidak ada data lembur.</p>
+            <p className="text-center text-gray-500 py-8">
+              Tidak terdapat pengajuan lembur pada tanggal ini.
+            </p>
           ) : (
-            <div className="border border-gray-300 rounded-lg bg-white shadow-sm ">
+            <div className="space-y-2 max-h-[320px] overflow-y-auto">
+              {overtimeModal.list.map((item, i) => (
+                <div key={i} className="p-4 bg-white border rounded-lg text-xs">
 
-              <div className="px-4 py-3 border-b border-gray-200 sticky top-0 z-10">
-                <p className="font-semibold text-gray-900 text-sm">
-                  Histori Pengajuan Lembur Terverifikasi ({overtimeModal.list.length})
-                </p>
-              </div>
+                  <div className="flex justify-between mb-3">
+                    <p className="font-semibold text-gray-900">
+                      Pengajuan #{i + 1}
+                    </p>
+                    <p className="text-gray-500">
+                      {item.total_hour || 0} Jam
+                    </p>
+                  </div>
 
-              <div className="divide-y divide-gray-200 max-h-[320px] overflow-y-auto scrollbar-green">
-                {overtimeModal.list.map((item, index) => (
-                  <div key={index} className={`px-4 py-3 transition ${index % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-gray-100`}>
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
-
-                      <div className="sm:w-1/3">
-                        <p className="text-gray-800 text-[13px] font-semibold">
-                          Pengajuan Ke-{index + 1}
-                        </p>
-                      </div>
-
-                      <div className="grid grid-cols-3 sm:w-2/3 gap-3 sm:gap-5 text-[12px]">
-                        <div className="flex flex-col sm:border-r sm:border-gray-200 sm:pr-4">
-                          <span className="text-gray-500 font-medium">Mulai</span>
-                          <span className="text-gray-900 font-semibold">
-                            {item.overtime_start ?? "-"}
-                          </span>
-                        </div>
-
-                        <div className="flex flex-col sm:border-r sm:border-gray-200 sm:pr-4">
-                          <span className="text-gray-500 font-medium">Selesai</span>
-                          <span className="text-gray-900 font-semibold">
-                            {item.overtime_end ?? "-"}
-                          </span>
-                        </div>
-
-                        <div className="flex flex-col">
-                          <span className="text-gray-500 font-medium">Durasi</span>
-                          <span className="text-gray-900 font-semibold">
-                            {item.total_hour ?? 0} Jam
-                          </span>
-                        </div>
-                      </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <p className="text-gray-500">Mulai</p>
+                      <p className="font-semibold">{item.overtime_start || "-"}</p>
                     </div>
-
-                    <div className="mt-3 pt-2 border-t border-gray-200 text-[11px] text-gray-600">
-                      <span>
-                        Disetujui oleh{" "}
-                        <span className="font-semibold text-gray-800">
-                          {item.approved_by ?? "-"}
-                        </span>
-                      </span>
-                      <span className="mx-2">•</span>
-                      <span>
-                        Pada{" "}
-                        <span className="font-semibold text-gray-800">
-                          {item.approved_at
-                            ? new Date(item.approved_at).toLocaleString("id-ID")
-                            : "-"}
-                        </span>
-                      </span>
+                    <div>
+                      <p className="text-gray-500">Selesai</p>
+                      <p className="font-semibold">{item.overtime_end || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Durasi</p>
+                      <p className="font-semibold">{item.total_hour || 0} Jam</p>
                     </div>
                   </div>
-                ))}
-              </div>
+
+                  <p className="text-gray-500 mt-3">
+                    Disetujui oleh <b>{item.approved_by || "-"}</b> •{" "}
+                    {item.approved_at
+                      ? new Date(item.approved_at).toLocaleString("id-ID")
+                      : "-"}
+                  </p>
+
+                </div>
+              ))}
             </div>
           )}
+
         </div>
       </Modal>
+
+
     </div>
   );
 };

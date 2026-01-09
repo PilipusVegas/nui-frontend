@@ -91,7 +91,7 @@ const DataAbsensi = () => {
 
       <div className="grid grid-cols-2 gap-3 mb-4">
         <SummaryCard icon={faCheckCircle} title="Total Karyawan Lapangan" value={absenData.length} />
-        <SummaryCard icon={faCalendarXmark} title="Data Absensi Abnormal" value={absenData.reduce((sum, d) => sum + Number(d.unapproved || 0), 0)} note={[1, 4].includes(user?.id_role) ? "Lihat semua Data" : undefined} onClick={[1, 4].includes(user?.id_role) ? () => navigate("/pengajuan-absensi/abnormal") : undefined} />
+        <SummaryCard icon={faCalendarXmark} title="Data Absensi Tidak Valid" value={absenData.reduce((sum, d) => sum + Number(d.unapproved || 0), 0)} note={[1, 4].includes(user?.id_role) ? "Lihat semua Data" : undefined} onClick={[1, 4].includes(user?.id_role) ? () => navigate("/pengajuan-absensi/abnormal") : undefined} />
       </div>
 
       <SearchBar onSearch={(val) => { setSearchName(val); setCurrentPage(1); }} placeholder="Cari nama dan divisi..." className="mb-4" />

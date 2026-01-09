@@ -23,7 +23,6 @@ const RiwayatSuratDinas = () => {
     const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
     const [summaryFilter, setSummaryFilter] = useState(null);
 
-
     useEffect(() => {
         const { start, end } = getDefaultPeriod();
         setStartDate(start);
@@ -31,6 +30,8 @@ const RiwayatSuratDinas = () => {
     }, []);
 
     const fetchData = async () => {
+        if (!startDate || !endDate) return;
+
         setLoading(true);
         try {
             const res = await fetchWithJwt(
@@ -41,12 +42,12 @@ const RiwayatSuratDinas = () => {
             setData(result.data || []);
             setError(null);
         } catch (err) {
-            console.error(err);
             setError(err.message || "Terjadi kesalahan");
         } finally {
             setLoading(false);
         }
     };
+
 
     useEffect(() => {
         fetchData();
@@ -130,11 +131,11 @@ const RiwayatSuratDinas = () => {
                                     ).length;
                                     return (
                                         <tr key={user.id_user} className="hover:bg-gray-50 transition-colors duration-150">
-                                            <td className="px-8 py-2 text-center font-semibold text-gray-600">
+                                            <td className="px-8 py-1 text-center font-semibold text-gray-600">
                                                 {nomor}
                                             </td>
 
-                                            <td className="px-5 py-2">
+                                            <td className="px-5 py-1">
                                                 <div className="flex flex-col">
                                                     <span className="font-medium text-gray-800 uppercase">
                                                         {user.nama_user}
@@ -145,7 +146,7 @@ const RiwayatSuratDinas = () => {
                                                 </div>
                                             </td>
 
-                                            <td className="px-5 py-2 text-center">
+                                            <td className="px-5 py-1 text-center">
                                                 <div className="flex justify-center flex-wrap gap-2">
                                                     <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-200">
                                                         Jabodetabek {dalamJabodetabek}
@@ -156,7 +157,7 @@ const RiwayatSuratDinas = () => {
                                                 </div>
                                             </td>
 
-                                            <td className="px-5 py-2 text-center">
+                                            <td className="px-5 py-1 text-center">
                                                 <div className="flex justify-center flex-wrap gap-2">
                                                     <span className="px-3 py-1 rounded-full bg-green-50 text-green-700 text-xs font-semibold border border-green-200">
                                                         Disetujui {approvedCount}
@@ -168,7 +169,7 @@ const RiwayatSuratDinas = () => {
                                             </td>
 
                                             {/* AKSI */}
-                                            <td className="px-5 py-2 text-center">
+                                            <td className="px-5 py-1 text-center">
                                                 <button onClick={() => { setSelectedUser(user); setIsModalOpen(true); }} className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded shadow-sm transition">
                                                     <FontAwesomeIcon icon={faEye} className="mr-1" />
                                                     Detail
@@ -258,7 +259,7 @@ const RiwayatSuratDinas = () => {
                 </>
             )}
 
-            <Modal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setSelectedUser(null); setSummaryFilter(null);}} title={`Riwayat Dinas ${selectedUser?.nama_user || ""}`} note="Rangkuman riwayat pada rentang periode ini." size="lg">
+            <Modal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setSelectedUser(null); setSummaryFilter(null); }} title={`Riwayat Dinas ${selectedUser?.nama_user || ""}`} note="Rangkuman riwayat pada rentang periode ini." size="lg">
                 {selectedUser ? (() => {
                     const riwayat = selectedUser.riwayat || [];
                     const totalApproved = riwayat.filter(r => r.status_dinas === 1).length;
@@ -277,10 +278,10 @@ const RiwayatSuratDinas = () => {
                         <div className="space-y-4">
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                 {[
-                                    { key: "approved", label: "Disetujui", value: totalApproved, active: summaryFilter === "approved", base: "green",},
-                                    { key: "rejected", label: "Ditolak",  value: totalRejected, active: summaryFilter === "rejected", base: "red",},
-                                    { key: "jabodetabek", label: "Jabodetabek", value: totalJabodetabek, active: summaryFilter === "jabodetabek", base: "blue",},
-                                    { key: "luar", label: "Luar Jabodetabek", value: totalLuar, active: summaryFilter === "luar", base: "purple",},
+                                    { key: "approved", label: "Disetujui", value: totalApproved, active: summaryFilter === "approved", base: "green", },
+                                    { key: "rejected", label: "Ditolak", value: totalRejected, active: summaryFilter === "rejected", base: "red", },
+                                    { key: "jabodetabek", label: "Jabodetabek", value: totalJabodetabek, active: summaryFilter === "jabodetabek", base: "blue", },
+                                    { key: "luar", label: "Luar Jabodetabek", value: totalLuar, active: summaryFilter === "luar", base: "purple", },
                                 ].map(card => (
                                     <button key={card.key}
                                         onClick={() => setSummaryFilter(card.active ? null : card.key)}
@@ -296,63 +297,62 @@ const RiwayatSuratDinas = () => {
                             </div>
 
                             {filteredRiwayat.length > 0 ? (
-                                filteredRiwayat.map((r) => {
-                                    const isApproved = r.status_dinas === 1;
-                                    const statusLabel = isApproved ? "Disetujui" : "Ditolak";
-                                    const statusStyle = isApproved ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-700 border-red-200";
-                                    const kategoriLabel = r.kategori === "1" ? "Jabodetabek" : "Luar Jabodetabek";
-                                    const kategoriStyle = r.kategori === "1" ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-purple-50 text-purple-700 border-purple-200";
+                                <div className="space-y-3 max-h-[55vh] overflow-y-auto pr-1">
+                                    {filteredRiwayat.map((r) => {
+                                        const isApproved = r.status_dinas === 1;
+                                        const statusLabel = isApproved ? "Disetujui" : "Ditolak";
+                                        const statusStyle = isApproved
+                                            ? "bg-green-50 text-green-700 border-green-200"
+                                            : "bg-red-50 text-red-700 border-red-200";
+                                        const kategoriLabel = r.kategori === "1" ? "Jabodetabek" : "Luar Jabodetabek";
+                                        const kategoriStyle = r.kategori === "1"
+                                            ? "bg-blue-50 text-blue-700 border-blue-200"
+                                            : "bg-purple-50 text-purple-700 border-purple-200";
 
-                                    return (
-                                        <div key={r.id}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                navigate(`/pengajuan-dinas/${r.id}`);
-                                            }}
-                                            className="bg-white border border-gray-200 rounded-xl p-4 hover:border-emerald-300 hover:shadow-sm transition cursor-pointer"
-                                        >
-                                            <div className="flex justify-between items-center mb-2">
-                                                <span className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${kategoriStyle}`}>
-                                                    {kategoriLabel}
-                                                </span>
-                                                <span className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${statusStyle}`}>
-                                                    {statusLabel}
-                                                </span>
-                                            </div>
-
-                                            {/* TANGGAL */}
-                                            <p className="text-sm sm:text-[15px] font-semibold text-gray-900">
-                                                {formatFullDate(r.tgl_berangkat)}
-                                                {r.kategori === "2" && r.tgl_pulang && (
-                                                    <> – {formatFullDate(r.tgl_pulang)}</>
-                                                )}
-                                            </p>
-
-                                            {/* INFO */}
-                                            <div className="mt-1 text-xs sm:text-sm text-gray-600 flex gap-x-4">
-                                                <span>
-                                                    Jam: <b>{r.waktu?.substring(0, 5) || "-"}</b>
-                                                </span>
-                                                {r.kategori === "2" && !r.tgl_pulang && (
-                                                    <span className="text-amber-600 font-semibold">
-                                                        Belum Pulang
+                                        return (
+                                            <div key={r.id} onClick={(e) => { e.stopPropagation(); window.open(`/pengajuan-dinas/${r.id}`, "_blank");}}
+                                                className="bg-white border border-gray-200 rounded-xl p-4 hover:border-emerald-300 hover:shadow-sm transition cursor-pointer"
+                                            >
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <span className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${kategoriStyle}`}>
+                                                        {kategoriLabel}
                                                     </span>
-                                                )}
-                                            </div>
+                                                    <span className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${statusStyle}`}>
+                                                        {statusLabel}
+                                                    </span>
+                                                </div>
 
-                                            {/* FOOTER */}
-                                            <p className="mt-2 text-xs text-gray-500">
-                                                {statusLabel} oleh{" "}
-                                                <span className="font-semibold text-gray-700">
-                                                    {r.approved_by || "-"}
-                                                </span>
-                                                {r.approved_at && (
-                                                    <> • {formatCustomDateTime(r.approved_at)}</>
-                                                )}
-                                            </p>
-                                        </div>
-                                    );
-                                })
+                                                <p className="text-sm sm:text-[15px] font-semibold text-gray-900">
+                                                    {formatFullDate(r.tgl_berangkat)}
+                                                    {r.kategori === "2" && r.tgl_pulang && (
+                                                        <> – {formatFullDate(r.tgl_pulang)}</>
+                                                    )}
+                                                </p>
+
+                                                <div className="mt-1 text-xs sm:text-sm text-gray-600 flex gap-x-4">
+                                                    <span>
+                                                        Jam: <b>{r.waktu?.substring(0, 5) || "-"}</b>
+                                                    </span>
+                                                    {r.kategori === "2" && !r.tgl_pulang && (
+                                                        <span className="text-amber-600 font-semibold">
+                                                            Belum Pulang
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <p className="mt-2 text-xs text-gray-500">
+                                                    {statusLabel} oleh{" "}
+                                                    <span className="font-semibold text-gray-700">
+                                                        {r.approved_by || "-"}
+                                                    </span>
+                                                    {r.approved_at && (
+                                                        <> • {formatCustomDateTime(r.approved_at)}</>
+                                                    )}
+                                                </p>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             ) : (
                                 <p className="text-gray-500 text-sm text-center py-6">
                                     Tidak ada data sesuai filter.

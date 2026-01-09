@@ -5,7 +5,7 @@ import { fetchWithJwt } from "../../../utils/jwtHelper";
 import { getDefaultPeriod } from "../../../utils/getDefaultPeriod";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { SectionHeader, Modal, EmptyState, Pagination, SearchBar, LoadingSpinner, ErrorState } from "../../../components";
-import { faInfoCircle, faMapMarkerAlt, faTriangleExclamation, } from "@fortawesome/free-solid-svg-icons";
+import { faInfoCircle, faTriangleExclamation, } from "@fortawesome/free-solid-svg-icons";
 import { formatFullDate } from "../../../utils/dateUtils";
 
 const RiwayatLembur = () => {
@@ -23,6 +23,7 @@ const RiwayatLembur = () => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [modalSearchQuery, setModalSearchQuery] = useState("");
+    const [summaryFilter, setSummaryFilter] = useState(null);
 
 
     const fetchApprovalData = async () => {
@@ -54,25 +55,107 @@ const RiwayatLembur = () => {
         u.nama_user.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+
+    const summary = selectedUser?.riwayat.reduce(
+        (acc, r) => {
+            if (r.status_lembur === 1) {
+                acc.totalApproved += 1;
+                acc.totalApprovedHours += r.total_hour || 0;
+            }
+
+            if (r.status_lembur === 2) {
+                acc.totalRejected += 1;
+                acc.totalRejectedHours += r.total_hour || 0;
+            }
+
+            if (r.total_hour >= 5 && r.status_lembur === 1) {
+                acc.totalOver5Hours += 1;
+            }
+
+
+            return acc;
+        },
+        {
+            totalApproved: 0,
+            totalRejected: 0,
+            totalApprovedHours: 0,
+            totalRejectedHours: 0,
+            totalOver5Hours: 0,
+        }
+    );
+
+
     const filteredRiwayat = selectedUser?.riwayat.filter(item => {
-        const tanggalFull = formatFullDate(item.tanggal); // "Minggu, 21 September 2025"
-        const tanggalLower = tanggalFull.toLowerCase();   // "minggu, 21 september 2025"
+        const tanggalFull = formatFullDate(item.tanggal).toLowerCase();
         const lokasi = (item.lokasi ?? "").toLowerCase();
         const query = modalSearchQuery.toLowerCase();
 
-        return tanggalLower.includes(query) || lokasi.includes(query);
+        const matchSearch = tanggalFull.includes(query) || lokasi.includes(query);
+
+        if (!summaryFilter) return matchSearch;
+
+        if (summaryFilter === "approved") return matchSearch && item.status_lembur === 1;
+        if (summaryFilter === "rejected") return matchSearch && item.status_lembur === 2;
+        if (summaryFilter === "over5")
+            return matchSearch && item.total_hour >= 5 && item.status_lembur === 1;
+
+        return matchSearch;
     }) || [];
+
 
     const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     const openDetailModal = (user) => {
         setSelectedUser(user);
-        setModalSearchQuery(""); // reset search setiap kali modal dibuka
+        setModalSearchQuery("");
+        setSummaryFilter(null);   // reset filter setiap buka modal
         setIsDetailModalOpen(true);
     };
 
 
     const closeModal = () => { setModalDescription(""); setIsModalOpen(false); };
+
+    const SummaryCard = ({ title, value, color, filterKey, activeFilter, onClick }) => {
+        const isActive = activeFilter === filterKey;
+
+        const borderColor =
+            color === "green"
+                ? "border-green-400"
+                : color === "red"
+                    ? "border-red-400"
+                    : "border-blue-400";
+
+        const textColor =
+            color === "green"
+                ? "text-green-600"
+                : color === "red"
+                    ? "text-red-600"
+                    : "text-blue-600";
+
+        return (
+            <div
+                onClick={onClick}
+                className={`cursor-pointer border rounded-xl p-3 text-center transition
+        ${isActive
+                        ? `${borderColor} bg-gray-50`
+                        : "border-gray-200 hover:border-gray-300 hover:shadow-sm"
+                    }
+      `}
+            >
+                <p className="text-xs text-gray-500 font-medium">{title}</p>
+
+                <p className={`text-lg font-bold mt-1 ${textColor}`}>
+                    {value}
+                </p>
+            </div>
+        );
+    };
+
+
+    const handleSummaryFilter = (filter) => {
+        setSummaryFilter(prev => (prev === filter ? null : filter));
+    };
+
 
     return (
         <div className="flex flex-col">
@@ -90,7 +173,6 @@ const RiwayatLembur = () => {
                 </div>
             </div>
 
-
             {!startDate || !endDate ? (
                 <EmptyState icon={faTriangleExclamation} text="Silakan pilih rentang tanggal terlebih dahulu." />
             ) : isLoading ? (
@@ -101,31 +183,32 @@ const RiwayatLembur = () => {
                 <div>
 
                     {/* ===== TABLE UNTUK DESKTOP ===== */}
-                    <div className="hidden sm:block overflow-hidden rounded-xl shadow border border-gray-200">
+                    <div className="hidden sm:block overflow-hidden rounded-lg shadow border border-gray-200">
                         <table className="min-w-full text-sm">
                             <thead className="bg-green-500 text-white uppercase text-sm tracking-wide sticky top-0 z-10">
                                 <tr>
-                                    {["Nama Karyawan", "Total Riwayat", "Disetujui", "Ditolak", "Total Jam", "Detail"].map((h) => (
-                                        <th key={h} className="px-4 py-2 text-center font-semibold">{h}</th>
+                                    {["No", "Nama Karyawan", "Total Riwayat Pengajuan", "Disetujui", "Ditolak", "Jam Lembur Disetujui", "Aksi"].map((h) => (
+                                        <th key={h} className="px-4 py-3 text-center font-semibold">{h}</th>
                                     ))}
                                 </tr>
                             </thead>
                             <tbody>
                                 {paginatedData.map((user, idx) => (
                                     <tr key={user.id_user} className={`${idx % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-blue-50 transition-all duration-200`}>
-                                        <td className="px-4 py-2 font-medium text-left">
+                                        <td className="px-4 py-1.5 text-center">{idx + 1}</td>
+                                        <td className="px-4 py-1.5 font-medium text-left">
                                             <div className="flex flex-col leading-tight">
-                                                <span className="font-semibold text-gray-900">{user.nama_user}</span>
+                                                <span className="font-semibold text-gray-900 uppercase text-sm">{user.nama_user}</span>
                                                 <span className="text-xs text-gray-500">{user.role}</span>
                                             </div>
                                         </td>
 
-                                        <td className="px-4 py-2 text-center">{user.riwayat.length}x Pengajuan</td>
-                                        <td className="px-4 py-2 text-center text-green-700 font-semibold">{user.total_approved} Disetujui</td>
-                                        <td className="px-4 py-2 text-center text-red-600 font-semibold">{user.total_rejected} Ditolak</td>
-                                        <td className="px-4 py-2 text-center">{user.total_jam_approved} Jam</td>
-                                        <td className="px-4 py-2 text-center">
-                                            <button onClick={() => openDetailModal(user)} className="inline-flex items-center justify-center gap-1 px-2 py-1 rounded bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition">
+                                        <td className="px-4 py-1.5 text-center">{user.riwayat.length}x Pengajuan</td>
+                                        <td className="px-4 py-1.5 text-center text-green-700 font-semibold">{user.total_approved} Disetujui</td>
+                                        <td className="px-4 py-1.5 text-center text-red-600 font-semibold">{user.total_rejected} Ditolak</td>
+                                        <td className="px-4 py-1.5 text-center">{user.total_jam_approved} Jam</td>
+                                        <td className="px-4 py-1.5 text-center">
+                                            <button onClick={() => openDetailModal(user)} className="inline-flex items-center justify-center gap-2 px-3 py-1.5 rounded bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition">
                                                 <FontAwesomeIcon icon={faInfoCircle} />
                                                 Detail
                                             </button>
@@ -135,7 +218,6 @@ const RiwayatLembur = () => {
                             </tbody>
                         </table>
                     </div>
-
 
                     {/* ===== SUMMARY CARD MOBILE/TABLET ===== */}
                     <div className="grid gap-4 sm:hidden mt-4">
@@ -152,7 +234,6 @@ const RiwayatLembur = () => {
                                     </button>
                                 </div>
 
-                                {/* Summary Horizontal */}
                                 <div className="flex justify-between text-sm text-gray-700 mt-2">
                                     <div className="flex-1 flex flex-col items-center p-2 bg-gray-50 rounded-lg mx-1">
                                         <span className="font-medium text-gray-500">Riwayat</span>
@@ -174,10 +255,6 @@ const RiwayatLembur = () => {
                             </div>
                         ))}
                     </div>
-
-
-
-
                 </div>
             )}
 
@@ -185,43 +262,40 @@ const RiwayatLembur = () => {
                 <Pagination currentPage={currentPage} totalItems={filteredData.length} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} />
             )}
 
-            <Modal isOpen={isDetailModalOpen} onClose={() => setIsDetailModalOpen(false)} title={`Detail Riwayat Lembur ${selectedUser?.nama_user}`} note="Data riwayat lembur karyawan akan ditampilkan disini berdasarkan rentang tanggal yang dipilih." size="xl">
-
+            <Modal isOpen={isDetailModalOpen} onClose={() => setIsDetailModalOpen(false)} title="Detail Riwayat Lembur" note="Ringkasan dan pencarian membantu memfilter riwayat lembur dengan cepat." size="xl">
                 {selectedUser && (
                     <div className="space-y-4">
-
-                        <div className="bg-white p-3 rounded-lg border border-black/10 shadow-sm">
-                            <h3 className="text-sm font-semibold text-black mb-2">Informasi Lembur</h3>
-                            <p className="text-sm text-black/70 leading-relaxed">
-                                Riwayat lembur yang diajukan karyawan pada periode terpilih.
-                                Setiap entri memuat tanggal, durasi, lokasi, status, dan informasi persetujuan.
-                                Tampilan ini dirancang agar ringkas, mudah dibaca, dan nyaman digunakan.
-                            </p>
+                        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4">
+                            <SummaryCard title="Total Disetujui"  value={summary.totalApproved}  color="green" filterKey="approved" activeFilter={summaryFilter} onClick={() => handleSummaryFilter("approved")}/>
+                            <SummaryCard title="Total Jam Disetujui"  value={`${summary.totalApprovedHours} Jam`} color="green"  filterKey="approved"  activeFilter={summaryFilter}  onClick={() => handleSummaryFilter("approved")}/>
+                            <SummaryCard title="Total Ditolak" value={summary.totalRejected} color="red" filterKey="rejected" activeFilter={summaryFilter} onClick={() => handleSummaryFilter("rejected")}/>
+                            <SummaryCard title="Total Jam Ditolak" value={`${summary.totalRejectedHours} Jam`} color="red" filterKey="rejected" activeFilter={summaryFilter} onClick={() => handleSummaryFilter("rejected")}/>
+                            <SummaryCard title="Lembur ≥ 5 Jam Disetujui" value={`${summary.totalOver5Hours} Data`} color="blue" filterKey="over5" activeFilter={summaryFilter} onClick={() => handleSummaryFilter("over5")}/>
                         </div>
-
                         <SearchBar onSearch={setModalSearchQuery} placeholder="Cari riwayat berdasarkan tanggal atau lokasi..." className="w-full" />
+                        {filteredRiwayat.length === 0 && (
+                            <div className="mt-4">
+                                <EmptyState icon={faTriangleExclamation} text={ summaryFilter ? "Tidak ada data lembur sesuai filter yang dipilih." : "Tidak ada data lembur sesuai pencarian."} />
+                            </div>
+                        )}
 
                         <div className="max-h-[360px] overflow-y-auto scrollbar-green px-1">
                             <div className="space-y-3">
-
                                 {filteredRiwayat.map((item, idx) => {
                                     const tanggal = formatFullDate(item.tanggal);
                                     const approvedAt = item.approved_at ? formatFullDate(item.approved_at) : "-";
-
                                     return (
                                         <div key={idx} className="bg-white border border-black/10 rounded-lg p-3 shadow-sm hover:shadow transition-all duration-150 space-y-2">
                                             <div className="grid grid-cols-2 gap-2">
                                                 <div>
-                                                    <p className="text-[10px] text-black/50 font-medium">Tanggal</p>
+                                                    <p className="text-[10px] text-black/50 font-medium">Tanggal Lembur</p>
                                                     <p className="text-[12px] font-semibold text-black">{tanggal}</p>
                                                 </div>
-
                                                 <div>
-                                                    <p className="text-[10px] text-black/50 font-medium">Lokasi</p>
+                                                    <p className="text-[10px] text-black/50 font-medium">Lokasi Lembur</p>
                                                     <p className="text-[12px] font-semibold text-black">{item.lokasi ?? "-"}</p>
                                                 </div>
                                             </div>
-
                                             <div className="grid grid-cols-3 gap-2">
                                                 <div>
                                                     <p className="text-[10px] text-black/50 font-medium">Mulai</p>
@@ -232,36 +306,28 @@ const RiwayatLembur = () => {
                                                     <p className="text-[12px] font-semibold text-black">{item.jam_selesai || "-"}</p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-[10px] text-black/50 font-medium">Total</p>
+                                                    <p className="text-[10px] text-black/50 font-medium">Total Jam Lembur</p>
                                                     <p className="text-[12px] font-semibold text-black">{item.total_hour ?? 0} Jam</p>
                                                 </div>
                                             </div>
-
                                             <div className="flex justify-between items-center pt-1 border-t border-black/10">
                                                 <p className="text-[10px] text-black/70 leading-tight">
                                                     Disetujui oleh{" "}
                                                     <span className="font-semibold text-black">{item.approved_by ?? "N/A"}</span>{" "}
                                                     pada <span className="font-semibold text-black">{approvedAt}</span>
                                                 </p>
-
-                                                <p className="text-[11px] font-semibold text-black">
-                                                    {item.status_lembur === 1
-                                                        ? "Disetujui"
-                                                        : item.status_lembur === 0
-                                                            ? "Menunggu"
-                                                            : "Ditolak"}
-                                                </p>
+                                                <span className={`px-2 py-1 rounded text-[10px] font-semibold ${item.status_lembur === 1 ? "bg-green-100 text-green-700" : item.status_lembur === 2 ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700"}`}>
+                                                    {item.status_lembur === 1 ? "Disetujui" : item.status_lembur === 0 ? "Menunggu" : "Ditolak"}
+                                                </span>
                                             </div>
                                         </div>
                                     );
                                 })}
-
                             </div>
                         </div>
                     </div>
                 )}
             </Modal>
-
 
             <Modal isOpen={isModalOpen} onClose={closeModal} title="Detail Deskripsi" note="Keterangan tambahan dari pengajuan lembur" size="md">
                 <p className="text-gray-700 whitespace-pre-line leading-relaxed">{modalDescription || "Tidak ada deskripsi."}</p>

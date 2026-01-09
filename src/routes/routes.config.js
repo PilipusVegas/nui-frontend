@@ -98,7 +98,9 @@ export const routes = [
   { path: "/login", element: <Login /> },
 
   /* ===== HOME ===== */
-  { path: "/home", element: <HomeRedirect />},
+  // { path: "/home", element: <HomeRedirect />},
+  { path: "/home", element: <HomeRedirect />, roles: [] },
+
 
   /* ===== MOBILE ===== */
   { path: "/notification", element: <Notification />, roles: ["2", "3", "4", "5", "6"] },
@@ -142,7 +144,7 @@ export const routes = [
   { path: "/lokasi-presensi/tambah", element: <TambahLokasi />, roles: ["1", "5"], layout: SidebarLayout },
   { path: "/lokasi-presensi/edit/:id", element: <EditLokasi />, roles: ["1", "5"], layout: SidebarLayout },
 
-  { path: "/kelola-absensi", element: <KelolaAbsensi />, roles: ["1", "4", "6"] },  
+  { path: "/kelola-absensi", element: <KelolaAbsensi />, roles: ["1", "4", "6"] },
   { path: "/kelola-absensi/:id", element: <DetailKelolaAbsensi />, roles: ["1", "4", "6"], layout: SidebarLayout },
   { path: "/remark-absensi", element: <RemarkAbsensi />, roles: ["1", "4", "5", "6"], layout: SidebarLayout },
 
