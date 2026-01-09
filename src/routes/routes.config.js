@@ -103,8 +103,8 @@ export const routes = [
 
 
   /* ===== MOBILE ===== */
-  { path: "/notification", element: <Notification />, roles: ["2", "3", "4", "5", "6"] },
-  { path: "/riwayat-pengguna", element: <RiwayatPengguna />, roles: ["2", "3", "4", "5", "6"] },
+  { path: "/notification", element: <Notification />, roles: [] },
+  { path: "/riwayat-pengguna", element: <RiwayatPengguna />, roles: [] },
   { path: "/riwayat-face", element: <RiwayatFace />, roles: [] },
 
   /* ===== MENU & PROFILE ===== */
