@@ -105,7 +105,7 @@ export const routes = [
   /* ===== MOBILE ===== */
   { path: "/notification", element: <Notification />, roles: [] },
   { path: "/riwayat-pengguna", element: <RiwayatPengguna />, roles: [] },
-  { path: "/riwayat-face", element: <RiwayatFace />, roles: [] },
+  { path: "/riwayat-face", element: <RiwayatFace /> },
 
   /* ===== MENU & PROFILE ===== */
   { path: "/menu", element: <Menu />, roles: [] },
