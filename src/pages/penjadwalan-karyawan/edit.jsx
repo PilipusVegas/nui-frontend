@@ -21,7 +21,8 @@ const EditPenjadwalan = () => {
     const [userInfo, setUserInfo] = useState(null); // ⬅️ info karyawan
     const [form, setForm] = useState({
         id_shift: "",
-        lokasi: []
+        lokasi: [],
+        id_user: null
     });
 
     useEffect(() => {
@@ -49,7 +50,8 @@ const EditPenjadwalan = () => {
             // ✅ FIX LOKASI (PAKAI id_lokasi)
             setForm({
                 id_shift: jadwal.id_shift,
-                lokasi: jadwal.lokasi.map(l => l.id_lokasi)
+                lokasi: jadwal.lokasi.map(l => l.id_lokasi),
+                id_user: jadwal.id_user
             });
 
             setShiftList((await shiftRes.json()).data || []);
@@ -103,18 +105,38 @@ const EditPenjadwalan = () => {
 
         if (!confirm.isConfirmed) return;
 
-        await fetchWithJwt(`${apiUrl}/jadwal/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                id_shift: Number(form.id_shift),
-                id_lokasi: form.lokasi
-            })
-        });
+        try {
+            const res = await fetchWithJwt(`${apiUrl}/jadwal/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id_shift: Number(form.id_shift),
+                    location: form.lokasi,
+                    id_user: form.id_user
+                })
+            });
 
-        toast.success("Perubahan berhasil disimpan");
-        navigate(-1);
+            const result = await res.json();
+
+            if (!res.ok) {
+                // Tangani error 4xx / 5xx
+                throw new Error(result?.message || "Terjadi kesalahan pada server");
+            }
+
+            toast.success("Perubahan berhasil disimpan");
+            navigate(-1);
+
+        } catch (error) {
+            console.error("Update Jadwal Error:", error);
+
+            if (error.message.includes("500")) {
+                toast.error("Server bermasalah. Silakan coba lagi nanti.");
+            } else {
+                toast.error(error.message || "Gagal menyimpan perubahan");
+            }
+        }
     };
+
 
     const selectStyle = {
         control: (base) => ({
@@ -131,7 +153,7 @@ const EditPenjadwalan = () => {
 
     return (
         <div>
-            <SectionHeader title="Edit Penjadwalan" subtitle="Perbarui shift dan lokasi absensi karyawan" onBack={() => navigate(-1)}/>
+            <SectionHeader title="Edit Penjadwalan" subtitle="Perbarui shift dan lokasi absensi karyawan" onBack={() => navigate(-1)} />
 
             <div className="w-full mt-6 bg-white rounded-xl shadow-sm border p-6 space-y-6">
 
