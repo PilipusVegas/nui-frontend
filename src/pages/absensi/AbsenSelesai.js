@@ -244,18 +244,18 @@ const AbsenSelesai = ({ handleNextStepData }) => {
   };
 
 
-const checkLocationRadius = (userLat, userLon, loc) => {
-  if (!userLat || !userLon || !loc?.lat || !loc?.lon) return;
+  const checkLocationRadius = (userLat, userLon, loc) => {
+    if (!userLat || !userLon || !loc?.lat || !loc?.lon) return;
 
-  const jarak = getDistanceMeters(userLat, userLon, loc.lat, loc.lon);
-  setDistance(jarak);
+    const jarak = getDistanceMeters(userLat, userLon, loc.lat, loc.lon);
+    setDistance(jarak);
 
-  if (jarak > 60) {
-    setIsWithinRadius(false);
-  } else {
-    setIsWithinRadius(true);
-  }
-};
+    if (jarak > 60) {
+      setIsWithinRadius(false);
+    } else {
+      setIsWithinRadius(true);
+    }
+  };
 
 
 
@@ -333,8 +333,6 @@ const checkLocationRadius = (userLat, userLon, loc) => {
           </section>
 
           <section className="bg-white rounded-xl border shadow-sm p-4 space-y-3">
-            <MapRadius user={mapUser} location={mapLocation} radius={60} />
-
             <div>
               <label className="text-sm font-semibold">
                 Lokasi Selesai Bekerja <span className="text-red-500">*</span>
@@ -344,7 +342,22 @@ const checkLocationRadius = (userLat, userLon, loc) => {
               </p>
             </div>
 
-            <Select options={filteredLocations} value={selectedLocation} isDisabled={lockLocation} isSearchable placeholder={lockLocation ? "Lokasi sudah ditentukan" : "Pilih lokasi"}
+            {/* MAP WRAPPER */}
+            <div className="relative w-full h-[260px] rounded-xl overflow-hidden">
+              <MapRadius
+                user={mapUser}
+                location={mapLocation}
+                radius={60}
+              />
+            </div>
+
+            {/* SELECT LOKASI */}
+            <Select
+              options={filteredLocations}
+              value={selectedLocation}
+              isDisabled={lockLocation}
+              isSearchable
+              placeholder={lockLocation ? "Lokasi sudah ditentukan" : "Pilih lokasi"}
               className="text-sm"
               onChange={(loc) => {
                 setSelectedLocation(loc);
@@ -356,6 +369,7 @@ const checkLocationRadius = (userLat, userLon, loc) => {
               }}
             />
 
+            {/* INFO GPS */}
             <div className="flex items-center gap-2 text-[10px] flex-wrap">
               {loadingLocation && (
                 <span className="text-gray-500">Mencari lokasi GPS…</span>
@@ -369,8 +383,16 @@ const checkLocationRadius = (userLat, userLon, loc) => {
                   </span>
 
                   {distance !== null && (
-                    <span className={`px-2 py-0.5 rounded font-semibold ${distance <= 60 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-                      Jarak: {distance < 1000 ? `${Math.floor(distance)} m` : `${(distance / 1000).toFixed(2)} km`}
+                    <span
+                      className={`px-2 py-0.5 rounded font-semibold ${distance <= 60
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                        }`}
+                    >
+                      Jarak:{" "}
+                      {distance < 1000
+                        ? `${Math.floor(distance)} m`
+                        : `${(distance / 1000).toFixed(2)} km`}
                     </span>
                   )}
                 </>
@@ -389,6 +411,7 @@ const checkLocationRadius = (userLat, userLon, loc) => {
               )}
             </div>
           </section>
+
 
           {/* ================= AKSI ================= */}
           {fotoFile && (

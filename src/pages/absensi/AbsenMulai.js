@@ -343,10 +343,31 @@ const AbsenMulai = ({ handleNextStepData }) => {
                 Lokasi disesuaikan dengan posisi GPS Anda.
               </p>
             </div>
-            <MapRadius user={mapUser} location={mapLocation} radius={60} onUserMove={handleUserMove} />
-            <Select options={filteredLocations} value={selectedLocation} isDisabled={lockLocation} placeholder={lockLocation ? "Lokasi sudah ditentukan" : "Pilih lokasi"} className="text-sm"
-              onChange={(loc) => { setSelectedLocation(loc); checkLocationRadius(loc); }}
+
+            {/* MAP WRAPPER */}
+            <div className="relative w-full h-[260px] rounded-xl overflow-hidden">
+              <MapRadius
+                user={mapUser}
+                location={mapLocation}
+                radius={60}
+                onUserMove={handleUserMove}
+              />
+            </div>
+
+            {/* SELECT LOKASI */}
+            <Select
+              options={filteredLocations}
+              value={selectedLocation}
+              isDisabled={lockLocation}
+              placeholder={lockLocation ? "Lokasi sudah ditentukan" : "Pilih lokasi"}
+              className="text-sm"
+              onChange={(loc) => {
+                setSelectedLocation(loc);
+                checkLocationRadius(loc);
+              }}
             />
+
+            {/* INFO GPS */}
             <div className="flex flex-wrap items-center gap-2 text-[10px]">
               {loadingLocation && (
                 <span className="text-gray-500">Mencari lokasi GPS…</span>
@@ -360,10 +381,17 @@ const AbsenMulai = ({ handleNextStepData }) => {
                   </span>
 
                   {distance !== null && (
-                    <span className={`px-2 py-0.5 rounded font-semibold whitespace-nowrap
-                      ${distance <= 60 ? "bg-green-100 text-green-700 border border-green-300" : "bg-red-100 text-red-700 border border-red-300"}`}
+                    <span
+                      className={`px-2 py-0.5 rounded font-semibold whitespace-nowrap
+            ${distance <= 60
+                          ? "bg-green-100 text-green-700 border border-green-300"
+                          : "bg-red-100 text-red-700 border border-red-300"
+                        }`}
                     >
-                      Jarak: {distance < 1000 ? `${Math.floor(distance)} m` : `${(distance / 1000).toFixed(2)} km`}
+                      Jarak:{" "}
+                      {distance < 1000
+                        ? `${Math.floor(distance)} m`
+                        : `${(distance / 1000).toFixed(2)} km`}
                     </span>
                   )}
                 </>
@@ -375,12 +403,12 @@ const AbsenMulai = ({ handleNextStepData }) => {
                 </p>
               )}
 
-
               {!loadingLocation && !userCoords.latitude && (
                 <span className="text-red-500">GPS tidak tersedia</span>
               )}
             </div>
           </section>
+
 
           <section className="bg-white rounded-xl border shadow-sm p-4 space-y-3">
             <div>
