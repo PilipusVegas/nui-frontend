@@ -22,3 +22,8 @@ export { default as Modal } from "./desktop/Modal";
 // export { default as DashboardCard } from "./desktop/DashboardCard";
 export { default as FooterMainBar } from "./mobile/FooterMainBar.jsx";  
 export { default as TaskCardSlider } from "./mobile/TaskCardSlider.jsx";
+
+
+// Maps
+export { default as MapRoute } from "./maps/MapRoute.jsx";
+// export { default as MapRadius } from "./maps/MapRadius.jsx";

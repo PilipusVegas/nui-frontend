@@ -9,6 +9,7 @@ import Swal from "sweetalert2";
 import { formatFullDate, formatTime } from "../../utils/dateUtils";
 import { getDistanceMeters } from "../../utils/locationUtils";
 import { useFakeGpsDetector } from "../../hooks/useFakeGpsDetector";
+import { MapRadius } from "../../components";
 
 const AbsenMulai = ({ handleNextStepData }) => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -33,10 +34,17 @@ const AbsenMulai = ({ handleNextStepData }) => {
   const [isKadiv, setIsKadiv] = useState(false);
   const [roleName, setRoleName] = useState("");
   const [distance, setDistance] = useState(null);
-  const [gpsValidation, setGpsValidation] = useState({ is_valid: 1, reason: "",});
+  const [gpsValidation, setGpsValidation] = useState({ is_valid: 1, reason: "", });
+  const [hasShownWarning, setHasShownWarning] = useState(false);
+  const [isWithinRadius, setIsWithinRadius] = useState(true);
 
   const isFormValid = () =>
-    selectedLocation && selectedShift && fotoMulai && jamMulai;
+    selectedLocation &&
+    selectedShift &&
+    fotoMulai &&
+    jamMulai &&
+    isWithinRadius;
+
 
   const capture = () => {
     if (!webcamRef.current) return;
@@ -110,17 +118,14 @@ const AbsenMulai = ({ handleNextStepData }) => {
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
         const { suspicious, reason } = analyze(position);
-
         setUserCoords({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         });
-
         setGpsValidation({
           is_valid: suspicious ? 0 : 1,
           reason: reason.join(" | "),
         });
-
         setLoadingLocation(false);
       },
       (err) => {
@@ -170,7 +175,13 @@ const AbsenMulai = ({ handleNextStepData }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!isFormValid()) return;
+
+    if (!isFormValid()) {
+      if (!isWithinRadius && distance !== null) {
+        showRadiusBlockedToast(distance);
+      }
+      return;
+    }
 
     const now = new Date();
 
@@ -184,7 +195,9 @@ const AbsenMulai = ({ handleNextStepData }) => {
       tugas,
       id_shift: selectedShift?.id ?? "",
       shift: selectedShift?.nama ?? "",
-      koordinatMulai: userCoords.latitude && userCoords.longitude ? `${userCoords.latitude},${userCoords.longitude}` : "",
+      koordinatMulai: userCoords.latitude && userCoords.longitude
+        ? `${userCoords.latitude},${userCoords.longitude}`
+        : "",
       fotoMulai,
       tipe_absensi: 1,
       timezone: selectedLocation?.timezone || "",
@@ -194,7 +207,6 @@ const AbsenMulai = ({ handleNextStepData }) => {
 
     handleNextStepData(formData);
   };
-
 
   const checkLocationRadius = (loc) => {
     if (!userCoords.latitude || !userCoords.longitude || !loc.lat || !loc.lon) return;
@@ -209,34 +221,10 @@ const AbsenMulai = ({ handleNextStepData }) => {
     setDistance(dist);
 
     if (dist > 60) {
-      showRadiusWarning(dist);
-    }
-  };
-
-
-  const showRadiusWarning = (dist) => {
-    let displayDist;
-    if (dist < 1000) {
-      displayDist = `${Math.floor(dist)} meter`;
+      setIsWithinRadius(false);
     } else {
-      displayDist = `${(dist / 1000).toFixed(2)} km`;
+      setIsWithinRadius(true);
     }
-
-    Swal.fire({
-      icon: "warning",
-      title: "Lokasi Absensi Di Luar Jangkauan",
-      html: `
-      <div style="text-align:left; font-size:13px; line-height:1.6;">
-        <p><strong>Jarak Anda:</strong> ${displayDist} dari titik lokasi kerja.</p>
-        <p>Absensi hanya sah dalam radius <strong>60 meter</strong>. Saat ini posisi Anda di luar batas tersebut.</p>
-        <p>Anda tetap bisa melanjutkan, tetapi HRD akan memeriksa data absensi anda.</p>
-        <p>Disarankan melakukan absensi <strong>di area lokasi kerja</strong> agar data akurat dan valid.</p>
-      </div>
-    `,
-      confirmButtonText: "Lanjutkan Absensi",
-      confirmButtonColor: "#d33",
-      focusConfirm: true,
-    });
   };
 
   const filteredLocations =
@@ -246,13 +234,52 @@ const AbsenMulai = ({ handleNextStepData }) => {
       )
       : locations;
 
+  const mapUser = userCoords.latitude
+    ? { lat: userCoords.latitude, lng: userCoords.longitude }
+    : null;
+
+  const mapLocation = selectedLocation
+    ? { lat: selectedLocation.lat, lng: selectedLocation.lon }
+    : null;
+
+  const handleUserMove = (pos) => {
+    setUserCoords({
+      latitude: pos.lat,
+      longitude: pos.lng,
+    });
+  };
+
+  useEffect(() => {
+    if (!selectedLocation || !userCoords.latitude || !userCoords.longitude) return;
+
+    checkLocationRadius(selectedLocation);
+  }, [userCoords, selectedLocation]);
+
+  const showRadiusBlockedToast = (dist) => {
+    const displayDist = dist < 1000
+      ? `${Math.floor(dist)} meter`
+      : `${(dist / 1000).toFixed(2)} km`;
+
+    Swal.fire({
+      icon: "error",
+      title: "Absensi Ditolak",
+      html: `
+      <div style="text-align:left; font-size:13px; line-height:1.6;">
+        <p><strong>Jarak Anda:</strong> ${displayDist}</p>
+        <p>Absensi hanya diperbolehkan dalam radius <strong>60 meter</strong> dari lokasi kerja.</p>
+        <p>Silakan mendekat ke area lokasi kerja anda sebelum melanjutkan absensi.</p>
+      </div>
+    `,
+      confirmButtonText: "Mengerti",
+      confirmButtonColor: "#d33",
+    });
+  };
+
 
   return (
     <MobileLayout title="Absen Masuk Kerja" className="bg-gray-100">
       <div className="flex justify-center">
         <form onSubmit={handleSubmit} className="w-full max-w-xl pb-28 space-y-6">
-
-          {/* ================= FOTO KEHADIRAN ================= */}
           <section className="bg-white rounded-xl border shadow-sm p-4 space-y-3">
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -316,11 +343,10 @@ const AbsenMulai = ({ handleNextStepData }) => {
                 Lokasi disesuaikan dengan posisi GPS Anda.
               </p>
             </div>
-
+            <MapRadius user={mapUser} location={mapLocation} radius={60} onUserMove={handleUserMove} />
             <Select options={filteredLocations} value={selectedLocation} isDisabled={lockLocation} placeholder={lockLocation ? "Lokasi sudah ditentukan" : "Pilih lokasi"} className="text-sm"
               onChange={(loc) => { setSelectedLocation(loc); checkLocationRadius(loc); }}
             />
-
             <div className="flex flex-wrap items-center gap-2 text-[10px]">
               {loadingLocation && (
                 <span className="text-gray-500">Mencari lokasi GPS…</span>
@@ -342,6 +368,13 @@ const AbsenMulai = ({ handleNextStepData }) => {
                   )}
                 </>
               )}
+
+              {!isWithinRadius && (
+                <p className="text-xs text-red-600 font-semibold">
+                  Anda berada di luar radius absensi. Mendekatlah ke lokasi kerja.
+                </p>
+              )}
+
 
               {!loadingLocation && !userCoords.latitude && (
                 <span className="text-red-500">GPS tidak tersedia</span>
@@ -395,7 +428,6 @@ const AbsenMulai = ({ handleNextStepData }) => {
             )}
           </section>
 
-
           <section className="bg-white rounded-xl border shadow-sm p-4 space-y-2">
             <label className="text-sm font-semibold">
               Keterangan <span className="text-gray-400">(Opsional)</span>
@@ -403,14 +435,17 @@ const AbsenMulai = ({ handleNextStepData }) => {
             <textarea rows="3" value={tugas} onChange={(e) => setTugas(e.target.value)} className="w-full text-sm p-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-green-400" placeholder="Tambahkan catatan jika diperlukan" />
           </section>
 
-          {!isFormValid() && (
-            <p className="text-[10px] text-gray-500 text-center">
-              Lengkapi foto, lokasi, dan shift untuk melanjutkan.
+          {!isWithinRadius && (
+            <p className="text-xs text-red-600 font-semibold text-center">
+              Anda berada di luar radius absensi (maks. 60 meter).
             </p>
           )}
 
-          <button type="submit" disabled={!isFormValid()} className={`w-full py-4 rounded-lg font-semibold transition
-            ${isFormValid() ? "bg-green-500 text-white hover:bg-green-600" : "bg-gray-300 text-gray-600 cursor-not-allowed"}`}
+
+          <button type="submit"
+            className={`w-full py-4 rounded-lg font-semibold transition
+            ${isFormValid() ? "bg-green-500 text-white hover:bg-green-600"
+                : "bg-red-400 text-white hover:bg-red-500"}`}
           >
             Lihat Detail Absen Masuk
             <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
