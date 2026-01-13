@@ -181,8 +181,12 @@ const AbsenSelesai = ({ handleNextStepData }) => {
     fotoFile instanceof File &&
     selectedLocation !== null &&
     typeof userCoords.latitude === "number" &&
-    typeof userCoords.longitude === "number" &&
-    isWithinRadius;
+    typeof userCoords.longitude === "number";
+
+  /*
+  // 🔒 BLOK RADIUS DINONAKTIFKAN
+  && isWithinRadius;
+  */
 
 
 
@@ -190,11 +194,12 @@ const AbsenSelesai = ({ handleNextStepData }) => {
     e.preventDefault();
 
     if (!isValid()) {
-      if (!isWithinRadius && distance !== null) {
-        showRadiusBlockedToast(distance);
-      }
       return;
     }
+
+    // if (!isWithinRadius && distance !== null) {
+    //   showRadiusBlockedToast(distance);
+    // }
 
     handleNextStepData({
       fotoSelesai: fotoFile,
@@ -250,11 +255,9 @@ const AbsenSelesai = ({ handleNextStepData }) => {
     const jarak = getDistanceMeters(userLat, userLon, loc.lat, loc.lon);
     setDistance(jarak);
 
-    if (jarak > 60) {
-      setIsWithinRadius(false);
-    } else {
-      setIsWithinRadius(true);
-    }
+    // BLOK DINONAKTIFKAN
+    // if (jarak > 60) setIsWithinRadius(false);
+    // else setIsWithinRadius(true);
   };
 
 
@@ -367,6 +370,7 @@ const AbsenSelesai = ({ handleNextStepData }) => {
                   loc
                 );
               }}
+
             />
 
             {/* INFO GPS */}
@@ -385,8 +389,8 @@ const AbsenSelesai = ({ handleNextStepData }) => {
                   {distance !== null && (
                     <span
                       className={`px-2 py-0.5 rounded font-semibold ${distance <= 60
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
                         }`}
                     >
                       Jarak:{" "}
@@ -398,11 +402,11 @@ const AbsenSelesai = ({ handleNextStepData }) => {
                 </>
               )}
 
-              {!isWithinRadius && (
+              {/* {!isWithinRadius && (
                 <p className="text-xs text-red-600 font-semibold">
                   Anda berada di luar radius absensi. Mendekatlah ke lokasi kerja.
                 </p>
-              )}
+              )} */}
 
               {!loadingLocation && !userCoords.latitude && (
                 <span className="text-red-500">
@@ -411,7 +415,6 @@ const AbsenSelesai = ({ handleNextStepData }) => {
               )}
             </div>
           </section>
-
 
           {/* ================= AKSI ================= */}
           {fotoFile && (

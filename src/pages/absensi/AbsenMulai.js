@@ -42,8 +42,10 @@ const AbsenMulai = ({ handleNextStepData }) => {
     selectedLocation &&
     selectedShift &&
     fotoMulai &&
-    jamMulai &&
-    isWithinRadius;
+    jamMulai;
+  // && isWithinRadius;
+
+
 
 
   const capture = () => {
@@ -177,11 +179,11 @@ const AbsenMulai = ({ handleNextStepData }) => {
     e.preventDefault();
 
     if (!isFormValid()) {
-      if (!isWithinRadius && distance !== null) {
-        showRadiusBlockedToast(distance);
-      }
       return;
     }
+    // if (!isWithinRadius && distance !== null) {
+    //   showRadiusBlockedToast(distance);
+    // }
 
     const now = new Date();
 
@@ -209,7 +211,7 @@ const AbsenMulai = ({ handleNextStepData }) => {
   };
 
   const checkLocationRadius = (loc) => {
-    if (!userCoords.latitude || !userCoords.longitude || !loc.lat || !loc.lon) return;
+    if (!userCoords.latitude || !userCoords.longitude || !loc?.lat || !loc?.lon) return;
 
     const dist = getDistanceMeters(
       Number(userCoords.latitude),
@@ -219,13 +221,8 @@ const AbsenMulai = ({ handleNextStepData }) => {
     );
 
     setDistance(dist);
-
-    if (dist > 60) {
-      setIsWithinRadius(false);
-    } else {
-      setIsWithinRadius(true);
-    }
   };
+
 
   const filteredLocations =
     jadwal && jadwal.lokasi && !isKadiv
@@ -249,31 +246,32 @@ const AbsenMulai = ({ handleNextStepData }) => {
     });
   };
 
-  useEffect(() => {
-    if (!selectedLocation || !userCoords.latitude || !userCoords.longitude) return;
+  // useEffect(() => {
+  //   if (!selectedLocation || !userCoords.latitude || !userCoords.longitude) return;
 
-    checkLocationRadius(selectedLocation);
-  }, [userCoords, selectedLocation]);
+  //   checkLocationRadius(selectedLocation);
+  // }, [userCoords, selectedLocation]);
 
-  const showRadiusBlockedToast = (dist) => {
-    const displayDist = dist < 1000
-      ? `${Math.floor(dist)} meter`
-      : `${(dist / 1000).toFixed(2)} km`;
 
-    Swal.fire({
-      icon: "error",
-      title: "Absensi Ditolak",
-      html: `
-      <div style="text-align:left; font-size:13px; line-height:1.6;">
-        <p><strong>Jarak Anda:</strong> ${displayDist}</p>
-        <p>Absensi hanya diperbolehkan dalam radius <strong>60 meter</strong> dari lokasi kerja.</p>
-        <p>Silakan mendekat ke area lokasi kerja anda sebelum melanjutkan absensi.</p>
-      </div>
-    `,
-      confirmButtonText: "Mengerti",
-      confirmButtonColor: "#d33",
-    });
-  };
+  // const showRadiusBlockedToast = (dist) => {
+  //   const displayDist = dist < 1000
+  //     ? `${Math.floor(dist)} meter`
+  //     : `${(dist / 1000).toFixed(2)} km`;
+
+  //   Swal.fire({
+  //     icon: "error",
+  //     title: "Absensi Ditolak",
+  //     html: `
+  //     <div style="text-align:left; font-size:13px; line-height:1.6;">
+  //       <p><strong>Jarak Anda:</strong> ${displayDist}</p>
+  //       <p>Absensi hanya diperbolehkan dalam radius <strong>60 meter</strong> dari lokasi kerja.</p>
+  //       <p>Silakan mendekat ke area lokasi kerja anda sebelum melanjutkan absensi.</p>
+  //     </div>
+  //   `,
+  //     confirmButtonText: "Mengerti",
+  //     confirmButtonColor: "#d33",
+  //   });
+  // };
 
 
   return (
@@ -355,16 +353,10 @@ const AbsenMulai = ({ handleNextStepData }) => {
             </div>
 
             {/* SELECT LOKASI */}
-            <Select
-              options={filteredLocations}
-              value={selectedLocation}
-              isDisabled={lockLocation}
-              placeholder={lockLocation ? "Lokasi sudah ditentukan" : "Pilih lokasi"}
-              className="text-sm"
-              onChange={(loc) => {
-                setSelectedLocation(loc);
-                checkLocationRadius(loc);
-              }}
+            <Select options={filteredLocations} value={selectedLocation} isDisabled={lockLocation} placeholder={lockLocation ? "Lokasi sudah ditentukan" : "Pilih lokasi"} className="text-sm" onChange={(loc) => {
+              setSelectedLocation(loc);
+              checkLocationRadius(loc);
+            }}
             />
 
             {/* INFO GPS */}
@@ -463,11 +455,11 @@ const AbsenMulai = ({ handleNextStepData }) => {
             <textarea rows="3" value={tugas} onChange={(e) => setTugas(e.target.value)} className="w-full text-sm p-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-green-400" placeholder="Tambahkan catatan jika diperlukan" />
           </section>
 
-          {!isWithinRadius && (
+          {/* {!isWithinRadius && (
             <p className="text-xs text-red-600 font-semibold text-center">
               Anda berada di luar radius absensi (maks. 60 meter).
             </p>
-          )}
+          )} */}
 
 
           <button type="submit"

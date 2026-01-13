@@ -24,37 +24,60 @@ const Absensi = () => {
   const [isCheckingAttendance, setIsCheckingAttendance] = useState(true);
   const [attendanceData, setAttendanceData] = useState({ userId: "", username: "", id_absen: "" });
 
+  // useEffect(() => {
+  //   Swal.fire({
+  //     icon: "info",
+  //     title: "Informasi Absensi Terbaru",
+  //     html: `
+  //     <div style="text-align:left; font-size:14px; line-height:1.6;">
+  //       <p>
+  //         Saat ini, absensi hanya bisa dilakukan jika Anda berada 
+  //         <strong>dalam radius maksimal 60 meter</strong> dari lokasi kerja.
+  //       </p>
+
+  //       <p style="margin-top:6px;">
+  //         Jika posisi Anda berada di luar radius tersebut, 
+  //         absensi akan <strong>otomatis ditolak oleh sistem</strong>.
+  //       </p>
+
+  //       <p style="margin-top:6px;">
+  //         Aturan ini diterapkan agar data kehadiran tetap akurat dan sesuai dengan kondisi kerja sebenarnya.
+  //       </p>
+
+  //       <p style="margin-top:6px;">
+  //         Apabila terdapat pertanyaan atau kendala terkait kebijakan absensi ini,  
+  //         silakan menghubungi <strong>Tim HRD</strong> atau <strong>Kepala Divisi</strong> untuk mendapatkan informasi lebih lanjut. Terimakasih
+  //       </p>
+  //     </div>
+  //   `,
+  //     confirmButtonText: "Mengerti",
+  //     confirmButtonColor: "#16a34a",
+  //   });
+  // }, []);
+
   useEffect(() => {
     Swal.fire({
       icon: "info",
       title: "Informasi Absensi Terbaru",
       html: `
-      <div style="text-align:left; font-size:14px; line-height:1.6;">
-        <p>
-          Saat ini, absensi hanya bisa dilakukan jika Anda berada 
-          <strong>dalam radius maksimal 60 meter</strong> dari lokasi kerja.
-        </p>
-
-        <p style="margin-top:6px;">
-          Jika posisi Anda berada di luar radius tersebut, 
-          absensi akan <strong>otomatis ditolak oleh sistem</strong>.
-        </p>
-
-        <p style="margin-top:6px;">
-          Aturan ini diterapkan agar data kehadiran tetap akurat dan sesuai dengan kondisi kerja sebenarnya.
-        </p>
-
-        <p style="margin-top:6px;">
-          Apabila terdapat pertanyaan atau kendala terkait kebijakan absensi ini,  
-          silakan menghubungi <strong>Tim HRD</strong> atau <strong>Kepala Divisi</strong> untuk mendapatkan informasi lebih lanjut. Terimakasih
-        </p>
-      </div>
+    <div style="text-align:left; font-size:14px; line-height:1.6;">
+      <p>
+        Absensi hanya boleh dilakukan <strong>di lokasi kerja</strong> sesuai penugasan.  
+        Mohon tidak melakukan absen dari rumah atau lokasi lain hanya karena takut terlambat.
+      </p>
+      <p style="margin-top:6px;">
+        Absensi yang tidak sesuai lokasi dapat <strong>dibatalkan</strong> dan 
+        berpotensi dikenakan <strong>potongan kehadiran serta sanksi</strong>.
+      </p>
+      <p style="margin-top:6px;">
+        Jika terdapat kendala, silakan hubungi <strong>Tim HRD</strong> atau <strong>Kepala Divisi</strong>.
+      </p>
+    </div>
     `,
-      confirmButtonText: "Mengerti",
+      confirmButtonText: "Saya Mengerti",
       confirmButtonColor: "#16a34a",
     });
   }, []);
-
 
 
   useEffect(() => {
