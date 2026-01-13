@@ -501,7 +501,7 @@ const AbsensiAbnormal = () => {
                                                                             <p className="flex items-start gap-2">
                                                                                 <FontAwesomeIcon icon={faBuilding} className="mt-0.5 text-gray-600" />
                                                                                 <span className="break-words">
-                                                                                    <span className="font-medium">Lokasi Kerja:</span>{" "}
+                                                                                    <span className="font-medium">Jadwal Kerja:</span>{" "}
                                                                                     {a.tempat_mulai}
                                                                                 </span>
                                                                             </p>
@@ -558,7 +558,7 @@ const AbsensiAbnormal = () => {
                                                                                 <p className="flex items-start gap-2">
                                                                                     <FontAwesomeIcon icon={faBuilding} className="mt-0.5 text-gray-600" />
                                                                                     <span className="break-words">
-                                                                                        <span className="font-medium">Lokasi Kerja:</span>{" "}
+                                                                                        <span className="font-medium">Jadwal Kerja:</span>{" "}
                                                                                         {a.tempat_selesai || "—"}
                                                                                     </span>
                                                                                 </p>

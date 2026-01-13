@@ -673,7 +673,7 @@ const DetailAbsensi = () => {
                           </div>
 
                           <div>
-                            <p className="text-xs text-gray-500">Lokasi Kerja</p>
+                            <p className="text-xs text-gray-500">Jadwal Kerja</p>
                             <p className="font-medium text-gray-800">{item.lokasi || "-"}</p>
                           </div>
 
