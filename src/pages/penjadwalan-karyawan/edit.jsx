@@ -6,7 +6,6 @@ import Swal from "sweetalert2";
 import { SectionHeader } from "../../components";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 
-const MAX_LOKASI = 7;
 
 const EditPenjadwalan = () => {
     const { id_user } = useParams();
@@ -73,18 +72,12 @@ const EditPenjadwalan = () => {
     const handleTambahLokasi = (opt) => {
         if (!opt) return;
 
-        setForm(prev => {
-            if (prev.lokasi.length >= MAX_LOKASI) {
-                toast.error(`Maksimal ${MAX_LOKASI} lokasi absensi`);
-                return prev;
-            }
-
-            return {
-                ...prev,
-                lokasi: [...prev.lokasi, opt.value]
-            };
-        });
+        setForm(prev => ({
+            ...prev,
+            lokasi: [...prev.lokasi, opt.value]
+        }));
     };
+
 
     const handleHapusLokasi = (idLokasi) => {
         setForm(prev => ({
@@ -198,17 +191,13 @@ const EditPenjadwalan = () => {
                             Lokasi Absensi
                         </label>
                         <span className="text-xs text-gray-500">
-                            {form.lokasi.length}/{MAX_LOKASI}
+                            {form.lokasi.length} lokasi dipilih
                         </span>
+
                     </div>
 
                     <Select
-                        placeholder={
-                            form.lokasi.length >= MAX_LOKASI
-                                ? "Maksimal lokasi tercapai"
-                                : "Tambah lokasi..."
-                        }
-                        isDisabled={form.lokasi.length >= MAX_LOKASI}
+                        placeholder="Tambah lokasi..."
                         value={null}
                         options={lokasiList
                             .filter(l => !form.lokasi.includes(l.id))

@@ -6,7 +6,7 @@ import { SectionHeader } from "../../components";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
-const MAX_LOKASI = 7;
+
 const selectStyle = {
     control: (base) => ({
         ...base,
@@ -63,17 +63,12 @@ const TambahPenjadwalan = () => {
 
     const handleTambahLokasi = (opt) => {
         if (!opt) return;
-        setForm(prev => {
-            if (prev.lokasi.length >= MAX_LOKASI) {
-                toast.error(`Maksimal ${MAX_LOKASI} lokasi absensi`);
-                return prev;
-            }
-            return {
-                ...prev,
-                lokasi: [...prev.lokasi, opt.value]
-            };
-        });
+        setForm(prev => ({
+            ...prev,
+            lokasi: [...prev.lokasi, opt.value]
+        }));
     };
+
 
 
     const handleHapusLokasi = (idLokasi) => {
@@ -127,7 +122,7 @@ const TambahPenjadwalan = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                         Karyawan
                     </label>
-                    <Select placeholder={userOptions.length === 0 ? "Semua karyawan sudah terjadwal" : "Pilih karyawan..."} options={userOptions} isDisabled={userOptions.length === 0} onChange={o => setForm(prev => ({ ...prev, id_user: o?.value || "" }))} styles={selectStyle} menuPortalTarget={document.body}/>
+                    <Select placeholder={userOptions.length === 0 ? "Semua karyawan sudah terjadwal" : "Pilih karyawan..."} options={userOptions} isDisabled={userOptions.length === 0} onChange={o => setForm(prev => ({ ...prev, id_user: o?.value || "" }))} styles={selectStyle} menuPortalTarget={document.body} />
                 </div>
 
                 <div>
@@ -154,13 +149,13 @@ const TambahPenjadwalan = () => {
                             Lokasi Absensi
                         </label>
                         <span className="text-xs text-gray-500">
-                            {form.lokasi.length}/{MAX_LOKASI}
+                            {form.lokasi.length} lokasi dipilih
                         </span>
+
                     </div>
 
                     <Select
-                        placeholder={form.lokasi.length >= MAX_LOKASI ? "Maksimal lokasi tercapai" : "Tambah lokasi..."}
-                        isDisabled={form.lokasi.length >= MAX_LOKASI}
+                        placeholder="Tambah lokasi..."
                         value={null}
                         options={lokasiList
                             .filter(l => !form.lokasi.includes(l.id))
@@ -176,7 +171,7 @@ const TambahPenjadwalan = () => {
                                 .filter(l => form.lokasi.includes(l.id))
                                 .map(l => (
                                     <span key={l.id} onClick={() => handleHapusLokasi(l.id)} title="Klik untuk menghapus" className="cursor-pointer text-xs bg-green-100 text-green-700 px-3 py-1 rounded hover:bg-red-100 hover:text-red-600 transition">
-                                        {l.nama} 
+                                        {l.nama}
                                         <FontAwesomeIcon icon={faTimes} className="ml-1" />
                                     </span>
                                 ))}

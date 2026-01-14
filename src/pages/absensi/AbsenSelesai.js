@@ -31,7 +31,6 @@ const AbsenSelesai = ({ handleNextStepData }) => {
   const [username, setUsername] = useState("");
   const [roleName, setRoleName] = useState("");
   const [distance, setDistance] = useState(null);
-  const [isWithinRadius, setIsWithinRadius] = useState(true);
 
   const [gpsValidation, setGpsValidation] = useState({
     is_valid: 1,
@@ -214,10 +213,11 @@ const AbsenSelesai = ({ handleNextStepData }) => {
     if (!isValid()) return;
 
     // BLOK JIKA DI LUAR RADIUS
-    if (!isKadiv && distance !== null && distance > 60) {
+    if (distance !== null && distance > 60) {
       showRadiusBlockedToast(distance);
       return;
     }
+
 
     handleNextStepData({
       fotoSelesai: fotoFile,
@@ -276,31 +276,23 @@ const AbsenSelesai = ({ handleNextStepData }) => {
     });
   };
 
-
-
   const checkLocationRadius = (userLat, userLon, loc) => {
     if (!userLat || !userLon || !loc?.lat || !loc?.lon) return;
 
     const jarak = getDistanceMeters(userLat, userLon, loc.lat, loc.lon);
     setDistance(jarak);
-
-    if (jarak > 60) setIsWithinRadius(false);
-    else setIsWithinRadius(true);
   };
 
 
   const filteredLocations = useMemo(() => {
     if (isKadiv) return locations;
-
     if (!jadwal || !Array.isArray(jadwal.lokasi) || jadwal.lokasi.length === 0) {
       return [];
     }
-
     return locations.filter((loc) =>
       jadwal.lokasi.some((j) => Number(j.id) === Number(loc.value))
     );
   }, [jadwal, locations, isKadiv]);
-
 
 
 
@@ -379,13 +371,8 @@ const AbsenSelesai = ({ handleNextStepData }) => {
               </p>
             </div>
 
-            {/* MAP WRAPPER */}
             <div className="relative w-full h-[260px] rounded-xl overflow-hidden">
-              <MapRadius
-                user={mapUser}
-                location={mapLocation}
-                radius={60}
-              />
+              <MapRadius user={mapUser} location={mapLocation} radius={60}/>
             </div>
 
             {!jadwal && !isKadiv && (
@@ -457,12 +444,11 @@ const AbsenSelesai = ({ handleNextStepData }) => {
 
               <div className="flex gap-3">
                 <button type="submit" className={`flex-1 py-4 rounded-lg font-semibold transition
-                    ${!isKadiv && distance !== null && distance > 60
+                    ${distance !== null && distance > 60
                     ? "bg-red-500 text-white cursor-not-allowed"
                     : isValid()
                       ? "bg-green-500 text-white hover:bg-green-600"
-                      : "bg-red-400 text-white"}
-`}
+                      : "bg-red-400 text-white"}`}
                 >
 
                   Lihat Detail Absen Pulang <FontAwesomeIcon icon={faChevronRight} className="ml-2" />
