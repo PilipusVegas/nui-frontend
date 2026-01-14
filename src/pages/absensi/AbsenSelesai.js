@@ -195,11 +195,12 @@ const AbsenSelesai = ({ handleNextStepData }) => {
 
 
   const isValid = () =>
-    jadwal &&
+    (isKadiv || jadwal) &&
     fotoFile instanceof File &&
     selectedLocation !== null &&
     typeof userCoords.latitude === "number" &&
     typeof userCoords.longitude === "number";
+
 
 
   /*
@@ -213,7 +214,7 @@ const AbsenSelesai = ({ handleNextStepData }) => {
     if (!isValid()) return;
 
     // BLOK JIKA DI LUAR RADIUS
-    if (distance !== null && distance > 60) {
+    if (!isKadiv && distance !== null && distance > 60) {
       showRadiusBlockedToast(distance);
       return;
     }
@@ -427,7 +428,7 @@ const AbsenSelesai = ({ handleNextStepData }) => {
                   </span>
 
                   {distance !== null && (
-                    <span className={`px-2 py-0.5 rounded font-semibold ${distance <= 60 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700" }`}>
+                    <span className={`px-2 py-0.5 rounded font-semibold ${distance <= 60 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
                       Jarak:{" "}
                       {distance < 1000
                         ? `${Math.floor(distance)} m`
@@ -456,7 +457,12 @@ const AbsenSelesai = ({ handleNextStepData }) => {
 
               <div className="flex gap-3">
                 <button type="submit" className={`flex-1 py-4 rounded-lg font-semibold transition
-                    ${distance !== null && distance > 60 ? "bg-red-500 text-white cursor-not-allowed" : isValid() ? "bg-green-500 text-white hover:bg-green-600" : "bg-red-400 text-white"}`}
+                    ${!isKadiv && distance !== null && distance > 60
+                    ? "bg-red-500 text-white cursor-not-allowed"
+                    : isValid()
+                      ? "bg-green-500 text-white hover:bg-green-600"
+                      : "bg-red-400 text-white"}
+`}
                 >
 
                   Lihat Detail Absen Pulang <FontAwesomeIcon icon={faChevronRight} className="ml-2" />
