@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import Webcam from "react-webcam";
 import Select from "react-select";
 import MobileLayout from "../../layouts/mobileLayout";
@@ -48,6 +48,17 @@ const AbsenSelesai = ({ handleNextStepData }) => {
     }
   }, []);
 
+  useEffect(() => {
+    if (!selectedLocation || !userCoords.latitude || !userCoords.longitude) return;
+
+    checkLocationRadius(
+      userCoords.latitude,
+      userCoords.longitude,
+      selectedLocation
+    );
+  }, [selectedLocation, userCoords]);
+
+
 
   useEffect(() => {
     if (!userId || isKadiv) return;
@@ -55,29 +66,28 @@ const AbsenSelesai = ({ handleNextStepData }) => {
     const fetchJadwal = async () => {
       try {
         const res = await fetchWithJwt(`${apiUrl}/jadwal/cek/${userId}`);
-
         if (res.status === 404) {
           // fallback bebas
           setLockLocation(false);
           return;
         }
-
         if (!res.ok) throw new Error("Gagal ambil jadwal");
-
         const json = await res.json();
         const data = json.data;
-
         setJadwal(data);
-
         // ===== LOKASI =====
-        if (data.lokasi?.length === 1) {
+        if (data.lokasi?.length === 1 && locations.length > 0) {
           const loc = data.lokasi[0];
-          setSelectedLocation({
-            value: loc.id_lokasi,
-            label: loc.nama,
-          });
-          setLockLocation(true);
-        } else if (data.lokasi?.length > 1) {
+          const fullLocation = locations.find(l => l.value === loc.id_lokasi);
+
+          if (fullLocation) {
+            setSelectedLocation(fullLocation);
+            setLockLocation(true);   // kunci karena hanya 1 lokasi
+          } else {
+            setLockLocation(false); // jangan kunci kalau belum ketemu
+          }
+        }
+        else if (data.lokasi?.length > 1) {
           setLockLocation(false);
         }
 
@@ -88,8 +98,7 @@ const AbsenSelesai = ({ handleNextStepData }) => {
     };
 
     fetchJadwal();
-  }, [userId, isKadiv, apiUrl]);
-
+  }, [userId, isKadiv, apiUrl, locations]);
 
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -178,10 +187,12 @@ const AbsenSelesai = ({ handleNextStepData }) => {
 
 
   const isValid = () =>
+    jadwal &&                              // 🔒 wajib ada jadwal
     fotoFile instanceof File &&
     selectedLocation !== null &&
     typeof userCoords.latitude === "number" &&
     typeof userCoords.longitude === "number";
+
 
   /*
   // 🔒 BLOK RADIUS DINONAKTIFKAN
@@ -260,14 +271,18 @@ const AbsenSelesai = ({ handleNextStepData }) => {
     // else setIsWithinRadius(true);
   };
 
+  const filteredLocations = useMemo(() => {
+    if (isKadiv) return locations;
 
+    if (!jadwal || !Array.isArray(jadwal.lokasi) || jadwal.lokasi.length === 0) {
+      return []; // 🔒 Tidak ada jadwal → lokasi kosong
+    }
 
-  const filteredLocations =
-    jadwal && jadwal.lokasi && !isKadiv
-      ? locations.filter((loc) =>
-        jadwal.lokasi.some((j) => j.id_lokasi === loc.value)
-      )
-      : locations;
+    return locations.filter((loc) =>
+      jadwal.lokasi.some((j) => Number(j.id_lokasi) === Number(loc.value))
+    );
+  }, [jadwal, locations, isKadiv]);
+
 
 
   const mapUser = userCoords.latitude
@@ -353,6 +368,13 @@ const AbsenSelesai = ({ handleNextStepData }) => {
                 radius={60}
               />
             </div>
+
+            {!jadwal && !isKadiv && (
+              <div className="text-xs text-red-600 font-semibold">
+                Anda belum memiliki jadwal kerja hari ini. Silakan hubungi Kepala Divisi Anda.
+              </div>
+            )}
+
 
             {/* SELECT LOKASI */}
             <Select

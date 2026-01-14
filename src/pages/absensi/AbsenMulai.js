@@ -1,6 +1,6 @@
 import Select from "react-select";
 import Webcam from "react-webcam";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import MobileLayout from "../../layouts/mobileLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
@@ -45,7 +45,18 @@ const AbsenMulai = ({ handleNextStepData }) => {
     jamMulai;
   // && isWithinRadius;
 
+  useEffect(() => {
+    if (!jadwal) {
+      setSelectedLocation(null);
+    }
+  }, [jadwal]);
 
+
+  useEffect(() => {
+    if (!selectedLocation || !userCoords.latitude || !userCoords.longitude) return;
+
+    checkLocationRadius(selectedLocation);
+  }, [selectedLocation, userCoords]);
 
 
   const capture = () => {
@@ -71,6 +82,13 @@ const AbsenMulai = ({ handleNextStepData }) => {
     }
   }, []);
 
+  useEffect(() => {
+    if (jadwal && jadwal.lokasi?.length > 1) {
+      setSelectedLocation(null);
+    }
+  }, [jadwal]);
+
+
 
   useEffect(() => {
     if (!userId || isKadiv) return;
@@ -92,14 +110,20 @@ const AbsenMulai = ({ handleNextStepData }) => {
           nama: data.nama_shift,
         });
         setLockShift(true);
-        if (data.lokasi?.length === 1) {
+        if (data.lokasi?.length === 1 && locations.length > 0) {
           const loc = data.lokasi[0];
-          setSelectedLocation({
-            value: loc.id_lokasi,
-            label: loc.nama,
-          });
-          setLockLocation(true);
-        } else if (data.lokasi?.length > 1) {
+          const fullLocation = locations.find(l => l.value === loc.id_lokasi);
+
+          if (fullLocation) {
+            setSelectedLocation(fullLocation);
+            setLockLocation(true);
+          } else {
+            setLockLocation(false);
+          }
+        }
+
+
+        else if (data.lokasi?.length > 1) {
           setLockLocation(false);
         }
 
@@ -110,8 +134,7 @@ const AbsenMulai = ({ handleNextStepData }) => {
       }
     };
     fetchJadwal();
-  }, [userId, isKadiv, apiUrl]);
-
+  }, [userId, isKadiv, apiUrl, locations]);
 
 
   useEffect(() => {
@@ -224,12 +247,26 @@ const AbsenMulai = ({ handleNextStepData }) => {
   };
 
 
-  const filteredLocations =
-    jadwal && jadwal.lokasi && !isKadiv
-      ? locations.filter((loc) =>
-        jadwal.lokasi.some((j) => j.id_lokasi === loc.value)
-      )
-      : locations;
+  // const filteredLocations = useMemo(() => {
+  //   if (!jadwal || !jadwal.lokasi || isKadiv) return locations;
+
+  //   return locations.filter((loc) =>
+  //     jadwal.lokasi.some((j) => j.id_lokasi === loc.value)
+  //   );
+  // }, [jadwal, locations, isKadiv]);
+
+  const filteredLocations = useMemo(() => {
+    if (isKadiv) return locations;
+
+    if (!jadwal || !Array.isArray(jadwal.lokasi) || jadwal.lokasi.length === 0) {
+      return []; // 🔒 kosongkan lokasi jika tidak ada jadwal
+    }
+
+    return locations.filter((loc) =>
+      jadwal.lokasi.some((j) => Number(j.id_lokasi) === Number(loc.value))
+    );
+  }, [jadwal, locations, isKadiv]);
+
 
   const mapUser = userCoords.latitude
     ? { lat: userCoords.latitude, lng: userCoords.longitude }
@@ -344,15 +381,15 @@ const AbsenMulai = ({ handleNextStepData }) => {
 
             {/* MAP WRAPPER */}
             <div className="relative w-full h-[260px] rounded-xl overflow-hidden">
-              <MapRadius
-                user={mapUser}
-                location={mapLocation}
-                radius={60}
-                onUserMove={handleUserMove}
-              />
+              <MapRadius user={mapUser} location={mapLocation} radius={60} onUserMove={handleUserMove} />
             </div>
 
-            {/* SELECT LOKASI */}
+            {!jadwal && !isKadiv && (
+              <div className="text-xs text-red-600 font-semibold">
+                Anda belum memiliki jadwal kerja hari ini. Silakan hubungi Kepala Divisi Anda.
+              </div>
+            )}
+
             <Select options={filteredLocations} value={selectedLocation} isDisabled={lockLocation} placeholder={lockLocation ? "Lokasi sudah ditentukan" : "Pilih lokasi"} className="text-sm" onChange={(loc) => {
               setSelectedLocation(loc);
               checkLocationRadius(loc);
@@ -462,10 +499,13 @@ const AbsenMulai = ({ handleNextStepData }) => {
           )} */}
 
 
-          <button type="submit"
+          <button
+            type="submit"
+            disabled={!jadwal}
             className={`w-full py-4 rounded-lg font-semibold transition
-            ${isFormValid() ? "bg-green-500 text-white hover:bg-green-600"
-                : "bg-red-400 text-white hover:bg-red-500"}`}
+  ${isFormValid()
+                ? "bg-green-500 text-white hover:bg-green-600"
+                : "bg-red-400 text-white cursor-not-allowed"}`}
           >
             Lihat Detail Absen Masuk
             <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
