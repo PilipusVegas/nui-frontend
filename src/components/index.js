@@ -25,5 +25,5 @@ export { default as TaskCardSlider } from "./mobile/TaskCardSlider.jsx";
 
 
 // Maps
-// export { default as MapRoute } from "./maps/MapRoute.jsx";
+export { default as MapRoute } from "./maps/MapRoute.jsx";
 export { default as MapRadius } from "./maps/MapRadius.jsx";

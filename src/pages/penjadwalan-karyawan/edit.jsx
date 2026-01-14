@@ -9,7 +9,8 @@ import { fetchWithJwt } from "../../utils/jwtHelper";
 const MAX_LOKASI = 7;
 
 const EditPenjadwalan = () => {
-    const { id } = useParams();
+    const { id_user } = useParams();
+
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const navigate = useNavigate();
 
@@ -34,29 +35,34 @@ const EditPenjadwalan = () => {
             setLoading(true);
 
             const [jadwalRes, shiftRes, lokasiRes] = await Promise.all([
-                fetchWithJwt(`${apiUrl}/jadwal/${id}`),
+                fetchWithJwt(`${apiUrl}/jadwal/${id_user}`),
                 fetchWithJwt(`${apiUrl}/shift`),
                 fetchWithJwt(`${apiUrl}/lokasi`)
             ]);
 
-            const jadwal = (await jadwalRes.json()).data;
+            const json = await jadwalRes.json();
+            const jadwal = json.data?.[0];
 
-            // ✅ FIX USER INFO
+            if (!jadwal) {
+                throw new Error("Data penjadwalan tidak ditemukan");
+            }
+
             setUserInfo({
                 nama: jadwal.nama_user,
                 role: jadwal.nama_shift
             });
 
-            // ✅ FIX LOKASI (PAKAI id_lokasi)
             setForm({
                 id_shift: jadwal.id_shift,
-                lokasi: jadwal.lokasi.map(l => l.id_lokasi),
+                lokasi: jadwal.lokasi.map(l => l.id),
                 id_user: jadwal.id_user
             });
 
             setShiftList((await shiftRes.json()).data || []);
             setLokasiList((await lokasiRes.json()).data || []);
+
         } catch (err) {
+            console.error(err);
             toast.error("Gagal memuat data penjadwalan");
         } finally {
             setLoading(false);
@@ -106,20 +112,21 @@ const EditPenjadwalan = () => {
         if (!confirm.isConfirmed) return;
 
         try {
-            const res = await fetchWithJwt(`${apiUrl}/jadwal/${id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    id_shift: Number(form.id_shift),
-                    location: form.lokasi,
-                    id_user: form.id_user
-                })
-            });
+            const res = await fetchWithJwt(
+                `${apiUrl}/jadwal/${id_user}`,
+                {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        id_shift: Number(form.id_shift),
+                        location: form.lokasi
+                    })
+                }
+            );
 
             const result = await res.json();
 
             if (!res.ok) {
-                // Tangani error 4xx / 5xx
                 throw new Error(result?.message || "Terjadi kesalahan pada server");
             }
 
@@ -128,12 +135,7 @@ const EditPenjadwalan = () => {
 
         } catch (error) {
             console.error("Update Jadwal Error:", error);
-
-            if (error.message.includes("500")) {
-                toast.error("Server bermasalah. Silakan coba lagi nanti.");
-            } else {
-                toast.error(error.message || "Gagal menyimpan perubahan");
-            }
+            toast.error(error.message || "Gagal menyimpan perubahan");
         }
     };
 
@@ -154,9 +156,7 @@ const EditPenjadwalan = () => {
     return (
         <div>
             <SectionHeader title="Edit Penjadwalan" subtitle="Perbarui shift dan lokasi absensi karyawan" onBack={() => navigate(-1)} />
-
             <div className="w-full mt-6 bg-white rounded-xl shadow-sm border p-6 space-y-6">
-
                 {/* INFO KARYAWAN */}
                 {userInfo && (
                     <div className="bg-gray-50 border rounded-lg p-4">

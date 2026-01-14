@@ -73,12 +73,20 @@ const AbsenSelesai = ({ handleNextStepData }) => {
         }
         if (!res.ok) throw new Error("Gagal ambil jadwal");
         const json = await res.json();
-        const data = json.data;
+        const list = json.data || [];
+        if (list.length === 0) {
+          setJadwal(null);
+          setLockLocation(false);
+          return;
+        }
+
+        const data = list[0];   // ambil jadwal pertama
         setJadwal(data);
-        // ===== LOKASI =====
+
         if (data.lokasi?.length === 1 && locations.length > 0) {
           const loc = data.lokasi[0];
-          const fullLocation = locations.find(l => l.value === loc.id_lokasi);
+          const fullLocation = locations.find(l => Number(l.value) === Number(loc.id));
+
 
           if (fullLocation) {
             setSelectedLocation(fullLocation);
@@ -187,7 +195,7 @@ const AbsenSelesai = ({ handleNextStepData }) => {
 
 
   const isValid = () =>
-    jadwal &&                              // 🔒 wajib ada jadwal
+    jadwal &&
     fotoFile instanceof File &&
     selectedLocation !== null &&
     typeof userCoords.latitude === "number" &&
@@ -199,18 +207,16 @@ const AbsenSelesai = ({ handleNextStepData }) => {
   && isWithinRadius;
   */
 
-
-
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!isValid()) {
+    if (!isValid()) return;
+
+    // BLOK JIKA DI LUAR RADIUS
+    if (distance !== null && distance > 60) {
+      showRadiusBlockedToast(distance);
       return;
     }
-
-    // if (!isWithinRadius && distance !== null) {
-    //   showRadiusBlockedToast(distance);
-    // }
 
     handleNextStepData({
       fotoSelesai: fotoFile,
@@ -230,6 +236,7 @@ const AbsenSelesai = ({ handleNextStepData }) => {
   };
 
 
+
   const base64ToFile = (base64, filename) => {
     const [meta, data] = base64.split(",");
     const mime = meta.match(/:(.*?);/)[1];
@@ -240,24 +247,34 @@ const AbsenSelesai = ({ handleNextStepData }) => {
   };
 
   const showRadiusBlockedToast = (dist) => {
-    const displayDist = dist < 1000
-      ? `${Math.floor(dist)} meter`
-      : `${(dist / 1000).toFixed(2)} km`;
+    const displayDist =
+      dist < 1000
+        ? `${Math.floor(dist)} meter`
+        : `${(dist / 1000).toFixed(2)} km`;
 
     Swal.fire({
       icon: "error",
-      title: "Absensi Ditolak",
+      title: "Absensi Pulang Ditolak",
       html: `
-      <div style="text-align:left; font-size:13px; line-height:1.6;">
-        <p><strong>Jarak Anda:</strong> ${displayDist}</p>
-        <p>Absensi hanya diperbolehkan dalam radius <strong>60 meter</strong>.</p>
-        <p>Silakan menuju ke lokasi kerja sebelum melakukan absen pulang.</p>
+      <div style="text-align:left; font-size:14px; line-height:1.6;">
+        <p><strong>Jarak Anda dari lokasi kerja:</strong></p>
+        <p style="font-size:16px; color:#dc2626;"><strong>${displayDist}</strong></p>
+
+        <p>
+          Absensi pulang hanya dapat dilakukan dalam radius 
+          <strong>maksimal 60 meter</strong> dari lokasi kerja.
+        </p>
+
+        <p>
+          Silakan kembali ke area kerja sebelum melakukan absen pulang.
+        </p>
       </div>
     `,
       confirmButtonText: "Mengerti",
-      confirmButtonColor: "#d33",
+      confirmButtonColor: "#dc2626",
     });
   };
+
 
 
   const checkLocationRadius = (userLat, userLon, loc) => {
@@ -266,22 +283,23 @@ const AbsenSelesai = ({ handleNextStepData }) => {
     const jarak = getDistanceMeters(userLat, userLon, loc.lat, loc.lon);
     setDistance(jarak);
 
-    // BLOK DINONAKTIFKAN
-    // if (jarak > 60) setIsWithinRadius(false);
-    // else setIsWithinRadius(true);
+    if (jarak > 60) setIsWithinRadius(false);
+    else setIsWithinRadius(true);
   };
+
 
   const filteredLocations = useMemo(() => {
     if (isKadiv) return locations;
 
     if (!jadwal || !Array.isArray(jadwal.lokasi) || jadwal.lokasi.length === 0) {
-      return []; // 🔒 Tidak ada jadwal → lokasi kosong
+      return [];
     }
 
     return locations.filter((loc) =>
-      jadwal.lokasi.some((j) => Number(j.id_lokasi) === Number(loc.value))
+      jadwal.lokasi.some((j) => Number(j.id) === Number(loc.value))
     );
   }, [jadwal, locations, isKadiv]);
+
 
 
 
@@ -409,12 +427,7 @@ const AbsenSelesai = ({ handleNextStepData }) => {
                   </span>
 
                   {distance !== null && (
-                    <span
-                      className={`px-2 py-0.5 rounded font-semibold ${distance <= 60
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                        }`}
-                    >
+                    <span className={`px-2 py-0.5 rounded font-semibold ${distance <= 60 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700" }`}>
                       Jarak:{" "}
                       {distance < 1000
                         ? `${Math.floor(distance)} m`
@@ -423,12 +436,6 @@ const AbsenSelesai = ({ handleNextStepData }) => {
                   )}
                 </>
               )}
-
-              {/* {!isWithinRadius && (
-                <p className="text-xs text-red-600 font-semibold">
-                  Anda berada di luar radius absensi. Mendekatlah ke lokasi kerja.
-                </p>
-              )} */}
 
               {!loadingLocation && !userCoords.latitude && (
                 <span className="text-red-500">
@@ -449,8 +456,9 @@ const AbsenSelesai = ({ handleNextStepData }) => {
 
               <div className="flex gap-3">
                 <button type="submit" className={`flex-1 py-4 rounded-lg font-semibold transition
-                    ${isValid() ? "bg-green-500 text-white hover:bg-green-600" : "bg-red-400 text-white hover:bg-red-500"}`}
+                    ${distance !== null && distance > 60 ? "bg-red-500 text-white cursor-not-allowed" : isValid() ? "bg-green-500 text-white hover:bg-green-600" : "bg-red-400 text-white"}`}
                 >
+
                   Lihat Detail Absen Pulang <FontAwesomeIcon icon={faChevronRight} className="ml-2" />
                 </button>
               </div>

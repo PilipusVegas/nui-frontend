@@ -27,7 +27,8 @@ import {
     faCalendarCheck,
     faUserGroup,
     faPenFancy,
-    faListAlt
+    faListAlt,
+    faMotorcycle
 } from "@fortawesome/free-solid-svg-icons";
 
 export const menuConfig = [
@@ -86,7 +87,6 @@ export const menuConfig = [
                         roles: [1, 5, 20],
                         perusahaan: [1, 4],
                     },
-
                 ]
             },
             {
@@ -214,6 +214,26 @@ export const menuConfig = [
                     },
                 ],
             },
+            // {
+            //     label: "Kunjungan",
+            //     icon: faMotorcycle,
+            //     roles: [1, 4, 5, 6, 20],
+            //     perusahaan: [1, 4],
+            //     submenu: [
+            //         {
+            //             label: "Pengajuan Kunjungan",
+            //             icon: faMotorcycle,
+            //             path: "/pengajuan-kunjungan",
+            //             roles: [1, 4, 5, 6, 20],
+            //         },
+            //         {
+            //             label: "Riwayat Kunjungan",
+            //             icon: faHistory,
+            //             path: "/pengajuan/riwayat-kunjungan",
+            //             roles: [1, 4, 5, 6, 20],
+            //         },
+            //     ],
+            // },
         ],
     },
 

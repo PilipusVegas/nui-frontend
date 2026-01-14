@@ -35,8 +35,6 @@ const AbsenMulai = ({ handleNextStepData }) => {
   const [roleName, setRoleName] = useState("");
   const [distance, setDistance] = useState(null);
   const [gpsValidation, setGpsValidation] = useState({ is_valid: 1, reason: "", });
-  const [hasShownWarning, setHasShownWarning] = useState(false);
-  const [isWithinRadius, setIsWithinRadius] = useState(true);
 
   const isFormValid = () =>
     selectedLocation &&
@@ -96,14 +94,24 @@ const AbsenMulai = ({ handleNextStepData }) => {
     const fetchJadwal = async () => {
       try {
         const res = await fetchWithJwt(`${apiUrl}/jadwal/cek/${userId}`);
+
         if (res.status === 404) {
+          setJadwal(null);
           setLockLocation(false);
           setLockShift(false);
           return;
         }
+
         if (!res.ok) throw new Error("Gagal ambil jadwal");
         const json = await res.json();
-        const data = json.data;
+        const list = json.data || [];
+        if (list.length === 0) {
+          setJadwal(null);
+          setLockLocation(false);
+          setLockShift(false);
+          return;
+        }
+        const data = list[0];
         setJadwal(data);
         setSelectedShift({
           id: data.id_shift,
@@ -112,27 +120,24 @@ const AbsenMulai = ({ handleNextStepData }) => {
         setLockShift(true);
         if (data.lokasi?.length === 1 && locations.length > 0) {
           const loc = data.lokasi[0];
-          const fullLocation = locations.find(l => l.value === loc.id_lokasi);
-
+          const fullLocation = locations.find(l => l.value === loc.id);
           if (fullLocation) {
             setSelectedLocation(fullLocation);
             setLockLocation(true);
           } else {
             setLockLocation(false);
           }
-        }
-
-
-        else if (data.lokasi?.length > 1) {
+        } else {
           setLockLocation(false);
         }
-
       } catch (err) {
         console.error("Cek jadwal error:", err);
+        setJadwal(null);
         setLockLocation(false);
         setLockShift(false);
       }
     };
+
     fetchJadwal();
   }, [userId, isKadiv, apiUrl, locations]);
 
@@ -184,7 +189,6 @@ const AbsenMulai = ({ handleNextStepData }) => {
     fetchData("lokasi", setLocations, (data) =>
       data.map((loc) => {
         const [latStr, lonStr] = (loc.koordinat || "").split(",").map(s => s.trim());
-
         return {
           value: loc.id,
           label: loc.nama,
@@ -194,20 +198,94 @@ const AbsenMulai = ({ handleNextStepData }) => {
         };
       })
     );
-
     fetchData("shift", setShiftList);
   }, [apiUrl]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    // 1. Pastikan GPS aktif
+    if (!userCoords.latitude || !userCoords.longitude) {
+      Swal.fire({
+        icon: "error",
+        title: "GPS Tidak Terdeteksi",
+        text: "Pastikan GPS aktif sebelum melakukan absensi.",
+        confirmButtonColor: "#dc2626",
+      });
+      return;
+    }
+
+    // 2. Foto wajib
+    if (!fotoMulai) {
+      Swal.fire({
+        icon: "warning",
+        title: "Foto Wajib Diambil",
+        text: "Silakan ambil foto kehadiran terlebih dahulu.",
+        confirmButtonColor: "#f59e0b",
+      });
+      return;
+    }
+
+    // 3. Lokasi wajib dipilih
+    if (!selectedLocation) {
+      Swal.fire({
+        icon: "warning",
+        title: "Lokasi Belum Dipilih",
+        text: "Silakan pilih lokasi kerja terlebih dahulu.",
+        confirmButtonColor: "#f59e0b",
+      });
+      return;
+    }
+
+    // 4. Cek radius
+    if (distance > 60) {
+      const displayDistance = distance < 1000 ? `${Math.floor(distance)} meter` : `${(distance / 1000).toFixed(2)} km`;
+
+      Swal.fire({
+        icon: "error",
+        title: "Absensi Ditolak",
+        html: `
+      <div style="text-align:left; font-size:14px; line-height:1.6;">
+        <p><strong>Jarak Anda dari lokasi kerja:</strong></p>
+        <p style="font-size:16px; color:#dc2626;"><strong>${displayDistance}</strong></p>
+        
+        <p>
+          Absensi hanya dapat dilakukan dalam radius 
+          <strong>maksimal 60 meter</strong> dari lokasi kerja.
+        </p>
+
+        <p>
+          Silakan mendekat ke area kerja terlebih dahulu 
+          sebelum melakukan absensi.
+        </p>
+      </div>
+    `,
+        confirmButtonText: "Mengerti",
+        confirmButtonColor: "#dc2626",
+      });
+      return;
+    }
+
+    if (!jadwal && !isKadiv) {
+      Swal.fire({
+        toast: true,
+        position: "top",
+        icon: "error",
+        title: "Absensi tidak dapat dilakukan",
+        text: "Anda belum memiliki jadwal kerja hari ini. Silakan hubungi Kepala Divisi.",
+        showConfirmButton: false,
+        timer: 3500,
+        timerProgressBar: true,
+      });
+      return;
+    }
+
+    // 6. Cek form dasar
     if (!isFormValid()) {
       return;
     }
-    // if (!isWithinRadius && distance !== null) {
-    //   showRadiusBlockedToast(distance);
-    // }
 
+    // 7. Kirim data
     const now = new Date();
 
     const formData = {
@@ -229,9 +307,9 @@ const AbsenMulai = ({ handleNextStepData }) => {
       is_valid: gpsValidation.is_valid,
       reason: gpsValidation.reason,
     };
-
     handleNextStepData(formData);
   };
+
 
   const checkLocationRadius = (loc) => {
     if (!userCoords.latitude || !userCoords.longitude || !loc?.lat || !loc?.lon) return;
@@ -242,30 +320,25 @@ const AbsenMulai = ({ handleNextStepData }) => {
       Number(loc.lat),
       Number(loc.lon)
     );
-
     setDistance(dist);
   };
 
 
-  // const filteredLocations = useMemo(() => {
-  //   if (!jadwal || !jadwal.lokasi || isKadiv) return locations;
-
-  //   return locations.filter((loc) =>
-  //     jadwal.lokasi.some((j) => j.id_lokasi === loc.value)
-  //   );
-  // }, [jadwal, locations, isKadiv]);
 
   const filteredLocations = useMemo(() => {
+    // Kadiv bebas pilih semua lokasi
     if (isKadiv) return locations;
 
     if (!jadwal || !Array.isArray(jadwal.lokasi) || jadwal.lokasi.length === 0) {
-      return []; // 🔒 kosongkan lokasi jika tidak ada jadwal
+      return [];
     }
 
+    // Filter sesuai jadwal
     return locations.filter((loc) =>
-      jadwal.lokasi.some((j) => Number(j.id_lokasi) === Number(loc.value))
+      jadwal.lokasi.some((j) => Number(j.id) === Number(loc.value))
     );
   }, [jadwal, locations, isKadiv]);
+
 
 
   const mapUser = userCoords.latitude
@@ -282,33 +355,6 @@ const AbsenMulai = ({ handleNextStepData }) => {
       longitude: pos.lng,
     });
   };
-
-  // useEffect(() => {
-  //   if (!selectedLocation || !userCoords.latitude || !userCoords.longitude) return;
-
-  //   checkLocationRadius(selectedLocation);
-  // }, [userCoords, selectedLocation]);
-
-
-  // const showRadiusBlockedToast = (dist) => {
-  //   const displayDist = dist < 1000
-  //     ? `${Math.floor(dist)} meter`
-  //     : `${(dist / 1000).toFixed(2)} km`;
-
-  //   Swal.fire({
-  //     icon: "error",
-  //     title: "Absensi Ditolak",
-  //     html: `
-  //     <div style="text-align:left; font-size:13px; line-height:1.6;">
-  //       <p><strong>Jarak Anda:</strong> ${displayDist}</p>
-  //       <p>Absensi hanya diperbolehkan dalam radius <strong>60 meter</strong> dari lokasi kerja.</p>
-  //       <p>Silakan mendekat ke area lokasi kerja anda sebelum melanjutkan absensi.</p>
-  //     </div>
-  //   `,
-  //     confirmButtonText: "Mengerti",
-  //     confirmButtonColor: "#d33",
-  //   });
-  // };
 
 
   return (
@@ -426,12 +472,6 @@ const AbsenMulai = ({ handleNextStepData }) => {
                 </>
               )}
 
-              {!isWithinRadius && (
-                <p className="text-xs text-red-600 font-semibold">
-                  Anda berada di luar radius absensi. Mendekatlah ke lokasi kerja.
-                </p>
-              )}
-
               {!loadingLocation && !userCoords.latitude && (
                 <span className="text-red-500">GPS tidak tersedia</span>
               )}
@@ -503,10 +543,14 @@ const AbsenMulai = ({ handleNextStepData }) => {
             type="submit"
             disabled={!jadwal}
             className={`w-full py-4 rounded-lg font-semibold transition
-  ${isFormValid()
-                ? "bg-green-500 text-white hover:bg-green-600"
-                : "bg-red-400 text-white cursor-not-allowed"}`}
+${distance !== null && distance > 60
+                ? "bg-red-500 text-white cursor-not-allowed"
+                : isFormValid()
+                  ? "bg-green-500 text-white hover:bg-green-600"
+                  : "bg-red-400 text-white cursor-not-allowed"
+              }`}
           >
+
             Lihat Detail Absen Masuk
             <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
           </button>

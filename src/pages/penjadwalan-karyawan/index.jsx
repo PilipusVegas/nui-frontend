@@ -34,6 +34,7 @@ const PenjadwalanKaryawan = () => {
         }
     };
 
+
     useEffect(() => {
         fetchPenjadwalan();
     }, []);
@@ -91,7 +92,7 @@ const PenjadwalanKaryawan = () => {
                         </button>
                         {/* <button className="flex items-center gap-2 px-4 py-2 text-sm text-white font-bold bg-blue-500 rounded">
                             <FontAwesomeIcon icon={faCloudDownload} />
-                            Tarik SPK
+                            Sinkron SPK
                         </button> */}
                     </div>
                 }
@@ -178,12 +179,12 @@ const PenjadwalanKaryawan = () => {
 
                                             <td className="px-4 py-1.5 align-middle">
                                                 <div className="flex justify-center items-center gap-2">
-                                                    <button onClick={() => navigate(`/penjadwalan/edit/${item.jadwal.id}`)} className="flex items-center gap-2 px-3 py-1.5 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition">
+                                                    <button onClick={() => navigate(`/penjadwalan/edit/${item.id_user}`)} className="flex items-center gap-2 px-3 py-1.5 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition">
                                                         <FontAwesomeIcon icon={faEdit} />
                                                         <span className="text-xs font-medium">Edit</span>
                                                     </button>
 
-                                                    <button onClick={() => handleDelete(item.jadwal.id)} className="flex items-center gap-2 px-3 py-1.5 bg-red-500 text-white rounded hover:bg-red-6`   00 transition">
+                                                    <button onClick={() => handleDelete(item.id_user)} className="flex items-center gap-2 px-3 py-1.5 bg-red-500 text-white rounded hover:bg-red-600 transition">
                                                         <FontAwesomeIcon icon={faTrash} />
                                                         <span className="text-xs font-medium">Hapus</span>
                                                     </button>
@@ -239,12 +240,12 @@ const PenjadwalanKaryawan = () => {
                                     </div>
 
                                     <div className="flex justify-end gap-2 mt-4">
-                                        <button onClick={() => navigate(`/penjadwalan/edit/${item.jadwal.id}`)} className="flex items-center gap-1 px-3 py-1.5 text-xs bg-yellow-500 text-white rounded">
+                                        <button onClick={() => navigate(`/penjadwalan/edit/${item.id_user}`)} className="flex items-center gap-1 px-3 py-1.5 text-xs bg-yellow-500 text-white rounded">
                                             <FontAwesomeIcon icon={faEdit} />
                                             Edit
                                         </button>
 
-                                        <button onClick={() => handleDelete(item.jadwal.id)} className="flex items-center gap-1 px-3 py-1.5 text-xs bg-red-500 text-white rounded">
+                                        <button onClick={() => handleDelete(item.id_user)} className="flex items-center gap-1 px-3 py-1.5 text-xs bg-red-500 text-white rounded">
                                             <FontAwesomeIcon icon={faTrash} />
                                             Hapus
                                         </button>

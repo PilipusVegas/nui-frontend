@@ -91,6 +91,11 @@ import RiwayatPenggajian from "../pages/penggajian/riwayat";
 import PenjadwalanKaryawan from "../pages/penjadwalan-karyawan";
 import TambahPenjadwalanKaryawan from "../pages/penjadwalan-karyawan/tambah";
 import EditPenjadwalanKaryawan from "../pages/penjadwalan-karyawan/edit";
+import PengajuanKunjungan from "../pages/pengajuan/kunjungan";
+import RiwayatKunjungan from "../pages/pengajuan/kunjungan/riwayat";
+import DetailKunjungan from "../pages/pengajuan/kunjungan/show";
+import Kunjungan from "../pages/kunjungan";
+import RiwayatKunjunganUser from "../pages/kunjungan/riwayat";
 
 /* ===================== ROUTES CONFIG ===================== */
 export const routes = [
@@ -121,6 +126,14 @@ export const routes = [
   /* ===== DINAS ===== */
   { path: "/formulir-dinas", element: <FormulirDinas />, roles: [] },
   { path: "/formulir-dinas-aplikasi", element: <FormulirDinasAplikasi />, roles: [] },
+
+  /* ===== KUNJUNGAN ===== */
+  { path: "/pengajuan-kunjungan", element: <PengajuanKunjungan />, roles: [], layout: SidebarLayout },
+  { path: "/pengajuan/kunjungan/detail/:id", element: <DetailKunjungan />, roles: [], layout: SidebarLayout },
+  { path: "/pengajuan/riwayat-kunjungan", element: <RiwayatKunjungan />, roles: [], layout: SidebarLayout },
+  
+  { path: "/kunjungan", element: <Kunjungan />, roles: [] },
+  { path: "/riwayat-kunjungan", element: <RiwayatKunjunganUser />, roles: [] },
 
   /* ===== TUGAS ===== */
   { path: "/tugas", element: <Tugas />, roles: [] },
@@ -191,5 +204,5 @@ export const routes = [
 
   { path: "/penjadwalan", element: <PenjadwalanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
   { path: "/penjadwalan/tambah", element: <TambahPenjadwalanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-  { path: "/penjadwalan/edit/:id", element: <EditPenjadwalanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/penjadwalan/edit/:id_user", element: <EditPenjadwalanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
 ];

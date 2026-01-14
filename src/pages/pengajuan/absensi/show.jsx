@@ -647,11 +647,9 @@ const DetailAbsensi = () => {
                         </div>
                       </div>
 
-
                       {/* Isi Card */}
                       <div className="flex flex-col sm:flex-row items-start gap-6 p-5">
-                        {/* FOTO */}
-                        <div className="w-32 h-32 rounded-lg overflow-hidden border border-green-100 shadow-sm flex-shrink-0 bg-green-50">
+                          <div className="w-32 h-32 rounded-lg overflow-hidden border border-green-100 shadow-sm flex-shrink-0 bg-green-50">
                           {item.foto ? (
                             <a href={item.foto} target="_blank" rel="noopener noreferrer">
                               <img src={item.foto} alt={item.label} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
