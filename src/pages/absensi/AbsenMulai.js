@@ -356,6 +356,37 @@ const AbsenMulai = ({ handleNextStepData }) => {
     });
   };
 
+  const handleBlockedClick = () => {
+    if (distance !== null && distance > 60) {
+      const displayDistance =
+        distance < 1000
+          ? `${Math.floor(distance)} meter`
+          : `${(distance / 1000).toFixed(2)} km`;
+
+      Swal.fire({
+        icon: "error",
+        title: "Absensi Ditolak",
+        html: `
+        <div style="text-align:left; font-size:14px; line-height:1.6;">
+          <p><strong>Jarak Anda dari lokasi kerja:</strong></p>
+          <p style="font-size:16px; color:#dc2626;"><strong>${displayDistance}</strong></p>
+
+          <p>
+            Absensi hanya dapat dilakukan dalam radius 
+            <strong>maksimal 60 meter</strong>.
+          </p>
+
+          <p>
+            Silakan mendekat ke area kerja terlebih dahulu.
+          </p>
+        </div>
+      `,
+        confirmButtonText: "Mengerti",
+        confirmButtonColor: "#dc2626",
+      });
+    }
+  };
+
 
   return (
     <MobileLayout title="Absen Masuk Kerja" className="bg-gray-100">
@@ -541,19 +572,26 @@ const AbsenMulai = ({ handleNextStepData }) => {
 
           <button
             type="submit"
-            disabled={!jadwal}
+            onClick={(e) => {
+              if (distance !== null && distance > 60) {
+                e.preventDefault();
+                handleBlockedClick();
+              }
+            }}
+            disabled={!isKadiv && !jadwal}
             className={`w-full py-4 rounded-lg font-semibold transition
-${distance !== null && distance > 60
+    ${distance !== null && distance > 60
                 ? "bg-red-500 text-white cursor-not-allowed"
                 : isFormValid()
                   ? "bg-green-500 text-white hover:bg-green-600"
                   : "bg-red-400 text-white cursor-not-allowed"
               }`}
           >
-
             Lihat Detail Absen Masuk
             <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
           </button>
+
+
 
         </form>
       </div>
