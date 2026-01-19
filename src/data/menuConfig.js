@@ -112,10 +112,10 @@ export const menuConfig = [
     },
 
     {
-        sectionTitle: "Shift / Jam Kerja",
+        sectionTitle: "Kelola Shift & Jam Kerja",
         items: [
                     {
-                        label: "Shift & Jam Kerja",
+                        label: "Data Shift",
                         icon: faClock,
                         path: "/shift",
                         roles: [1, 4, 6],
@@ -128,7 +128,6 @@ export const menuConfig = [
                     },
                 ],
     },
-    
 
     // ABSENSI
     {

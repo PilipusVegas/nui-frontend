@@ -34,10 +34,7 @@ const JadwalShift = () => {
 
   return (
     <div className="w-full mx-auto">
-      {/* SECTION HEADER — SELALU TAMPIL */}
-      <SectionHeader
-        title="Jam Kerja / Shift"
-        subtitle="Kelola jadwal shift karyawan dengan mudah."
+      <SectionHeader title="Data Shift" subtitle="Data jadwal shift karyawan."
         onBack={() => navigate(-1)}
         actions={
           <button
