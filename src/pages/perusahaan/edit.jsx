@@ -169,8 +169,8 @@ const EditPerusahaan = () => {
         {/* Pilih Shift */}
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Pilih Shift</label>
-            <p className="text-xs text-gray-500 mb-2">Pilih satu per satu shift yang ingin dikaitkan.</p>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Tambah Shift</label>
+            <p className="text-xs text-gray-500 mb-2">Pilih dan tambahkan satu per satu shift yang ingin dikaitkan.</p>
             <select
               value={selectedOptionValue}
               onChange={(e) => {

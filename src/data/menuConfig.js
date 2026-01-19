@@ -111,6 +111,25 @@ export const menuConfig = [
         ],
     },
 
+    {
+        sectionTitle: "Shift / Jam Kerja",
+        items: [
+                    {
+                        label: "Shift & Jam Kerja",
+                        icon: faClock,
+                        path: "/shift",
+                        roles: [1, 4, 6],
+                    },
+                    {
+                        label: "Kelola Shift Perusahaan",
+                        icon: faBuilding,
+                        path: "/perusahaan",
+                        roles: [1, 4, 6],
+                    },
+                ],
+    },
+    
+
     // ABSENSI
     {
         sectionTitle: "Absensi",
@@ -239,7 +258,7 @@ export const menuConfig = [
 
     // PENGGAJIAN & TUNJANGAN
     {
-        sectionTitle: "Penggajian & Jam Kerja",
+        sectionTitle: "Rekap Penggajian",
         items: [
             {
                 label: "Rekap Tunjangan",
@@ -248,12 +267,6 @@ export const menuConfig = [
                 roles: [1],
                 perusahaan: [1, 4],
                 target: "_blank",
-            },
-            {
-                label: "Shift & Jam Kerja",
-                icon: faClock,
-                path: "/shift",
-                roles: [1, 4, 6],
             },
             {
                 label: "Penggajian",
@@ -276,6 +289,7 @@ export const menuConfig = [
             },
         ],
     },
+
 
     // REMINDER
     {
