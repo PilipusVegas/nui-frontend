@@ -117,6 +117,54 @@ const DataRekapTunjangan = () => {
         setHoveredData(null);
     };
 
+    const handleSyncTunjangan = async () => {
+        if (!startDate || !endDate) {
+            toast.error("Rentang tanggal belum lengkap");
+            return;
+        }
+
+        if (endDate < startDate) {
+            toast.error("Tanggal selesai tidak boleh lebih kecil dari tanggal mulai");
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+
+        try {
+            const endpoint = `${apiUrl}/tunjangan/rekap?startDate=${startDate}&endDate=${endDate}`;
+
+            const response = await fetchWithJwt(endpoint, {
+                method: "POST",
+            });
+
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(errText || "Gagal melakukan sinkronisasi tunjangan");
+            }
+
+            const result = await response.json();
+
+            toast.success("Sinkronisasi tunjangan berhasil");
+
+            // Optional: jika API mengembalikan data terbaru langsung
+            if (result?.data && result?.date_range) {
+                setTanggalArray(result.date_range);
+                setDataTunjangan(result.data);
+            } else {
+                // fallback: fetch ulang agar selalu konsisten
+                await fetchTunjanganData();
+            }
+
+        } catch (err) {
+            console.error("SYNC ERROR:", err);
+            toast.error(err.message || "Terjadi kesalahan saat sinkronisasi");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
 
     return (
         <div className="min-h-screen flex flex-col justify-start p-5">
@@ -128,15 +176,22 @@ const DataRekapTunjangan = () => {
                             <span className="hidden sm:inline">Nominal</span>
                         </button>
 
-                        <button onClick={() => exportRekapTunjangan(dataTunjangan, tanggalArray, user.nama_user)} disabled={dataTunjangan.length === 0}
-                            className={`flex items-center gap-2 h-9 px-3 text-sm font-medium rounded-md shadow-md transition-all duration-200 ${dataTunjangan.length === 0 ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white"}`}
+                        <button onClick={handleSyncTunjangan} disabled={loading}
+                            className={`flex items-center gap-2 h-9 px-3 text-sm font-medium rounded-md shadow-md transition-all duration-200
+                            ${loading ? "bg-purple-400 cursor-not-allowed text-white" : "bg-gradient-to-r from-purple-500 to-fuchsia-600 hover:from-purple-600 hover:to-fuchsia-700 text-white"}`}
                         >
+                            <FontAwesomeIcon icon={loading ? faSpinner : faRotateRight} spin={loading} />
+                            <span className="hidden sm:inline">
+                                {loading ? "Sinkron..." : "Sinkron"}
+                            </span>
+                        </button>
+
+                        <button onClick={() => exportRekapTunjangan(dataTunjangan, tanggalArray, user.nama_user)} disabled={dataTunjangan.length === 0} className={`flex items-center gap-2 h-9 px-3 text-sm font-medium rounded-md shadow-md transition-all duration-200 ${dataTunjangan.length === 0 ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white"}`}>
                             <FontAwesomeIcon icon={faFileExcel} />
                             <span className="hidden sm:inline">
                                 Download
                             </span>
                         </button>
-
 
                         <button onClick={handleFullView} className="flex items-center gap-2 h-9 px-3 text-sm font-medium rounded-md shadow-md bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white transition-all duration-200">
                             <FontAwesomeIcon icon={faExpandArrowsAlt} />
@@ -159,9 +214,9 @@ const DataRekapTunjangan = () => {
             <div className="w-full flex flex-row flex-wrap items-center justify-between gap-4 mb-4">
                 <SearchBar placeholder="Cari Karyawan..." className="flex-1 min-w-[200px]" onSearch={(val) => setSearchName(val)} />
                 <div className="flex items-center gap-1">
-                    <input type="date" className="border-2 border-gray-300 rounded-md px-2 py-2 text-sm" value={draftStartDate} onChange={(e) => setDraftStartDate(e.target.value)} onBlur={commitDateRange}/>
+                    <input type="date" className="border-2 border-gray-300 rounded-md px-2 py-2 text-sm" value={draftStartDate} onChange={(e) => setDraftStartDate(e.target.value)} onBlur={commitDateRange} />
                     <span className="mx-1 text-gray-600">s/d</span>
-                    <input type="date" className="border-2 border-gray-300 rounded-md px-2 py-2 text-sm" value={draftEndDate} onChange={(e) => setDraftEndDate(e.target.value)} onBlur={commitDateRange}/>
+                    <input type="date" className="border-2 border-gray-300 rounded-md px-2 py-2 text-sm" value={draftEndDate} onChange={(e) => setDraftEndDate(e.target.value)} onBlur={commitDateRange} />
                 </div>
             </div>
 
@@ -183,7 +238,6 @@ const DataRekapTunjangan = () => {
                                         {["NIP", "Nama", "TKP", "TUM", "TSM", "TDP", "Nominal"].map((header) => {
                                             let widthStyle = {};
                                             let textAlign = "text-center";
-
                                             if (header === "Nama") {
                                                 widthStyle = { width: "220px" };
                                                 textAlign = "text-left";
@@ -191,7 +245,6 @@ const DataRekapTunjangan = () => {
                                                 widthStyle = { width: "160px" };
                                                 textAlign = "text-right";
                                             }
-
                                             return (
                                                 <th key={header} className={`sticky top-[36px] z-10 bg-green-500 text-white border px-2 py-2 font-medium ${textAlign}`} style={widthStyle}>
                                                     {header.toUpperCase()}
@@ -200,7 +253,6 @@ const DataRekapTunjangan = () => {
                                         })}
                                     </tr>
                                 </thead>
-
                                 <tbody>
                                     {filteredTunjanganData.map((item, idx) => (
                                         <tr key={idx} className={`${idx % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-green-50 transition-colors`}>

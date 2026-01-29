@@ -30,52 +30,42 @@ useEffect(() => {
     title: "PERHATIAN!",
     html: `
     <div style="text-align:left; font-size:12px; line-height:1.5;">
-      
       <p><strong>ABSENSI HANYA BOLEH DILAKUKAN DI LOKASI KERJA.</strong></p>
-
       <p>
         Anda <strong>WAJIB</strong> berada dalam radius <strong>maksimal 60 meter</strong> 
         dari titik lokasi kerja.  
         Absensi dari rumah, jalan, warung, atau lokasi lain akan 
         <strong>DITOLAK OTOMATIS</strong>.
       </p>
-
       <p>
         Tidak ada alasan:  
         <strong>Takut telat ≠ boleh absen dari rumah.</strong>
       </p>
-
       <p>
         <strong>Absensi Masuk dan Absensi Pulang WAJIB</strong> dilakukan.  
         Jika Absensi Pulang tidak dilakukan, kehadiran 
         <strong>dianggap tidak sah</strong>.
       </p>
-
       <p>
         Absensi harus dilakukan secara 
         <strong>jujur, disiplin, dan sesuai lokasi kerja</strong>.  
         Pelanggaran dapat menyebabkan:
       </p>
-
       <ul style="padding-left:16px; margin-top:4px;">
         <li><strong>Pembatalan absensi</strong></li>
         <li><strong>Sanksi</strong></li>
         <li><strong>Potongan kehadiran</strong></li>
       </ul>
-
       <p>
         Jika Anda <strong>belum memiliki jadwal kerja</strong>,  
         maka <strong>tidak dapat melakukan absensi</strong>.  
         Segera hubungi <strong>Kepala Divisi</strong> untuk input jadwal.
       </p>
-
       <p>
         Jika masih ada kendala, silakan hubungi 
         <strong>Tim HRD</strong> atau <strong>Kepala Divisi</strong>.
       </p>
-
       <p><strong>Terima kasih.</strong></p>
-
     </div>
     `,
     confirmButtonText: "Saya Mengerti",

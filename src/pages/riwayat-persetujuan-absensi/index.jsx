@@ -2,16 +2,16 @@ import React, { useEffect, useMemo, useState } from "react";
 import { faEye, } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
-import { fetchWithJwt } from "../../../utils/jwtHelper";
-import SectionHeader from "../../../components/desktop/SectionHeader";
-import { LoadingSpinner, ErrorState, SearchBar, Pagination, EmptyState, } from "../../../components";
-import { formatLongDate, toLocalISODate } from "../../../utils/dateUtils";
+import { fetchWithJwt } from "../../utils/jwtHelper";
+import SectionHeader from "../../components/desktop/SectionHeader";
+import { LoadingSpinner, ErrorState, SearchBar, Pagination, EmptyState, } from "../../components";
+import { formatLongDate, toLocalISODate } from "../../utils/dateUtils";
 
 
 const RiwayatPersetujuanAbsensi = () => {
     const navigate = useNavigate();
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
-    const itemsPerPage = 15;
+    const itemsPerPage = 10;
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -33,7 +33,7 @@ const RiwayatPersetujuanAbsensi = () => {
             }
             if (!res.ok) {
                 throw new Error("Gagal memuat periode penggajian");
-            }   
+            }
             const json = await res.json();
             const today = new Date();
             const nonActive = json.data.filter((p) => {
@@ -125,9 +125,9 @@ const RiwayatPersetujuanAbsensi = () => {
 
     return (
         <div className="flex flex-col">
-            <SectionHeader title="Riwayat Persetujuan Absensi" subtitle="Rekap absensi karyawan berdasarkan periode penggajian." onBack={() => navigate("/pengajuan-absensi")} />
+            <SectionHeader title="Riwayat Persetujuan Absensi" subtitle="Riwayat Persetujuan Absensi Karyawan Lapangan." onBack={() => navigate("/pengajuan-absensi")} />
 
-            <div className="mb-4 flex flex-col sm:flex-row sm:items-end gap-3">
+            <div className="mb-4 flex flex-col sm:flex-row sm:items-end gap-2">
                 <div className="w-full sm:flex-1">
                     <SearchBar placeholder="Cari nama atau divisi..." onSearch={(v) => { setSearch(v); setCurrentPage(1); }} />
                 </div>
@@ -159,15 +159,16 @@ const RiwayatPersetujuanAbsensi = () => {
                         <tr>
                             <th className="py-3 px-4 text-sm text-center">No</th>
                             <th className="py-3 px-4 text-sm text-left">Karyawan</th>
+                            <th className="py-3 px-4 text-sm text-left">Divisi</th>
                             <th className="py-3 px-4 text-sm text-center">Total Absen</th>
-                            <th className="py-3 px-4 text-sm text-center">Aksi</th>
+                            <th className="py-3 px-4 text-sm text-center">Menu</th>
                         </tr>
                     </thead>
 
                     <tbody>
                         {loading && (
                             <tr>
-                                <td colSpan={4} className="py-8">
+                                <td colSpan={5} className="py-8">
                                     <LoadingSpinner text="Memuat riwayat..." />
                                 </td>
                             </tr>
@@ -175,7 +176,7 @@ const RiwayatPersetujuanAbsensi = () => {
 
                         {!loading && error && (
                             <tr>
-                                <td colSpan={4} className="py-8">
+                                <td colSpan={5} className="py-8">
                                     <ErrorState message={error} onRetry={fetchRiwayat} />
                                 </td>
                             </tr>
@@ -183,7 +184,7 @@ const RiwayatPersetujuanAbsensi = () => {
 
                         {!loading && !error && paginated.length === 0 && (
                             <tr>
-                                <td colSpan={4} className="py-8">
+                                <td colSpan={5} className="py-8">
                                     <EmptyState title="Tidak ada data riwayat absensi" />
                                 </td>
                             </tr>
@@ -195,14 +196,16 @@ const RiwayatPersetujuanAbsensi = () => {
                                     <td className="text-center text-sm">
                                         {idx + 1 + (currentPage - 1) * itemsPerPage}
                                     </td>
-                                    <td className="px-4 py-2">
-                                        <div className="font-semibold text-xs">{item.nama}</div>
-                                        <div className="text-xs text-gray-500">{item.role}</div>
+                                    <td className="px-4 py-3">
+                                        <div className="font-semibold">{item.nama}</div>
+                                    </td>
+                                    <td className="px-4 py-3 text-gray-600">
+                                        {item.role}
                                     </td>
                                     <td className="text-center text-sm">{item.total_absen} Hari</td>
                                     <td className="text-center">
-                                        <a href={`/pengajuan-absensi/riwayat/${item.id_user}?startDate=${toLocalISODate(selectedPeriode.tgl_awal)}&endDate=${toLocalISODate(selectedPeriode.tgl_akhir)}`} target="_blank" rel="noopener noreferrer"
-                                            className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition
+                                        <a href={`/riwayat-persetujuan-absensi/${item.id_user}?startDate=${toLocalISODate(selectedPeriode.tgl_awal)}&endDate=${toLocalISODate(selectedPeriode.tgl_akhir)}`} target="_blank" rel="noopener noreferrer"
+                                            className={`inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-md transition
                                             ${isValidPeriode ? "bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300" : "bg-gray-300 text-gray-500 pointer-events-none cursor-not-allowed"}`}
                                         >
                                             <FontAwesomeIcon icon={faEye} className="text-[11px]" />

@@ -488,18 +488,18 @@ const DetailAbsensi = () => {
       <Pagination currentPage={currentPage} totalItems={filteredAbsen.length} itemsPerPage={itemsPerPage} onPageChange={(page) => setCurrentPage(page)} className="mt-6" />
 
       <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="Detail Absensi" note="Periksa dengan cermat sebelum memberikan keputusan." size="xl"
-        // footer={
-        //   (user.id_role === 1 || user.id_role === 4) && selectedAbsen?.status === 0 && (
-        //     <div className="flex flex-wrap justify-end gap-3">
-        //       <button onClick={() => handleReject(selectedAbsen?.id_absen)} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition" disabled={isLoading}>
-        //         Tolak Absensi
-        //       </button>
-        //       <button onClick={() => handleStatusUpdate(selectedAbsen?.id_absen)} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition" disabled={isLoading}>
-        //         Setujui Absensi
-        //       </button>
-        //     </div>
-        //   )
-        // }
+      // footer={
+      //   (user.id_role === 1 || user.id_role === 4) && selectedAbsen?.status === 0 && (
+      //     <div className="flex flex-wrap justify-end gap-3">
+      //       <button onClick={() => handleReject(selectedAbsen?.id_absen)} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition" disabled={isLoading}>
+      //         Tolak Absensi
+      //       </button>
+      //       <button onClick={() => handleStatusUpdate(selectedAbsen?.id_absen)} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition" disabled={isLoading}>
+      //         Setujui Absensi
+      //       </button>
+      //     </div>
+      //   )
+      // }
       >
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden text-gray-700">
 
@@ -598,11 +598,8 @@ const DetailAbsensi = () => {
                     </section>
                   );
                 }
-
                 return null;
               })()}
-
-
 
               {/* 🔸 SECTION 4 — Absen Masuk & Pulang */}
               <section className="p-6">
@@ -612,7 +609,6 @@ const DetailAbsensi = () => {
                   Detail Absen Masuk & Pulang
                 </h4>
 
-                {/* Dua Card Sejajar */}
                 <div className="grid md:grid-cols-2 gap-5">
                   {[
                     {
@@ -632,34 +628,39 @@ const DetailAbsensi = () => {
                       foto: selectedAbsen?.foto_selesai,
                       jarak: selectedAbsen?.jarak_selesai,
                     },
-                  ].map((item, i) => (
-                    <div key={i} className="bg-white border border-green-100 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
-                      <div className="bg-green-50 border-b border-green-100 px-5 py-3 rounded-t-lg">
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-100">
-                            <FontAwesomeIcon icon={faClock} className="text-green-600 text-lg" />
-                          </div>
+                  ].map((item, i) => {
+                    const fotoUrl = item.foto
+                      ? `${apiUrl}/uploads/img/absen/${item.foto}`
+                      : null;
 
-                          <div className="flex flex-col leading-tight">
-                            <h5 className="text-green-700 font-semibold text-sm">{item.label}</h5>
-                            <p className="text-green-600 text-xs">{item.jam ? formatFullDate(item.jam) : "-"}</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Isi Card */}
-                      <div className="flex flex-col sm:flex-row items-start gap-6 p-5">
-                          <div className="w-32 h-32 rounded-lg overflow-hidden border border-green-100 shadow-sm flex-shrink-0 bg-green-50">
-                          {item.foto ? (
-                            <a href={item.foto} target="_blank" rel="noopener noreferrer">
-                              <img src={item.foto} alt={item.label} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
-                            </a>
-                          ) : (
-                            <div className="flex h-full items-center justify-center text-green-400 text-xs">
-                              Tidak ada foto
+                    return (
+                      <div key={i} className="bg-white border border-green-100 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+                        <div className="bg-green-50 border-b border-green-100 px-5 py-3 rounded-t-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-100">
+                              <FontAwesomeIcon icon={faClock} className="text-green-600 text-lg" />
                             </div>
-                          )}
+
+                            <div className="flex flex-col leading-tight">
+                              <h5 className="text-green-700 font-semibold text-sm">{item.label}</h5>
+                              <p className="text-green-600 text-xs">{item.jam ? formatFullDate(item.jam) : "-"}</p>
+                            </div>
+                          </div>
                         </div>
+
+                        {/* Isi Card */}
+                        <div className="flex flex-col sm:flex-row items-start gap-6 p-5">
+                          <div className="w-32 h-32 rounded-lg overflow-hidden border border-green-100 shadow-sm flex-shrink-0 bg-green-50">
+                            {fotoUrl ? (
+                              <a href={fotoUrl} target="_blank" rel="noopener noreferrer">
+                                <img src={fotoUrl} alt={item.label} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"/>
+                              </a>
+                            ) : (
+                              <div className="flex h-full items-center justify-center text-green-400 text-xs">
+                                Tidak ada foto
+                              </div>
+                            )}
+                          </div>
 
                         {/* INFORMASI */}
                         <div className="flex-1 flex flex-col gap-3 text-gray-700">
@@ -701,29 +702,30 @@ const DetailAbsensi = () => {
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
+                      </div>
+                )
+                  })}
+              </div>
+            </section>
 
 
-              {/* 🔸 SECTION 5 — Keterangan Karyawan */}
-              <section className="p-5">
-                <h4 className="flex items-center gap-2 text-base font-semibold text-green-700 mb-2">
-                  <FontAwesomeIcon icon={faFileSignature} className="text-green-500" />
-                  Keterangan Karyawan
-                </h4>
-                <p className="text-gray-700 bg-green-50 p-3 rounded border border-green-100 text-sm">
-                  {selectedAbsen?.deskripsi || (
-                    <span className="italic text-gray-400">Tidak ada keterangan tambahan.</span>
-                  )}
-                </p>
-              </section>
-            </>
+          {/* 🔸 SECTION 5 — Keterangan Karyawan */}
+          <section className="p-5">
+            <h4 className="flex items-center gap-2 text-base font-semibold text-green-700 mb-2">
+              <FontAwesomeIcon icon={faFileSignature} className="text-green-500" />
+              Keterangan Karyawan
+            </h4>
+            <p className="text-gray-700 bg-green-50 p-3 rounded border border-green-100 text-sm">
+              {selectedAbsen?.deskripsi || (
+                <span className="italic text-gray-400">Tidak ada keterangan tambahan.</span>
+              )}
+            </p>
+          </section>
+        </>
           )}
-        </div>
-      </Modal>
     </div>
+      </Modal >
+    </div >
   );
 };
 

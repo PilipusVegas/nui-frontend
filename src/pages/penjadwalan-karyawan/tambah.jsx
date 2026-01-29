@@ -24,7 +24,14 @@ const TambahPenjadwalan = () => {
     const [scheduledUserIds, setScheduledUserIds] = useState([]);
     const [lokasiList, setLokasiList] = useState([]);
     const [submitting, setSubmitting] = useState(false);
-    const [form, setForm] = useState({ id_user: "", id_shift: "", lokasi: [] });
+    const [form, setForm] = useState({
+        id_user: "",
+        id_shift: "",
+        lokasi: [],
+        start_date: "",
+        end_date: ""
+    });
+
 
     useEffect(() => {
         fetchMaster();
@@ -81,10 +88,22 @@ const TambahPenjadwalan = () => {
 
     const handleSubmit = async () => {
         if (submitting) return;
-        if (!form.id_user || !form.id_shift || !form.lokasi.length) {
-            toast.error("Karyawan, shift, dan lokasi wajib diisi");
+        if (
+            !form.id_user ||
+            !form.id_shift ||
+            !form.lokasi.length ||
+            !form.start_date ||
+            !form.end_date
+        ) {
+            toast.error("Semua field wajib diisi, termasuk tanggal jadwal");
             return;
         }
+        if (form.end_date < form.start_date) {
+            toast.error("Tanggal selesai tidak boleh lebih awal dari tanggal mulai");
+            return;
+        }
+
+
         try {
             setSubmitting(true);
             await fetchWithJwt(`${apiUrl}/jadwal`, {
@@ -93,7 +112,9 @@ const TambahPenjadwalan = () => {
                 body: JSON.stringify({
                     id_user: Number(form.id_user),
                     id_shift: Number(form.id_shift),
-                    location: form.lokasi
+                    location: form.lokasi,
+                    start_date: form.start_date,
+                    end_date: form.end_date
                 })
             });
             toast.success("Penjadwalan berhasil ditambahkan");
@@ -116,11 +137,11 @@ const TambahPenjadwalan = () => {
 
     return (
         <div>
-            <SectionHeader title="Tambah Penjadwalan" subtitle="Atur shift dan lokasi absensi karyawan" onBack={() => navigate(-1)} />
+            <SectionHeader title="Tambah Penjadwalan Baru" subtitle="Tambah penjadwalan untuk karyawan baru." onBack={() => navigate(-1)} />
             <div className="mx-auto mt-6 bg-white rounded-xl shadow-sm border w-full px-4 sm:px-6 py-6 space-y-8">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Karyawan
+                        Pilih Karyawan
                     </label>
                     <Select placeholder={userOptions.length === 0 ? "Semua karyawan sudah terjadwal" : "Pilih karyawan..."} options={userOptions} isDisabled={userOptions.length === 0} onChange={o => setForm(prev => ({ ...prev, id_user: o?.value || "" }))} styles={selectStyle} menuPortalTarget={document.body} />
                 </div>
@@ -129,9 +150,7 @@ const TambahPenjadwalan = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                         Shift Kerja
                     </label>
-                    <Select
-                        placeholder="Pilih shift..."
-                        options={shiftList.map(s => ({
+                    <Select placeholder="Pilih shift..." options={shiftList.map(s => ({
                             value: s.id,
                             label: s.nama
                         }))}
@@ -143,10 +162,39 @@ const TambahPenjadwalan = () => {
                     />
                 </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Tanggal Mulai
+                        </label>
+                        <input type="date" value={form.start_date} onChange={e => setForm(prev => ({ ...prev, start_date: e.target.value }))} className="w-full border rounded-lg px-3 py-2 text-sm"/>
+                        <p className="text-xs text-gray-500 mt-1">
+                            Jadwal mulai berlaku sejak tanggal ini
+                        </p>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Tanggal Selesai
+                        </label>
+                        <input
+                            type="date"
+                            value={form.end_date}
+                            min={form.start_date}
+                            onChange={e => setForm(prev => ({ ...prev, end_date: e.target.value }))}
+                            className="w-full border rounded-lg px-3 py-2 text-sm"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                            Jadwal berakhir pada tanggal ini
+                        </p>
+                    </div>
+                </div>
+
+
                 <div>
                     <div className="flex justify-between mb-1">
                         <label className="text-sm font-medium text-gray-700">
-                            Lokasi Absensi
+                            Tambahkan Lokasi Absensi
                         </label>
                         <span className="text-xs text-gray-500">
                             {form.lokasi.length} lokasi dipilih

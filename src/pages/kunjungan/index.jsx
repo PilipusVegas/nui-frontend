@@ -1,394 +1,784 @@
-import { useEffect, useState } from "react";
-import { MapRoute } from "../../components";
-import { getDistanceMeters } from "../../utils/locationUtils";
-import { fetchWithJwt } from "../../utils/jwtHelper";
-import MobileLayout from "../../layouts/mobileLayout";
-import toast from "react-hot-toast";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMapLocationDot, faCirclePlay, faFlagCheckered } from "@fortawesome/free-solid-svg-icons";
-const MAX_RADIUS = 60;
+    import { useEffect, useState, useRef, useMemo, useCallback } from "react";
+    import { MapRoute } from "../../components";
+    import { getDistanceMeters } from "../../utils/locationUtils";
+    import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
+    import MobileLayout from "../../layouts/mobileLayout";
+    import toast from "react-hot-toast";
+    import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+    import { faMapLocationDot, faRoute } from "@fortawesome/free-solid-svg-icons";
+    import Timeline from "./Timeline";
+    import { Modal, LoadingSpinner, ErrorState, EmptyState } from "../../components/";
+    import Webcam from "react-webcam";
+    import Swal from "sweetalert2";
+    import Select from "react-select";
+    const MAX_RADIUS = 60;
 
-const Kunjungan = () => {
-    const apiurl = process.env.REACT_APP_API_BASE_URL;
-    const [userGPS, setUserGPS] = useState(null);
-    const [stores, setStores] = useState([]);
-    const [selectedStore, setSelectedStore] = useState(null);
-    const [visitStarted, setVisitStarted] = useState(false);
-    const [visitEnded, setVisitEnded] = useState(false);
-    const [tripId, setTripId] = useState(null);
-    const [tripHistory, setTripHistory] = useState([]);
-    const [history, setHistory] = useState([]);
-    const [totalDistance, setTotalDistance] = useState(0);
-    
-    /* ================= GPS ================= */
-    useEffect(() => {
-        const watchId = navigator.geolocation.watchPosition(
-            (pos) => {
-                setUserGPS({
-                    lat: pos.coords.latitude,
-                    lng: pos.coords.longitude,
-                });
-            },
-            (err) => console.error("GPS Error:", err),
-            { enableHighAccuracy: true }
-        );
+    const Kunjungan = () => {
+        const apiurl = process.env.REACT_APP_API_BASE_URL;
+        const [userGPS, setUserGPS] = useState(null);
+        const [stores, setStores] = useState([]);
+        const [selectedStore, setSelectedStore] = useState(null);
+        const [visitStarted, setVisitStarted] = useState(false);
+        const [visitEnded, setVisitEnded] = useState(false);
+        const [tripId, setTripId] = useState(null);
+        const [history, setHistory] = useState([]);
+        const [totalDistance, setTotalDistance] = useState(0);
+        const [modalType, setModalType] = useState(null);
+        const [note, setNote] = useState("");
+        const [photoFile, setPhotoFile] = useState(null);
+        const [photoPreview, setPhotoPreview] = useState(null);
+        const [tripInfo, setTripInfo] = useState(null);
+        const [showCheckpointForm, setShowCheckpointForm] = useState(false);
+        const [isLoadingStores, setIsLoadingStores] = useState(true);
+        const [storeError, setStoreError] = useState(null);
+        const [cameraReady, setCameraReady] = useState(false);
+        const [jadwalLokasi, setJadwalLokasi] = useState([]);
+        const [idShift, setIdShift] = useState(null);
+        const webcamRef = useRef(null);
+        const timelineRef = useRef(null);
+        const lastStoreName = history[history.length - 1]?.store;
+        const activeCheckpoint = history.find(h => h.status === "in");
+        const [jadwalReady, setJadwalReady] = useState(false);
 
-        return () => navigator.geolocation.clearWatch(watchId);
-    }, []);
+        // ================= UTIL =================
+        const parseKoordinat = (koordinat) => {
+            if (!koordinat || !koordinat.includes(",")) return null;
+            const [lat, lng] = koordinat.split(",").map(Number);
+            return isNaN(lat) || isNaN(lng) ? null : { lat, lng };
+        };
+
+        const formatDistance = (m) => {
+            if (m == null) return "-";
+            return m >= 1000 ? `${(m / 1000).toFixed(2)} km` : `${Math.round(m)} m`;
+        };
+
+        // ================= CALLBACK =================
+        const handleDistance = useCallback((d) => {
+            setTotalDistance(d);
+        }, []);
+
+        // ================= MEMO =================
+        const activeCheckpointLocation = useMemo(() => {
+            if (!activeCheckpoint?.id_lokasi) return null;
+            const lokasi = stores.find(s => s.id === activeCheckpoint.id_lokasi);
+            if (!lokasi?.koordinat) return null;
+            return parseKoordinat(lokasi.koordinat);
+        }, [activeCheckpoint, stores]);
+
+        const distanceToActiveCheckpoint = useMemo(() => {
+            if (!userGPS || !activeCheckpointLocation) return null;
+
+            return Math.round(
+                getDistanceMeters(
+                    userGPS.lat,
+                    userGPS.lng,
+                    activeCheckpointLocation.lat,
+                    activeCheckpointLocation.lng
+                )
+            );
+        }, [userGPS, activeCheckpointLocation]);
 
 
-    /* ================= LOKASI ================= */
-    useEffect(() => {
-        const fetchStores = async () => {
+        const shouldShowTimeline = useMemo(() => {
+            return visitStarted && history.length > 0;
+        }, [visitStarted, history]);
+
+
+        const showMapRoute = useMemo(() => {
+            if (!visitEnded && !activeCheckpoint) return true;
+
+            return false;
+        }, [visitEnded, activeCheckpoint]);
+
+
+        const officeLocation = useMemo(() => {
+            if (!stores.length) return null;
+
+            const office = stores.find(l =>
+                l.nama?.toLowerCase().includes("kantor")
+            );
+
+            if (!office?.koordinat) return null;
+
+            return parseKoordinat(office.koordinat);
+        }, [stores]);
+
+
+        const distanceToOffice = useMemo(() => {
+            if (!userGPS || !officeLocation) return null;
+
+            return Math.round(
+                getDistanceMeters(
+                    userGPS.lat,
+                    userGPS.lng,
+                    officeLocation.lat,
+                    officeLocation.lng
+                )
+            );
+        }, [userGPS, officeLocation]);
+
+
+        const hasVisitedCheckpoint = useMemo(() => {
+            return history.some(h => h.status === "out");
+        }, [history]);
+
+        const isFirstCheckpoint = useMemo(() => {
+            return visitStarted && !hasVisitedCheckpoint;
+        }, [visitStarted, hasVisitedCheckpoint]);
+
+
+        const destination = useMemo(() => {
+            if (!selectedStore?.koordinat) return null;
+            return parseKoordinat(selectedStore.koordinat);
+        }, [selectedStore]);
+
+        const filteredStoresBySchedule = useMemo(() => {
+            if (!jadwalLokasi.length) return [];
+            const allowedIds = jadwalLokasi.map((l) => l.id);
+            return stores.filter((s) => allowedIds.includes(s.id));
+        }, [stores, jadwalLokasi]);
+
+        const storesWithDistance = useMemo(() => {
+            if (!userGPS) return [];
+            return filteredStoresBySchedule.map((s) => {
+                const target = parseKoordinat(s.koordinat);
+                if (!target) return { ...s, distance: null };
+
+                return {
+                    ...s,
+                    distance: getDistanceMeters(
+                        userGPS.lat,
+                        userGPS.lng,
+                        target.lat,
+                        target.lng
+                    ),
+                };
+            });
+        }, [filteredStoresBySchedule, userGPS]);
+
+        const storeOptions = useMemo(() => {
+            return storesWithDistance
+                .filter((s) => s.nama !== lastStoreName)
+                .map((s) => ({
+                    value: s.id,
+                    label: s.nama,
+                    data: s,
+                }));
+        }, [storesWithDistance, lastStoreName]);
+
+        // ================= EFFECT =================
+        useEffect(() => {
+            const watchId = navigator.geolocation.watchPosition(
+                (pos) => {
+                    setUserGPS({
+                        lat: pos.coords.latitude,
+                        lng: pos.coords.longitude,
+                    });
+                },
+                () => toast.error("Gagal mengakses GPS"),
+                { enableHighAccuracy: true }
+            );
+
+            return () => navigator.geolocation.clearWatch(watchId);
+        }, []);
+
+        useEffect(() => {
+            const fetchStores = async () => {
+                try {
+                    setIsLoadingStores(true);
+                    const res = await fetchWithJwt(`${apiurl}/lokasi`);
+                    const json = await res.json();
+                    setStores(json?.data || []);
+                } catch {
+                    setStoreError("Gagal memuat lokasi.");
+                } finally {
+                    setIsLoadingStores(false);
+                }
+            };
+
+            fetchStores();
+        }, [apiurl]);
+
+        const fetchJadwalUser = async () => {
             try {
-                const res = await fetchWithJwt(`${apiurl}/lokasi`);
+                const user = await getUserFromToken(apiurl);
+                if (!user?.id_user) {
+                    toast.error("User tidak ditemukan");
+                    return;
+                }
+
+                const res = await fetchWithJwt(
+                    `${apiurl}/jadwal/cek/${user.id_user}`
+                );
                 const json = await res.json();
-                setStores(json?.data || []);
+
+                const jadwal = Array.isArray(json.data)
+                    ? json.data[0]
+                    : json.data;
+
+                if (!jadwal?.id_shift) {
+                    setIdShift(null);
+                    setJadwalLokasi([]);
+                    setJadwalReady(true);
+                    return;
+                }
+
+                setIdShift(jadwal.id_shift);
+                setJadwalLokasi(jadwal.lokasi || []);
+                setJadwalReady(true);
+
             } catch (err) {
-                console.error("Fetch lokasi error:", err);
+                console.error(err);
+                toast.error("Gagal memuat jadwal kunjungan");
+                setIdShift(null);
+                setJadwalLokasi([]);
+                setJadwalReady(true);
             }
         };
-        fetchStores();
-    }, [apiurl]);
 
 
-    /* ================= TRIP SERVER ================= */
-    const fetchTripHistory = async () => {
-        try {
-            const res = await fetchWithJwt(`${apiurl}/trip/user`);
-            const json = await res.json();
-            setTripHistory(json.data || []);
-        } catch (err) {
-            console.error("Gagal ambil riwayat trip", err);
-        }
-    };
-
-    useEffect(() => {
-        fetchTripHistory();
-    }, []);
+        useEffect(() => {
+            fetchJadwalUser();
+        }, []);
 
 
-    useEffect(() => {
-        if (tripHistory.length > 0) {
-            const todayTrip = tripHistory[0];
+        const fetchTripHistory = async () => {
+            try {
+                const res = await fetchWithJwt(`${apiurl}/trip/user`);
+                const json = await res.json();
 
-            setTripId(todayTrip.id_trip);
-            setVisitStarted(true);
-            setTotalDistance(todayTrip.total_jarak || 0);
-            setVisitEnded(todayTrip.is_complete === 1);
+                if (Array.isArray(json.data) && json.data.length === 0) {
+                    setHistory([]);
+                    setTripId(null);
+                    setVisitStarted(false);
+                    setVisitEnded(false);
+                    setTotalDistance(0);
+                    setTripInfo(null);
+                    setShowCheckpointForm(false);
+                    setModalType(null);
+                    return;
+                }
 
-            const timeline = todayTrip.lokasi.map((l, idx) => ({
-                type: idx === 0 ? "start" : "checkpoint",
-                label: idx === 0 ? "Start" : `Checkpoint ${idx}`,
-                store: l.nama,
-                time: "-",
-                location: parseKoordinat(l.koordinat),
-                distance: 0,
-            }));
+                let rawLokasi = Array.isArray(json.data.lokasi)
+                    ? json.data.lokasi
+                    : [];
 
-            // ⬇️ TAMBAHKAN END SEBAGAI STEP BARU
-            if (todayTrip.is_complete === 1 && timeline.length > 0) {
-                const last = timeline[timeline.length - 1];
+                let lokasi = rawLokasi.map((l, i) => ({
+                    id_trip_lokasi: l.id_trip_lokasi,
+                    id_lokasi: l.id_lokasi,
+                    nama: l.nama_lokasi,
+                    status: i === 0 ? "start" : l.jam_selesai ? "out" : "in",
+                    jam_in: l.jam_mulai,
+                    jam_out: l.jam_selesai,
+                    jarak: l.jarak_lokasi,
+                }));
 
-                timeline.push({
-                    type: "end",
-                    label: "End",
-                    store: last.store,
-                    time: "-",
-                    location: last.location,
-                    distance: 0,
-                });
+                // 🔑 FIX LOGIC END
+                if (json.data.is_complete === 1 && lokasi.length >= 2) {
+                    const endSource = lokasi.pop();
+                    const lastCheckpoint = lokasi[lokasi.length - 1];
+                    lokasi.push({
+                        id_trip_lokasi: "end",
+                        id_lokasi: null,
+                        nama: "Akhir Kunjungan",
+                        status: "end",
+                        jam_in: endSource.jam_in || lastCheckpoint.jam_out,
+                        jam_out: endSource.jam_out || lastCheckpoint.jam_out,
+                        jarak: null,
+                    });
+                }
+
+                // ⬇️ BARU SET STATE
+                setHistory(lokasi);
+                setTripId(json.data.id_trip);
+                setVisitStarted(true);
+                setVisitEnded(json.data.is_complete === 1);
+                setTotalDistance(json.data.total_jarak || 0);
+                setTripInfo(json.data);
+
+            } catch (err) {
+                console.error(err);
+                setHistory([]);
+                setTripId(null);
+                setVisitStarted(false);
+                setVisitEnded(false);
             }
-            setHistory(timeline);
-        }
-    }, [tripHistory]);
+        };
 
 
+        useEffect(() => {
+            fetchTripHistory();
+        }, []);
 
+        // ================= ACTION =================
+        const capturePhoto = async () => {
+            const imageSrc = webcamRef.current.getScreenshot();
+            const blob = await fetch(imageSrc).then((r) => r.blob());
+            setPhotoFile(new File([blob], "kunjungan.jpg", { type: "image/jpeg" }));
+            setPhotoPreview(imageSrc);
+        };
 
-    /* ================= HELPERS ================= */
-    const parseKoordinat = (koordinat) => {
-        if (!koordinat) return null;
-        const [lat, lng] = koordinat.split(",").map(v => parseFloat(v.trim()));
-        return { lat, lng };
-    };
-
-
-    const getLocationName = async (lat, lng) => {
-        try {
-            const res = await fetch(
-                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
-            );
-            const data = await res.json();
-            return data.display_name || "Lokasi tidak dikenal";
-        } catch {
-            return "Lokasi tidak dikenal";
-        }
-    };
-
-
-    /* ================= ACTIONS ================= */
-    const handleStart = async () => {
-        if (tripId && !visitEnded) {
-            toast.error("Masih ada kunjungan aktif hari ini");
-            return;
-        }
-
-        const locationName = await getLocationName(userGPS.lat, userGPS.lng);
-
-        try {
-            const res = await fetchWithJwt(`${apiurl}/trip/user`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    deskripsi: "Kunjungan Hari Ini",
-                    foto: null,
-                    lokasi: {
-                        nama: locationName,
-                        koordinat: `${userGPS.lat},${userGPS.lng}`,
-                    },
-                }),
-            });
-
-            const json = await res.json();
-
-            if (!json.success) {
-                toast.error("Gagal memulai kunjungan");
+        const handleStartVisit = async () => {
+            if (!jadwalReady) {
+                toast.error("Sedang memuat jadwal, silakan tunggu");
                 return;
             }
 
-            // Tidak perlu ambil json.data
-            setVisitStarted(true);
-            setVisitEnded(false);
+            if (!idShift) {
+                toast.error("Anda tidak memiliki shift aktif hari ini");
+                return;
+            }
 
-            setHistory([
-                {
-                    type: "start",
-                    label: "Start",
-                    store: locationName,
-                    time: new Date().toLocaleTimeString(),
-                    location: userGPS,
-                    distance: 0,
-                },
-            ]);
+            if (!photoFile || !note) {
+                toast.error("Foto dan keterangan wajib diisi");
+                return;
+            }
 
-            fetchTripHistory(); // ambil id_trip dari sini
-            toast.success("Kunjungan dimulai. Silakan menuju lokasi tujuan.");
-        } catch (err) {
-            console.error(err);
-            toast.error("Gagal memulai kunjungan");
-        }
-    };
+            try {
+                const formData = new FormData();
+                formData.append("id_shift", idShift); // ✅ PENTING
+                formData.append("deskripsi", note);
+                formData.append("foto", photoFile);
+                formData.append("koordinat", `${userGPS.lat},${userGPS.lng}`);
+
+                await fetchWithJwt(`${apiurl}/trip/user`, {
+                    method: "POST",
+                    body: formData,
+                });
+
+                setModalType(null);
+                setNote("");
+                setPhotoFile(null);
+                setPhotoPreview(null);
+
+                fetchTripHistory();
+                toast.success("Kunjungan berhasil dimulai");
+
+            } catch (err) {
+                toast.error("Gagal memulai kunjungan");
+            }
+        };
 
 
 
-    const handleCheckpoint = async () => {
-        if (!selectedStore) {
-            toast.error("Silakan pilih lokasi kunjungan terlebih dahulu");
-            return;
-        }
-        const koordinat = parseKoordinat(selectedStore.koordinat);
-        const distance = getDistanceMeters(
-            userGPS.lat,
-            userGPS.lng,
-            koordinat.lat,
-            koordinat.lng
-        );
+        const handleCheckIn = async () => {
+            if (!photoFile || !note || !selectedStore) {
+                toast.error("Lengkapi foto, keterangan, dan lokasi");
+                return;
+            }
 
-        if (distance > MAX_RADIUS) {
-            toast.error(`Anda belum berada di area ${selectedStore.nama}`);
-            return;
-        }
-        const locationName = selectedStore.nama;
-        try {
-            await fetchWithJwt(`${apiurl}/trip/user/${tripId}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    jarak: distance,
-                    lokasi: {
-                        nama: selectedStore.nama,
-                        koordinat: selectedStore.koordinat,
-                        koordinat_user: `${userGPS.lat},${userGPS.lng}`,
-                    }
-                }),
-            });
-            setHistory(prev => [
-                ...prev,
-                {
-                    type: "checkpoint",
-                    label: `Checkpoint ${prev.filter(h => h.type === "checkpoint").length + 1}`,
-                    store: selectedStore.nama,
-                    time: new Date().toLocaleTimeString(),
-                    location: koordinat,
-                    distance: distance,
+            if (!tripId) {
+                toast.error("ID Trip tidak ditemukan");
+                return;
+            }
+
+            const jarakKeLokasi = Math.round(selectedStore.distance);
+
+            if (jarakKeLokasi > MAX_RADIUS) {
+                toast.error(`Anda berada ${jarakKeLokasi}m dari lokasi`);
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append("id_lokasi", selectedStore.id);
+                formData.append("jarak", jarakKeLokasi);          // jarak ke lokasi
+                formData.append("total_jarak", totalDistance);   // ⬅️ WAJIB
+                formData.append("koordinat", `${userGPS.lat},${userGPS.lng}`);
+                formData.append("foto", photoFile);
+                formData.append("deskripsi", note);
+
+                const res = await fetchWithJwt(
+                    `${apiurl}/trip/user/in/${tripId}`,
+                    { method: "PUT", body: formData }
+                );
+
+                if (!res.ok) {
+                    let msg = "Gagal Check-In";
+                    try {
+                        const err = await res.json();
+                        msg = err?.message || msg;
+                    } catch { }
+                    throw new Error(msg);
                 }
-            ]);
 
-            fetchTripHistory();
-            toast.success(`Lokasi ${locationName} berhasil dikunjungi`);
-        } catch {
-            toast.error("Gagal mengirim checkpoint");
+                const json = await res.json();
+                if (json?.success === false) {
+                    throw new Error(json?.message || "Check-In ditolak server");
+                }
+
+                setModalType(null);
+                setPhotoFile(null);
+                setPhotoPreview(null);
+                setNote("");
+                setSelectedStore(null);
+                setShowCheckpointForm(false);
+
+                fetchTripHistory();
+                toast.success("Check-In berhasil");
+
+            } catch (err) {
+                console.error(err);
+                toast.error(err.message || "Gagal Check-In");
+            }
+        };
+
+
+        const handleCheckOut = async () => {
+            if (!photoFile) {
+                toast.error("Foto wajib diambil untuk Check-Out");
+                return;
+            }
+
+            if (!activeCheckpoint?.id_trip_lokasi) {
+                toast.error("ID lokasi aktif tidak ditemukan");
+                return;
+            }
+
+            if (distanceToActiveCheckpoint == null) {
+                toast.error("Gagal menghitung jarak ke lokasi");
+                return;
+            }
+
+            if (distanceToActiveCheckpoint > MAX_RADIUS) {
+                showOutsideRadiusAlert(distanceToActiveCheckpoint);
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append("foto", photoFile);
+                formData.append("jarak", distanceToActiveCheckpoint);
+                formData.append("koordinat", `${userGPS.lat},${userGPS.lng}`);
+
+                const res = await fetchWithJwt(
+                    `${apiurl}/trip/user/out/${activeCheckpoint.id_trip_lokasi}`,
+                    {
+                        method: "PUT",
+                        body: formData,
+                    }
+                );
+
+                if (!res.ok) {
+                    let msg = "Gagal Check-Out";
+                    try {
+                        const err = await res.json();
+                        msg = err?.message || msg;
+                    } catch { }
+                    throw new Error(msg);
+                }
+
+                const json = await res.json();
+                if (json?.success === false) {
+                    throw new Error(json?.message || "Check-Out ditolak server");
+                }
+
+                setModalType(null);
+                setPhotoFile(null);
+                setPhotoPreview(null);
+                setNote("");
+
+                fetchTripHistory();
+                toast.success("Check-Out berhasil");
+
+            } catch (err) {
+                console.error(err);
+                toast.error(err.message || "Gagal Check-Out");
+            }
+        };
+
+
+        const handleEndVisit = async () => {
+            if (!photoFile || !note) {
+                toast.error("Foto dan keterangan wajib diisi");
+                return;
+            }
+            if (!tripId) {
+                toast.error("ID Trip tidak ditemukan");
+                return;
+            }
+            if (activeCheckpoint) {
+                toast.error("Masih ada lokasi yang belum di Check-Out");
+                return;
+            }
+            if (!hasVisitedCheckpoint) {
+                toast.error("Minimal harus mengunjungi 1 lokasi");
+                return;
+            }
+            if (distanceToOffice == null) {
+                toast.error("Gagal menghitung jarak ke kantor");
+                return;
+            }
+            const lastLocation = history
+                .filter(h => h.status === "out")
+                .at(-1);
+            if (!lastLocation?.id_lokasi) {
+                toast.error("Lokasi terakhir tidak ditemukan");
+                return;
+            }
+            try {
+                const formData = new FormData();
+                formData.append("id_lokasi", lastLocation.id_lokasi);
+                formData.append("jarak", distanceToOffice);
+                formData.append("koordinat", `${userGPS.lat},${userGPS.lng}`);
+                formData.append("foto", photoFile);
+                formData.append("deskripsi", note);
+                const res = await fetchWithJwt(
+                    `${apiurl}/trip/user/end/${tripId}`,
+                    {
+                        method: "PUT",
+                        body: formData,
+                    }
+                );
+                if (!res.ok) {
+                    let msg = "Gagal mengakhiri kunjungan";
+                    try {
+                        const err = await res.json();
+                        msg = err?.message || msg;
+                    } catch { }
+                    throw new Error(msg);
+                }
+                const json = await res.json();
+                if (json?.success === false) {
+                    throw new Error(json?.message || "Akhiri kunjungan ditolak server");
+                }
+                setModalType(null);
+                setPhotoFile(null);
+                setPhotoPreview(null);
+                setNote("");
+                fetchTripHistory();
+                toast.success("Kunjungan berhasil diakhiri");
+            } catch (err) {
+                console.error(err);
+                toast.error(err.message || "Gagal mengakhiri kunjungan");
+            }
+        };
+
+        const handleCancelCheckpoint = () => {
+            setShowCheckpointForm(false);
+            setSelectedStore(null);
+        };
+
+
+        // ================= EARLY =================
+        if (!userGPS) {
+            return (
+                <MobileLayout title="Kunjungan">
+                    <LoadingSpinner message="Mengambil lokasi GPS..." />
+                </MobileLayout>
+            );
         }
-    };
 
-    const handleEnd = async () => {
-        try {
-            await fetchWithJwt(`${apiurl}/trip/user/end/${tripId}`, { method: "PUT" });
-            setVisitEnded(true);
-            fetchTripHistory();
-            toast.success("Kunjungan hari ini telah selesai.");
-        } catch {
-            toast.error("Gagal mengakhiri kunjungan");
-        }
-    };
+        const MODAL_CONFIG = {
+            start: {
+                title: "Mulai Kunjungan",
+                note: "Ambil foto dan isi keterangan."
+            },
+            checkpoint_first: {
+                title: "Check-In & Absen Masuk",
+                note: "Ambil foto dan isi keterangan sebagai Absen Masuk."
+            },
+            checkpoint: {
+                title: "Check-In Lokasi",
+                note: "Ambil foto dan isi keterangan untuk Check-In."
+            },
+            checkout: {
+                title: "Check-Out Lokasi",
+                note: "Ambil foto sebagai tanda selesai di lokasi ini."
+            },
+            end: {
+                title: "Akhiri Kunjungan & Absen Pulang",
+                note: "Ambil foto dan isi keterangan untuk Absen Pulang."
+            }
+        };
+
+        const showOutsideRadiusAlert = (distance) => {
+            Swal.fire({
+                icon: "warning",
+                title: "Anda berada di luar area lokasi",
+                html: `
+            <p style="font-size:13px; line-height:1.5">
+                Jarak Anda saat ini <b>${formatDistance(distance)}</b> dari lokasi tujuan.
+                <br/><br/>
+                Silakan <b>berangkat ke titik lokasi tujuan</b> terlebih dahulu,
+                lalu lakukan <b>Check-In di sana</b>.
+                <br/><br/>
+                Jika ingin pulang, <b>jangan lupa lakukan Check-Out di gerai</b>.
+            </p>
+            `,
+                confirmButtonText: "Mengerti",
+                confirmButtonColor: "#2563eb",
+            });
+        };
 
 
-    /* ================= LOADING ================= */
-    if (!userGPS) {
+
+        const getModalKey = () => {
+            if (modalType === "checkpoint" && isFirstCheckpoint) {
+                return "checkpoint_first";
+            }
+            return modalType;
+        };
+
+        const resetModal = () => {
+            setModalType(null);
+            setNote("");
+            setPhotoFile(null);
+            setPhotoPreview(null);
+            setSelectedStore(null);
+        };
+
+
+        // ================= RENDER =================
         return (
-            <MobileLayout title="Kunjungan">
-                <div className="p-4 text-center text-sm text-gray-500">
-                    Mengambil lokasi GPS...
-                </div>
-            </MobileLayout>
-        );
-    }
+            <MobileLayout title="Kunjungan Teknisi">
+                <div className="min-h-screen pb-28 space-y-4 bg-slate-50">
+                    {showMapRoute && (
+                        <div className="bg-white rounded-xl border p-2 px-3 pb-4 space-y-3">
+                            <div className="space-y-0.5">
+                                <p className="text-sm font-semibold text-gray-800">
+                                    Peta Perjalanan
+                                </p>
+                                <p className="text-[11px] text-gray-500">
+                                    {!visitStarted ? "Mulai perjalanan menuju gerai untuk Checkpoint pertama" : isFirstCheckpoint ? "Checkpoint pertama digunakan untuk Absen Masuk di gerai" : "Pantau posisi Anda selama menjalankan kunjungan"}
+                                </p>
+                            </div>
 
-    return (
-        <MobileLayout title="Kunjungan">
-            <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white px-1.5 py-2.5 space-y-6">
-                <div className="relative overflow-hidden">
-                    <MapRoute user={userGPS} destination={selectedStore ? parseKoordinat(selectedStore.koordinat) : null} />
-                    <div className="absolute bottom-2 left-2 right-2 bg-white/90 backdrop-blur-md rounded-xl px-3 py-2 text-xs shadow-md flex items-center gap-2 z-[9999]">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                            <FontAwesomeIcon icon={faMapLocationDot} />
+                            <MapRoute user={userGPS} destination={destination} onDistance={handleDistance} />
+                            {visitStarted && showCheckpointForm && (
+                                <div className="space-y-1">
+                                    <label className="text-xs font-medium text-gray-700">
+                                        {isFirstCheckpoint ? "Gerai untuk Checkpoint Pertama (Absen Masuk)" : "Lokasi Kerja yang Akan Dikunjungi"}
+                                    </label>
+                                    <Select options={storeOptions} placeholder={isFirstCheckpoint ? "Pilih gerai atau kantor" : "Pilih lokasi kerja yang akan dikunjungi"} onChange={(o) => setSelectedStore(o?.data || null)} />
+                                    {selectedStore && (
+                                        <div className={`flex items-start text-[11px] pl-1 ${selectedStore.distance <= MAX_RADIUS ? "text-emerald-700" : "text-rose-700"}`}>
+                                            <div className="leading-relaxed">
+                                                <p className="font-medium">
+                                                    Jarak Anda ke lokasi ini:
+                                                    <span className="font-semibold">
+                                                        {" "}
+                                                        {formatDistance(selectedStore.distance)}
+                                                    </span>
+                                                </p>
+
+                                                <p className="text-[11px] opacity-90">
+                                                    {selectedStore.distance <= MAX_RADIUS
+                                                        ? isFirstCheckpoint ? "Anda berada di area gerai dan dapat melakukan Absen Masuk." : "Anda berada di area lokasi dan dapat melakukan Check-In."
+                                                        : isFirstCheckpoint ? "Anda harus berada di area gerai untuk melakukan Absen Masuk." : `Anda berada di luar radius ${MAX_RADIUS} m. Dekati lokasi untuk Check-In.`}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
-                        <div className="leading-snug text-gray-700 text-xs">
-                            {!visitStarted ? "GPS sudah siap. Yuk, mulai kunjungan hari ini." : visitEnded ? "Kunjungan hari ini sudah selesai. Terima kasih." : "Sedang menuju lokasi tujuan. Tetap semangat."}
-                        </div>
+                    )}
+
+                    <div ref={timelineRef}>
+                        {shouldShowTimeline && (
+                            <Timeline history={history} tripInfo={tripInfo} onCheckout={() => setModalType("checkout")} />
+                        )}
+
+                        {!visitStarted && (
+                            <div className="fixed bottom-0 left-0 right-0 bg-white border-t px-4 py-3 z-40">
+                                <button onClick={() => setModalType("start")} className="w-full py-3 rounded-xl bg-green-600 text-white font-semibold">
+                                    Mulai Perjalanan Kunjungan
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* TITLE */}
-                <div className="space-y-1">
-                    <h1 className="text-xl font-semibold text-gray-900">
-                        Kunjungan Lapangan
-                    </h1>
-                    <p className="text-sm text-gray-500">
-                        Pantau perjalanan kerja Anda secara real-time.
-                    </p>
-                </div>
-
-                {/* PROGRESS STEPS */}
-                <div className="flex items-center justify-between bg-white rounded-2xl shadow px-4 py-3 text-xs">
-                    {[
-                        { label: "Start", active: visitStarted, color: "green" },
-                        { label: "Checkpoint", active: history.some(h => h.type === "checkpoint"), color: "blue" },
-                        { label: "End", active: visitEnded, color: "red" },
-                    ].map((step, i) => (
-                        <div key={i} className="flex items-center gap-2">
-                            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white
-              ${step.active
-                                    ? step.color === "green" ? "bg-green-500"
-                                        : step.color === "blue" ? "bg-blue-500"
-                                            : "bg-red-500"
-                                    : "bg-gray-300"
-                                }`}>
-                                {i + 1}
-                            </div>
-                            <span className={`${step.active ? "text-gray-800 font-medium" : "text-gray-400"}`}>
-                                {step.label}
-                            </span>
-                        </div>
-                    ))}
-                </div>
-
-                {/* SELECT LOCATION */}
                 {visitStarted && !visitEnded && (
-                    <div className="bg-white rounded-2xl shadow p-4 space-y-2">
-                        <label className="text-xs font-medium text-gray-600">
-                            Lokasi Checkpoint
-                        </label>
-                        <select
-                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400"
-                            onChange={(e) => {
-                                const store = stores.find(s => String(s.id) === e.target.value);
-                                setSelectedStore(store || null);
-                            }}
-                        >
-                            <option value="">Pilih lokasi</option>
-                            {stores.map(s => (
-                                <option key={s.id} value={s.id}>{s.nama}</option>
-                            ))}
-                        </select>
+                    <div className="fixed bottom-0 left-0 right-0 bg-white border-t px-4 py-3 z-40 space-y-2">
+                        {!activeCheckpoint && !showCheckpointForm && (
+                            <button onClick={() => setShowCheckpointForm(true)} className="w-full py-3 rounded-xl bg-green-600 text-white font-semibold">
+                                {isFirstCheckpoint ? "Checkpoint Pertama (Absen Masuk)" : "Tambah Lokasi Kunjungan"}
+                            </button>
+                        )}
+
+                        {!activeCheckpoint && showCheckpointForm && (
+                            <div className="flex gap-2">
+                                <button onClick={handleCancelCheckpoint} className="flex-1 py-3 rounded-lg border border-gray-300 text-white text-xs font-semibold bg-red-500 hover:bg-red-600">
+                                    Batalkan
+                                </button>
+
+                                <button
+                                    onClick={() => {
+                                        if (!selectedStore) {
+                                            toast.error("Pilih lokasi terlebih dahulu");
+                                            return;
+                                        }
+
+                                        if (
+                                            selectedStore.distance == null ||
+                                            Math.round(selectedStore.distance) > MAX_RADIUS
+                                        ) {
+                                            showOutsideRadiusAlert(selectedStore.distance);
+                                            return;
+                                        }
+
+                                        setModalType("checkpoint");
+                                    }}
+                                    className="flex-1 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold"
+                                >
+                                    {isFirstCheckpoint ? "Check-In & Absen Masuk" : "Check-In Lokasi"}
+                                </button>
+
+                            </div>
+                        )}
+
+                        {!activeCheckpoint && hasVisitedCheckpoint && !showCheckpointForm && (
+                            <button onClick={() => setModalType("end")} className="w-full py-3 rounded-xl bg-red-600 text-white font-semibold">
+                                Akhiri Kunjungan & Absen Pulang
+                            </button>
+                        )}
+
                     </div>
                 )}
 
-                {/* ACTION BUTTONS */}
-                <div className="space-y-3">
-                    {!visitStarted && (
-                        <button onClick={handleStart} className="w-full bg-green-600 text-white py-3 rounded-xl font-medium flex justify-center gap-3 shadow-md active:scale-95 transition">
-                            <FontAwesomeIcon icon={faCirclePlay} />
-                            Mulai Kunjungan
-                        </button>
-                    )}
+                {(() => {
+                    const modalKey = getModalKey();
+                    const modalData = MODAL_CONFIG[modalKey];
 
-                    {visitStarted && !visitEnded && (
-                        <>
-                            <button onClick={handleCheckpoint} className="w-full bg-white border border-gray-200 py-3 rounded-xl text-gray-700 flex justify-center gap-3 shadow-sm hover:bg-gray-50 active:scale-95 transition">
-                                <FontAwesomeIcon icon={faMapLocationDot} />
-                                Checkpoint Lokasi
-                            </button>
+                    return (
+                        <Modal isOpen={["start", "checkpoint", "checkout", "end"].includes(modalType)} onClose={resetModal} title={modalData?.title} note={modalData?.note}
+                            footer={
+                                <button
+                                    onClick={() => {
+                                        if (modalType === "start") handleStartVisit();
+                                        if (modalType === "checkpoint") handleCheckIn();
+                                        if (modalType === "checkout") handleCheckOut();
+                                        if (modalType === "end") handleEndVisit();
+                                    }}
+                                    className="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold"
+                                >
+                                    {modalKey === "checkpoint_first" && "Simpan & Absen Masuk"}
+                                    {modalKey === "checkpoint" && "Simpan Check-In"}
+                                    {modalKey === "checkout" && "Simpan Check-Out"}
+                                    {modalKey === "start" && "Mulai Kunjungan"}
+                                    {modalKey === "end" && "Akhiri & Absen Pulang"}
+                                </button>
+                            }
+                        >
+                            {/* CAMERA */}
+                            {!photoPreview ? (
+                                <>
+                                    <Webcam ref={webcamRef} screenshotFormat="image/jpeg" className="rounded-lg" onUserMedia={() => setCameraReady(true)} />
+                                    <button onClick={capturePhoto} className="mt-3 w-full bg-blue-600 text-white py-2 rounded-lg">
+                                        Ambil Foto
+                                    </button>
+                                </>
+                            ) : (
+                                <img src={photoPreview} className="rounded-lg" alt="preview" />
+                            )}
+                            <textarea className="w-full border rounded-lg p-2 mt-3 text-sm" placeholder="Contoh: Tiba di lokasi, kondisi aman, siap bekerja" value={note} onChange={(e) => setNote(e.target.value)} />
+                        </Modal>
+                    );
+                })()}
+            </MobileLayout>
+        );
+    };
 
-                            <button onClick={handleEnd} className="w-full bg-red-600 text-white py-3 rounded-xl flex justify-center gap-3 shadow-md active:scale-95 transition"    >
-                                <FontAwesomeIcon icon={faFlagCheckered} />
-                                Selesaikan Kunjungan
-                            </button>
-                        </>
-                    )}
-                </div>
-
-                {/* TIMELINE */}
-                <div className="bg-white rounded-2xl shadow p-4 space-y-4">
-                    <h2 className="text-sm font-semibold text-gray-700">
-                        Timeline Perjalanan
-                    </h2>
-
-                    {history.length === 0 ? (
-                        <p className="text-xs text-gray-400">Belum ada aktivitas.</p>
-                    ) : (
-                        history.map((h, i) => (
-                            <div key={i} className="flex gap-4">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-medium
-                ${h.type === "start" ? "bg-green-500"
-                                        : h.type === "checkpoint" ? "bg-blue-500"
-                                            : "bg-red-500"}`}>
-                                    {h.type === "start" ? "S" : h.type === "end" ? "E" : i}
-                                </div>
-
-                                <div className="flex-1 text-xs space-y-1">
-                                    <div className="flex justify-between">
-                                        <span className="font-medium text-gray-800">{h.label}</span>
-                                        <span className="text-gray-400">{h.time}</span>
-                                    </div>
-                                    <p className="text-gray-600 leading-snug">{h.store}</p>
-
-                                    {h.distance > 0 && (
-                                        <span className="inline-block bg-blue-50 text-blue-600 px-2 py-1 rounded-full text-[10px]">
-                                            {h.distance.toFixed(0)} m dari titik sebelumnya
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        ))
-                    )}
-                </div>
-            </div>
-        </MobileLayout>
-    );
-
-
-};
-
-export default Kunjungan;
+    export default Kunjungan;

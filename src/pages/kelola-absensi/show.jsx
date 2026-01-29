@@ -28,6 +28,7 @@ const DetailKelolaPresensi = () => {
   const [totalKeterlambatan, setTotalKeterlambatan] = useState("-");
   const [remarkModal, setRemarkModal] = useState({ open: false, remark: "", remarkBy: "" });
 
+
   const fetchPresensi = async (startDate, endDate) => {
     setLoading(true);
     setError(null);
@@ -176,18 +177,6 @@ const DetailKelolaPresensi = () => {
                   </div>
                 </div>
 
-                {/* <div className="flex items-center gap-3 p-4 rounded-xl border border-orange-100 ">
-                  <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-white text-orange-500 shadow-inner">
-                    <FontAwesomeIcon icon={faLocationDot} />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600">Jarak Tidak Valid (&gt;60m)</p>
-                    <p className="text-base font-bold text-gray-800">
-                      {dataUser?.total_distance_not_valid ?? 0} Hari
-                    </p>
-                  </div>
-                </div> */}
-
                 <div className="flex items-center gap-3 p-4 rounded-xl border border-red-100 ">
                   <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-white text-red-500 shadow-inner">
                     <FontAwesomeIcon icon={faMoneyBillWave} />
@@ -221,6 +210,7 @@ const DetailKelolaPresensi = () => {
               {dateRange.map((tgl, i) => {
                 const rec = attendance[tgl];
                 const isSunday = new Date(tgl).getDay() === 0;
+                const isLeaveOrSick = rec?.remark_status === 4 || rec?.remark_status === 5;
 
                 return (
                   <tr className={`text-center text-xs border-t border-b  ${isSunday ? "bg-red-500 font-semibold [&>*]:text-white" : i % 2 === 0 ? "bg-gray-50 hover:bg-gray-100" : "bg-white hover:bg-gray-100"}`}>
@@ -228,33 +218,37 @@ const DetailKelolaPresensi = () => {
                     <td className="px-4 py-2 font-semibold text-left">
                       {formatFullDate(tgl)}
                     </td>
-                    <td className="px-4 py-2">{rec?.shift || "-"}</td>
                     <td className="px-4 py-2">
-                      {rec?.in ? formatTime(rec.in) : "-"}
+                      {isLeaveOrSick ? "-" : rec?.shift || "-"}
                     </td>
-                    <td className={`px-4 py-2 ${isSunday ? "text-white font-bold" : rec?.late >= 1 ? "text-red-600 font-bold" : "text-gray-700"}`}>
-                      {typeof rec?.late === "number" && rec.late >= 1 ? `${rec.late}` : "-"}
+                    <td className="px-4 py-2">
+                      {isLeaveOrSick ? "-" : rec?.in ? formatTime(rec.in) : "-"}
                     </td>
-                    <td className={`px-4 py-2 ${isSunday ? "text-white font-bold" : rec?.is_early_out ? "text-red-600 font-bold bg-red-100" : "text-gray-700"}`}>
-                      {rec?.out ? formatTime(rec.out) : "-"}
+                    <td className={`px-4 py-2 ${isSunday ? "text-white font-bold" : rec?.late >= 1 && !isLeaveOrSick ? "text-red-600 font-bold" : "text-gray-700"}`}>
+                      {!isLeaveOrSick && typeof rec?.late === "number" && rec.late >= 1
+                        ? rec.late
+                        : "-"
+                      }
                     </td>
+                    <td className={`px-4 py-2 ${isSunday ? "text-white font-bold" : rec?.is_early_out && !isLeaveOrSick ? "text-red-600 font-bold bg-red-100" : "text-gray-700"}`}>
+                      {isLeaveOrSick ? "-" : rec?.out ? formatTime(rec.out) : "-"}
+                    </td>
+
                     <td className="px-3 py-1">
                       {rec?.overtimes && rec.overtimes.length > 0 ? (
-                        <div
-                          onClick={() =>
-                            setOvertimeModal({
-                              open: true,
-                              list: rec.overtimes,
-                              tanggal: tgl,
-                            })
-                          }
+                        <div onClick={() =>
+                          setOvertimeModal({
+                            open: true,
+                            list: rec.overtimes,
+                            tanggal: tgl,
+                          })
+                        }
                           className={`flex items-center justify-center cursor-pointer text-xs
                           ${isSunday ? "text-white" : "text-blue-500 hover:text-blue-600"}`}
                         >
                           <span className={`mr-1 inline-block w-[22px] text-center font-medium ${isSunday ? "text-white" : "text-black"}`}>
                             {rec.total_overtime}
                           </span>
-
                           <FontAwesomeIcon icon={faInfoCircle} className="text-sm text-blue-600 bg-white border border-white rounded-full" />
                         </div>
                       ) : (
@@ -369,13 +363,7 @@ const DetailKelolaPresensi = () => {
         </div>
       </Modal>
 
-      <Modal
-        isOpen={overtimeModal.open}
-        onClose={() => setOvertimeModal({ open: false, list: [] })}
-        title="Detail Lembur"
-        note={`Tanggal: ${formatFullDate(overtimeModal.tanggal)}`}
-        size="lg"
-      >
+      <Modal isOpen={overtimeModal.open} onClose={() => setOvertimeModal({ open: false, list: [] })} title="Detail Lembur" note={`Tanggal: ${formatFullDate(overtimeModal.tanggal)}`} size="lg">
         <div className="space-y-4 text-sm text-gray-700">
 
           {/* Ringkasan */}

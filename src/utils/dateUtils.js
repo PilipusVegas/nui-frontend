@@ -2,6 +2,31 @@
 import { format, formatDistanceToNow, isToday, isYesterday, parseISO } from "date-fns";
 import { id } from "date-fns/locale";
 
+// Konversi Date / string ke waktu Asia/Jakarta (WIB)
+export function toWIB(date) {
+    if (!date) return null;
+
+    const d = new Date(date);
+
+    // Konversi ke string WIB lalu parse ulang jadi Date object
+    const wibString = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Jakarta",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+    }).format(d);
+
+    const [month, day, year, hour, minute, second] =
+        wibString.match(/\d+/g);
+
+    return new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`);
+}
+
+
 /* Default Patterns */
 export const PATTERNS = {
     DATE: "dd-MM-yyyy",
@@ -28,11 +53,13 @@ export const PATTERNS = {
 export function formatDate(date, pattern = PATTERNS.DATE) {
     if (!date) return "-";
     try {
-        return format(new Date(date), pattern, { locale: id });
+        const wibDate = toWIB(date);
+        return format(wibDate, pattern, { locale: id });
     } catch {
         return "-";
     }
 }
+
 
 /* Variasi Umum */
 export const formatDateTime = (date) => formatDate(date, PATTERNS.DATETIME);
@@ -56,11 +83,18 @@ export const formatCustomDateTime = (date) => formatDate(date, PATTERNS.CUSTOM_D
 //   lain-lain   -> "3 hari yang lalu" (auto bahasa Indonesia)
 export function formatRelative(date) {
     if (!date) return "-";
-    const d = new Date(date);
-    if (isToday(d)) return "Hari ini";
-    if (isYesterday(d)) return "Kemarin";
-    return formatDistanceToNow(d, { addSuffix: true, locale: id });
+
+    const wibDate = toWIB(date);
+
+    if (isToday(wibDate)) return "Hari ini";
+    if (isYesterday(wibDate)) return "Kemarin";
+
+    return formatDistanceToNow(wibDate, {
+        addSuffix: true,
+        locale: id,
+    });
 }
+
 
 
 /* ================== Helper ================== */
@@ -112,21 +146,23 @@ export function formatHourToTime(hour) {
 // FOR REMARK
 // formatForInput
 // utils/dateUtils.js
-export const formatForInput = (datetime, tipe_absensi) => {
+export const formatForInput = (datetime, tipeAbsensi) => {
     if (!datetime) return "";
 
-    // Tangani format dari backend "YYYY-MM-DD HH:mm:ss"
-    const [datePart, timePart] = datetime.split(" ");
-    if (!datePart || !timePart) return "";
+    const date = new Date(datetime.replace(" ", "T"));
 
-    if (tipe_absensi === 1) {
-        // Lapangan → datetime-local (YYYY-MM-DDTHH:mm)
-        return `${datePart}T${timePart.slice(0, 5)}`;
-    } else {
-        // Kantor → time (HH:mm)
-        return timePart.slice(0, 5);
+    const hh = String(date.getHours()).padStart(2, "0");
+    const mm = String(date.getMinutes()).padStart(2, "0");
+
+    // TIPE 1 → hanya jam
+    if (tipeAbsensi === 1) {
+        return `${hh}:${mm}`;
     }
+
+    // TIPE 2 → time only (karena tanggal sudah dari selectedDate)
+    return `${hh}:${mm}`;
 };
+
 
 
 /* ================== Business Date (WIB Safe) ================== */

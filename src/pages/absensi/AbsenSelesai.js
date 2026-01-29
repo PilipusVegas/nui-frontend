@@ -57,44 +57,51 @@ const AbsenSelesai = ({ handleNextStepData }) => {
     );
   }, [selectedLocation, userCoords]);
 
-
-
   useEffect(() => {
     if (!userId || isKadiv) return;
 
     const fetchJadwal = async () => {
       try {
         const res = await fetchWithJwt(`${apiUrl}/jadwal/cek/${userId}`);
+
         if (res.status === 404) {
-          // fallback bebas
           setLockLocation(false);
           return;
         }
+
         if (!res.ok) throw new Error("Gagal ambil jadwal");
+
         const json = await res.json();
-        const list = json.data || [];
-        if (list.length === 0) {
+
+        // NORMALISASI: object -> array
+        const jadwalList = json?.data
+          ? Array.isArray(json.data)
+            ? json.data
+            : [json.data]
+          : [];
+
+        if (jadwalList.length === 0) {
           setJadwal(null);
           setLockLocation(false);
           return;
         }
 
-        const data = list[0];   // ambil jadwal pertama
+        const data = jadwalList[0];
         setJadwal(data);
 
         if (data.lokasi?.length === 1 && locations.length > 0) {
           const loc = data.lokasi[0];
-          const fullLocation = locations.find(l => Number(l.value) === Number(loc.id));
-
+          const fullLocation = locations.find(
+            (l) => Number(l.value) === Number(loc.id)
+          );
 
           if (fullLocation) {
             setSelectedLocation(fullLocation);
-            setLockLocation(true);   // kunci karena hanya 1 lokasi
+            setLockLocation(true);
           } else {
-            setLockLocation(false); // jangan kunci kalau belum ketemu
+            setLockLocation(false);
           }
-        }
-        else if (data.lokasi?.length > 1) {
+        } else {
           setLockLocation(false);
         }
 
@@ -106,6 +113,7 @@ const AbsenSelesai = ({ handleNextStepData }) => {
 
     fetchJadwal();
   }, [userId, isKadiv, apiUrl, locations]);
+
 
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -372,7 +380,7 @@ const AbsenSelesai = ({ handleNextStepData }) => {
             </div>
 
             <div className="relative w-full h-[260px] rounded-xl overflow-hidden">
-              <MapRadius user={mapUser} location={mapLocation} radius={60}/>
+              <MapRadius user={mapUser} location={mapLocation} radius={60} />
             </div>
 
             {!jadwal && !isKadiv && (
@@ -381,15 +389,8 @@ const AbsenSelesai = ({ handleNextStepData }) => {
               </div>
             )}
 
-
             {/* SELECT LOKASI */}
-            <Select
-              options={filteredLocations}
-              value={selectedLocation}
-              isDisabled={lockLocation}
-              isSearchable
-              placeholder={lockLocation ? "Lokasi sudah ditentukan" : "Pilih lokasi"}
-              className="text-sm"
+            <Select options={filteredLocations} value={selectedLocation} isDisabled={lockLocation} isSearchable placeholder={lockLocation ? "Lokasi sudah ditentukan" : "Pilih lokasi"} className="text-sm"
               onChange={(loc) => {
                 setSelectedLocation(loc);
                 checkLocationRadius(
@@ -444,13 +445,8 @@ const AbsenSelesai = ({ handleNextStepData }) => {
 
               <div className="flex gap-3">
                 <button type="submit" className={`flex-1 py-4 rounded-lg font-semibold transition
-                    ${distance !== null && distance > 60
-                    ? "bg-red-500 text-white cursor-not-allowed"
-                    : isValid()
-                      ? "bg-green-500 text-white hover:bg-green-600"
-                      : "bg-red-400 text-white"}`}
+                    ${distance !== null && distance > 60 ? "bg-red-500 text-white cursor-not-allowed" : isValid() ? "bg-green-500 text-white hover:bg-green-600" : "bg-red-400 text-white"}`}
                 >
-
                   Lihat Detail Absen Pulang <FontAwesomeIcon icon={faChevronRight} className="ml-2" />
                 </button>
               </div>

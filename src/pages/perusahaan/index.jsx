@@ -29,12 +29,11 @@ const KelolaPerusahaan = () => {
 
   return (
     <div className="w-full mx-auto">
-      <SectionHeader title="Kelola Perusahaan" subtitle={`Saat ini terdapat ${perusahaan.length} perusahaan yang terdaftar`} onBack={handleBackClick}
+      <SectionHeader title="Data Perusahaan" subtitle={`Saat ini terdapat ${perusahaan.length} perusahaan yang terdaftar`} onBack={handleBackClick}
         actions={
-          <button onClick={() => navigate("/perusahaan/tambah")} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
+          <button onClick={() => navigate("/perusahaan/tambah")} className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition">
             <FontAwesomeIcon icon={faPlus} />
-            <span className="text-sm block sm:hidden">Tambah</span>
-            <span className="text-sm hidden sm:block">Tambah Perusahaan</span>
+            <span className="hidden sm:inline">Tambah</span>
           </button>
         }
       />

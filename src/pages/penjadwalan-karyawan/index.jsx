@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faEdit, faTrash, faCloudDownload, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faPlus, faEye, faSort, faSortUp, faSortDown } from "@fortawesome/free-solid-svg-icons";
 import { SectionHeader, LoadingSpinner, ErrorState, EmptyState, SearchBar } from "../../components";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import toast from "react-hot-toast";
@@ -14,10 +14,9 @@ const PenjadwalanKaryawan = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
-    const [expandedRow, setExpandedRow] = useState(null);
-    const scheduledUserIds = data
-        .map(item => item.id_user)
-        .filter(Boolean);
+    const scheduledUserIds = data.map(item => item.id_user);
+    const getStatusPriority = (item) => { return item.has_ongoing ? 1 : 0; };
+    const [statusSort, setStatusSort] = useState("empty-first");
 
     const fetchPenjadwalan = async () => {
         try {
@@ -34,16 +33,14 @@ const PenjadwalanKaryawan = () => {
         }
     };
 
-
     useEffect(() => {
         fetchPenjadwalan();
     }, []);
 
-
-    const handleDelete = async (id) => {
+    const handleDelete = async (id_user) => {
         const confirm = await Swal.fire({
             title: "Hapus Penjadwalan?",
-            text: "Data penjadwalan yang dihapus tidak dapat dikembalikan",
+            text: "Data yang dihapus tidak dapat dikembalikan",
             icon: "warning",
             showCancelButton: true,
             confirmButtonText: "Ya, hapus",
@@ -52,210 +49,129 @@ const PenjadwalanKaryawan = () => {
             cancelButtonColor: "#6b7280"
         });
         if (!confirm.isConfirmed) return;
-        const toastId = toast.loading("Menghapus penjadwalan...");
-
+        const toastId = toast.loading("Menghapus data...");
         try {
-            await fetchWithJwt(
-                `${apiUrl}/jadwal/${id}`,
-                { method: "DELETE" }
-            );
+            await fetchWithJwt(`${apiUrl}/jadwal/all/${id_user}`, {
+                method: "DELETE"
+            });
 
-            toast.success("Penjadwalan berhasil dihapus", { id: toastId });
+            toast.success("Berhasil dihapus", { id: toastId });
             fetchPenjadwalan();
         } catch (err) {
             console.error(err);
-            toast.error("Gagal menghapus penjadwalan", { id: toastId });
+            toast.error("Gagal menghapus data", { id: toastId });
         }
     };
 
-    const filteredData = data.filter(item => {
-        const q = searchQuery.toLowerCase();
-        return (
-            item.nama?.toLowerCase().includes(q) ||
-            item.role?.toLowerCase().includes(q) ||
-            item.jadwal?.nama_shift?.toLowerCase().includes(q) ||
-            item.jadwal?.lokasi?.some(l =>
-                l.nama?.toLowerCase().includes(q)
-            )
-        );
-    });
 
+    const filteredData = data
+        .filter(item => {
+            const q = searchQuery.toLowerCase();
+            return (
+                item.nama?.toLowerCase().includes(q) ||
+                item.nip?.toLowerCase().includes(q) ||
+                item.role?.toLowerCase().includes(q)
+            );
+        })
+        .slice()
+        .sort((a, b) => {
+            const aPriority = getStatusPriority(a);
+            const bPriority = getStatusPriority(b);
+
+            if (statusSort === "empty-first") {
+                if (aPriority !== bPriority) return aPriority - bPriority;
+            } else {
+                if (aPriority !== bPriority) return bPriority - aPriority;
+            }
+            return a.nama.localeCompare(b.nama);
+        });
+
+
+    const renderStatus = (hasOngoing) => {
+        return !hasOngoing ? (
+            <span className="px-2 py-1 text-xs font-semibold rounded bg-red-100 text-red-700">
+                Jadwal Kosong
+            </span>
+        ) : (
+            <span className="px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-700">
+                Jadwal Tersedia
+            </span>
+        );
+    };
 
     return (
         <div className="bg-white flex flex-col">
-            <SectionHeader title="Penjadwalan Karyawan" subtitle="Atur Shift dan Lokasi Absensi Karyawan Lapangan"
-                onBack={() => navigate(-1)}
+            <SectionHeader title="Penjadwalan Karyawan" subtitle="Daftar karyawan dan status ketersediaan" onBack={() => navigate(-1)}
                 actions={
-                    <div className="flex gap-2">
-                        <button onClick={() => navigate("/penjadwalan/tambah", { state: { scheduledUserIds }})} className="flex items-center gap-2 px-4 py-2 text-sm text-white font-bold bg-green-500 rounded">
-                            <FontAwesomeIcon icon={faPlus} />
-                            Tambah
-                        </button>
-                        {/* <button className="flex items-center gap-2 px-4 py-2 text-sm text-white font-bold bg-blue-500 rounded">
-                            <FontAwesomeIcon icon={faCloudDownload} />
-                            Sinkron SPK
-                        </button> */}
-                    </div>
+                    <button onClick={() => navigate("/penjadwalan/tambah", { state: { scheduledUserIds } })} className="flex items-center gap-2 px-4 py-2 text-sm text-white font-bold bg-green-500 rounded">
+                        <FontAwesomeIcon icon={faPlus} />
+                        Tambah Baru
+                    </button>
                 }
             />
 
-            <div className="my-2">
-                <SearchBar placeholder="Cari nama, role, shift, atau lokasi..." onSearch={setSearchQuery} />
-            </div>
+            <SearchBar placeholder="Cari nama, NIP, atau role..." onSearch={setSearchQuery} className="my-3" />
 
             {loading && <LoadingSpinner />}
             {!loading && error && <ErrorState message={error} />}
             {!loading && !error && data.length === 0 && (
-                <EmptyState message="Data penjadwalan kosong" />
+                <EmptyState message="Data karyawan kosong" />
             )}
 
             {!loading && !error && data.length > 0 && (
-                <>
-                    <div className="hidden md:block">
-                        <table className="min-w-full text-sm">
-                            <thead className="bg-green-500 text-white">
-                                <tr>
-                                    <th className="px-4 py-3 text-center rounded-tl-lg">
-                                        No.
-                                    </th>
-                                    <th className="px-4 py-3 text-left align-middle">
-                                        Nama
-                                    </th>
-                                    <th className="px-4 py-3 text-center align-middle">
-                                        Shift
-                                    </th>
-                                    <th className="px-4 py-3 text-center align-middle">
-                                        Lokasi
-                                    </th>
-                                    <th className="px-4 py-3 text-center align-middle rounded-tr-lg">
-                                        Menu
-                                    </th>
+                <div className="hidden md:block mb-20">
+                    <table className="min-w-full text-sm">
+                        <thead className="bg-green-500 text-white">
+                            <tr>
+                                <th className="px-4 py-3 text-center rounded-tl-lg">
+                                    No
+                                </th>
+                                <th className="px-4 py-3 text-center">
+                                    NIP
+                                </th>
+                                <th className="px-4 py-3 text-left">
+                                    Nama
+                                </th>
+                                <th className="px-4 py-3 text-center">
+                                    Divisi
+                                </th>
+                                <th className="px-4 py-3 text-center">
+                                    <button onClick={() => setStatusSort(prev => prev === "empty-first" ? "available-first" : "empty-first")} className="flex items-center justify-center gap-2 w-full hover:text-gray-200 transition cursor-pointer" title="Urutkan status" type="button">
+                                        <span>Status</span>
+                                        <FontAwesomeIcon icon={statusSort === "empty-first" ? faSortUp : faSortDown}/>
+                                    </button>
+                                </th>
+                                <th className="px-4 py-3 text-center rounded-tr-lg">
+                                    Menu
+                                </th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {filteredData.map((item, i) => (
+                                <tr key={item.id_user} className="border-b hover:bg-gray-50">
+                                    <td className="px-4 py-2 text-center">{i + 1}</td>
+                                    <td className="px-4 py-2 text-center">{item.nip}</td>
+                                    <td className="px-4 py-2 font-semibold">{item.nama}</td>
+                                    <td className="px-4 py-2 text-center">{item.role}</td>
+                                    <td className="px-4 py-2 text-center">
+                                        {renderStatus(item.has_ongoing)}
+                                    </td>
+                                    <td className="px-4 py-2">
+                                        <div className="flex justify-center gap-2">
+                                            <button onClick={() => navigate(`/penjadwalan/detail/${item.id_user}`)} className="px-3 py-1.5 bg-blue-500 text-white text-sm font-semibold rounded">
+                                                <FontAwesomeIcon icon={faEye} /> Detail
+                                            </button>
+                                            {/* <button onClick={() => handleDelete(item.id_user)} className="px-3 py-2 bg-red-500 text-white rounded">
+                                                <FontAwesomeIcon icon={faTrash} />
+                                            </button> */}
+                                        </div>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {filteredData.map((item, i) => {
-                                    const lokasi = item.jadwal?.lokasi || [];
-                                    const first = lokasi.length > 0 ? lokasi[0] : null;
-                                    return (
-                                        <tr key={i} className="border-b hover:bg-gray-50">
-                                            <td className="px-4 py-1.5 align-middle text-center">
-                                                {i + 1}
-                                            </td>
-                                            <td className="px-4 py-1.5 align-middle text-left">
-                                                <div className="font-semibold text-gray-800">
-                                                    {item.nama}
-                                                </div>
-                                                <div className="text-xs text-gray-500">
-                                                    {item.role}
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-1.5 align-middle text-center">
-                                                {item.jadwal.nama_shift}
-                                            </td>
-                                            <td className="px-4 py-1.5 align-middle text-center relative">
-                                                <div className="inline-flex items-center gap-2 cursor-pointer justify-center" onMouseEnter={() => setExpandedRow(i)} onMouseLeave={() => setExpandedRow(null)} onClick={() => setExpandedRow(expandedRow === i ? null : i)}>
-                                                    <span className="truncate max-w-[180px]">
-                                                        {first ? first.nama : "-"}
-                                                    </span>
-                                                    {lokasi.length > 1 && (
-                                                        <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">
-                                                            +{lokasi.length - 1}
-                                                        </span>
-                                                    )}
-                                                    <FontAwesomeIcon icon={faChevronDown} className={`text-gray-500 transition ${expandedRow === i ? "rotate-180" : ""}`} />
-                                                </div>
-                                                {expandedRow === i && lokasi.length > 0 && (
-                                                    <div className="absolute z-20 top-full left-1/2 -translate-x-1/2 mt-2 w-max min-w-[180px] bg-white border rounded-lg shadow-lg p-3 text-left">
-                                                        <div className="text-xs font-semibold text-gray-600 mb-1">
-                                                            Daftar Lokasi
-                                                        </div>
-                                                        <ul className="space-y-1 text-sm text-gray-700">
-                                                            {lokasi.map((l) => (
-                                                                <li key={l.id}>• {l.nama}</li>
-                                                            ))}
-                                                        </ul>
-                                                    </div>
-                                                )}
-                                            </td>
-
-                                            <td className="px-4 py-1.5 align-middle">
-                                                <div className="flex justify-center items-center gap-2">
-                                                    <button onClick={() => navigate(`/penjadwalan/edit/${item.id_user}`)} className="flex items-center gap-2 px-3 py-1.5 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition">
-                                                        <FontAwesomeIcon icon={faEdit} />
-                                                        <span className="text-xs font-medium">Edit</span>
-                                                    </button>
-
-                                                    <button onClick={() => handleDelete(item.id_user)} className="flex items-center gap-2 px-3 py-1.5 bg-red-500 text-white rounded hover:bg-red-600 transition">
-                                                        <FontAwesomeIcon icon={faTrash} />
-                                                        <span className="text-xs font-medium">Hapus</span>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div className="md:hidden space-y-3">
-                        {filteredData.map((item, i) => {
-                            const lokasi = item.jadwal?.lokasi || [];
-                            const first = lokasi[0];
-                            return (
-                                <div key={i} className="border rounded-xl p-4 bg-white shadow-sm">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div>
-                                            <div className="font-semibold text-gray-800">
-                                                {item.nama}
-                                            </div>
-                                            <div className="text-xs text-gray-500">
-                                                {item.role}
-                                            </div>
-                                        </div>
-                                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-                                            {item.jadwal.nama_shift}
-                                        </span>
-                                    </div>
-                                    <div className="text-sm text-gray-700">
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-medium">Lokasi:</span>
-                                            <span className="truncate max-w-[160px]">
-                                                {first ? first.nama : "-"}
-                                            </span>
-
-                                            {lokasi.length > 1 && (
-                                                <span onClick={() => setExpandedRow(expandedRow === i ? null : i)} className="text-xs bg-gray-200 px-2 rounded cursor-pointer">
-                                                    +{lokasi.length - 1}
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        {expandedRow === i && (
-                                            <div className="mt-2 space-y-1 text-xs text-gray-600">
-                                                {lokasi.map((l) => (
-                                                    <div key={l.id}> • {l.nama}</div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="flex justify-end gap-2 mt-4">
-                                        <button onClick={() => navigate(`/penjadwalan/edit/${item.id_user}`)} className="flex items-center gap-1 px-3 py-1.5 text-xs bg-yellow-500 text-white rounded">
-                                            <FontAwesomeIcon icon={faEdit} />
-                                            Edit
-                                        </button>
-
-                                        <button onClick={() => handleDelete(item.id_user)} className="flex items-center gap-1 px-3 py-1.5 text-xs bg-red-500 text-white rounded">
-                                            <FontAwesomeIcon icon={faTrash} />
-                                            Hapus
-                                        </button>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
         </div>
     );

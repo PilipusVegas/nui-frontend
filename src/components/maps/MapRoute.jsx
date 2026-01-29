@@ -10,42 +10,132 @@ import { getDistanceMeters } from "../../utils/locationUtils";
 // === ICONS ===
 const userIcon = L.divIcon({
   html: ReactDOMServer.renderToString(
-    <FontAwesomeIcon icon={faLocationDot} style={{ color: "#2563eb", fontSize: "24px" }} />
+    <div
+      style={{
+        position: "relative",
+        width: "36px",
+        height: "36px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {/* Ring ping */}
+      <span
+        style={{
+          position: "absolute",
+          width: "36px",
+          height: "36px",
+          borderRadius: "50%",
+          border: "2px solid #2563eb",
+          opacity: 0.6,
+          animation: "ping 1.6s ease-out infinite",
+        }}
+      ></span>
+
+      {/* Icon */}
+      <FontAwesomeIcon
+        icon={faLocationDot}
+        style={{ color: "#2563eb", fontSize: "24px", zIndex: 2 }}
+      />
+    </div>
   ),
   className: "",
-  iconSize: [24, 24],
-  iconAnchor: [12, 24],
+  iconSize: [36, 36],
+  iconAnchor: [18, 18],
 });
+
+
 
 const officeIcon = L.divIcon({
   html: ReactDOMServer.renderToString(
-    <FontAwesomeIcon icon={faBuilding} style={{ color: "#dc2626", fontSize: "24px" }} />
+    <div
+      style={{
+        width: "36px",
+        height: "36px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#dc2626",     // warna ikon
+      }}
+    >
+      <FontAwesomeIcon icon={faBuilding} style={{ fontSize: "24px" }} />
+    </div>
   ),
   className: "",
-  iconSize: [24, 24],
-  iconAnchor: [12, 24],
+  iconSize: [36, 36],
+  iconAnchor: [18, 18],     // pusat geometris
 });
 
-// === GPS BUTTON CONTROL (PASTI WORK) ===
-const RecenterControl = ({ position }) => {
+
+const MapControls = ({ user, destination }) => {
   const map = useMap();
 
-  const handleClick = (e) => {
-    e.stopPropagation();
-    map.flyTo([position.lat, position.lng], 17, { duration: 0.6 });
+  const goUser = () => {
+    if (!user) return;
+    map.flyTo([user.lat, user.lng], 17, { duration: 0.6 });
+  };
+
+  const goOffice = () => {
+    if (!destination) return;
+    map.flyTo([destination.lat, destination.lng], 17, { duration: 0.6 });
+  };
+
+  const goBoth = () => {
+    if (!user || !destination) return;
+
+    const bounds = L.latLngBounds(
+      [user.lat, user.lng],
+      [destination.lat, destination.lng]
+    );
+    map.fitBounds(bounds, { padding: [40, 40] });
   };
 
   return (
-    <div onClick={handleClick}
-      className="absolute top-3 right-3 z-[1000] bg-blue-600 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-lg flex items-center gap-1 active:scale-95 transition select-none cursor-pointer"
-    >
-      <FontAwesomeIcon icon={faCrosshairs} />
-      GPS
+    <div className="absolute top-2 right-2 z-[9999] flex flex-col gap-2 pointer-events-auto">
+
+      {user && (
+        <button onClick={goUser} className="bg-blue-600 text-white p-2.5 px-3.5 rounded-full shadow">
+          <FontAwesomeIcon icon={faLocationDot} />
+        </button>
+      )}
+
+      {destination && (
+        <button onClick={goOffice} className="bg-red-600 text-white p-2.5 px-3.5 rounded-full shadow">
+          <FontAwesomeIcon icon={faBuilding} />
+        </button>
+      )}
+
+      {user && destination && (
+        <button onClick={goBoth} className="bg-gray-800 text-white p-2.5 px-3.5 rounded-full shadow">
+          <FontAwesomeIcon icon={faCrosshairs} />
+        </button>
+      )}
     </div>
   );
 };
 
-const MapRoute = ({ user, destination }) => {
+
+
+
+const AutoFitBounds = ({ user, destination }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (user && destination) {
+      const bounds = L.latLngBounds(
+        [user.lat, user.lng],
+        [destination.lat, destination.lng]
+      );
+      map.fitBounds(bounds, { padding: [40, 40] });
+    }
+  }, [user, destination]);
+
+  return null;
+};
+
+
+const MapRoute = ({ user, destination, onDistance }) => {
   const [pos, setPos] = useState(null);
   const [routeCoords, setRouteCoords] = useState([]);
 
@@ -60,20 +150,20 @@ const MapRoute = ({ user, destination }) => {
 
     const fetchRoute = async () => {
       try {
-        const url = `http://192.168.17.41:8989/route?point=${user.lat},${user.lng}&point=${destination.lat},${destination.lng}&profile=motorcycle&calc_points=true&points_encoded=false`;
-
+        const url = `http://192.168.80.254:8989/route?point=${user.lat},${user.lng}&point=${destination.lat},${destination.lng}&profile=motorcycle&calc_points=true&points_encoded=false`;
         const res = await fetch(url);
         const data = await res.json();
-
         const coords = data.paths[0].points.coordinates.map(
           ([lng, lat]) => [lat, lng]
         );
-
         setRouteCoords(coords);
+        const distance = data.paths[0].distance;
+        onDistance?.(Math.round(distance));
       } catch (err) {
         console.error("Route error:", err);
       }
     };
+
 
     fetchRoute();
   }, [user, destination]);
@@ -92,22 +182,24 @@ const MapRoute = ({ user, destination }) => {
 
   return (
     <div className="relative w-full">
-      <MapContainer center={[pos.lat, pos.lng]} zoom={16} attributionControl={false} style={{ height: "260px", borderRadius: "16px" }}>
+      <MapContainer zoomControl={false} className="z-10" center={[pos.lat, pos.lng]} zoom={16} attributionControl={false} style={{ height: "160px", borderRadius: "10px" }}>
+
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-        <RecenterControl position={pos} />
+        {user && (
+          <MapControls user={user} destination={destination} />
+        )}
+
+        <AutoFitBounds user={user} destination={destination} />
+
 
         <Marker position={[pos.lat, pos.lng]} icon={userIcon} />
 
         {destination && (
           <>
-            {/* Marker Gedung */}
             <Marker position={[destination.lat, destination.lng]} icon={officeIcon} />
 
-            {/* Radius 60 Meter */}
-            <Circle
-              center={[destination.lat, destination.lng]}
-              radius={60}
+            <Circle center={[destination.lat, destination.lng]} radius={60}
               pathOptions={{
                 color: isInside ? "#16a34a" : "#dc2626",
                 fillColor: isInside ? "#16a34a" : "#dc2626",
@@ -116,8 +208,6 @@ const MapRoute = ({ user, destination }) => {
               }}
             />
 
-
-            {/* Rute */}
             {routeCoords.length > 0 && (
               <Polyline positions={routeCoords} pathOptions={{ weight: 4 }} />
             )}

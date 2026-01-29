@@ -9,9 +9,7 @@ const Pagination = ({ currentPage, totalItems, itemsPerPage = 10, onPageChange, 
   const goNext = () => currentPage < totalPages && onPageChange(currentPage + 1);
 
   return (
-    <div
-      className={`relative w-full flex justify-center items-center mt-8 text-gray-700 ${className}`}
-    >
+    <div className={`relative w-full flex justify-center items-center mt-8 text-gray-700 ${className}`}>
       {/* Tombol Sebelumnya */}
       <button onClick={goPrev} disabled={currentPage === 1} className={`absolute left-0 flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 ${currentPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600 text-white shadow-md"}`} title="Halaman Sebelumnya" >
         <FontAwesomeIcon icon={faArrowLeft} />

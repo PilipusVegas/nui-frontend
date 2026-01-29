@@ -71,4 +71,3 @@ export function getUserFromToken() {
   
     return fetch(url, config);
   }
-  

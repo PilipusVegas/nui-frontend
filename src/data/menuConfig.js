@@ -28,7 +28,9 @@ import {
     faUserGroup,
     faPenFancy,
     faListAlt,
-    faMotorcycle
+    faMotorcycle,
+    faTimesCircle,
+    faCalendarXmark
 } from "@fortawesome/free-solid-svg-icons";
 
 export const menuConfig = [
@@ -61,7 +63,7 @@ export const menuConfig = [
                         roles: [1, 4, 6],
                     },
                     {
-                        label: "Tunjangan Karyawan",
+                        label: "Kelola Tunjangan Karyawan",
                         icon: faMoneyBillWave,
                         path: "/tunjangan-karyawan",
                         roles: [1, 4, 6],
@@ -81,7 +83,7 @@ export const menuConfig = [
                         perusahaan: [1, 4],
                     },
                     {
-                        label: "Kelola Jadwal Karyawan",
+                        label: "Penjadwalan Karyawan",
                         icon: faCalendarCheck,
                         path: "/penjadwalan",
                         roles: [1, 5, 20],
@@ -114,19 +116,19 @@ export const menuConfig = [
     {
         sectionTitle: "Kelola Shift & Jam Kerja",
         items: [
-                    {
-                        label: "Data Shift",
-                        icon: faClock,
-                        path: "/shift",
-                        roles: [1, 4, 6],
-                    },
-                    {
-                        label: "Kelola Shift Perusahaan",
-                        icon: faBuilding,
-                        path: "/perusahaan",
-                        roles: [1, 4, 6],
-                    },
-                ],
+            {
+                label: "Data Shift",
+                icon: faClock,
+                path: "/shift",
+                roles: [1, 4, 6],
+            },
+            {
+                label: "Kelola Shift Perusahaan",
+                icon: faBuilding,
+                path: "/shift-perusahaan",
+                roles: [1, 4, 6],
+            },
+        ],
     },
 
     // ABSENSI
@@ -145,26 +147,47 @@ export const menuConfig = [
                 roles: [1, 4, 5, 6, 18, 20],
                 submenu: [
                     {
-                        label: "Persetujuan Absensi",
+                        label: "Absensi Tidak Valid",
+                        icon: faTimesCircle,
+                        path: "/absensi-tidak-valid",
+                        roles: [1, 4, 5, 6],
+                        perusahaan: [1, 4],
+                    },
+                    // {
+                    //     label: "Absensi WFH",
+                    //     icon: faTimesCircle,
+                    //     path: "/absensi-tidak-valid",
+                    //     roles: [1, 4, 5, 6, 18, 20],
+                    //     perusahaan: [1, 4],
+                    // },
+                    {
+                        label: "Persetujuan Absensi Lapangan",
                         icon: faCheckSquare,
                         path: "/pengajuan-absensi",
                         roles: [1, 4, 5, 6, 18, 20],
                         perusahaan: [1, 4],
                     },
                     {
-                        label: "Data Absensi Harian",
+                        label: "Kelola Presensi Karyawan",
                         icon: faUserCheck,
                         path: "/kelola-absensi",
                         roles: [1, 4, 6],
                         target: "_blank",
                     },
-                    {
-                        label: "Remark Absensi",
-                        icon: faEdit,
-                        path: "/remark-absensi",
-                        roles: [1, 4, 6],
-                    },
                 ],
+            },
+            {
+                label: "Riwayat Persetujuan Absensi",
+                icon: faCalendarDays,
+                path: "/riwayat-persetujuan-absensi",
+                roles: [1, 4, 5, 6, 18, 20],
+                perusahaan: [1, 4],
+            },
+            {
+                label: "Remark Absensi",
+                icon: faEdit,
+                path: "/remark-absensi",
+                roles: [1, 4, 5, 6, 18, 20],
             },
         ],
     },

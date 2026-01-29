@@ -3,6 +3,15 @@ import { saveAs } from "file-saver";
 import { formatFullDate, formatLongDate, isSunday } from "../../utils/dateUtils";
 import { getUserFromToken } from "../../utils/jwtHelper";
 
+const REMARK_LABEL = {
+  4: "CUTI",
+  5: "IZIN SAKIT",
+};
+
+const isRemarkDay = (att) =>
+  att?.remark_status === 4 || att?.remark_status === 5;
+
+
 export const exportRekapPresensi = async ({ filteredAbsenData, startDate, endDate, tanggalArray }) => {
   if (!filteredAbsenData.length) return;
 
@@ -135,16 +144,45 @@ export const exportRekapPresensi = async ({ filteredAbsenData, startDate, endDat
 
     // tulis data per tanggal mulai dari kolIndex = offsetCol + fixedColsCount
     let colIndex = offsetCol + fixedColsCount;
-    tanggalArray.forEach((tgl) => {
+    for (const tgl of tanggalArray) {
       const dateObj = new Date(tgl);
       const isMinggu = isSunday(dateObj);
       const att = item.attendance?.[tgl] || {};
+      const isRemark = isRemarkDay(att);
+      const remarkText = REMARK_LABEL[att.remark_status];
       const late = parseInt(att.late ?? 0, 10);
       const isLate = late > 0;
       const overtimeValue = att.overtime ?? item.overtimes?.[tgl]?.durasi;
       const overtimeStart = item.overtimes?.[tgl]?.mulai ?? "";
       const overtimeEnd = item.overtimes?.[tgl]?.selesai ?? "";
 
+      const span = isMinggu ? 6 : 4;
+
+      // REMARK DAY
+      if (isRemark) {
+        worksheet.mergeCells(rowIdx, colIndex, rowIdx, colIndex + 3);
+
+        const cell = worksheet.getCell(rowIdx, colIndex);
+        cell.value = remarkText;
+        cell.alignment = { vertical: "middle", horizontal: "center" };
+        cell.font = { bold: true, size: 9, color: { argb: "FF0369A1" } };
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FFE0F2FE" },
+        };
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
+
+        colIndex += span;
+        continue;
+      }
+
+      // NORMAL DAY
       const vals = isMinggu
         ? [att.in || "", isLate ? late : "", att.out || "", overtimeValue || "", overtimeStart || "", overtimeEnd || ""]
         : [att.in || "", isLate ? late : "", att.out || "", overtimeValue || ""];
@@ -154,38 +192,60 @@ export const exportRekapPresensi = async ({ filteredAbsenData, startDate, endDat
         cell.value = val;
         cell.alignment = { vertical: "middle", horizontal: "center" };
 
-        // Latar merah untuk Minggu
         if (isMinggu) {
           cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFDC2626" } };
           cell.font = { color: { argb: "FFFFFFFF" }, bold: true };
         }
 
-        // Latar merah tua untuk telat (kol j === 1 di block vals)
         if (isLate && j === 1) {
           cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFB91C1C" } };
           cell.font = { color: { argb: "FFFFFFFF" }, bold: true };
         }
 
-        cell.border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
       });
 
-      colIndex += isMinggu ? 6 : 4;
-    });
+      colIndex += span;
+    }
+
   });
 
-  // 🔹 Border dan Font (baris setelah offsetRow)
   worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
     if (rowNumber < offsetRow) return;
-    row.eachCell((cell) => {
+
+    row.eachCell((cell, colNumber) => {
+      // DEFAULT: SEMUA TENGAH
+      cell.alignment = {
+        vertical: "middle",
+        horizontal: "center",
+        wrapText: true,
+      };
+
+      // EXCEPTION: KOLOM NAMA KARYAWAN
+      if (colNumber === offsetCol + 1) {
+        cell.alignment = {
+          vertical: "middle",
+          horizontal: "left",
+          wrapText: true,
+        };
+      }
+
       cell.border = {
         top: { style: "thin" },
         left: { style: "thin" },
         bottom: { style: "thin" },
         right: { style: "thin" },
       };
+
       cell.font = { ...cell.font, size: 9 };
     });
   });
+
 
   // 💾 Simpan File
   const buffer = await workbook.xlsx.writeBuffer();

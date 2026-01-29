@@ -37,9 +37,9 @@ import RiwayatFace from "../pages/riwayat-user/absen-face";
 /* ===================== PENGAJUAN ABSENSI ===================== */
 import PengajuanAbsensi from "../pages/pengajuan/absensi";
 import DetailPengajuanAbsensi from "../pages/pengajuan/absensi/show";
-import AbsensiAbnormal from "../pages/pengajuan/absensi/absensiAbnormal";
-import RiwayatAbsensi from "../pages/pengajuan/absensi/riwayat";
-import RiwayatAbsensiDetail from "../pages/pengajuan/absensi/riwayatDetail";
+import AbsensiTidakValid from "../pages/absensi-tidak-valid";
+import RiwayatPersetujuanAbsensi from "../pages/riwayat-persetujuan-absensi";
+import RiwayatPersetujuanAbsensiDetail from "../pages/riwayat-persetujuan-absensi/Show";
 
 /* ===================== LEMBUR ===================== */
 import PengajuanLembur from "../pages/pengajuan/lembur";
@@ -65,13 +65,18 @@ import KelolaPerusahaan from "../pages/perusahaan";
 import TambahPerusahaan from "../pages/perusahaan/tambah";
 import EditPerusahaan from "../pages/perusahaan/edit";
 
+
+/* ================ SHIFT PERUSAHAAN ==================== */
+import KelolaShiftPerusahaan from "../pages/kelola-shift-perusahaan";
+import EditShiftPerusahaan from "../pages/kelola-shift-perusahaan/Edit";
+
+
 /* ===================== LAINNYA ===================== */
 import KelolaAbsensi from "../pages/kelola-absensi";
 import DetailKelolaAbsensi from "../pages/kelola-absensi/show";
-import RemarkAbsensi from "../pages/kelola-absensi/remarkAbsensi";
+import RemarkAbsensi from "../pages/remark-absensi";
 import ManajemenMenu from "../pages/menu-management";
 import PerangkatAbsensi from "../pages/perangkat-absensi";
-import ManajemenHariLibur from "../pages/manajemen-libur";
 import HrdAccess from "../pages/hrd-akses";
 import TambahHrdAccess from "../pages/hrd-akses/tambah";
 import EditHrdAccess from "../pages/hrd-akses/edit";
@@ -91,11 +96,12 @@ import RiwayatPenggajian from "../pages/penggajian/riwayat";
 import PenjadwalanKaryawan from "../pages/penjadwalan-karyawan";
 import TambahPenjadwalanKaryawan from "../pages/penjadwalan-karyawan/tambah";
 import EditPenjadwalanKaryawan from "../pages/penjadwalan-karyawan/edit";
+import DetailPenjadwalanKaryawan from "../pages/penjadwalan-karyawan/show";
+import TambahPenjadwalan from "../pages/penjadwalan-karyawan/TambahJadwal";
 import PengajuanKunjungan from "../pages/pengajuan/kunjungan";
 import RiwayatKunjungan from "../pages/pengajuan/kunjungan/riwayat";
 import DetailKunjungan from "../pages/pengajuan/kunjungan/show";
 import Kunjungan from "../pages/kunjungan";
-import RiwayatKunjunganUser from "../pages/kunjungan/riwayat";
 
 /* ===================== ROUTES CONFIG ===================== */
 export const routes = [
@@ -131,9 +137,8 @@ export const routes = [
   { path: "/pengajuan-kunjungan", element: <PengajuanKunjungan />, roles: [], layout: SidebarLayout },
   { path: "/pengajuan/kunjungan/detail/:id", element: <DetailKunjungan />, roles: [], layout: SidebarLayout },
   { path: "/pengajuan/riwayat-kunjungan", element: <RiwayatKunjungan />, roles: [], layout: SidebarLayout },
-  
+
   { path: "/kunjungan", element: <Kunjungan />, roles: [] },
-  { path: "/riwayat-kunjungan", element: <RiwayatKunjunganUser />, roles: [] },
 
   /* ===== TUGAS ===== */
   { path: "/tugas", element: <Tugas />, roles: [] },
@@ -142,9 +147,9 @@ export const routes = [
   /* ===== DESKTOP (SIDEBAR LAYOUT) ===== */
   { path: "/pengajuan-absensi", element: <PengajuanAbsensi />, roles: ["1", "4", "5", "6", "18", "20"], layout: SidebarLayout },
   { path: "/pengajuan-absensi/:id_user", element: <DetailPengajuanAbsensi />, roles: ["1", "4", "5", "6", "18", "20"], layout: SidebarLayout },
-  { path: "/pengajuan-absensi/abnormal", element: <AbsensiAbnormal />, roles: ["1", "4", "5", "6", "18", "20"], layout: SidebarLayout },
-  { path: "/pengajuan-absensi/riwayat", element: <RiwayatAbsensi />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-  { path: "/pengajuan-absensi/riwayat/:id_user", element: <RiwayatAbsensiDetail />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/absensi-tidak-valid", element: <AbsensiTidakValid />, roles: ["1", "4", "5", "6", "18", "20"], layout: SidebarLayout },
+  { path: "/riwayat-persetujuan-absensi", element: <RiwayatPersetujuanAbsensi />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/riwayat-persetujuan-absensi/:id_user", element: <RiwayatPersetujuanAbsensiDetail />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
 
   { path: "/pengajuan-lembur", element: <PengajuanLembur />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
   { path: "/riwayat-lembur", element: <RiwayatLembur />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
@@ -159,7 +164,7 @@ export const routes = [
 
   { path: "/kelola-absensi", element: <KelolaAbsensi />, roles: ["1", "4", "6"] },
   { path: "/kelola-absensi/:id", element: <DetailKelolaAbsensi />, roles: ["1", "4", "6"], layout: SidebarLayout },
-  { path: "/remark-absensi", element: <RemarkAbsensi />, roles: ["1", "4", "5", "6"], layout: SidebarLayout },
+  { path: "/remark-absensi", element: <RemarkAbsensi />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
 
   { path: "/karyawan", element: <DataKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
   { path: "/karyawan/tambah", element: <TambahKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
@@ -178,7 +183,9 @@ export const routes = [
   { path: "/perusahaan/tambah", element: <TambahPerusahaan />, roles: ["1", "4", "6"], layout: SidebarLayout },
   { path: "/perusahaan/edit/:id", element: <EditPerusahaan />, roles: ["1", "4", "6"], layout: SidebarLayout },
 
-  { path: "/manajemen-hari-libur", element: <ManajemenHariLibur />, roles: ["1", "4", "6"], layout: SidebarLayout },
+  { path: "/shift-perusahaan", element: <KelolaShiftPerusahaan />, roles: ["1", "4", "6"], layout: SidebarLayout },
+  { path: "/shift-perusahaan/edit/:id", element: <EditShiftPerusahaan />, roles: ["1", "4", "6"], layout: SidebarLayout },
+
   { path: "/manajemen-menu", element: <ManajemenMenu />, roles: ["1"], layout: SidebarLayout },
   { path: "/perangkat-absensi", element: <PerangkatAbsensi />, roles: ["1"], layout: SidebarLayout },
 
@@ -205,4 +212,6 @@ export const routes = [
   { path: "/penjadwalan", element: <PenjadwalanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
   { path: "/penjadwalan/tambah", element: <TambahPenjadwalanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
   { path: "/penjadwalan/edit/:id_user", element: <EditPenjadwalanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/penjadwalan/detail/:id_user", element: <DetailPenjadwalanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/penjadwalan/tambah-jadwal/:id_user", element: <TambahPenjadwalan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
 ];

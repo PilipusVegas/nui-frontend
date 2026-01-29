@@ -1,7 +1,7 @@
 // src/utils/exportExcelDetail.jsx
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
-import { formatTime, formatDateForFilename, formatFullDate,} from "../../utils/dateUtils";
+import { formatTime, formatDateForFilename, formatFullDate, } from "../../utils/dateUtils";
 
 const getKategoriRemark = (remarkStatus) => {
     switch (remarkStatus) {
@@ -175,19 +175,36 @@ export const exportExcelDetail = async ({
         const isSunday = new Date(tgl).getDay() === 0;
         const isLate = rec?.late >= 1;
         const isEarlyOut = rec?.is_early_out === true;
+        const isLeaveOrSick = rec?.remark_status === 4 || rec?.remark_status === 5;
+
 
         const row = sheet.addRow([
             i + 1,
             formatFullDate(tgl),
-            rec?.shift || "",
-            rec?.in ? formatTime(rec.in) : "",
-            typeof rec?.late === "number" ? rec.late : "",
-            rec?.out ? formatTime(rec.out) : "",
-            rec?.total_overtime ?? "",
+
+            // Shift
+            isLeaveOrSick ? "" : rec?.shift || "",
+
+            // Masuk
+            isLeaveOrSick ? "" : rec?.in ? formatTime(rec.in) : "",
+
+            // Terlambat
+            isLeaveOrSick ? "" : typeof rec?.late === "number" ? rec.late : "",
+
+            // Pulang
+            isLeaveOrSick ? "" : rec?.out ? formatTime(rec.out) : "",
+
+            // Total Lembur
+            isLeaveOrSick ? "" : rec?.total_overtime ?? "",
+
+            // Potongan (biasanya cuti/sakit = 0, tapi tetap aman)
             rec?.nominal_cut ? `Rp ${rec.nominal_cut}` : "",
+
+            // Remark
             getKategoriRemark(rec?.remark_status),
             rec?.remark ?? "",
         ]);
+
 
         row.eachCell((cell, col) => {
             cell.alignment = { horizontal: "center", vertical: "middle" };
@@ -208,19 +225,19 @@ export const exportExcelDetail = async ({
                 cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
             }
 
-            // Terlambat → highlight merah
-            if (col === 5 && isLate && !isSunday) {
-                cell.font = { bold: true, color: { argb: "FFFF0000" } }; // merah terang
+            // Terlambat → merah (kecuali cuti / sakit)
+            if (col === 5 && isLate && !isSunday && !isLeaveOrSick) {
+                cell.font = { bold: true, color: { argb: "FFFF0000" } };
             }
 
-            // Pulang lebih awal → kuning
-            if (col === 6 && isEarlyOut && !isSunday) {
+            // Pulang lebih awal → merah gelap (kecuali cuti / sakit)
+            if (col === 6 && isEarlyOut && !isSunday && !isLeaveOrSick) {
                 cell.fill = {
                     type: "pattern",
                     pattern: "solid",
-                    fgColor: { argb: "FFCC0000" }
+                    fgColor: { argb: "FFCC0000" },
                 };
-                cell.font = { bold: true, color: { argb: "FFFFFFFF" } }; // teks putih
+                cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
             }
         });
 

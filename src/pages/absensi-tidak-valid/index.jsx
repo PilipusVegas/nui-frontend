@@ -4,13 +4,13 @@ import { useNavigate } from "react-router-dom";
 import "yet-another-react-lightbox/styles.css";
 import Lightbox from "yet-another-react-lightbox";
 import React, { useState, useEffect } from "react";
-import { fetchWithJwt } from "../../../utils/jwtHelper";
+import { fetchWithJwt } from "../../utils/jwtHelper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { formatFullDate, formatTime } from "../../../utils/dateUtils";
-import { SectionHeader, SearchBar, Modal, EmptyState, LoadingSpinner, ErrorState } from "../../../components";
+import { formatFullDate, formatTime } from "../../utils/dateUtils";
+import { SectionHeader, SearchBar, Modal, EmptyState, LoadingSpinner, ErrorState } from "../../components";
 import { faChevronDown, faChevronUp, faMapMarkerAlt, faBuilding, faInfo, faInfoCircle, faGasPump, faHotel, faBriefcase, } from "@fortawesome/free-solid-svg-icons";
 
-const AbsensiAbnormal = () => {
+const AbsensiTidakValid = () => {
     const navigate = useNavigate();
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -309,12 +309,18 @@ const AbsensiAbnormal = () => {
         if (!absen?.dinas?.is_dinas) return null;
 
         return (
-            <button onClick={(e) => { e.stopPropagation(); navigate(`/pengajuan-dinas/${absen.dinas.id_dinas}`);}} className="flex items-center gap-1 px-2 py-[2px] rounded-md  border border-purple-300 bg-purple-100  text-purple-700 text-[11px] font-bold  hover:bg-purple-200 transition whitespace-nowrap" title="Klik untuk melihat detail pengajuan dinas">
+            <button onClick={(e) => { e.stopPropagation(); navigate(`/pengajuan-dinas/${absen.dinas.id_dinas}`); }} className="flex items-center gap-1 px-2 py-[2px] rounded-md  border border-purple-300 bg-purple-100  text-purple-700 text-[11px] font-bold  hover:bg-purple-200 transition whitespace-nowrap" title="Klik untuk melihat detail pengajuan dinas">
                 <FontAwesomeIcon icon={faBriefcase} />
                 Tunjangan Perjalanan Dinas
             </button>
         );
     };
+
+    const getAbsenImageUrl = (filename) => {
+        if (!filename) return null;
+        return `${apiUrl}/uploads/img/absen/${filename}`;
+    };
+
 
 
     return (
@@ -344,9 +350,9 @@ const AbsensiAbnormal = () => {
             )}
             {!loading && filteredData.length === 0 && (
                 searchQuery ? (
-                    <EmptyState title="Data Tidak Ditemukan" message={`Tidak ada absensi abnormal untuk "${searchQuery}".`}/>
+                    <EmptyState title="Data Tidak Ditemukan" message={`Tidak ada absensi abnormal untuk "${searchQuery}".`} />
                 ) : (
-                    <EmptyState title="Semua Absensi Telah Disetujui" message="Saat ini tidak ada absensi yang perlu diverifikasi."/>
+                    <EmptyState title="Semua Absensi Telah Disetujui" message="Saat ini tidak ada absensi yang perlu diverifikasi." />
                 )
             )}
 
@@ -374,7 +380,7 @@ const AbsensiAbnormal = () => {
                                     <div className="flex items-center gap-3 sm:gap-4">
                                         <div className="flex gap-2 overflow-x-auto no-scrollbar">
                                             <span className="px-3 py-1 text-xs font-medium rounded bg-gray-100 text-gray-700">
-                                                {user.absen.filter((a) => a.status === 0).length} Total Absensi Abnormal
+                                                {user.absen.filter((a) => a.status === 0).length} Total Absensi Tidak Valid
                                             </span>
                                         </div>
                                         <button onClick={(e) => { e.stopPropagation(); toggleUserCard(user); }} className={`flex items-center justify-center w-8 h-8 rounded-full transition-all ${expandedUserId === user.id_user ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}>
@@ -407,7 +413,6 @@ const AbsensiAbnormal = () => {
                                                                 </div>
                                                             )}
                                                         </div>
-
                                                         <div className="flex items-center gap-5 sm:gap-6">
                                                             <label className="flex items-center gap-2 text-green-600 font-semibold" onClick={(e) => e.stopPropagation()}>
                                                                 <input type="checkbox" checked={a.status === 1} disabled={processingId === a.id} onChange={() =>
@@ -481,13 +486,25 @@ const AbsensiAbnormal = () => {
 
                                                                     <div className="flex flex-col sm:flex-row gap-4">
                                                                         <div className="flex-shrink-0">
-                                                                            {a.foto_mulai ? (
-                                                                                <img src={a.foto_mulai} alt="Foto Absen Masuk" className="w-28 h-28 object-cover rounded-lg border border-green-300 cursor-pointer hover:opacity-90 transition" onClick={() => handleOpenLightbox([a.foto_mulai, a.foto_selesai].filter(Boolean), 0)} />
+                                                                            {getAbsenImageUrl(a.foto_mulai) ? (
+                                                                                <img src={getAbsenImageUrl(a.foto_mulai)} alt="Foto Absen Masuk"
+                                                                                    className="w-28 h-28 object-cover rounded-lg border border-green-300 cursor-pointer hover:opacity-90 transition"
+                                                                                    onClick={() =>
+                                                                                        handleOpenLightbox(
+                                                                                            [
+                                                                                                getAbsenImageUrl(a.foto_mulai),
+                                                                                                getAbsenImageUrl(a.foto_selesai),
+                                                                                            ].filter(Boolean),
+                                                                                            0
+                                                                                        )
+                                                                                    }
+                                                                                />
                                                                             ) : (
                                                                                 <div className="w-28 h-28 flex items-center justify-center text-xs text-gray-400 italic border rounded-lg">
                                                                                     Tidak ada foto
                                                                                 </div>
                                                                             )}
+
                                                                         </div>
                                                                         <div className="flex-1 text-sm text-gray-800 space-y-1 break-words">
                                                                             <p>
@@ -529,11 +546,15 @@ const AbsensiAbnormal = () => {
                                                                     </p>
                                                                     <div className="flex flex-col sm:flex-row gap-4">
                                                                         <div className="flex-shrink-0">
-                                                                            {a.absen_pulang && a.foto_selesai ? (
-                                                                                <img src={a.foto_selesai} alt="Foto Absen Pulang" className="w-28 h-28 object-cover rounded-lg border border-rose-300 cursor-pointer hover:opacity-90 transition"
+                                                                            {a.absen_pulang && getAbsenImageUrl(a.foto_selesai) ? (
+                                                                                <img src={getAbsenImageUrl(a.foto_selesai)} alt="Foto Absen Pulang"
+                                                                                    className="w-28 h-28 object-cover rounded-lg border border-rose-300 cursor-pointer hover:opacity-90 transition"
                                                                                     onClick={() =>
                                                                                         handleOpenLightbox(
-                                                                                            [a.foto_mulai, a.foto_selesai].filter(Boolean),
+                                                                                            [
+                                                                                                getAbsenImageUrl(a.foto_mulai),
+                                                                                                getAbsenImageUrl(a.foto_selesai),
+                                                                                            ].filter(Boolean),
                                                                                             1
                                                                                         )
                                                                                     }
@@ -749,4 +770,4 @@ const AbsensiAbnormal = () => {
     );
 };
 
-export default AbsensiAbnormal;
+export default AbsensiTidakValid;

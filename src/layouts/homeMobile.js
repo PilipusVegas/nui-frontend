@@ -7,6 +7,7 @@ import { faCalendarCheck, faHistory, faSignOutAlt, faMapMarkerAlt, faPenFancy, f
 import { fetchWithJwt, getUserFromToken } from "../utils/jwtHelper";
 import { FooterMainBar, TaskCardSlider } from "../components";
 import { useAuth } from "../hooks/useAuth";
+import { formatTime } from "../utils/dateUtils";
 
 const HomeMobile = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const HomeMobile = () => {
   const user = getUserFromToken();
   const [hasNewNotifications, setHasNewNotifications] = useState(false);
   const { logout } = useAuth();
+  const allowedKunjunganRoles = [22, 48];
 
 
   useEffect(() => {
@@ -24,14 +26,9 @@ const HomeMobile = () => {
       try {
         const response = await fetchWithJwt(`${apiUrl}/absen/riwayat/user/${idUser}`);
         if (!response.ok) throw new Error("Failed to fetch attendance data");
-
         const json = await response.json();
-        console.log("RIWAYAT ABSEN:", json);
-
-        // Pastikan selalu array
         setAttendanceData(Array.isArray(json.data) ? json.data : []);
       } catch (error) {
-        console.error("Error fetching attendance:", error);
       }
     };
 
@@ -63,9 +60,6 @@ const HomeMobile = () => {
     </button>
   );
 
-  const formatTime = (date) => {
-    return new Date(date).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
-  };
 
   const confirmLogout = () => {
     Swal.fire({
@@ -167,7 +161,10 @@ const HomeMobile = () => {
         <MainMenuButton icon={faClockFour} label="Lembur" onClick={() => navigate("/lembur")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-teal-600 hover:scale-105 transition" />
         <MainMenuButton icon={faPenFancy} label="Dinas" onClick={() => navigate("/formulir-dinas-aplikasi")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-blue-600 hover:scale-105 transition" />
         <MainMenuButton icon={faTasks} label="Tugas" onClick={() => navigate("/tugas")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-lime-600 hover:scale-105 transition" />
-        {/* <MainMenuButton icon={faMotorcycle} label="Kunjungan" onClick={() => navigate("/kunjungan")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-indigo-600 hover:scale-105 transition" /> */}
+        {/* {allowedKunjunganRoles.includes(user?.id_role) && (
+          <MainMenuButton icon={faMotorcycle} label="Kunjungan" onClick={() => navigate("/kunjungan")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-indigo-600 hover:scale-105 transition" />
+        )} */}
+
         {/* <MainMenuButton icon={faBell} label="Notifikasi" onClick={handleNotificationClick} hasNotification={hasNewNotifications} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-amber-600 hover:scale-105 transition" /> */}
         <MainMenuButton icon={faHistory} label="Riwayat" onClick={() => navigate("/riwayat-pengguna")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-indigo-600 hover:scale-105 transition" />
         <MainMenuButton image="/NOS.png" label="NOS" onClick={() => window.open("https://nos.nicourbanindonesia.com/mypanel/maintenance", "_blank")} color="rounded-xl bg-gradient-to-br from-green-50 to-green-200 hover:scale-105 transition" />

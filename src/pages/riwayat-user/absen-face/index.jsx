@@ -3,8 +3,20 @@ import Select from "react-select";
 import { toast } from "react-hot-toast";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChartPie, faSearch, faUndo, faFolderOpen, faExclamationTriangle, faBuilding, } from "@fortawesome/free-solid-svg-icons";
-import { formatOvertimeJamBulat, formatFullDate, formatDate } from "../../../utils/dateUtils"
-import { EmptyState } from "../../../components";
+import { formatDate, formatTime, formatFullDate, formatOvertimeJamBulat, isSunday, } from "../../../utils/dateUtils";
+import { EmptyState, Modal } from "../../../components";
+
+const REMARK_OPTIONS = [
+    { value: 1, label: "Absen Manual" },
+    { value: 2, label: "Izin Terlambat" },
+    { value: 3, label: "Izin Pulang Awal" },
+    { value: 4, label: "Cuti" },
+    { value: 5, label: "Izin Sakit" },
+    { value: 6, label: "Lupa Absen" },
+];
+
+const getRemarkLabel = (status) => REMARK_OPTIONS.find((r) => r.value === status)?.label || "-";
+
 
 export default function RiwayatFace() {
     const [companies, setCompanies] = useState([]);
@@ -15,6 +27,9 @@ export default function RiwayatFace() {
     const [riwayat, setRiwayat] = useState(null);
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const [allProfiles, setAllProfiles] = useState([]);
+    const [remarkModal, setRemarkModal] = useState({ open: false, data: null, tanggal: "", });
+    const [errorMessage, setErrorMessage] = useState("");
+
 
     // Ambil data perusahaan
     useEffect(() => {
@@ -98,13 +113,15 @@ export default function RiwayatFace() {
                 const data = await res.json();
                 if (data.success) {
                     setRiwayat(data);
+                    setErrorMessage("");
                     toast.success("Data riwayat berhasil diambil");
                 } else {
-                    toast.error(data.message || "Gagal ambil riwayat");
+                    setRiwayat(null);
+                    setErrorMessage(data.message || "Terjadi kesalahan");
                 }
             } else {
-                const errMsg = await res.text();
-                toast.error("Gagal ambil riwayat: " + errMsg);
+                const err = await res.json();
+                toast.error(err.message || "Gagal ambil riwayat");
             }
         } catch (err) {
             toast.error("Terjadi kesalahan koneksi ❌");
@@ -131,6 +148,23 @@ export default function RiwayatFace() {
         label: `${p.nama_user} (${p.role})`,
     }));
 
+    const openRemarkModal = (tgl, abs) => {
+        setRemarkModal({
+            open: true,
+            data: abs,
+            tanggal: tgl,
+        });
+    };
+
+    const closeRemarkModal = () => {
+        setRemarkModal({
+            open: false,
+            data: null,
+            tanggal: "",
+        });
+    };
+
+
     // UI style helper
     const inputBase = "w-full rounded-md border border-gray-200 bg-white px-2 py-1.5 focus:outline-none focus:ring-4 focus:ring-emerald-100 focus:border-emerald-400 transition shadow-sm";
     const labelBase = "text-sm font-medium text-gray-700";
@@ -140,7 +174,6 @@ export default function RiwayatFace() {
     return (
         <div className="w-full min-h-screen bg-gray-50 p-3 md:p-8 flex items-center justify-center">
             <div className="w-full max-w-5xl bg-white border border-gray-100 rounded-2xl shadow-md py-4 sm:py-6 px-4 md:p-10 space-y-4">
-                {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-gray-200">
                     <div className="space-y-1 flex-1">
                         <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-gray-900 flex items-center gap-2">
@@ -209,6 +242,15 @@ export default function RiwayatFace() {
                     </div>
                 </form>
 
+                {errorMessage && (
+                    <div className="py-6 border-t border-gray-200">
+                        <p className="text-center text-sm text-gray-600 font-medium">
+                            {errorMessage}
+                        </p>
+                    </div>
+                )}
+
+
                 {riwayat && (
                     Object.keys(riwayat).length ? (
                         <div className="space-y-6 pt-6 border-t border-gray-200">
@@ -243,7 +285,9 @@ export default function RiwayatFace() {
                                         </div>
                                         <div className="flex flex-col">
                                             <span className="text-xs text-gray-500">Total Lembur</span>
-                                            <span className="text-sm font-semibold text-emerald-600">{formatOvertimeJamBulat(riwayat.data.total_overtime ?? 0)} Jam</span>
+                                            <span className="text-sm font-semibold text-emerald-600">
+                                                {riwayat.data.total_overtime === 0 ? "0 Menit" : formatOvertimeJamBulat(riwayat.data.total_overtime)}
+                                            </span>
                                         </div>
                                         <div className="flex flex-col">
                                             <span className="text-xs text-gray-500">Total Absen</span>
@@ -261,21 +305,46 @@ export default function RiwayatFace() {
                                                 <th className="px-4 py-2 border-r border-gray-100">Jam Masuk</th>
                                                 <th className="px-4 py-2 border-r border-gray-100">Jam Pulang</th>
                                                 <th className="px-4 py-2 border-r border-gray-100">Terlambat (mnt)</th>
-                                                <th className="px-4 py-2">Lembur (mnt)</th>
+                                                <th className="px-4 py-2 border-r border-gray-100">Lembur (mnt)</th>
+                                                <th className="px-4 py-2">Remark</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {riwayat.date_range.map((tgl) => {
-                                                const abs = riwayat.data.attendance[tgl];
+                                                const abs = riwayat.data.attendance?.[tgl];
+                                                const isLibur = isSunday(tgl);
+
                                                 return (
-                                                    <tr key={tgl} className="odd:bg-white even:bg-gray-50 border-b border-gray-100">
-                                                        <td className="px-4 py-2 font-medium text-gray-700">{formatDate(tgl)}</td>
-                                                        <td className="px-4 py-2">{abs?.in || "-"}</td>
-                                                        <td className="px-4 py-2">{abs?.out || "-"}</td>
-                                                        <td className={`px-4 py-2 ${abs?.late > 0 ? "text-red-700 font-bold rounded" : "text-gray-700"}`}>
-                                                            {abs?.late ?? "-"}
+                                                    <tr key={tgl} className={`border-b border-gray-100 ${isLibur ? "bg-red-50" : "odd:bg-white even:bg-gray-50"}`}>
+                                                        <td className={`px-4 py-2 font-medium ${isLibur ? "text-red-600" : "text-gray-700"}`}>
+                                                            {formatDate(tgl)}
                                                         </td>
-                                                        <td className="px-4 py-2">{abs?.overtime ?? "-"}</td>
+                                                        <td className="px-4 py-2">
+                                                            {abs?.in ? formatTime(abs.in) : "-"}
+                                                        </td>
+                                                        <td className="px-4 py-2">
+                                                            {abs?.out ? formatTime(abs.out) : "-"}
+                                                        </td>
+                                                        <td className={`px-4 py-2 ${abs?.late > 0 ? "text-red-700 font-bold" : "text-gray-700"}`}>
+                                                            {abs?.late === 0 ? "-" : abs?.late ?? "-"}
+                                                        </td>
+
+                                                        <td className="px-4 py-2">
+                                                            {abs?.overtime ?? "-"}
+                                                        </td>
+                                                        <td className="px-4 py-2 text-center">
+                                                            {abs?.remark_status ? (
+                                                                <button
+                                                                    onClick={() => openRemarkModal(tgl, abs)}
+                                                                    className="text-emerald-600 font-semibold hover:underline"
+                                                                >
+                                                                    Lihat
+                                                                </button>
+                                                            ) : (
+                                                                <span className="text-gray-400">-</span>
+                                                            )}
+                                                        </td>
+
                                                     </tr>
                                                 );
                                             })}
@@ -288,33 +357,41 @@ export default function RiwayatFace() {
                                         const abs = riwayat.data.attendance[tgl];
                                         return (
                                             <div key={tgl} className="rounded-lg border border-gray-100 shadow-sm overflow-hidden bg-white text-xs">
-
-                                                <div className="bg-emerald-600 text-white text-center font-semibold py-1">
+                                                <div className={`text-center font-semibold py-1 ${isSunday(tgl) ? "bg-red-600 text-white" : "bg-emerald-600 text-white"}`}>
                                                     {formatFullDate(tgl)}
                                                 </div>
-
                                                 <div className="grid grid-cols-4 divide-x divide-gray-200">
                                                     <div className="flex flex-col items-center py-2">
                                                         <span className="text-gray-500">Masuk</span>
-                                                        <span className="font-semibold text-gray-800">{abs?.in || "--:--"}</span>
+                                                        <span className="font-semibold text-gray-800">
+                                                            {abs?.in ? formatTime(abs.in) : "--:--"}
+                                                        </span>
                                                     </div>
                                                     <div className="flex flex-col items-center py-2">
                                                         <span className="text-gray-500">Pulang</span>
-                                                        <span className="font-semibold text-gray-800">{abs?.out || "--:--"}</span>
+                                                        <span className="font-semibold text-gray-800">
+                                                            {abs?.out ? formatTime(abs.out) : "--:--"}
+                                                        </span>
                                                     </div>
                                                     <div className="flex flex-col items-center py-2">
                                                         <span className="text-gray-500">Terlambat</span>
                                                         <span className={abs?.late > 0 ? "text-red-600 font-bold" : "text-gray-800 font-semibold"}>
-                                                            {abs?.late > 0 ? `${abs.late} mnt` : "-"}
+                                                            {abs?.late === 0 ? "-" : abs?.late > 0 ? `${abs.late} mnt` : "-"}
                                                         </span>
                                                     </div>
-
                                                     <div className="flex flex-col items-center py-2">
                                                         <span className="text-gray-500">Lembur</span>
                                                         <span className="font-semibold text-gray-800">
-                                                            {abs?.overtime > 0 ? `${abs.overtime} mnt` : "-"}
+                                                            {abs?.overtime ? `${abs.overtime} mnt` : "-"}
                                                         </span>
                                                     </div>
+                                                    {abs?.remark_status && (
+                                                        <div className="border-t border-gray-200 text-center py-2">
+                                                            <button onClick={() => openRemarkModal(tgl, abs)} className="text-emerald-600 font-semibold text-xs">
+                                                                Lihat Remark
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         );
@@ -324,11 +401,36 @@ export default function RiwayatFace() {
                         </div>
                     ) : (
                         <div className="py-6 border-t border-gray-200">
-                            <EmptyState title="Tidak Ada Data Absensi" description="Tidak ditemukan catatan absensi untuk periode yang dipilih. Karyawan kemungkinan tidak melakukan absensi Face Recognition pada rentang tanggal tersebut."/>
+                            <EmptyState title="Tidak Ada Data Absensi" description="Tidak ditemukan catatan absensi untuk periode yang dipilih. Karyawan kemungkinan tidak melakukan absensi Face Recognition pada rentang tanggal tersebut." />
                         </div>
                     )
                 )}
             </div>
+            <Modal isOpen={remarkModal.open} onClose={closeRemarkModal} title="Detail Remark Absensi" note={remarkModal.tanggal ? formatFullDate(remarkModal.tanggal) : ""} size="sm">
+                {remarkModal.data && (
+                    <div className="space-y-4 text-sm">
+                        <div>
+                            <p className="text-xs text-gray-500">Kategori Remark</p>
+                            <p className="font-semibold text-gray-800">
+                                {getRemarkLabel(remarkModal.data.remark_status)}
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-gray-500">Deskripsi</p>
+                            <p className="text-gray-800 whitespace-pre-line">
+                                {remarkModal.data.remark_deskripsi || "-"}
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-gray-500">Dibuat oleh</p>
+                            <p className="text-gray-800">
+                                {remarkModal.data.remark_by || "-"}
+                            </p>
+                        </div>
+                    </div>
+                )}
+            </Modal>
+
         </div>
     );
 }

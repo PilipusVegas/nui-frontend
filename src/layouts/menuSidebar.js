@@ -46,7 +46,7 @@ const MenuSidebar = ({ user, isOpen, toggleSidebar, isMobile }) => {
   return (
     <>
       <div className={`${isMobile ? `fixed top-0 left-0 h-full max-w-[80%] w-full bg-white/10 backdrop-blur-lg border-r border-white/20 text-white shadow-md z-50 pt-5 transition-transform duration-700 ${isOpen ? "translate-x-0" : "-translate-x-full"}` : `flex flex-col h-full left-0 py-5 px-0 bg-green-500 text-white shadow-md transition-all duration-700`}`}>
-        <div className="overflow-y-auto h-full pr-2 pl-3 scrollbar-green">
+        <div className="overflow-y-auto h-full pr-1.5 pl-2.5 scrollbar-green">
           {filteredMenuGroups.map((group, groupIndex) => (
             <div key={groupIndex} className="gap-4 mb-4">
               {group.sectionTitle && (
@@ -103,7 +103,7 @@ const MenuSidebar = ({ user, isOpen, toggleSidebar, isMobile }) => {
                                 (!sub.perusahaan || sub.perusahaan.includes(perusahaan))
                             ).length > 0 &&
                           isSubmenuOpen && (
-                            <div className="flex flex-col ml-3.5 mt-2 space-y-1">
+                            <div className="flex flex-col ml-2.5 mt-2 space-y-1">
                               {menu.submenu
                                 .filter(
                                   sub =>

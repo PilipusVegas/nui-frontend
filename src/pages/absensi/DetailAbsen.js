@@ -107,9 +107,8 @@ const DetailAbsen = ({ formData = {} }) => {
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        handleSubmit(e); // lanjut kirim absensi
+        handleSubmit(e);
       } else if (result.dismiss === Swal.DismissReason.cancel) {
-        // 👉 swal kedua: tawarkan logout
         Swal.fire({
           title: "Ganti Akun?",
           text: "Anda memilih 'Bukan Saya'. Apakah ingin keluar dan login dengan akun lain?",
@@ -127,11 +126,10 @@ const DetailAbsen = ({ formData = {} }) => {
           },
         }).then((res) => {
           if (res.isConfirmed) {
-            // 🔑 proses logout sederhana
             localStorage.removeItem("token");
-            navigate("/login"); // arahkan ke halaman login
+            navigate("/login");
           } else {
-            navigate("/home"); // jika batal logout tetap ke beranda
+            navigate("/home");
           }
         });
       }

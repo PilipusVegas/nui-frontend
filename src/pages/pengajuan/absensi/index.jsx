@@ -77,7 +77,7 @@ const DataAbsensi = () => {
     <div className="flex flex-col justify-start">
       <SectionHeader title="Persetujuan Absensi Lapangan" subtitle="Monitoring kehadiran karyawan lapangan secara real-time setiap hari." onBack={() => navigate("/home")}
         actions={
-          <button onClick={() => navigate("/pengajuan-absensi/riwayat")}title="Riwayat Persetujuan"
+          <button onClick={() => navigate("/riwayat-persetujuan-absensi")}title="Riwayat Persetujuan"
             className=" inline-flex items-center justify-center px-3 py-2 text-blue-700 bg-blue-100 border border-blue-300 rounded-lg hover:bg-blue-200 transition"
           >
             <FontAwesomeIcon icon={faClockRotateLeft} />
@@ -88,10 +88,9 @@ const DataAbsensi = () => {
         }
       />
 
-
       <div className="grid grid-cols-2 gap-3 mb-4">
         <SummaryCard icon={faCheckCircle} title="Total Karyawan Lapangan" value={absenData.length} />
-        <SummaryCard icon={faCalendarXmark} title="Data Absensi Tidak Valid" value={absenData.reduce((sum, d) => sum + Number(d.unapproved || 0), 0)} note={[1, 4].includes(user?.id_role) ? "Lihat semua Data" : undefined} onClick={[1, 4].includes(user?.id_role) ? () => navigate("/pengajuan-absensi/abnormal") : undefined} />
+        <SummaryCard icon={faCalendarXmark} title="Data Absensi Tidak Valid" value={absenData.reduce((sum, d) => sum + Number(d.unapproved || 0), 0)} note={[1, 4].includes(user?.id_role) ? "Lihat semua Data" : undefined} onClick={[1, 4].includes(user?.id_role) ? () => navigate("/absensi-tidak-valid") : undefined} />
       </div>
 
       <SearchBar onSearch={(val) => { setSearchName(val); setCurrentPage(1); }} placeholder="Cari nama dan divisi..." className="mb-4" />

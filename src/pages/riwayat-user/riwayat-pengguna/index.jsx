@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import MobileLayout from "../../../layouts/mobileLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarCheck, faClock, faClipboardList, faBriefcase} from "@fortawesome/free-solid-svg-icons";
+import { faCalendarCheck, faClock, faClipboardList, faBriefcase, faMotorcycle} from "@fortawesome/free-solid-svg-icons";
 import Absensi from "./Absensi";
 import Lembur from "./Lembur";
 // import Cuti from "./Cuti";
+// import KunjunganTeknisi from "./KunjunganTeknisi";
 import Dinas from "./Dinas";
 
 // ✅ import komponen footer
@@ -17,6 +18,7 @@ export default function RiwayatIndex() {
     { key: "absensi", label: "Absensi", icon: faCalendarCheck },
     { key: "lembur", label: "Lembur", icon: faClock },
     // { key: "cuti", label: "Cuti", icon: faClipboardList },
+    // { key: "kunjungan", label: "Kunjungan", icon: faMotorcycle },
     { key: "dinas", label: "Dinas", icon: faBriefcase },
   ];
 
@@ -28,18 +30,13 @@ export default function RiwayatIndex() {
           {TABS.map((tab) => {
             const isActive = activeTab === tab.key;
             return (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
+              <button key={tab.key} onClick={() => setActiveTab(tab.key)}
                 className={`flex-1 min-w-[80px] flex flex-col items-center justify-center py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${isActive
                     ? "bg-green-500 text-white shadow-sm"
                     : "text-gray-600 hover:bg-white hover:text-green-600"
                   }`}
               >
-                <FontAwesomeIcon
-                  icon={tab.icon}
-                  className={`text-xs mb-1 ${isActive ? "text-white" : ""}`}
-                />
+                <FontAwesomeIcon icon={tab.icon} className={`text-xs mb-1 ${isActive ? "text-white" : ""}`}/>
                 <span className="leading-tight text-[9px]">{tab.label}</span>
               </button>
             );
@@ -48,10 +45,11 @@ export default function RiwayatIndex() {
       </div>
 
       {/* ---- Isi Tab ---- */}
-      <div className="mt-2 pb-24"> {/* pb-24 agar konten tidak ketutupan footer */}
+      <div className="mt-2 pb-24">
         {activeTab === "absensi" && <Absensi />}
         {activeTab === "lembur" && <Lembur />}
         {/* {activeTab === "cuti"   && <Cuti />} */}
+        {/* {activeTab === "kunjungan" && <KunjunganTeknisi />} */}
         {activeTab === "dinas"  && <Dinas />}
       </div>
 

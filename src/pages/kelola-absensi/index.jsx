@@ -7,6 +7,8 @@ import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { faFolderOpen, faFileDownload, faExpand, faRefresh, faCircleInfo } from "@fortawesome/free-solid-svg-icons";
 import { LoadingSpinner, SectionHeader, EmptyState, ErrorState, SearchBar, Modal } from "../../components/";
 import { formatLongDate } from "../../utils/dateUtils";
+import AttendanceRemarkModal from "../kelola-absensi/AttendanceRemarkModal";
+
 
 const DataRekapAbsensi = () => {
   const Navigate = useNavigate();
@@ -25,6 +27,10 @@ const DataRekapAbsensi = () => {
   const canDownloadHRD = [1, 4, 6].includes(user.id_role);
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [isDateSelected, setIsDateSelected] = useState(false);
+  const [showRemarkModal, setShowRemarkModal] = useState(false);
+  const [remarkDetail, setRemarkDetail] = useState(null);
+  const isRemarkDay = (att) => att?.remark_status === 4 || att?.remark_status === 5;
+
 
   const sortData = (data) => {
     return [...data].sort((a, b) => {
@@ -279,15 +285,11 @@ const DataRekapAbsensi = () => {
 
                   <tbody>
                     {filteredAbsenData.map((item, rowIdx) => (
-                      <tr
-                        key={rowIdx}
-                        onMouseEnter={() => setHoveredRow(rowIdx)}
-                        onMouseLeave={() => setHoveredRow(null)}
-                        className="group"
-                      >
+                      <tr key={rowIdx} onMouseEnter={() => setHoveredRow(rowIdx)} onMouseLeave={() => setHoveredRow(null)} className="group">
                         {tanggalArray.map((tgl, colIdx) => {
                           const m = dayMeta(tgl);
                           const att = item.attendance[tgl] || {};
+                          const isRemark = isRemarkDay(att);
                           const inTime = att.in || "-";
                           const lateVal = att.late;
                           const lateMin = lateVal === null || lateVal === undefined || lateVal === 0 ? "-" : lateVal;
@@ -306,10 +308,32 @@ const DataRekapAbsensi = () => {
 
                           return (
                             <React.Fragment key={`${tgl}-${rowIdx}`}>
-                              <td className={tdBase}>{inTime}</td>
-                              <td className={`${tdBase} ${lateVal > 0 ? "text-red-700 font-bold" : ""}`}>{lateMin}</td>
-                              <td className={tdBase}>{outTime}</td>
-                              <td className={tdBase}>{overtime}</td>
+                              {isRemark ? (
+                                <td
+                                  colSpan={4}
+                                  onClick={() => {
+                                    setRemarkDetail({
+                                      nama: item.nama,
+                                      tanggal: tgl,
+                                      remark_status: att.remark_status,
+                                      remark_deskripsi: att.remark_deskripsi,
+                                      remark_by: att.remark_by,
+                                    });
+                                    setShowRemarkModal(true);
+                                  }}
+                                  className={`${tdBase} cursor-pointer font-bold text-indigo-700 hover:underline`}
+                                >
+                                  {att.remark_status === 4 ? "CUTI" : "IZIN SAKIT"}
+                                </td>
+                              ) : (
+                                <>
+                                  <td className={tdBase}>{inTime}</td>
+                                  <td className={`${tdBase} ${lateVal > 0 ? "text-red-700 font-bold" : ""}`}>{lateMin}</td>
+                                  <td className={tdBase}>{outTime}</td>
+                                  <td className={tdBase}>{overtime}</td>
+                                </>
+                              )}
+
 
                               {/* Hanya render LM & LP jika hari Minggu */}
                               {m.isSunday && (
@@ -326,7 +350,6 @@ const DataRekapAbsensi = () => {
                   </tbody>
                 </table>
               </div>
-
             </div>
           </div>
         </div>
@@ -353,19 +376,14 @@ const DataRekapAbsensi = () => {
             <div className="grid grid-cols-[50px_auto] gap-y-2 text-sm">
               <span className="font-bold text-green-700">IN</span>
               <span>Jam Absen Masuk Karyawan.</span>
-
               <span className="font-bold text-red-600">LATE</span>
               <span>Jumlah menit keterlambatan dibanding jam masuk.</span>
-
               <span className="font-bold text-indigo-700">OUT</span>
               <span>Jam Absen Pulang karyawan.</span>
-
               <span className="font-bold text-purple-700">T</span>
               <span>Total jam lembur (Overtime) karyawan.</span>
-
               <span className="font-bold text-purple-700">LM</span>
               <span>Jam Lembur masuk karyawan.</span>
-
               <span className="font-bold text-purple-700">LP</span>
               <span>Jam Lembur pulang karyawan.</span>
             </div>
@@ -394,6 +412,11 @@ const DataRekapAbsensi = () => {
           <EmptyState icon={faFolderOpen} title="Data kosong" subtitle="Silakan pilih rentang tanggal lain." />
         </div>
       )}
+
+      {showRemarkModal && (
+        <AttendanceRemarkModal isOpen={showRemarkModal} onClose={() => setShowRemarkModal(false)} data={remarkDetail}/>
+      )}
+
     </div>
   );
 };

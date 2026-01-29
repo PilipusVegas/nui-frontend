@@ -87,7 +87,6 @@ const AbsenMulai = ({ handleNextStepData }) => {
   }, [jadwal]);
 
 
-
   useEffect(() => {
     if (!userId || isKadiv) return;
 
@@ -104,23 +103,34 @@ const AbsenMulai = ({ handleNextStepData }) => {
 
         if (!res.ok) throw new Error("Gagal ambil jadwal");
         const json = await res.json();
-        const list = json.data || [];
-        if (list.length === 0) {
+        // NORMALISASI: object -> array
+        const jadwalList = json?.data
+          ? Array.isArray(json.data)
+            ? json.data
+            : [json.data]
+          : [];
+
+        if (jadwalList.length === 0) {
           setJadwal(null);
           setLockLocation(false);
           setLockShift(false);
           return;
         }
-        const data = list[0];
+
+        const data = jadwalList[0];
         setJadwal(data);
+
         setSelectedShift({
           id: data.id_shift,
           nama: data.nama_shift,
         });
+
         setLockShift(true);
+
         if (data.lokasi?.length === 1 && locations.length > 0) {
           const loc = data.lokasi[0];
           const fullLocation = locations.find(l => l.value === loc.id);
+
           if (fullLocation) {
             setSelectedLocation(fullLocation);
             setLockLocation(true);
@@ -130,6 +140,7 @@ const AbsenMulai = ({ handleNextStepData }) => {
         } else {
           setLockLocation(false);
         }
+
       } catch (err) {
         console.error("Cek jadwal error:", err);
         setJadwal(null);
@@ -140,6 +151,7 @@ const AbsenMulai = ({ handleNextStepData }) => {
 
     fetchJadwal();
   }, [userId, isKadiv, apiUrl, locations]);
+
 
 
   useEffect(() => {
@@ -570,8 +582,7 @@ const AbsenMulai = ({ handleNextStepData }) => {
           )} */}
 
 
-          <button
-            type="submit"
+          <button type="submit"
             onClick={(e) => {
               if (distance !== null && distance > 60) {
                 e.preventDefault();
@@ -580,19 +591,11 @@ const AbsenMulai = ({ handleNextStepData }) => {
             }}
             disabled={!isKadiv && !jadwal}
             className={`w-full py-4 rounded-lg font-semibold transition
-    ${distance !== null && distance > 60
-                ? "bg-red-500 text-white cursor-not-allowed"
-                : isFormValid()
-                  ? "bg-green-500 text-white hover:bg-green-600"
-                  : "bg-red-400 text-white cursor-not-allowed"
-              }`}
+              ${distance !== null && distance > 60 ? "bg-red-500 text-white cursor-not-allowed" : isFormValid() ? "bg-green-500 text-white hover:bg-green-600" : "bg-red-400 text-white cursor-not-allowed"}`}
           >
             Lihat Detail Absen Masuk
             <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
           </button>
-
-
-
         </form>
       </div>
     </MobileLayout>
