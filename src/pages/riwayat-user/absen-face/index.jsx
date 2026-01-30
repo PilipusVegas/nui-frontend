@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChartPie, faSearch, faUndo, faFolderOpen, faExclamationTriangle, faBuilding, } from "@fortawesome/free-solid-svg-icons";
 import { formatDate, formatTime, formatFullDate, formatOvertimeJamBulat, isSunday, } from "../../../utils/dateUtils";
 import { EmptyState, Modal } from "../../../components";
+import { getDefaultPeriod } from "../../../utils/getDefaultPeriod";
 
 const REMARK_OPTIONS = [
     { value: 1, label: "Absen Manual" },
@@ -29,6 +30,16 @@ export default function RiwayatFace() {
     const [allProfiles, setAllProfiles] = useState([]);
     const [remarkModal, setRemarkModal] = useState({ open: false, data: null, tanggal: "", });
     const [errorMessage, setErrorMessage] = useState("");
+
+    useEffect(() => {
+        const { start, end } = getDefaultPeriod();
+        setForm((prev) => ({
+            ...prev,
+            startDate: start,
+            endDate: end,
+        }));
+    }, []);
+
 
 
     // Ambil data perusahaan
@@ -132,7 +143,15 @@ export default function RiwayatFace() {
     };
 
     const handleReset = () => {
-        setForm({ perusahaanId: "", userId: "", startDate: "", endDate: "" });
+        const { start, end } = getDefaultPeriod();
+
+        setForm({
+            perusahaanId: "",
+            userId: "",
+            startDate: start,
+            endDate: end,
+        });
+
         setErrors({});
         setRiwayat(null);
         setProfiles([]);
