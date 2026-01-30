@@ -31,6 +31,8 @@ const TambahPenjadwalan = () => {
         start_date: "",
         end_date: ""
     });
+    const [selectedShift, setSelectedShift] = useState(null);
+
 
 
     useEffect(() => {
@@ -151,15 +153,40 @@ const TambahPenjadwalan = () => {
                         Shift Kerja
                     </label>
                     <Select placeholder="Pilih shift..." options={shiftList.map(s => ({
-                            value: s.id,
-                            label: s.nama
-                        }))}
-                        onChange={o =>
-                            setForm(prev => ({ ...prev, id_shift: o?.value || "" }))
-                        }
+                        value: s.id,
+                        label: s.nama
+                    }))}
+                        onChange={o => {
+                            const shift = shiftList.find(s => s.id === o?.value);
+                            setForm(prev => ({
+                                ...prev,
+                                id_shift: o?.value || ""
+                            }));
+                            setSelectedShift(shift || null);
+                        }}
                         styles={selectStyle}
                         menuPortalTarget={document.body}
                     />
+
+                    {selectedShift && (
+                        <div className="mt-4 border rounded-xl p-4 bg-gray-50">
+                            <div className="text-sm font-semibold text-gray-800 mb-3">
+                                Detail Jadwal Shift
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                {selectedShift.detail.map((d, idx) => (
+                                    <div key={idx} className="flex items-center justify-between bg-white border rounded-lg px-3 py-2">
+                                        <span className="font-medium text-gray-700">
+                                            {d.hari}
+                                        </span>
+                                        <span className="text-gray-600">
+                                            {d.jam_masuk} – {d.jam_pulang}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -167,7 +194,7 @@ const TambahPenjadwalan = () => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Tanggal Mulai
                         </label>
-                        <input type="date" value={form.start_date} onChange={e => setForm(prev => ({ ...prev, start_date: e.target.value }))} className="w-full border rounded-lg px-3 py-2 text-sm"/>
+                        <input type="date" value={form.start_date} onChange={e => setForm(prev => ({ ...prev, start_date: e.target.value }))} className="w-full border rounded-lg px-3 py-2 text-sm" />
                         <p className="text-xs text-gray-500 mt-1">
                             Jadwal mulai berlaku sejak tanggal ini
                         </p>

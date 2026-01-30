@@ -34,6 +34,8 @@ const TambahPenjadwalanUser = () => {
     });
 
     const today = new Date().toISOString().split("T")[0];
+    const [selectedShift, setSelectedShift] = useState(null);
+
 
     /* FETCH MASTER */
     useEffect(() => {
@@ -108,17 +110,14 @@ const TambahPenjadwalanUser = () => {
             toast.error("Semua field wajib diisi");
             return;
         }
-
         if (start_date < today) {
             toast.error("Tanggal mulai tidak boleh kurang dari hari ini");
             return;
         }
-
         if (end_date < start_date) {
             toast.error("Tanggal selesai tidak boleh lebih awal dari tanggal mulai");
             return;
         }
-
         try {
             setSubmitting(true);
 
@@ -135,13 +134,10 @@ const TambahPenjadwalanUser = () => {
                     }),
                 }
             );
-
             const json = await res.json();
-
             if (!res.ok || json.success === false) {
                 throw new Error(json.message || "Gagal menambahkan penjadwalan");
             }
-
             toast.success("Penjadwalan berhasil ditambahkan");
             navigate(-1);
         } catch (err) {
@@ -151,6 +147,7 @@ const TambahPenjadwalanUser = () => {
         }
     };
 
+
     return (
         <div>
             <SectionHeader title="Tambah Jadwal" subtitle="Jadwalkan Shift dan Lokasi Penugasan." onBack={() => navigate(-1)} />
@@ -159,11 +156,9 @@ const TambahPenjadwalanUser = () => {
                     <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                         Informasi Karyawan
                     </div>
-
                     <div className="mt-1 text-lg font-semibold text-gray-900">
                         {userInfo.nama}
                     </div>
-
                     <div className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-gray-600">
                         <span className="font-medium text-gray-700">
                             {userInfo.role}
@@ -184,15 +179,37 @@ const TambahPenjadwalanUser = () => {
                             value: s.id,
                             label: s.nama,
                         }))}
-                        onChange={(o) =>
+                        onChange={(o) => {
+                            const shift = shiftList.find((s) => s.id === o?.value);
                             setForm((prev) => ({
                                 ...prev,
                                 id_shift: o?.value || "",
-                            }))
-                        }
+                            }));
+                            setSelectedShift(shift || null);
+                        }}
                         styles={selectStyle}
                         menuPortalTarget={document.body}
                     />
+                    {selectedShift && (
+                        <div className="mt-4 border rounded-xl p-4 bg-gray-50">
+                            <div className="text-sm font-semibold text-gray-800 mb-3">
+                                Detail Jadwal Shift
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                {selectedShift.detail.map((d, idx) => (
+                                    <div key={idx} className="flex items-center justify-between bg-white border rounded-lg px-3 py-2">
+                                        <span className="font-medium text-gray-700">
+                                            {d.hari}
+                                        </span>
+                                        <span className="text-gray-600">
+                                            {d.jam_masuk} – {d.jam_pulang}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -200,10 +217,7 @@ const TambahPenjadwalanUser = () => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Tanggal Mulai
                         </label>
-                        <input
-                            type="date"
-                            min={today}
-                            value={form.start_date}
+                        <input type="date" min={today} value={form.start_date}
                             onChange={(e) =>
                                 setForm((prev) => ({
                                     ...prev,
@@ -222,10 +236,7 @@ const TambahPenjadwalanUser = () => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Tanggal Selesai
                         </label>
-                        <input
-                            type="date"
-                            min={form.start_date || today}
-                            value={form.end_date}
+                        <input type="date" min={form.start_date || today} value={form.end_date}
                             onChange={(e) =>
                                 setForm((prev) => ({
                                     ...prev,
@@ -234,7 +245,6 @@ const TambahPenjadwalanUser = () => {
                             }
                             className="w-full border rounded-lg px-3 py-2 text-sm"
                         />
-
                     </div>
                 </div>
 

@@ -26,6 +26,8 @@ const EditPenjadwalan = () => {
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
     const [isActive, setIsActive] = useState(false);
+    const [selectedShift, setSelectedShift] = useState(null);
+
 
     useEffect(() => {
         fetchData();
@@ -64,7 +66,12 @@ const EditPenjadwalan = () => {
                 id_user: jadwal.id_user
             });
 
-            setShiftList((await shiftRes.json()).data || []);
+            const shifts = (await shiftRes.json()).data || [];
+            setShiftList(shifts);
+
+            const currentShift = shifts.find(s => s.id === jadwal.id_shift);
+            setSelectedShift(currentShift || null);
+
             setLokasiList((await lokasiRes.json()).data || []);
 
         } catch (err) {
@@ -187,12 +194,37 @@ const EditPenjadwalan = () => {
                             value: s.id,
                             label: s.nama
                         }))}
-                        onChange={o =>
-                            setForm(prev => ({ ...prev, id_shift: o?.value || "" }))
-                        }
+                        onChange={o => {
+                            const shift = shiftList.find(s => s.id === o?.value);
+                            setForm(prev => ({
+                                ...prev,
+                                id_shift: o?.value || ""
+                            }));
+                            setSelectedShift(shift || null);
+                        }}
                         styles={selectStyle}
                         menuPortalTarget={document.body}
                     />
+                    {selectedShift && (
+                        <div className="mt-4 border rounded-xl p-4 bg-gray-50">
+                            <div className="text-sm font-semibold text-gray-800 mb-3">
+                                Detail Jadwal Shift
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                {selectedShift.detail.map((d, idx) => (
+                                    <div key={idx} className="flex items-center justify-between bg-white border rounded-lg px-3 py-2">
+                                        <span className="font-medium text-gray-700">
+                                            {d.hari}
+                                        </span>
+                                        <span className="text-gray-600">
+                                            {d.jam_masuk} – {d.jam_pulang}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -200,10 +232,7 @@ const EditPenjadwalan = () => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Tanggal Mulai
                         </label>
-                        <input
-                            type="date"
-                            value={form.start_date}
-                            disabled={isActive}
+                        <input type="date" value={form.start_date} disabled={isActive}
                             onChange={e =>
                                 setForm(prev => ({ ...prev, start_date: e.target.value }))
                             }
