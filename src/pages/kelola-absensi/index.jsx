@@ -9,6 +9,17 @@ import { LoadingSpinner, SectionHeader, EmptyState, ErrorState, SearchBar, Modal
 import { formatLongDate } from "../../utils/dateUtils";
 import AttendanceRemarkModal from "../kelola-absensi/AttendanceRemarkModal";
 
+const REMARK_MAP = {
+  1: "ABSEN MANUAL",
+  2: "IZIN TERLAMBAT",
+  3: "IZIN PULANG AWAL",
+  4: "CUTI",
+  5: "IZIN SAKIT",
+  6: "LUPA ABSEN",
+};
+
+const REMARK_FULLSPAN = [4, 5];
+
 
 const DataRekapAbsensi = () => {
   const Navigate = useNavigate();
@@ -29,7 +40,12 @@ const DataRekapAbsensi = () => {
   const [isDateSelected, setIsDateSelected] = useState(false);
   const [showRemarkModal, setShowRemarkModal] = useState(false);
   const [remarkDetail, setRemarkDetail] = useState(null);
-  const isRemarkDay = (att) => att?.remark_status === 4 || att?.remark_status === 5;
+  const hasRemark = (att) =>
+    att?.remark_status !== null &&
+    att?.remark_status !== undefined;
+
+  const isFullSpanRemark = (att) =>
+    REMARK_FULLSPAN.includes(att?.remark_status);
 
 
   const sortData = (data) => {
@@ -137,6 +153,25 @@ const DataRekapAbsensi = () => {
         console.error(`Gagal keluar fullscreen: ${err.message}`);
       });
     }
+  };
+
+  const openRemarkModal = ({ item, att, tanggal }) => {
+    setRemarkDetail({
+      nama: item.nama,
+      nip: item.nip,
+      tanggal,
+      remark_status: att.remark_status,
+      remark_label: REMARK_MAP[att.remark_status],
+      remark_deskripsi: att.remark_deskripsi,
+      remark_by: att.remark_by,
+
+      in: att.in,
+      out: att.out,
+      late: att.late,
+      overtime: att.overtime,
+    });
+
+    setShowRemarkModal(true);
   };
 
   return (
@@ -289,7 +324,8 @@ const DataRekapAbsensi = () => {
                         {tanggalArray.map((tgl, colIdx) => {
                           const m = dayMeta(tgl);
                           const att = item.attendance[tgl] || {};
-                          const isRemark = isRemarkDay(att);
+                          const isRemark = hasRemark(att);
+                          const isFullSpan = isFullSpanRemark(att);
                           const inTime = att.in || "-";
                           const lateVal = att.late;
                           const lateMin = lateVal === null || lateVal === undefined || lateVal === 0 ? "-" : lateVal;
@@ -299,6 +335,8 @@ const DataRekapAbsensi = () => {
                           const lastOvertime = item.overtimes?.[tgl]?.selesai ?? "-";
                           const overtime = rawOt === null || rawOt === undefined || rawOt === 0 ? "-" : rawOt;
                           const isEvenCol = colIdx % 2 === 0;
+                          const remarkClick = isRemark ? () => openRemarkModal({ item, att, tanggal: tgl }) : undefined;
+
 
                           // === Style dasar tiap sel ===
                           const tdBase = `border px-2 py-1 text-center text-xs min-w-[50px] ${m.isSunday
@@ -308,33 +346,47 @@ const DataRekapAbsensi = () => {
 
                           return (
                             <React.Fragment key={`${tgl}-${rowIdx}`}>
-                              {isRemark ? (
+                              {isRemark && isFullSpan ? (
+                                /* ==== CUTI & IZIN SAKIT (COLSPAN + BG KUNING) ==== */
                                 <td
                                   colSpan={4}
-                                  onClick={() => {
-                                    setRemarkDetail({
-                                      nama: item.nama,
-                                      tanggal: tgl,
-                                      remark_status: att.remark_status,
-                                      remark_deskripsi: att.remark_deskripsi,
-                                      remark_by: att.remark_by,
-                                    });
-                                    setShowRemarkModal(true);
-                                  }}
-                                  className={`${tdBase} cursor-pointer font-bold text-indigo-700 hover:underline`}
+                                  onClick={() => openRemarkModal({ item, att, tanggal: tgl })}
+                                  className={`${tdBase} bg-yellow-100 cursor-pointer font-bold hover:bg-yellow-200 `}
                                 >
-                                  {att.remark_status === 4 ? "CUTI" : "IZIN SAKIT"}
+                                  {REMARK_MAP[att.remark_status]}
                                 </td>
                               ) : (
+                                /* ==== NORMAL CELL (TERMAsuk REMARK KUNING) ==== */
                                 <>
-                                  <td className={tdBase}>{inTime}</td>
-                                  <td className={`${tdBase} ${lateVal > 0 ? "text-red-700 font-bold" : ""}`}>{lateMin}</td>
-                                  <td className={tdBase}>{outTime}</td>
-                                  <td className={tdBase}>{overtime}</td>
+                                  <td
+                                    onClick={remarkClick}
+                                    className={`${tdBase} ${isRemark ? "bg-yellow-100 hover:bg-yellow-200 cursor-pointer" : ""}`}
+                                  >
+                                    {inTime}
+                                  </td>
+
+                                  <td
+                                    onClick={remarkClick}
+                                    className={`${tdBase} ${lateVal > 0 ? "text-red-700 font-bold" : ""} ${isRemark ? "bg-yellow-100 hover:bg-yellow-200 cursor-pointer" : ""}`}
+                                  >
+                                    {lateMin}
+                                  </td>
+
+                                  <td
+                                    onClick={remarkClick}
+                                    className={`${tdBase} ${isRemark ? "bg-yellow-100 hover:bg-yellow-200 cursor-pointer" : ""}`}
+                                  >
+                                    {outTime}
+                                  </td>
+
+                                  <td
+                                    onClick={remarkClick}
+                                    className={`${tdBase} ${isRemark ? "bg-yellow-100 hover:bg-yellow-200 cursor-pointer" : ""}`}
+                                  >
+                                    {overtime}
+                                  </td>
                                 </>
                               )}
-
-
                               {/* Hanya render LM & LP jika hari Minggu */}
                               {m.isSunday && (
                                 <>
@@ -414,7 +466,7 @@ const DataRekapAbsensi = () => {
       )}
 
       {showRemarkModal && (
-        <AttendanceRemarkModal isOpen={showRemarkModal} onClose={() => setShowRemarkModal(false)} data={remarkDetail}/>
+        <AttendanceRemarkModal isOpen={showRemarkModal} onClose={() => setShowRemarkModal(false)} data={remarkDetail} />
       )}
 
     </div>

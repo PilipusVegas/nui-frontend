@@ -143,7 +143,6 @@ const AbsenManual = () => {
                                 isClearable
                                 placeholder="Pilih karyawan"
                             />
-
                         </div>
                     </div>
 
@@ -155,7 +154,6 @@ const AbsenManual = () => {
                     </div>
                 </form>
 
-                {/* FORM RESULT — DIPINDAHKAN TANPA HILANG LOGIC */}
                 {isChecked && (
                     <RemarkForm apiUrl={apiUrl} navigate={navigate} selectedDate={selectedDate} selectedUser={selectedUser} absenData={absenData} shifts={shifts} lokasi={lokasi} onSuccess={resetFormResult} />
                 )}

@@ -27,9 +27,6 @@ const EditPenjadwalan = () => {
     const endDate = searchParams.get("endDate");
     const [isActive, setIsActive] = useState(false);
 
-
-
-
     useEffect(() => {
         fetchData();
     }, []);
