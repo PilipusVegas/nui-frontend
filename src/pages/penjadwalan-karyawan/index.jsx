@@ -138,7 +138,7 @@ const PenjadwalanKaryawan = () => {
                                 <th className="px-4 py-3 text-center">
                                     <button onClick={() => setStatusSort(prev => prev === "empty-first" ? "available-first" : "empty-first")} className="flex items-center justify-center gap-2 w-full hover:text-gray-200 transition cursor-pointer" title="Urutkan status" type="button">
                                         <span>Status</span>
-                                        <FontAwesomeIcon icon={statusSort === "empty-first" ? faSortUp : faSortDown}/>
+                                        <FontAwesomeIcon icon={statusSort === "empty-first" ? faSortUp : faSortDown} />
                                     </button>
                                 </th>
                                 <th className="px-4 py-3 text-center rounded-tr-lg">
@@ -171,6 +171,34 @@ const PenjadwalanKaryawan = () => {
                             ))}
                         </tbody>
                     </table>
+                </div>
+            )}
+            {/* MOBILE VIEW */}
+            {!loading && !error && data.length > 0 && (
+                <div className="block md:hidden space-y-3 mb-20">
+                    {filteredData.map((item) => (
+                        <div key={item.id_user} className="border rounded-xl p-4 bg-white shadow-sm flex flex-col gap-3">
+                            {/* Content */}
+                            <div className="flex flex-col gap-1">
+                                <p className="font-semibold text-base text-gray-900">
+                                    {item.nama}
+                                </p>
+
+                                <p className="text-sm text-gray-500">
+                                    {item.nip} • {item.role}
+                                </p>
+                            </div>
+
+                            {/* Footer */}
+                            <div className="flex items-center justify-between pt-2">
+                                {renderStatus(item.has_ongoing)}
+
+                                <button onClick={() => navigate(`/penjadwalan/detail/${item.id_user}`)} className="px-4 py-2 bg-blue-500 text-white text-sm font-semibold rounded-md">
+                                    <FontAwesomeIcon icon={faEye} /> Detail
+                                </button>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             )}
         </div>

@@ -108,8 +108,8 @@ export const exportRekapPresensi = async ({ filteredAbsenData, startDate, endDat
     if (isMinggu) {
       const startCol = runningCol;
       const endCol = runningCol + colSpan - 1;
-      const startRow = offsetRow + 1; // mulai dari header tanggal
-      const endRow = offsetRow + 2 + jumlahKaryawan; // sampai data terakhir
+      const startRow = offsetRow + 1;
+      const endRow = offsetRow + 2;
 
       for (let c = startCol; c <= endCol; c++) {
         for (let r = startRow; r <= endRow; r++) {
@@ -126,6 +126,7 @@ export const exportRekapPresensi = async ({ filteredAbsenData, startDate, endDat
 
     runningCol += colSpan;
   });
+
 
   // 🟣 Data Pegawai (tulis column tetap dulu, lalu tambahkan per tanggal)
   filteredAbsenData.forEach((item, i) => {
@@ -158,29 +159,43 @@ export const exportRekapPresensi = async ({ filteredAbsenData, startDate, endDat
 
       const span = isMinggu ? 6 : 4;
 
-      // REMARK DAY
+      // REMARK DAY (CUTI / IZIN SAKIT) — FINAL FIX
       if (isRemark) {
-        worksheet.mergeCells(rowIdx, colIndex, rowIdx, colIndex + 3);
+        const startCol = colIndex;
+        const endCol = colIndex + 3;
 
-        const cell = worksheet.getCell(rowIdx, colIndex);
-        cell.value = remarkText;
-        cell.alignment = { vertical: "middle", horizontal: "center" };
-        cell.font = { bold: true, size: 9, color: { argb: "FF0369A1" } };
-        cell.fill = {
-          type: "pattern",
-          pattern: "solid",
-          fgColor: { argb: "FFE0F2FE" },
+        worksheet.mergeCells(rowIdx, startCol, rowIdx, endCol);
+
+        // 👉 SET VALUE SEKALI SAJA
+        const mainCell = worksheet.getCell(rowIdx, startCol);
+        mainCell.value = remarkText;
+        mainCell.alignment = { vertical: "middle", horizontal: "center" };
+        mainCell.font = {
+          bold: true,
+          size: 9,
+          color: { argb: "FF000000" },
         };
-        cell.border = {
-          top: { style: "thin" },
-          left: { style: "thin" },
-          bottom: { style: "thin" },
-          right: { style: "thin" },
-        };
+
+        // 👉 STYLE SEMUA CELL DALAM MERGE
+        for (let c = startCol; c <= endCol; c++) {
+          const cell = worksheet.getCell(rowIdx, c);
+          cell.fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FFFFF3B0" }, // 🟨 KUNING
+          };
+          cell.border = {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" },
+          };
+        }
 
         colIndex += span;
         continue;
       }
+
 
       // NORMAL DAY
       const vals = isMinggu
