@@ -64,7 +64,7 @@ export const exportExcelDetail = async ({
         ["Alpha (Tidak Masuk)", `${dataUser?.total_alpha ?? 0} Hari`],
         ["Lupa Absen Pulang", `${dataUser?.total_empty_out ?? 0} Hari`],
         // ["Jarak Tidak Valid (>60m)", `${dataUser?.total_distance_not_valid ?? 0} Hari`],
-        ["Potongan", `Rp ${dataUser?.total_nominal_cut ?? 0}`],
+        // ["Potongan", `Rp ${dataUser?.total_nominal_cut ?? 0}`],
     ];
 
     // =====================================================================
@@ -136,7 +136,7 @@ export const exportExcelDetail = async ({
         "Terlambat",
         "Pulang",
         "Total Lembur",
-        "Potongan",
+        // "Potongan",
         "Kategori Remark",
         "Remark",
     ];
@@ -198,7 +198,7 @@ export const exportExcelDetail = async ({
             isLeaveOrSick ? "" : rec?.total_overtime ?? "",
 
             // Potongan (biasanya cuti/sakit = 0, tapi tetap aman)
-            rec?.nominal_cut ? `Rp ${rec.nominal_cut}` : "",
+            // rec?.nominal_cut ? `Rp ${rec.nominal_cut}` : "",
 
             // Remark
             getKategoriRemark(rec?.remark_status),

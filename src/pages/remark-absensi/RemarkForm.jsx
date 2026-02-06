@@ -132,7 +132,7 @@ const RemarkForm = ({ apiUrl, navigate, selectedDate, selectedUser, absenData, s
         };
 
         try {
-            await fetchWithJwt(`${apiUrl}/absen/manual`, {
+            await fetchWithJwt(`${apiUrl}/absen/remark`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),

@@ -5,6 +5,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash, faUser, faLock } from "@fortawesome/free-solid-svg-icons";
 import toast from "react-hot-toast";
 import { getUserFromToken } from "../utils/jwtHelper";
+import { getLockedUserId, lockDeviceToUser } from "../utils/deviceLock";
+
 
 const Login = () => {
   const navigate = useNavigate();
@@ -18,6 +20,7 @@ const Login = () => {
   if (user) {
     return <Navigate to="/home" replace />;
   }
+  const EXCLUDED_DEVICE_LOCK_ROLES = [1, 4, 5, 6, 20];
 
 
   const handleLogin = async (e) => {
@@ -35,16 +38,35 @@ const Login = () => {
         toast.error(data?.message || "Username atau password salah.");
         return;
       }
+      // simpan token dulu untuk decode
       localStorage.setItem("token", data.token);
       const user = getUserFromToken();
-      if (!user) {
+      if (!user || !user.id_user) {
         toast.error("Sesi tidak valid. Silakan login ulang.");
+        localStorage.removeItem("token");
         return;
       }
+      const lockedUserId = getLockedUserId();
+      const isExcludedRole = EXCLUDED_DEVICE_LOCK_ROLES.includes(user.id_role);
 
-      toast.success("Login berhasil! Selamat Bekerja");
+      // 🔐 DEVICE LOCK CHECK (kecuali role tertentu)
+      if (!isExcludedRole) {
+        if (lockedUserId && String(lockedUserId) !== String(user.id_user)) {
+          localStorage.removeItem("token");
+          toast.error(
+            "Login ditolak. Anda tidak bisa login menggunakan akun lain di perangkat ini, silahkan gunakan akun anda pribadi."
+          );
+          return;
+        }
+
+        // jika belum ada lock → kunci device
+        if (!lockedUserId) {
+          lockDeviceToUser(user.id_user);
+        }
+      }
+
+      toast.success("Login berhasil! Selamat bekerja.");
       navigate("/home", { replace: true });
-
     } catch (error) {
       console.error("Login error:", error);
       toast.error("Gagal menghubungi server. Silakan coba beberapa saat lagi.");
@@ -52,6 +74,7 @@ const Login = () => {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="flex items-center justify-center min-h-screen px-5 font-poppins" style={{ backgroundImage: "url('/wall.png')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", backgroundAttachment: "fixed", backgroundBlendMode: "overlay", backgroundColor: "rgba(0, 0, 0, 0.25)", }}>

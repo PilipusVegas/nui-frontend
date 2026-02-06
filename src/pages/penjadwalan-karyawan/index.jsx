@@ -162,9 +162,9 @@ const PenjadwalanKaryawan = () => {
                                             <button onClick={() => navigate(`/penjadwalan/detail/${item.id_user}`)} className="px-3 py-1.5 bg-blue-500 text-white text-sm font-semibold rounded">
                                                 <FontAwesomeIcon icon={faEye} /> Detail
                                             </button>
-                                            {/* <button onClick={() => handleDelete(item.id_user)} className="px-3 py-2 bg-red-500 text-white rounded">
-                                                <FontAwesomeIcon icon={faTrash} />
-                                            </button> */}
+                                            <button onClick={() => handleDelete(item.id_user)} className="px-3 py-2 bg-red-500 text-white rounded">
+                                                <FontAwesomeIcon icon={faTrash} /> Hapus
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -192,7 +192,6 @@ const PenjadwalanKaryawan = () => {
                             {/* Footer */}
                             <div className="flex items-center justify-between pt-2">
                                 {renderStatus(item.has_ongoing)}
-
                                 <button onClick={() => navigate(`/penjadwalan/detail/${item.id_user}`)} className="px-4 py-2 bg-blue-500 text-white text-sm font-semibold rounded-md">
                                     <FontAwesomeIcon icon={faEye} /> Detail
                                 </button>

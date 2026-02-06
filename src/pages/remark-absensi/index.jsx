@@ -70,7 +70,7 @@ const AbsenManual = () => {
 
         try {
             const res = await fetchWithJwt(
-                `${apiUrl}/absen/cek-manual/${idUser}?date=${selectedDate}`
+                `${apiUrl}/absen/cek-remark/${idUser}?date=${selectedDate}`
             );
             const json = await res.json();
             const absen = Array.isArray(json.data)

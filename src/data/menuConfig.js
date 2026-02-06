@@ -102,12 +102,12 @@ export const menuConfig = [
                         path: "/perusahaan",
                         roles: [1, 4, 6],
                     },
-                    {
-                        label: "Hari Libur",
-                        icon: faCalendarDays,
-                        path: "/manajemen-hari-libur",
-                        roles: [1],
-                    },
+                    // {
+                    //     label: "Hari Libur",
+                    //     icon: faCalendarDays,
+                    //     path: "/manajemen-hari-libur",
+                    //     roles: [1],
+                    // },
                 ],
             },
         ],

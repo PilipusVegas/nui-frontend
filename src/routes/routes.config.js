@@ -130,7 +130,7 @@ export const routes = [
   { path: "/formulir-cuti", element: <PermohonanCuti />, roles: [] },
 
   /* ===== DINAS ===== */
-  { path: "/formulir-dinas", element: <FormulirDinas />, roles: [] },
+  { path: "/formulir-dinas", element: <FormulirDinas /> },
   { path: "/formulir-dinas-aplikasi", element: <FormulirDinasAplikasi />, roles: [] },
 
   /* ===== KUNJUNGAN ===== */

@@ -199,7 +199,7 @@ export default function SuratDinasPage() {
                         </div>
                         <div className="space-y-1">
                             <label className="text-sm font-medium">Perjalanan Dinas Ke?</label>
-                            <Select options={[{ value: 1, label: "Jabodetabek" }, { value: 2, label: "Luar Jabodetabek" },]} value={form.kategori} onChange={(v) => handleChange("kategori", v)} placeholder="Pilih kategori..." className="text-sm py-1" />
+                            <Select options={[{ value: 1, label: "Jabodetabek" }, { value: 2, label: "Luar Jabodetabek" }, { value: 3, label: "Luar Pulau Jawa" }]} value={form.kategori} onChange={(v) => handleChange("kategori", v)} placeholder="Pilih kategori..." className="text-sm py-1" />
                         </div>
                         <div className="grid grid-cols-1 gap-3">
                             <div className="space-y-1">

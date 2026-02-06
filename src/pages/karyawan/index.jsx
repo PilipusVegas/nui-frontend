@@ -101,12 +101,37 @@ const DataKaryawan = () => {
 
   const handleDelete = (id) => {
     Swal.fire({
-      title: "Apakah Anda yakin?",
-      text: "Data yang dihapus tidak dapat dikembalikan!",
+      title: "Apakah Anda yakin ingin menghapus karyawan ini?",
       icon: "warning",
+      html: `
+    <div style="text-align:left; font-size:14px; line-height:1.6">
+      <p><b>Perhatian:</b></p>
+      <p>
+        Menghapus karyawan akan <b>menghapus seluruh data secara permanen</b>, termasuk:
+      </p>
+      <ul style="padding-left:18px; margin-top:6px">
+        <li>Data karyawan</li>
+        <li>Riwayat kehadiran</li>
+        <li>Lembur</li>
+        <li>Dinas</li>
+        <li>Data terkait lainnya</li>
+      </ul>
+      <p style="margin-top:10px; color:#b91c1c;">
+        Tindakan ini tidak dapat dibatalkan.
+      </p>
+      <hr style="margin:12px 0"/>
+      <p>
+        <b>Disarankan:</b><br/>
+        Gunakan fitur <b>Nonaktifkan</b> melalui menu <b>Edit</b> agar data tetap tersimpan,
+        namun karyawan tidak dapat login dan melakukan absensi.
+      </p>
+    </div>
+  `,
       showCancelButton: true,
-      confirmButtonText: "Hapus",
+      confirmButtonText: "Ya, Hapus Permanen",
       cancelButtonText: "Batal",
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
     }).then(async (result) => {
       if (!result.isConfirmed) return;
       try {
@@ -304,9 +329,9 @@ const DataKaryawan = () => {
 
                         <td className="px-4 py-2">
                           <div className="flex items-center justify-between gap-3">
-                              <span className="font-semibold uppercase truncate max-w-[250px]">
-                                {user.nama || "N/A"}
-                              </span>
+                            <span className="font-semibold uppercase truncate max-w-[250px]">
+                              {user.nama || "N/A"}
+                            </span>
                             {user.status === 1 && !isDataComplete(user) && (
                               <FontAwesomeIcon icon={faExclamationCircle} className="text-red-500 text-lg cursor-pointer flex-shrink-0 animate-bounce" onClick={() => { setSelectedUserInfo(user); setOpenInfo(true); }} title={`Data belum lengkap:\n- ${getIncompleteFields(user).join("\n- ")}`} />
                             )}
@@ -530,7 +555,7 @@ const DataKaryawan = () => {
       </Modal>
 
 
-      
+
     </div>
   );
 };

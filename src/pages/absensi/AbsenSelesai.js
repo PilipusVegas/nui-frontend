@@ -63,17 +63,12 @@ const AbsenSelesai = ({ handleNextStepData }) => {
     const fetchJadwal = async () => {
       try {
         const res = await fetchWithJwt(`${apiUrl}/jadwal/cek/${userId}`);
-
         if (res.status === 404) {
           setLockLocation(false);
           return;
         }
-
         if (!res.ok) throw new Error("Gagal ambil jadwal");
-
         const json = await res.json();
-
-        // NORMALISASI: object -> array
         const jadwalList = json?.data
           ? Array.isArray(json.data)
             ? json.data
@@ -184,12 +179,20 @@ const AbsenSelesai = ({ handleNextStepData }) => {
 
   const handleAmbilFoto = () => {
     if (!webcamRef.current) return;
+
     const imageSrc = webcamRef.current.getScreenshot();
     if (imageSrc) {
       const file = base64ToFile(imageSrc, "fotoSelesai.jpg");
       setFotoFile(file);
       setFotoPreview(imageSrc);
-      setJamSelesai(new Date());
+
+      setJamSelesai(
+        new Date().toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        })
+      );
     }
   };
 
@@ -232,18 +235,12 @@ const AbsenSelesai = ({ handleNextStepData }) => {
       id_lokasi: selectedLocation.value,
       timezone: selectedLocation.timezone,
       lokasi: selectedLocation.label,
-      jamSelesai: jamSelesai.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      }),
+      jamSelesai: jamSelesai,
       koordinatSelesai: `${userCoords.latitude}, ${userCoords.longitude}`,
       is_valid: gpsValidation.is_valid,
       reason: gpsValidation.reason,
     });
   };
-
 
 
   const base64ToFile = (base64, filename) => {
@@ -361,7 +358,7 @@ const AbsenSelesai = ({ handleNextStepData }) => {
                     <div className="flex items-center gap-2 text-xs text-gray-200">
                       <span>{roleName}</span>
                       <span className="opacity-60">•</span>
-                      <span>{formatTime(jamSelesai)}</span>
+                      <span>{jamSelesai}</span>
                     </div>
                   </div>
                 </div>

@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { SectionHeader } from "../../components";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faTimes, faCalendarCheck } from "@fortawesome/free-solid-svg-icons";
 
 const selectStyle = {
     control: (base) => ({
@@ -13,8 +13,17 @@ const selectStyle = {
         borderRadius: "0.5rem",
         minHeight: "42px",
     }),
+    menu: (base) => ({
+        ...base,
+        maxHeight: 200,
+    }),
+    menuList: (base) => ({
+        ...base,
+        maxHeight: 200,
+    }),
     menuPortal: (base) => ({ ...base, zIndex: 9999 }),
 };
+
 
 const TambahPenjadwalanUser = () => {
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -31,6 +40,7 @@ const TambahPenjadwalanUser = () => {
         lokasi: [],
         start_date: "",
         end_date: "",
+        permanent: 0, // 0 = false, 1 = true
     });
 
     const today = new Date().toISOString().split("T")[0];
@@ -45,7 +55,6 @@ const TambahPenjadwalanUser = () => {
                     fetchWithJwt(`${apiUrl}/shift`),
                     fetchWithJwt(`${apiUrl}/lokasi`),
                 ]);
-
                 setShiftList((await shiftRes.json()).data || []);
                 setLokasiList((await lokasiRes.json()).data || []);
             } catch {
@@ -105,19 +114,19 @@ const TambahPenjadwalanUser = () => {
     /* SUBMIT */
     const handleSubmit = async () => {
         if (submitting) return;
-        const { id_shift, lokasi, start_date, end_date } = form;
-        if (!id_shift || !lokasi.length || !start_date || !end_date) {
-            toast.error("Semua field wajib diisi");
+
+        const { id_shift, lokasi, start_date, end_date, permanent } = form;
+
+        if (!id_shift || !lokasi.length) {
+            toast.error("Shift dan lokasi wajib diisi");
             return;
         }
-        if (start_date < today) {
-            toast.error("Tanggal mulai tidak boleh kurang dari hari ini");
+
+        if (permanent === 0 && (!start_date || !end_date)) {
+            toast.error("Rentang tanggal wajib diisi");
             return;
         }
-        if (end_date < start_date) {
-            toast.error("Tanggal selesai tidak boleh lebih awal dari tanggal mulai");
-            return;
-        }
+
         try {
             setSubmitting(true);
 
@@ -128,16 +137,19 @@ const TambahPenjadwalanUser = () => {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         id_shift: Number(id_shift),
-                        start_date,
-                        end_date,
+                        permanent,
+                        start_date: permanent === 1 ? null : start_date,
+                        end_date: permanent === 1 ? null : end_date,
                         location: lokasi,
                     }),
                 }
             );
+
             const json = await res.json();
             if (!res.ok || json.success === false) {
                 throw new Error(json.message || "Gagal menambahkan penjadwalan");
             }
+
             toast.success("Penjadwalan berhasil ditambahkan");
             navigate(-1);
         } catch (err) {
@@ -146,6 +158,7 @@ const TambahPenjadwalanUser = () => {
             setSubmitting(false);
         }
     };
+
 
 
     return (
@@ -212,12 +225,50 @@ const TambahPenjadwalanUser = () => {
                     )}
                 </div>
 
+                <div className="rounded-xl border border-gray-300 bg-white p-4">
+                    <div className="flex items-center justify-between gap-4">
+                        {/* LEFT CONTENT */}
+                        <div className="flex items-start gap-3">
+                            <div className="mt-0.5 text-green-600">
+                                <FontAwesomeIcon icon={faCalendarCheck} />
+                            </div>
+
+                            <div>
+                                <p className="text-sm font-semibold text-gray-900">
+                                    Penjadwalan Permanen
+                                </p>
+                                <p className="mt-0.5 text-xs text-gray-700 leading-relaxed">
+                                    {form.permanent === 1? "Jadwal ini berlaku permanent dan tidak menggunakan tanggal mulai maupun tanggal selesai." : "Aktifkan jika jadwal ingin berlaku permanent tanpa tanggal mulai dan tanggal selesai."}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* TOGGLE */}
+                        <button type="button"
+                            onClick={() =>
+                                setForm((prev) => ({
+                                    ...prev,
+                                    permanent: prev.permanent === 1 ? 0 : 1,
+                                }))
+                            }
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200
+                            ${form.permanent === 1 ? "bg-green-600" : "bg-gray-400"}`}
+                            aria-label="Toggle penjadwalan permanen"
+                        >
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200
+                                ${form.permanent === 1 ? "translate-x-6" : "translate-x-1"}`}
+                            />
+                        </button>
+                    </div>
+                </div>
+
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Tanggal Mulai
                         </label>
-                        <input type="date" min={today} value={form.start_date}
+                        <input type="date" min={today} value={form.start_date} disabled={form.permanent === 1}
                             onChange={(e) =>
                                 setForm((prev) => ({
                                     ...prev,
@@ -228,7 +279,7 @@ const TambahPenjadwalanUser = () => {
                                             : prev.end_date,
                                 }))
                             }
-                            className="w-full border rounded-lg px-3 py-2 text-sm"
+                            className="w-full border rounded-lg px-3 py-2 text-sm disabled:bg-gray-100"
                         />
                     </div>
 
@@ -236,14 +287,14 @@ const TambahPenjadwalanUser = () => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Tanggal Selesai
                         </label>
-                        <input type="date" min={form.start_date || today} value={form.end_date}
+                        <input type="date" min={form.start_date || today} value={form.end_date} disabled={form.permanent === 1}
                             onChange={(e) =>
                                 setForm((prev) => ({
                                     ...prev,
                                     end_date: e.target.value,
                                 }))
                             }
-                            className="w-full border rounded-lg px-3 py-2 text-sm"
+                            className="w-full border rounded-lg px-3 py-2 text-sm disabled:bg-gray-100"
                         />
                     </div>
                 </div>
@@ -261,19 +312,30 @@ const TambahPenjadwalanUser = () => {
                             }))}
                         onChange={handleTambahLokasi}
                         styles={selectStyle}
+                        menuPlacement="top"
                         menuPortalTarget={document.body}
                     />
 
                     {form.lokasi.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                            {lokasiList
-                                .filter((l) => form.lokasi.includes(l.id))
-                                .map((l) => (
-                                    <span key={l.id} onClick={() => handleHapusLokasi(l.id)} className="cursor-pointer text-xs bg-green-100 text-green-700 px-3 py-1 rounded hover:bg-red-100 hover:text-red-600 transition">
-                                        {l.nama}
-                                        <FontAwesomeIcon icon={faTimes} className="ml-1" />
-                                    </span>
-                                ))}
+                        <div className="mt-4">
+                            <p className="text-xs font-medium text-gray-500 mb-2">
+                                Lokasi yang dipilih
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                {lokasiList
+                                    .filter((l) => form.lokasi.includes(l.id))
+                                    .map((l) => (
+                                        <div key={l.id} className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-3 py-1.5 rounded-full text-xs">
+                                            <span className="font-medium">
+                                                {l.nama}
+                                            </span>
+
+                                            <button type="button" onClick={() => handleHapusLokasi(l.id)} className="flex items-center justify-center w-4 h-4 rounded-full text-green-700 hover:text-red-600 hover:bg-red-100 transition" title="Hapus lokasi">
+                                                <FontAwesomeIcon icon={faTimes} className="text-[10px]" />
+                                            </button>
+                                        </div>
+                                    ))}
+                            </div>
                         </div>
                     )}
                 </div>

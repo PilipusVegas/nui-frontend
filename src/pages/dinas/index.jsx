@@ -4,11 +4,7 @@ import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCircleInfo,
-  faChevronUp,
-  faChevronDown,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCircleInfo, faChevronUp, faChevronDown} from "@fortawesome/free-solid-svg-icons";
 
 export default function SuratDinasPage() {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -30,9 +26,7 @@ export default function SuratDinasPage() {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [confirm, setConfirm] = useState(false);
 
-  // ==========================================================
   // LOAD PROFIL
-  // ==========================================================
   useEffect(() => {
     const loadProfil = async () => {
       try {
@@ -58,9 +52,7 @@ export default function SuratDinasPage() {
   const handleChange = (field, value) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
-  // ==========================================================
   // SUBMIT FORM
-  // ==========================================================
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -264,8 +256,9 @@ export default function SuratDinasPage() {
           </label>
           <Select
             options={[
-              { value: 1, label: "Dalam Kota" },
-              { value: 2, label: "Luar Kota" },
+              { value: 1, label: "Jabodetabek" },
+              { value: 2, label: "Luar Jabodetabek" },
+              { value: 3, label: "Luar Pulau Jawa" },
             ]}
             value={form.kategori}
             onChange={(v) => handleChange("kategori", v)}

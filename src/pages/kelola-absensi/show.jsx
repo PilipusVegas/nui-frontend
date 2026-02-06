@@ -164,7 +164,7 @@ const DetailKelolaPresensi = () => {
                 ))}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
                 <div className="flex items-center gap-3 p-4 rounded-xl border border-amber-100 ">
                   <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-white text-amber-500 shadow-inner">
                     <FontAwesomeIcon icon={faExclamationCircle} />
@@ -177,7 +177,7 @@ const DetailKelolaPresensi = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 p-4 rounded-xl border border-red-100 ">
+                {/* <div className="flex items-center gap-3 p-4 rounded-xl border border-red-100 ">
                   <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-white text-red-500 shadow-inner">
                     <FontAwesomeIcon icon={faMoneyBillWave} />
                   </div>
@@ -187,7 +187,7 @@ const DetailKelolaPresensi = () => {
                       - Rp {dataUser?.total_nominal_cut?.toLocaleString("id-ID") ?? 0}
                     </p>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
@@ -202,7 +202,7 @@ const DetailKelolaPresensi = () => {
                 <th className="px-2 py-2 border-t border-b">Terlambat</th>
                 <th className="px-2 py-2 border-t border-b">Pulang</th>
                 <th className="px-2 py-2 border-t border-b">Total Lembur</th>
-                <th className="px-2 py-2 border-t border-b">Potongan</th>
+                {/* <th className="px-2 py-2 border-t border-b">Potongan</th> */}
                 <th className="px-2 py-2 border-t border-b rounded-tr-xl">Remark</th>
               </tr>
             </thead>
@@ -255,11 +255,11 @@ const DetailKelolaPresensi = () => {
                         "-"
                       )}
                     </td>
-                    <td className="px-4 py-2">
+                    {/* <td className="px-4 py-2">
                       {rec?.nominal_cut && rec.nominal_cut !== 0
                         ? `- Rp ${rec.nominal_cut.toLocaleString("id-ID")}`
                         : "-"}
-                    </td>
+                    </td> */}
                     <td className="px-4 py-2">
                       {rec?.remark ? (
                         <div className="flex justify-center">
