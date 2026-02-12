@@ -6,6 +6,9 @@ import { getUserFromToken } from "../utils/jwtHelper";
 import DashboardCard from "../components/desktop/DashboardCard";
 import { cardConfig } from "../data/menuConfig";
 import { formatFullDate } from "../utils/dateUtils";
+import Swal from "sweetalert2";
+import { initPushNotification } from "../utils/pushNotification";
+
 
 const HomeDesktop = () => {
   const navigate = useNavigate();
@@ -51,6 +54,120 @@ const HomeDesktop = () => {
       }
     });
   }, []);
+
+  useEffect(() => {
+    if (!user?.id_user) return;
+
+    const handleNotificationPermission = async () => {
+      // Browser tidak support notification
+      if (!("Notification" in window)) {
+        Swal.fire({
+          icon: "error",
+          title: "Browser Tidak Mendukung",
+          text: "Browser Anda tidak mendukung fitur notifikasi. Silakan gunakan browser terbaru atau gunakan browser lain yang mendukung notifikasi.",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+        });
+        return;
+      }
+
+      const permission = Notification.permission;
+
+      /* SUDAH DIIZINKAN */
+      if (permission === "granted") {
+        try {
+          await initPushNotification(user.id_user);
+        } catch (err) {
+          console.error("Init push notification failed:", err);
+        }
+        return;
+      }
+
+      /* PERNAH DITOLAK (DENIED) */
+      if (permission === "denied") {
+        await Swal.fire({
+          icon: "error",
+          title: "Notifikasi Dinonaktifkan",
+          html: `
+          <div style="text-align:left; font-size:14px; line-height:1.6;">
+            <p>
+              Aplikasi ini <strong>mewajibkan notifikasi aktif</strong>
+              untuk memastikan seluruh informasi penting dapat diterima
+              secara real-time.
+            </p>
+
+            <p>
+              Saat ini notifikasi <strong>dinonaktifkan</strong>
+              pada pengaturan browser Anda.
+            </p>
+
+            <p>
+              Silakan aktifkan notifikasi secara manual melalui
+              pengaturan browser sebelum melanjutkan penggunaan aplikasi.
+            </p>
+          </div>
+        `,
+          confirmButtonText: "Saya Mengerti",
+          confirmButtonColor: "#dc2626",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+        });
+
+        return;
+      }
+
+      /* BELUM MENENTUKAN (DEFAULT) */
+      if (permission === "default") {
+        const result = await Swal.fire({
+          icon: "warning",
+          title: "Aktifkan Notifikasi",
+          html: `
+          <div style="text-align:left; font-size:14px; line-height:1.6;">
+            <p>
+              Untuk menggunakan aplikasi ini, notifikasi harus diaktifkan.
+            </p>
+
+            <p>
+              Notifikasi memastikan Anda menerima informasi penting
+              secara otomatis dan tepat waktu.
+            </p>
+
+            <p>
+              Tanpa notifikasi aktif, sistem tidak dapat menjamin
+              penyampaian informasi terkait pekerjaan Anda.
+            </p>
+          </div>
+        `,
+          confirmButtonText: "Aktifkan Sekarang",
+          confirmButtonColor: "#16a34a",
+          showCancelButton: false,
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+        });
+
+        if (result.isConfirmed) {
+          const newPermission = await Notification.requestPermission();
+
+          if (newPermission === "granted") {
+            await initPushNotification(user.id_user);
+
+            await Swal.fire({
+              icon: "success",
+              title: "Notifikasi Aktif",
+              text: "Notifikasi berhasil diaktifkan. Anda akan menerima informasi penting secara otomatis.",
+              confirmButtonColor: "#16a34a",
+            });
+          } else {
+            // Dipaksa ulang → tidak bisa lanjut tanpa izin
+            window.location.reload();
+          }
+        }
+      }
+    };
+
+    handleNotificationPermission();
+  }, [user?.id_user]);
+
 
   // Mapping kode cuaca → deskripsi + ikon + warna
   const weatherCodeToDetail = (code) => {
@@ -127,7 +244,7 @@ const HomeDesktop = () => {
           ) : (
             <div className={`grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 transition-all duration-300`}>
               {filteredCards.map((card) => (
-                <DashboardCard key={card.link} title={card.title} icon={card.icon} onClick={() => navigate(card.link)}/>
+                <DashboardCard key={card.link} title={card.title} icon={card.icon} onClick={() => navigate(card.link)} />
               ))}
             </div>
           )}

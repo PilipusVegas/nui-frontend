@@ -70,6 +70,26 @@ const RiwayatSuratDinas = () => {
         setCurrentPage(1);
     }, [searchTerm]);
 
+    const getKategoriDinas = (kategori) => {
+        const k = String(kategori);
+        if (k === "1") return "Area A – Jabodetabek";
+        if (k === "2") return "Area B – Jawa & Bali (Non-Jabodetabek)";
+        if (k === "3") return "Area C – Luar Jawa & Bali";
+        return "-";
+    };
+
+    const getRiwayatSummary = (riwayat = []) => {
+        return {
+            areaA: riwayat.filter((r) => String(r.kategori) === "1").length,
+            areaB: riwayat.filter((r) => String(r.kategori) === "2").length,
+            areaC: riwayat.filter((r) => String(r.kategori) === "3").length,
+            approved: riwayat.filter((r) => r.status_dinas === 1).length,
+            rejected: riwayat.filter((r) => r.status_dinas === 2).length,
+        };
+    };
+
+
+
     return (
         <div className="w-full">
             <SectionHeader title="Riwayat Surat Dinas" subtitle="Daftar pengajuan surat dinas yang telah diproses. Sesuaikan anggal untuk menampilkan data." onBack={() => navigate(-1)}
@@ -117,18 +137,7 @@ const RiwayatSuratDinas = () => {
                             <tbody className="divide-y divide-gray-100">
                                 {currentUsers.map((user, index) => {
                                     const nomor = indexOfFirst + index + 1;
-                                    const dalamJabodetabek = user.riwayat.filter(
-                                        (r) => r.kategori === "1"
-                                    ).length;
-                                    const luarJabodetabek = user.riwayat.filter(
-                                        (r) => r.kategori === "2"
-                                    ).length;
-                                    const approvedCount = user.riwayat.filter(
-                                        (r) => r.status_dinas === 1
-                                    ).length;
-                                    const rejectedCount = user.riwayat.filter(
-                                        (r) => r.status_dinas === 2
-                                    ).length;
+                                    const summary = getRiwayatSummary(user.riwayat);
                                     return (
                                         <tr key={user.id_user} className="hover:bg-gray-50 transition-colors duration-150">
                                             <td className="px-8 py-1 text-center font-semibold text-gray-600">
@@ -147,23 +156,26 @@ const RiwayatSuratDinas = () => {
                                             </td>
 
                                             <td className="px-5 py-1 text-center">
-                                                <div className="flex justify-center flex-wrap gap-2">
-                                                    <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-200">
-                                                        Jabodetabek {dalamJabodetabek}
+                                                <div className="flex justify-center items-center gap-2 whitespace-nowrap">
+                                                    <span className="px-3 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-200">
+                                                        Area A: {summary.areaA}
                                                     </span>
-                                                    <span className="px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-semibold border border-purple-200">
-                                                        Luar Jabodetabek {luarJabodetabek}
+                                                    <span className="px-3 py-1 rounded-md bg-purple-50 text-purple-700 text-xs font-semibold border border-purple-200">
+                                                        Area B: {summary.areaB}
+                                                    </span>
+                                                    <span className="px-3 py-1 rounded-md bg-orange-50 text-orange-700 text-xs font-semibold border border-orange-200">
+                                                        Area C: {summary.areaC}
                                                     </span>
                                                 </div>
                                             </td>
 
                                             <td className="px-5 py-1 text-center">
-                                                <div className="flex justify-center flex-wrap gap-2">
+                                                <div className="flex justify-center items-center gap-2 whitespace-nowrap">
                                                     <span className="px-3 py-1 rounded-full bg-green-50 text-green-700 text-xs font-semibold border border-green-200">
-                                                        Disetujui {approvedCount}
+                                                        Disetujui {summary.approved}
                                                     </span>
                                                     <span className="px-3 py-1 rounded-full bg-red-50 text-red-700 text-xs font-semibold border border-red-200">
-                                                        Ditolak {rejectedCount}
+                                                        Ditolak {summary.rejected}
                                                     </span>
                                                 </div>
                                             </td>
@@ -184,21 +196,7 @@ const RiwayatSuratDinas = () => {
 
                     <div className="sm:hidden space-y-3">
                         {currentUsers.map((user) => {
-                            const dalamJabodetabek = user.riwayat.filter(
-                                (r) => r.kategori === "1"
-                            ).length;
-
-                            const luarJabodetabek = user.riwayat.filter(
-                                (r) => r.kategori === "2"
-                            ).length;
-
-                            const approvedCount = user.riwayat.filter(
-                                (r) => r.status_dinas === 1
-                            ).length;
-
-                            const rejectedCount = user.riwayat.filter(
-                                (r) => r.status_dinas === 2
-                            ).length;
+                            const summary = getRiwayatSummary(user.riwayat);
 
                             return (
                                 <div key={user.id_user} className="bg-white border border-gray-100 rounded-xl shadow-sm p-4">
@@ -217,10 +215,13 @@ const RiwayatSuratDinas = () => {
                                             <span className="text-gray-500">Kategori</span>
                                             <div className="flex gap-2">
                                                 <span className="px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 font-semibold border border-blue-200">
-                                                    Jabodetabek: {dalamJabodetabek}
+                                                    Area A: {summary.areaA}
                                                 </span>
                                                 <span className="px-2.5 py-1 rounded-md bg-purple-50 text-purple-700 font-semibold border border-purple-200">
-                                                    Luar Jabodetabek: {luarJabodetabek}
+                                                    Area B: {summary.areaB}
+                                                </span>
+                                                <span className="px-2.5 py-1 rounded-md bg-orange-50 text-orange-700 font-semibold border border-orange-200">
+                                                    Area C: {summary.areaC}
                                                 </span>
                                             </div>
                                         </div>
@@ -229,10 +230,10 @@ const RiwayatSuratDinas = () => {
                                             <span className="text-gray-500">Status Pengajuan</span>
                                             <div className="flex gap-2">
                                                 <span className="px-2.5 py-1 rounded-md bg-green-50 text-green-700 font-semibold border border-green-200">
-                                                    Disetujui: {approvedCount}
+                                                    Disetujui: {summary.approved}
                                                 </span>
                                                 <span className="px-2.5 py-1 rounded-md bg-red-50 text-red-700 font-semibold border border-red-200">
-                                                    Ditolak: {rejectedCount}
+                                                    Ditolak: {summary.rejected}
                                                 </span>
                                             </div>
                                         </div>
@@ -262,55 +263,55 @@ const RiwayatSuratDinas = () => {
             <Modal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setSelectedUser(null); setSummaryFilter(null); }} title={`Riwayat Dinas ${selectedUser?.nama_user || ""}`} note="Rangkuman riwayat pada rentang periode ini." size="lg">
                 {selectedUser ? (() => {
                     const riwayat = selectedUser.riwayat || [];
-                    const totalApproved = riwayat.filter(r => r.status_dinas === 1).length;
-                    const totalRejected = riwayat.filter(r => r.status_dinas === 2).length;
-                    const totalJabodetabek = riwayat.filter(r => r.kategori === "1").length;
-                    const totalLuar = riwayat.filter(r => r.kategori === "2").length;
+                    const summary = getRiwayatSummary(riwayat);
                     const filteredRiwayat = riwayat.filter(r => {
                         if (summaryFilter === "approved") return r.status_dinas === 1;
                         if (summaryFilter === "rejected") return r.status_dinas === 2;
-                        if (summaryFilter === "jabodetabek") return r.kategori === "1";
-                        if (summaryFilter === "luar") return r.kategori === "2";
+                        if (summaryFilter === "areaA") return r.kategori === "1";
+                        if (summaryFilter === "areaB") return r.kategori === "2";
+                        if (summaryFilter === "areaC") return r.kategori === "3";
                         return true;
                     });
 
                     return (
                         <div className="space-y-4">
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                                 {[
-                                    { key: "approved", label: "Disetujui", value: totalApproved, active: summaryFilter === "approved", base: "green", },
-                                    { key: "rejected", label: "Ditolak", value: totalRejected, active: summaryFilter === "rejected", base: "red", },
-                                    { key: "jabodetabek", label: "Jabodetabek", value: totalJabodetabek, active: summaryFilter === "jabodetabek", base: "blue", },
-                                    { key: "luar", label: "Luar Jabodetabek", value: totalLuar, active: summaryFilter === "luar", base: "purple", },
-                                ].map(card => (
-                                    <button key={card.key}
-                                        onClick={() => setSummaryFilter(card.active ? null : card.key)}
-                                        className={`p-3 rounded-xl border text-left transition
-                                        ${card.active ? `bg-${card.base}-100 border-${card.base}-400` : `bg-white border-gray-200 hover:bg-${card.base}-50`}`}
-                                    >
-                                        <p className="text-xs text-gray-500">{card.label}</p>
-                                        <p className={`text-lg font-bold text-${card.base}-700`}>
-                                            {card.value}
-                                        </p>
-                                    </button>
-                                ))}
+                                    { key: "approved", label: "Disetujui", value: summary.approved, base: "green" },
+                                    { key: "rejected", label: "Ditolak", value: summary.rejected, base: "red" },
+                                    { key: "areaA", label: "Area A", value: summary.areaA, base: "blue" },
+                                    { key: "areaB", label: "Area B", value: summary.areaB, base: "purple" },
+                                    { key: "areaC", label: "Area C", value: summary.areaC, base: "orange" },
+                                ].map(card => {
+                                    const isActive = summaryFilter === card.key;
+                                    return (
+                                        <button key={card.key} onClick={() => setSummaryFilter(isActive ? null : card.key)}
+                                            className={`p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer
+                                            ${isActive ? `bg-${card.base}-50 border-${card.base}-400 ring-1 ring-${card.base}-300` : `bg-white border-gray-200 hover:bg-${card.base}-50 hover:border-${card.base}-300`}`}
+                                        >
+                                            <p className="text-xs text-gray-500">
+                                                {card.label}
+                                            </p>
+                                            <p className={`text-lg font-bold text-${card.base}-700`}>
+                                                {card.value}
+                                            </p>
+                                        </button>
+                                    );
+                                })}
                             </div>
+
 
                             {filteredRiwayat.length > 0 ? (
                                 <div className="space-y-3 max-h-[55vh] overflow-y-auto pr-1">
                                     {filteredRiwayat.map((r) => {
                                         const isApproved = r.status_dinas === 1;
                                         const statusLabel = isApproved ? "Disetujui" : "Ditolak";
-                                        const statusStyle = isApproved
-                                            ? "bg-green-50 text-green-700 border-green-200"
-                                            : "bg-red-50 text-red-700 border-red-200";
-                                        const kategoriLabel = r.kategori === "1" ? "Jabodetabek" : "Luar Jabodetabek";
-                                        const kategoriStyle = r.kategori === "1"
-                                            ? "bg-blue-50 text-blue-700 border-blue-200"
-                                            : "bg-purple-50 text-purple-700 border-purple-200";
+                                        const statusStyle = isApproved ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-700 border-red-200";
+                                        const kategoriLabel = getKategoriDinas(r.kategori);
+                                        const kategoriStyle = r.kategori === "1" ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-purple-50 text-purple-700 border-purple-200";
 
                                         return (
-                                            <div key={r.id} onClick={(e) => { e.stopPropagation(); window.open(`/pengajuan-dinas/${r.id}`, "_blank");}}
+                                            <div key={r.id} onClick={(e) => { e.stopPropagation(); window.open(`/pengajuan-dinas/${r.id}`, "_blank"); }}
                                                 className="bg-white border border-gray-200 rounded-xl p-4 hover:border-emerald-300 hover:shadow-sm transition cursor-pointer"
                                             >
                                                 <div className="flex justify-between items-center mb-2">
@@ -339,7 +340,6 @@ const RiwayatSuratDinas = () => {
                                                         </span>
                                                     )}
                                                 </div>
-
                                                 <p className="mt-2 text-xs text-gray-500">
                                                     {statusLabel} oleh{" "}
                                                     <span className="font-semibold text-gray-700">
@@ -367,58 +367,75 @@ const RiwayatSuratDinas = () => {
                 )}
             </Modal>
 
+            <Modal isOpen={isInfoModalOpen} onClose={() => setIsInfoModalOpen(false)} title="Panduan Riwayat Surat Dinas" note="Penjelasan singkat area perjalanan dan fungsi utama halaman." size="lg">
+                <div className="space-y-5 text-sm text-gray-700">
 
+                    {/* AREA A */}
+                    <div className="flex items-start gap-4">
+                        <span className="inline-flex items-center justify-center px-4 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-200 whitespace-nowrap">
+                            Area A
+                        </span>
+                        <div>
+                            <h4 className="font-semibold text-gray-900">
+                                Jabodetabek
+                            </h4>
+                            <p className="text-gray-600 mt-1 leading-relaxed">
+                                Digunakan untuk perjalanan dinas dalam wilayah Jabodetabek.
+                            </p>
+                        </div>
+                    </div>
 
-            <Modal isOpen={isInfoModalOpen} onClose={() => setIsInfoModalOpen(false)} title="Panduan Riwayat Surat Dinas" note="Informasi ini membantu Anda memahami fitur dan cara menggunakan halaman riwayat surat dinas dengan efektif." size="lg">
-                <div className="space-y-4 text-sm text-gray-700">
-                    <div className="flex items-start gap-3">
-                        <FontAwesomeIcon icon={faSearch} className="text-blue-500 mt-1" />
+                    {/* AREA B */}
+                    <div className="flex items-start gap-4">
+                        <span className="inline-flex items-center justify-center px-4 py-1 rounded-md bg-purple-50 text-purple-700 text-xs font-semibold border border-purple-200 whitespace-nowrap">
+                            Area B
+                        </span>
                         <div>
-                            <h4 className="font-semibold text-gray-900">Pencarian Karyawan</h4>
-                            <p className="text-gray-600 mt-1">
-                                Gunakan kolom pencarian untuk menemukan karyawan atau role tertentu. Hasil pencarian akan muncul secara real-time.
+                            <h4 className="font-semibold text-gray-900">
+                                Jawa & Bali (Non-Jabodetabek)
+                            </h4>
+                            <p className="text-gray-600 mt-1 leading-relaxed">
+                                Digunakan untuk perjalanan dinas di wilayah Jawa dan Bali di luar Jabodetabek.
                             </p>
                         </div>
                     </div>
-                    <div className="flex items-start gap-3">
-                        <FontAwesomeIcon icon={faCalendarAlt} className="text-green-500 mt-1" />
+
+                    {/* AREA C */}
+                    <div className="flex items-start gap-4">
+                        <span className="inline-flex items-center justify-center px-4 py-1 rounded-md bg-orange-50 text-orange-700 text-xs font-semibold border border-orange-200 whitespace-nowrap">
+                            Area C
+                        </span>
                         <div>
-                            <h4 className="font-semibold text-gray-900">Filter Tanggal</h4>
-                            <p className="text-gray-600 mt-1">
-                                Gunakan input tanggal mulai dan tanggal akhir untuk menampilkan riwayat pengajuan dalam rentang waktu tertentu.
+                            <h4 className="font-semibold text-gray-900">
+                                Luar Jawa & Bali
+                            </h4>
+                            <p className="text-gray-600 mt-1 leading-relaxed">
+                                Digunakan untuk perjalanan dinas ke luar Pulau Jawa dan Bali
+                                dengan durasi perjalanan yang umumnya lebih panjang.
                             </p>
                         </div>
                     </div>
-                    <div className="flex items-start gap-3">
-                        <FontAwesomeIcon icon={faEye} className="text-indigo-500 mt-1" />
-                        <div>
-                            <h4 className="font-semibold text-gray-900">Detail Pengajuan</h4>
-                            <p className="text-gray-600 mt-1">
-                                Klik tombol <strong>Detail</strong> untuk melihat informasi lengkap pengajuan surat dinas, termasuk:
-                            </p>
-                            <ul className="list-disc list-inside text-gray-600 mt-1 space-y-2">
-                                <li>Status pengajuan: <span className="px-2 rounded-full bg-green-50 text-green-700 font-semibold border border-green-200">Approved</span> atau <span className="px-2 rounded-full bg-red-50 text-red-700 font-semibold border border-red-200">Rejected</span>.</li>
-                                <li>Kategori perjalanan dinas (Dalam Kota / Luar Kota).</li>
-                                <li>Tanggal dan jam keberangkatan, serta tanggal pulang jika ada.</li>
-                                <li>Keterangan tambahan dari karyawan atau catatan HRD.</li>
-                                <li>Nama petugas yang menyetujui atau menolak beserta tanggal persetujuan.</li>
-                            </ul>
-                        </div>
+
+                    <hr className="my-4 border-gray-200" />
+
+                    {/* FUNGSI HALAMAN */}
+                    <div>
+                        <h4 className="font-semibold text-gray-900 mb-2">
+                            Fungsi Halaman Riwayat Surat Dinas
+                        </h4>
+                        <ul className="list-disc list-inside text-gray-600 space-y-1.5">
+                            <li>Menampilkan riwayat pengajuan surat dinas yang telah diproses.</li>
+                            <li>Menyajikan rekap jumlah pengajuan per karyawan berdasarkan Area A, B, dan C.</li>
+                            <li>Menampilkan status pengajuan: Disetujui atau Ditolak.</li>
+                            <li>Menyediakan filter berdasarkan nama karyawan dan rentang tanggal.</li>
+                            <li>Memungkinkan akses ke halaman detail pengajuan pada tab baru.</li>
+                        </ul>
                     </div>
-                    <div className="flex items-start gap-3">
-                        <FontAwesomeIcon icon={faInfo} className="text-yellow-500 mt-1" />
-                        <div>
-                            <h4 className="font-semibold text-gray-900">Tips Penggunaan</h4>
-                            <ul className="list-disc list-inside text-gray-600 mt-1 space-y-2">
-                                <li>Gunakan filter tanggal untuk membatasi data yang muncul agar lebih mudah dikelola.</li>
-                                <li>Kombinasikan pencarian dan filter untuk menemukan riwayat tertentu dengan cepat.</li>
-                                <li>Periksa label status untuk mengetahui mana pengajuan yang disetujui atau ditolak.</li>
-                                <li>Pastikan semua informasi penting diperiksa sebelum mengambil keputusan terkait pengajuan dinas.</li>
-                            </ul>
-                        </div>
-                    </div>
+
                 </div>
             </Modal>
+
+
 
         </div >
     );

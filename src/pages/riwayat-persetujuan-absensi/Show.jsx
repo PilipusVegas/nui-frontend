@@ -5,10 +5,9 @@ import SectionHeader from "../../components/desktop/SectionHeader";
 import { exportRiwayatAbsensiExcel } from "./exportRiwayatAbsensiExcel";
 import { LoadingSpinner, ErrorState, EmptyState, SearchBar } from "../../components";
 import { formatFullDate, formatLongDate, formatTime, toLocalISODate } from "../../utils/dateUtils";
-import { faCheckCircle, faXmarkCircle, faGasPump, faHotel, faBriefcase, } from "@fortawesome/free-solid-svg-icons";
+import { faCheckCircle, faXmarkCircle, faGasPump, faHotel, faBriefcase,faHourglassHalf, faFileExcel } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import toast from "react-hot-toast";
-
 
 const RiwayatPersetujuanDetail = () => {
     const { id_user } = useParams();
@@ -180,25 +179,11 @@ const RiwayatPersetujuanDetail = () => {
                 subtitle="Detail Riwayat Persetujuan Absensi Karyawan Lapangan."
                 onBack={() => navigate("/riwayat-persetujuan-absensi")}
                 actions={
-                    <button
-                        onClick={handleExportExcel}
-                        disabled={
-                            exporting ||
-                            loading ||
-                            !startDate ||
-                            !endDate ||
-                            isDataEmpty
-                        }
-                        className={`px-4 py-2 rounded-lg text-sm font-semibold
-            ${exporting ||
-                                loading ||
-                                !startDate ||
-                                !endDate ||
-                                isDataEmpty
-                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                : "bg-green-600 text-white hover:bg-green-700"
-                            }`}
+                    <button onClick={handleExportExcel} disabled={ exporting || loading || !startDate || !endDate || isDataEmpty}
+                        className={`px-4 py-2 rounded-md text-sm font-semibold
+                        ${exporting || loading || !startDate || !endDate || isDataEmpty ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-green-600 text-white hover:bg-green-700"}`}
                     >
+                        <FontAwesomeIcon icon={exporting ? faHourglassHalf : faFileExcel} className="mr-2" />
                         {exporting ? "Menyiapkan Excel..." : "Export Excel"}
                     </button>
                 }
@@ -227,7 +212,6 @@ const RiwayatPersetujuanDetail = () => {
                     <button
                         onClick={() => {
                             if (!validateDateRange(localStartDate, localEndDate)) return;
-
                             setSelectedPeriode(null);
 
                             navigate(
@@ -248,10 +232,7 @@ const RiwayatPersetujuanDetail = () => {
             )}
 
             {!loading && error && (
-                <ErrorState
-                    message={error}
-                    onRetry={() => fetchDetail(startDate, endDate)}
-                />
+                <ErrorState message={error} onRetry={() => fetchDetail(startDate, endDate)}/>
             )}
 
             {!loading && !error && !data?.absen?.length && (
@@ -329,7 +310,7 @@ const RiwayatPersetujuanDetail = () => {
                                                             <FontAwesomeIcon icon={faHotel} title="Tunjangan Shift Malam" className="text-indigo-500" />
                                                         )}
                                                         {hasDinas && (
-                                                            <FontAwesomeIcon icon={faBriefcase} title="Tunjangan Shift Malam" className="text-blue-500" />
+                                                            <FontAwesomeIcon icon={faBriefcase} title="Tunjangan Dinas" className="text-blue-500" />
                                                         )}
                                                     </div>
                                                 ) : (

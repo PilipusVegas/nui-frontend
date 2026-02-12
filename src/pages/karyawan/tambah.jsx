@@ -15,7 +15,23 @@ const TambahKaryawan = () => {
   const [shiftList, setShiftList] = useState([]);
   const [perusahaanList, setPerusahaanList] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
-  const [currentUser, setCurrentUser] = useState({ nip: "", nik: "", npwp: "", no_rek: "", id_kadiv: null, nama: "", status_nikah: "", jml_anak: 0, id_perusahaan: "", id_role: "", id_shift: "", telp: "", username: "", password: "", status: 1, });
+  const [currentUser, setCurrentUser] = useState({
+    nip: "",
+    nik: "",
+    npwp: "",
+    no_rek: "",
+    id_kadiv: null,
+    nama: "",
+    status_nikah: null,
+    jml_anak: 0,
+    id_perusahaan: "",
+    id_role: "",
+    id_shift: "",
+    telp: "",
+    username: "",
+    password: "",
+    status: 1,
+  });
   const [showShiftDetails, setShowShiftDetails] = useState(false);
   const [kadivList, setKadivList] = useState([]);
   const [kadivGroupList, setKadivGroupList] = useState([]);
@@ -252,40 +268,30 @@ const TambahKaryawan = () => {
 
           <div>
             <label className="block mb-1 font-medium text-gray-700">Status Pernikahan</label>
-            <select name="status_nikah" value={currentUser.status_nikah || ""} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+            <select name="status_nikah" value={currentUser.status_nikah ?? ""}
+              onChange={(e) =>
+                setCurrentUser((prev) => ({
+                  ...prev,
+                  status_nikah:
+                    e.target.value === "" ? null : parseInt(e.target.value),
+                }))
+              }
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+            >
               <option value="">Pilih Status</option>
-              <option value="Belum_Menikah">Belum Menikah</option>
-              <option value="Sudah_Menikah">Sudah Menikah</option>
-              <option value="Cerai">Cerai</option>
+              <option value={0}>Belum Menikah</option>
+              <option value={1}>Menikah</option>
+              <option value={2}>Bercerai</option>
             </select>
+
           </div>
 
-          {currentUser.status_nikah === "Sudah_Menikah" && (
+          {[1, 2].includes(currentUser.status_nikah) && (
             <div>
               <label className="block mb-1 font-medium text-gray-700">Jumlah Anak</label>
               <input type="number" name="jml_anak" value={currentUser.jml_anak || 0} onChange={handleChange} min="0" placeholder="Masukkan jumlah anak (0 jika tidak ada)" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
             </div>
           )}
-
-          {/* <div>
-            <label className="block mb-1 font-medium text-gray-700">
-              Status Kendaraan <span className="text-gray-400 text-sm font-normal">(Opsional)</span>
-            </label>
-
-            <select name="status_kendaraan"
-              value={currentUser.status_kendaraan !== undefined && currentUser.status_kendaraan !== null ? currentUser.status_kendaraan : 0}
-              onChange={(e) => {
-                const value = e.target.value === "" ? 0 : parseInt(e.target.value);
-                handleChange({ target: { name: "status_kendaraan", value } });
-              }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-            >
-              <option value="0">Pilih Status Kendaraan</option>
-              <option value="1">Menggunakan Kendaraan Pribadi (Menerima Tunjangan)</option>
-              <option value="3">Menggunakan Kendaraan Umum (Menerima Tunjangan)</option>
-              <option value="2">Menggunakan Kendaraan Kantor (Tidak Menerima Tunjangan)</option>
-            </select>
-          </div> */}
 
 
           <div className="col-span-full flex flex-col mt-4">
@@ -342,11 +348,10 @@ const TambahKaryawan = () => {
 
           <div className="mb-4">
             <label className="block mb-1 font-medium text-gray-700">Divisi</label>
-            <Select
-              options={divisiList.filter((item) => item.id !== 1).map((item) => ({
-                value: item.id,
-                label: item.nama,
-              }))}
+            <Select options={divisiList.filter((item) => item.id !== 1).map((item) => ({
+              value: item.id,
+              label: item.nama,
+            }))}
               value={
                 currentUser.id_role
                   ? { value: currentUser.id_role, label: divisiList.find(d => d.id === currentUser.id_role)?.nama }
@@ -368,11 +373,10 @@ const TambahKaryawan = () => {
                 Pilih Kepala Divisi <span className="text-red-500">*</span>
               </label>
 
-              <Select
-                options={kadivList.map((k) => ({
-                  value: k.id,
-                  label: k.nama,
-                }))}
+              <Select options={kadivList.map((k) => ({
+                value: k.id,
+                label: k.nama,
+              }))}
                 value={
                   Number.isInteger(currentUser.id_kadiv)
                     ? {

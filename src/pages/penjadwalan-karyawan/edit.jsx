@@ -8,6 +8,7 @@ import { fetchWithJwt } from "../../utils/jwtHelper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLock, faTimes, faInfoCircle, faUser, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
+
 const EditPenjadwalan = () => {
     const { id_user } = useParams();
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -31,7 +32,6 @@ const EditPenjadwalan = () => {
     const [isPermanent, setIsPermanent] = useState(false);
     const mode = searchParams.get("mode");
     const [isLockedPermanent, setIsLockedPermanent] = useState(false);
-    const [isStartDateLocked, setIsStartDateLocked] = useState(false);
     const isModeRange = mode === "range";
     const isModePermanent = mode === "permanent";
     const [originalRange, setOriginalRange] = useState({ start: null, end: null });

@@ -40,6 +40,15 @@ export default function SuratDinasPage() {
 
     const handleChange = (field, value) => {
         setForm((prev) => {
+            if (field === "kategori") {
+                const needTanggalPulang =
+                    value?.value === 2 || value?.value === 3;
+                return {
+                    ...prev,
+                    kategori: value,
+                    tgl_pulang: needTanggalPulang ? prev.tgl_pulang : "",
+                };
+            }
             if (
                 field === "tgl_berangkat" &&
                 prev.tgl_pulang &&
@@ -57,20 +66,22 @@ export default function SuratDinasPage() {
     };
 
 
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!confirm) return toast.error("Silakan setujui pernyataan data.");
         if (!form.kategori || !form.tgl_berangkat || !form.waktu)
             return toast.error("Lengkapi seluruh data wajib.");
+        const needTanggalPulang =
+            form.kategori.value === 2 || form.kategori.value === 3;
         if (
-            form.kategori.value === 2 &&
+            needTanggalPulang &&
             (!form.tgl_pulang ||
                 new Date(form.tgl_pulang) < new Date(form.tgl_berangkat))
         ) {
-            return toast.error("Tanggal pulang harus valid.");
+            return toast.error("Tanggal pulang harus diisi dan tidak boleh sebelum tanggal berangkat.");
         }
-        const isLuarKota = form.kategori.value === 2;
-        const tanggalTampil = isLuarKota
+        const tanggalTampil = needTanggalPulang
             ? `${formatFullDate(form.tgl_berangkat)} s/d ${formatFullDate(form.tgl_pulang)}`
             : formatFullDate(form.tgl_berangkat);
         const confirmSwal = await Swal.fire({
@@ -111,7 +122,7 @@ export default function SuratDinasPage() {
                     id_user: form.id_user,
                     kategori: form.kategori.value,
                     tgl_berangkat: form.tgl_berangkat,
-                    tgl_pulang: form.kategori.value === 2 ? form.tgl_pulang : null,
+                    tgl_pulang: needTanggalPulang ? form.tgl_pulang : null,
                     waktu: form.waktu,
                     keterangan: form.keterangan,
                 }),
@@ -199,7 +210,12 @@ export default function SuratDinasPage() {
                         </div>
                         <div className="space-y-1">
                             <label className="text-sm font-medium">Perjalanan Dinas Ke?</label>
-                            <Select options={[{ value: 1, label: "Jabodetabek" }, { value: 2, label: "Luar Jabodetabek" }, { value: 3, label: "Luar Pulau Jawa" }]} value={form.kategori} onChange={(v) => handleChange("kategori", v)} placeholder="Pilih kategori..." className="text-sm py-1" />
+                            <Select options={[
+                                { value: 1, label: "Area A – Jabodetabek" },
+                                { value: 2, label: "Area B – Jawa & Bali (Non-Jabodetabek)" },
+                                { value: 3, label: "Area C – Luar Jawa & Bali" }
+                            ]
+                            } value={form.kategori} onChange={(v) => handleChange("kategori", v)} placeholder="Pilih kategori..." className="text-sm py-1" />
                         </div>
                         <div className="grid grid-cols-1 gap-3">
                             <div className="space-y-1">
@@ -209,7 +225,7 @@ export default function SuratDinasPage() {
                                 <input type="date" className="w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500" value={form.tgl_berangkat} onChange={(e) => handleChange("tgl_berangkat", e.target.value)} />
                             </div>
 
-                            {form.kategori?.value === 2 && (
+                            {(form.kategori?.value === 2 || form.kategori?.value === 3) && (
                                 <div className="space-y-1">
                                     <label className="text-sm font-medium">
                                         Tanggal Pulang
@@ -243,12 +259,43 @@ export default function SuratDinasPage() {
                 </form>
             </MobileLayout>
 
-            <Modal isOpen={infoOpen} onClose={() => setInfoOpen(false)} title="Ketentuan Perjalanan Dinas" note="Harap dibaca dan dipahami." size="md">
+            <Modal isOpen={infoOpen} onClose={() => setInfoOpen(false)} title="Ketentuan Perjalanan Dinas" note="Harap dibaca dan dipahami sebelum mengajukan." size="md">
                 <div className="space-y-5 text-sm leading-relaxed text-gray-800">
                     <p>
                         Formulir ini merupakan <strong>permohonan resmi perjalanan dinas </strong>
-                        yang digunakan oleh karyawan dalam menjalankan tugas perusahaan.
+                        yang digunakan oleh karyawan dalam menjalankan tugas atas penugasan perusahaan.
+                        Seluruh data yang diinput akan menjadi dasar proses verifikasi dan evaluasi.
                     </p>
+
+                    <div>
+                        <h3 className="font-semibold mb-2 text-gray-900">
+                            Kategori Perjalanan Dinas
+                        </h3>
+                        <ul className="list-disc list-outside pl-5 space-y-2">
+                            <li>
+                                <strong>Area A – Jabodetabek</strong><br />
+                                Digunakan untuk perjalanan dinas yang dilakukan
+                                <strong> di dalam wilayah Jabodetabek</strong>.
+                                Area ini merupakan kategori khusus dan
+                                <strong> tidak termasuk</strong> ke dalam perjalanan dinas luar daerah.
+                            </li>
+                            <li>
+                                <strong>Area B – Jawa &amp; Bali (Non-Jabodetabek)</strong><br />
+                                Digunakan untuk perjalanan dinas yang dilakukan
+                                <strong> di luar wilayah Jabodetabek</strong>,
+                                namun masih berada <strong>di Pulau Jawa atau Pulau Bali</strong>.
+                                Perjalanan pada kategori ini umumnya memerlukan
+                                <strong> pengisian tanggal berangkat dan tanggal pulang</strong>.
+                            </li>
+                            <li>
+                                <strong>Area C – Luar Jawa &amp; Bali</strong><br />
+                                Digunakan untuk perjalanan dinas yang dilakukan
+                                <strong> di luar Pulau Jawa dan Pulau Bali</strong>,
+                                termasuk seluruh wilayah Indonesia lainnya.
+                            </li>
+                        </ul>
+                    </div>
+
                     <div>
                         <h3 className="font-semibold mb-2 text-gray-900">
                             Ketentuan Umum
@@ -258,26 +305,29 @@ export default function SuratDinasPage() {
                                 Pengajuan perjalanan dinas <strong>wajib dilakukan sebelum keberangkatan</strong>.
                             </li>
                             <li>
-                                Data yang diisi harus <strong>benar, lengkap, dan sesuai kondisi sebenarnya</strong>.
+                                Kategori perjalanan harus dipilih <strong>sesuai dengan lokasi tujuan sebenarnya</strong>.
                             </li>
                             <li>
-                                Untuk perjalanan <strong>luar kota</strong>, tanggal berangkat dan pulang
-                                wajib diisi sesuai durasi tugas.
+                                Untuk perjalanan dinas di luar wilayah Jabodetabek,
+                                tanggal berangkat dan pulang harus diisi
+                                <strong> sesuai durasi penugasan</strong>.
                             </li>
                         </ul>
                     </div>
+
                     <div>
                         <h3 className="font-semibold mb-2 text-gray-900">
                             Tanggung Jawab & Konsekuensi
                         </h3>
                         <ul className="list-disc list-outside pl-5 space-y-2">
                             <li>
-                                Ketidakjujuran, manipulasi data, atau informasi tidak sesuai
+                                Ketidaksesuaian antara data yang diinput dengan kondisi sebenarnya
                                 dapat menyebabkan <strong>penolakan pengajuan</strong>.
                             </li>
                             <li>
-                                Perusahaan berhak melakukan <strong>verifikasi dan evaluasi </strong>
-                                atas seluruh pengajuan perjalanan dinas.
+                                Perusahaan berhak melakukan
+                                <strong> verifikasi, klarifikasi, dan evaluasi </strong>
+                                atas setiap pengajuan perjalanan dinas.
                             </li>
                             <li>
                                 Pelanggaran terhadap ketentuan ini dapat dikenakan
@@ -285,13 +335,15 @@ export default function SuratDinasPage() {
                             </li>
                         </ul>
                     </div>
+
                     <div className="pt-3 border-t text-xs text-gray-600 leading-relaxed">
                         Dengan melanjutkan pengajuan, Anda dianggap telah
                         <strong> membaca, memahami, dan menyetujui </strong>
-                        seluruh ketentuan yang berlaku.
+                        seluruh ketentuan perjalanan dinas yang berlaku.
                     </div>
                 </div>
             </Modal>
+
         </>
     );
 }

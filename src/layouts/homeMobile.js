@@ -5,19 +5,19 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Swal from "sweetalert2";
 import { faCalendarCheck, faHistory, faSignOutAlt, faMapMarkerAlt, faPenFancy, faPeopleGroup, faClockFour, faTasks, faMotorcycle, } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../utils/jwtHelper";
+import { initPushNotification } from "../utils/pushNotification";
 import { FooterMainBar, TaskCardSlider } from "../components";
 import { useAuth } from "../hooks/useAuth";
 import { formatTime } from "../utils/dateUtils";
 
 const HomeMobile = () => {
-  const navigate = useNavigate();
-  const [attendanceData, setAttendanceData] = useState([]);
-  const apiUrl = process.env.REACT_APP_API_BASE_URL;
-  const user = getUserFromToken();
-  const [hasNewNotifications, setHasNewNotifications] = useState(false);
   const { logout } = useAuth();
+  const navigate = useNavigate();
+  const user = getUserFromToken();
   const allowedKunjunganRoles = [22, 48];
-
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  const [attendanceData, setAttendanceData] = useState([]);
+  const [hasNewNotifications, setHasNewNotifications] = useState(false);
 
   useEffect(() => {
     const user = getUserFromToken();
@@ -35,30 +35,157 @@ const HomeMobile = () => {
     if (idUser) fetchAttendance();
   }, [apiUrl]);
 
+
+  useEffect(() => {
+    if (!user?.id_user) return;
+
+    const handleNotificationPermission = async () => {
+      // Browser tidak support notification
+      if (!("Notification" in window)) {
+        Swal.fire({
+          icon: "error",
+          title: "Browser Tidak Mendukung",
+          text: "Browser Anda tidak mendukung fitur notifikasi. Silakan gunakan browser terbaru atau gunakan browser lain yang mendukung notifikasi.",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+        });
+        return;
+      }
+
+      const permission = Notification.permission;
+
+      /* SUDAH DIIZINKAN */
+      if (permission === "granted") {
+        try {
+          await initPushNotification(user.id_user);
+        } catch (err) {
+          console.error("Init push notification failed:", err);
+        }
+        return;
+      }
+
+      /* PERNAH DITOLAK (DENIED) */
+      if (permission === "denied") {
+        await Swal.fire({
+          icon: "error",
+          title: "Notifikasi Dinonaktifkan",
+          html: `
+          <div style="text-align:left; font-size:14px; line-height:1.6;">
+            <p>
+              Aplikasi ini <strong>mewajibkan notifikasi aktif</strong>
+              untuk memastikan seluruh informasi penting dapat diterima
+              secara real-time.
+            </p>
+
+            <p>
+              Saat ini notifikasi <strong>dinonaktifkan</strong>
+              pada pengaturan browser Anda.
+            </p>
+
+            <p>
+              Silakan aktifkan notifikasi secara manual melalui
+              pengaturan browser sebelum melanjutkan penggunaan aplikasi.
+            </p>
+          </div>
+        `,
+          confirmButtonText: "Saya Mengerti",
+          confirmButtonColor: "#dc2626",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+        });
+
+        return;
+      }
+
+      /* BELUM MENENTUKAN (DEFAULT) */
+      if (permission === "default") {
+        const result = await Swal.fire({
+          icon: "warning",
+          title: "Aktifkan Notifikasi",
+          html: `
+          <div style="text-align:left; font-size:14px; line-height:1.6;">
+            <p>
+              Untuk menggunakan aplikasi ini, notifikasi harus diaktifkan.
+            </p>
+
+            <p>
+              Notifikasi memastikan Anda menerima informasi penting
+              secara otomatis dan tepat waktu.
+            </p>
+
+            <p>
+              Tanpa notifikasi aktif, sistem tidak dapat menjamin
+              penyampaian informasi terkait pekerjaan Anda.
+            </p>
+          </div>
+        `,
+          confirmButtonText: "Aktifkan Sekarang",
+          confirmButtonColor: "#16a34a",
+          showCancelButton: false,
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+        });
+
+        if (result.isConfirmed) {
+          const newPermission = await Notification.requestPermission();
+
+          if (newPermission === "granted") {
+            await initPushNotification(user.id_user);
+
+            await Swal.fire({
+              icon: "success",
+              title: "Notifikasi Aktif",
+              text: "Notifikasi berhasil diaktifkan. Anda akan menerima informasi penting secara otomatis.",
+              confirmButtonColor: "#16a34a",
+            });
+          } else {
+            // Dipaksa ulang → tidak bisa lanjut tanpa izin
+            window.location.reload();
+          }
+        }
+      }
+    };
+
+    handleNotificationPermission();
+  }, [user?.id_user]);
+
+
+
+
+
   const handleNotificationClick = () => {
     navigate("/notification");
     setHasNewNotifications(false);
   };
 
   const MainMenuButton = ({ icon, image, label, onClick, color, hasNotification }) => (
-    <button onClick={onClick} aria-label={label} className="flex flex-col items-center justify-center mb-1 py-2 px-4 relative transition-all duration-300 rounded-full hover:text-green-900 px-2">
-      <div className="relative">
-        {icon && <FontAwesomeIcon icon={icon} className={`text-lg ${color}`} />}
-        {image && (
-          <div className={`p-3 rounded-lg ${color}`}>
-            <img src={image} alt={label} className="w-8 h-8 object-contain mx-auto" />
+    <div className="flex flex-col items-center justify-center mb-2">
+      <div onClick={onClick} className="relative cursor-pointer transition-transform duration-300 hover:scale-105 active:scale-95">
+        {icon && (
+          <div className={`${color} p-4 px-5 rounded-xl`}>
+            <FontAwesomeIcon icon={icon} className="text-xl" />
           </div>
         )}
+
+        {image && (
+          <div className={`${color} p-3 rounded-lg`}>
+            <img src={image} alt={label} className="w-8 h-8 object-contain" />
+          </div>
+        )}
+
         {hasNotification && (
           <>
-            <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 animate-ping" />
-            <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-600 border-2 border-white" />
+            <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500 animate-ping" />
+            <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-600 border-2 border-white" />
           </>
         )}
       </div>
-      <span className="mt-1 text-xs font-medium">{label}</span>
-    </button>
+      <span className="mt-1 text-xs font-medium text-gray-700 select-none">
+        {label}
+      </span>
+    </div>
   );
+
 
 
   const confirmLogout = () => {
@@ -154,7 +281,7 @@ const HomeMobile = () => {
 
       {/* MENU UTAMA */}
       <div className="flex flex-row items-center p-1 mt-3">
-        <span className="text-sm font-semibold pl-3">Menu Utama</span>
+        <span className="text-sm font-semibold pl-3 pb-3">Menu Utama</span>
       </div>
       <div className="grid grid-cols-4 gap-2 px-3">
         <MainMenuButton icon={faCalendarCheck} label="Absensi" onClick={() => navigate("/absensi")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-emerald-600 hover:scale-105 transition" />

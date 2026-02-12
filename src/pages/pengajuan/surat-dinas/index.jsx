@@ -136,8 +136,9 @@ const SuratDinas = () => {
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
 
   const getKategoriDinas = (kategori) => {
-    if (kategori === "1" || kategori === 1) return "Jabodetabek";
-    if (kategori === "2" || kategori === 2) return "Luar Jabodetabek";
+    if (kategori === "1" || kategori === 1) return "Area A – Jabodetabek";
+    if (kategori === "2" || kategori === 2) return "Area B – Jawa & Bali (Non-Jabodetabek)";
+    if (kategori === "3" || kategori === 3) return "Area C – Luar Jawa & Bali";
     return "-";
   };
 
@@ -193,9 +194,7 @@ const SuratDinas = () => {
                 currentItems.length > 0 &&
                 currentItems.map((item, index) => {
                   const tglBerangkat = formatFullDate(item.tgl_berangkat);
-                  const tglPulang = item.tgl_pulang
-                    ? formatFullDate(item.tgl_pulang)
-                    : null;
+                  const tglPulang = item.tgl_pulang ? formatFullDate(item.tgl_pulang) : null;
                   const jamBerangkat = item.waktu ? item.waktu.substring(0, 5) : "-";
 
                   return (
@@ -216,13 +215,15 @@ const SuratDinas = () => {
                           <span className="text-xs text-gray-500 capitalize">{item.divisi || "-"}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-1.5 text-center whitespace-nowrap">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold
-                          ${item.kategori == 1 ? "bg-blue-100 text-blue-700 px-6" : "bg-purple-100 text-purple-700"}`}
+                      <td className="px-4 py-1.5 text-center">
+                        <span className={`inline-flex items-center justify-center whitespace-nowrap px-2 py-0.5 rounded-md text-[11px] font-semibold
+                            ${item.kategori == 1 ? "bg-blue-100 text-blue-700" : item.kategori == 2 ? "bg-purple-100 text-purple-700" : "bg-orange-100 text-orange-700"}`}
                         >
                           {getKategoriDinas(item.kategori)}
                         </span>
                       </td>
+
+
                       <td className="px-4 py-1.5 text-center">
                         <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500 text-white">
                           Pending
@@ -265,7 +266,7 @@ const SuratDinas = () => {
               <div key={item.id} className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
-                    ${item.kategori == 1 ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700"}`}
+                    ${item.kategori == 1 ? "bg-blue-100 text-blue-700" : item.kategori == 2 ? "bg-purple-100 text-purple-700" : "bg-orange-100 text-orange-700"}`}
                   >
                     {getKategoriDinas(item.kategori)}
                   </span>
@@ -303,7 +304,7 @@ const SuratDinas = () => {
                     className={`px-3 py-2 rounded-lg text-sm font-medium shadow flex items-center gap-1 transition
                     ${approvingId === item.id ? "bg-gray-300 cursor-not-allowed" : "bg-green-600 hover:bg-green-700 text-white"}`}
                   >
-                    {approvingId === item.id ? <FontAwesomeIcon icon={faSpinner} className="animate-spin" />  : <FontAwesomeIcon icon={faCheck} />}
+                    {approvingId === item.id ? <FontAwesomeIcon icon={faSpinner} className="animate-spin" /> : <FontAwesomeIcon icon={faCheck} />}
                     <span>Setujui</span>
                   </button>
 
@@ -311,10 +312,7 @@ const SuratDinas = () => {
                     className={`px-3 py-2 rounded-lg text-sm font-medium shadow flex items-center gap-1 transition
                     ${approvingId === item.id ? "bg-gray-300 cursor-not-allowed" : "bg-red-600 hover:bg-red-700 text-white"}`}
                   >
-                    {approvingId === item.id
-                      ? <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
-                      : <FontAwesomeIcon icon={faTimes} />
-                    }
+                    {approvingId === item.id ? <FontAwesomeIcon icon={faSpinner} className="animate-spin" /> : <FontAwesomeIcon icon={faTimes} />}
                     <span>Tolak</span>
                   </button>
                 </div>
@@ -332,7 +330,6 @@ const SuratDinas = () => {
 
       <Modal isOpen={showInfoModal} onClose={() => setShowInfoModal(false)} title="Informasi Pengajuan Surat Dinas" note="Panduan penggunaan halaman pengajuan surat dinas" size="lg">
         <div className="space-y-4 text-sm text-gray-700 leading-relaxed">
-
           <p>
             Halaman <b>Pengajuan Surat Dinas</b> digunakan untuk meninjau dan memproses
             pengajuan perjalanan dinas karyawan. Halaman ini membantu Kepala Divisi dan
@@ -340,66 +337,46 @@ const SuratDinas = () => {
           </p>
 
           <div className="space-y-2">
-            <p className="font-semibold text-gray-800">Kategori Dinas</p>
+            <p className="font-semibold text-gray-800">Kategori Perjalanan Dinas</p>
 
             <ul className="space-y-2">
               <li className="flex items-start gap-2">
                 <span className="mt-1.5 inline-block h-3 w-3 rounded-full bg-blue-500"></span>
                 <div>
-                  <b>Jabodetabek</b> — Perjalanan dinas dalam wilayah Jabodetabek dan
-                  <b> tidak mendapatkan tunjangan perjalanan dinas</b>.
+                  <b>Area A – Jabodetabek</b><br />
+                  Digunakan untuk perjalanan dinas di dalam wilayah Jabodetabek.
+                  Kategori ini merupakan area khusus dan
+                  <b> tidak termasuk perjalanan dinas luar daerah</b>.
                 </div>
               </li>
 
               <li className="flex items-start gap-2">
-                <span className="mt-1.5 inline-block h-3 w-6 rounded-full bg-purple-500"></span>
+                <span className="mt-1.5 inline-block h-3 w-3 rounded-full bg-purple-500"></span>
                 <div>
-                  <b>Luar Jabodetabek</b> — Perjalanan dinas di luar wilayah Jabodetabek dan
-                  <b> secara otomatis berhak mendapatkan tunjangan perjalanan dinas</b>.
-                  Pastikan karyawan sudah ditandai sebagai yang berhak mendapatkan tunjangan
-                  melalui fitur <b>Tunjangan Karyawan</b>.
+                  <b>Area B – Jawa &amp; Bali (Non-Jabodetabek)</b><br />
+                  Digunakan untuk perjalanan dinas di luar wilayah Jabodetabek
+                  namun masih berada di Pulau Jawa atau Pulau Bali.
+                  <b> Wajib mengisi tanggal berangkat dan tanggal pulang</b>.
+                </div>
+              </li>
+
+              <li className="flex items-start gap-2">
+                <span className="mt-1.5 inline-block h-3 w-3 rounded-full bg-orange-500"></span>
+                <div>
+                  <b>Area C – Luar Jawa &amp; Bali</b><br />
+                  Digunakan untuk perjalanan dinas di luar Pulau Jawa dan Pulau Bali.
+                  <b> Wajib mengisi tanggal berangkat dan tanggal pulang</b>.
                 </div>
               </li>
             </ul>
           </div>
 
-          <div className="space-y-3 pt-2">
-            <div className="flex items-start gap-2">
-              <FontAwesomeIcon icon={faCalendarAlt} className="mt-1 text-blue-500" />
-              <div>
-                <b>Pencarian:</b> Gunakan kolom pencarian untuk menemukan pengajuan
-                berdasarkan nama karyawan.
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2">
-              <FontAwesomeIcon icon={faInfoCircle} className="mt-1 text-blue-600" />
-              <div>
-                <b>Detail:</b> Tombol <span className="font-medium text-blue-600">Detail </span>
-                digunakan untuk melihat informasi lengkap pengajuan.
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2">
-              <FontAwesomeIcon icon={faCheck} className="mt-1 text-green-600" />
-              <div>
-                <b>Setujui:</b> Menyetujui pengajuan yang telah diverifikasi dengan benar.
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2">
-              <FontAwesomeIcon icon={faTimes} className="mt-1 text-red-600" />
-              <div>
-                <b>Tolak:</b> Menolak pengajuan yang tidak sesuai atau memerlukan perbaikan.
-              </div>
-            </div>
-          </div>
-
           <p className="pt-2">
-            Pastikan seluruh informasi sudah sesuai sebelum memberikan keputusan
-            untuk menjaga akurasi data dan ketertiban administrasi.
+            Pastikan kategori dan tanggal perjalanan telah sesuai sebelum memberikan keputusan
+            guna menjaga akurasi data dan ketertiban administrasi.
           </p>
         </div>
+
       </Modal>
     </div>
   );

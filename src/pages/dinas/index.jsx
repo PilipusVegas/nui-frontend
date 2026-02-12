@@ -4,11 +4,10 @@ import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleInfo, faChevronUp, faChevronDown} from "@fortawesome/free-solid-svg-icons";
+import { faCircleInfo, faChevronUp, faChevronDown } from "@fortawesome/free-solid-svg-icons";
 
 export default function SuratDinasPage() {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
-
   const [namaOptions, setNamaOptions] = useState([]);
   const [profilLoading, setProfilLoading] = useState(true);
   const [infoOpen, setInfoOpen] = useState(false);
@@ -52,7 +51,7 @@ export default function SuratDinasPage() {
   const handleChange = (field, value) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
-  // SUBMIT FORM
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -83,15 +82,16 @@ export default function SuratDinasPage() {
       form.kategori.value === 2
         ? `dari ${form.tgl_berangkat} sampai ${form.tgl_pulang}`
         : `pada ${form.tgl_berangkat}`;
+
     const jamInfo = `pukul ${form.waktu}`;
 
-    const result = await Swal.fire({
+    const confirmResult = await Swal.fire({
       title: "Konfirmasi Pengajuan",
       html: `
-        Apakah Anda yakin melakukan perjalanan dinas 
-        <b>${tanggalInfo}</b> ${jamInfo}?<br>
-        Data akan diproses secara resmi.
-      `,
+      Apakah Anda yakin melakukan perjalanan dinas 
+      <b>${tanggalInfo}</b> ${jamInfo}?<br>
+      Data akan diproses secara resmi.
+    `,
       icon: "question",
       confirmButtonText: "Ya, Kirim",
       cancelButtonText: "Batal",
@@ -100,9 +100,10 @@ export default function SuratDinasPage() {
       cancelButtonColor: "#d33",
     });
 
-    if (!result.isConfirmed) return;
+    if (!confirmResult.isConfirmed) return;
 
     setSubmitLoading(true);
+
     try {
       const res = await fetchWithJwt(`${apiUrl}/surat-dinas`, {
         method: "POST",
@@ -118,7 +119,13 @@ export default function SuratDinasPage() {
         }),
       });
 
-      if (!res.ok) throw new Error();
+      const result = await res.json();
+
+      if (!res.ok || result.success === false) {
+        toast.error(result.message || "Pengajuan gagal.");
+        return;
+      }
+
       toast.success("Pengajuan berhasil dikirim.");
 
       setForm({
@@ -130,13 +137,15 @@ export default function SuratDinasPage() {
         tgl_pulang: "",
         waktu: "",
       });
+
       setConfirm(false);
-    } catch {
-      toast.error("Terjadi kesalahan saat mengirim data.");
+    } catch (error) {
+      toast.error(error.message || "Terjadi kesalahan saat mengirim data.");
     } finally {
       setSubmitLoading(false);
     }
   };
+
 
   if (profilLoading) {
     return (
@@ -163,18 +172,14 @@ export default function SuratDinasPage() {
               <FontAwesomeIcon icon={faCircleInfo} />
               Panduan Pengisian Formulir
             </div>
-            <FontAwesomeIcon icon={infoOpen ? faChevronUp : faChevronDown} className="text-blue-800"/>
+            <FontAwesomeIcon icon={infoOpen ? faChevronUp : faChevronDown} className="text-blue-800" />
           </div>
 
           {infoOpen && (
             <div className="px-4 py-4 bg-blue-50 text-blue-900 text-sm space-y-4 border-t border-blue-300">
-
-              {/* TITLE */}
               <p className="font-bold text-blue-900">
                 Informasi Wajib Dibaca Sebelum Mengajukan:
               </p>
-
-              {/* POINTS */}
               <ul className="list-disc list-inside space-y-2 leading-relaxed">
 
                 <li>

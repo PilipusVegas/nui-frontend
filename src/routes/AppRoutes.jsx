@@ -23,14 +23,7 @@ const AppRoutes = () => {
                 );
             })}
 
-            <Route
-                path="*"
-                element={
-                    getUserFromToken()
-                        ? <Navigate to="/home" replace />
-                        : <Navigate to="/login" replace />
-                }
-            />
+            <Route path="*" element={ getUserFromToken() ? <Navigate to="/home" replace /> : <Navigate to="/login" replace />}/>
 
         </Routes>
     );

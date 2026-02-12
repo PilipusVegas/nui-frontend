@@ -361,7 +361,7 @@ const RemarkForm = ({ apiUrl, navigate, selectedDate, selectedUser, absenData, s
                     Keterangan tambahan terkait absensi
                 </p>
 
-                <textarea className="border rounded px-3 py-2 w-full min-h-[100px]" placeholder="Isi catatan absensi di sini" value={formData.remark}
+                <textarea className="border rounded px-3 py-2 w-full min-h-[100px]" placeholder="Isi catatan absensi di sini (maks. 250 karakter)" value={formData.remark} maxLength={250}
                     onChange={e =>
                         setFormData(f => ({
                             ...f,
@@ -369,6 +369,11 @@ const RemarkForm = ({ apiUrl, navigate, selectedDate, selectedUser, absenData, s
                         }))
                     }
                 />
+
+                <p className="text-xs text-gray-500 mt-1 text-right">
+                    {formData.remark.length}/250 karakter
+                </p>
+
             </div>
 
             {/* E. ACTION */}

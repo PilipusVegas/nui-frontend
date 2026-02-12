@@ -168,32 +168,25 @@ const DataKaryawan = () => {
 
   const getIncompleteFields = (user) => {
     if (!user || typeof user !== "object") return ["DATA KOSONG / ERROR"];
-
     const missing = [];
-
     Object.keys(requiredFields).forEach((key) => {
       const value = user[key];
-
       if (key === "id_shift") {
         if (!value || value <= 0) missing.push(requiredFields[key]);
         return;
       }
-
       if (typeof value === "string") {
         if (!value.trim() || value.trim() === "-") missing.push(requiredFields[key]);
         return;
       }
-
       if (typeof value === "number") {
         if (value <= 0) missing.push(requiredFields[key]);
         return;
       }
-
       if (value === null || value === undefined) {
         missing.push(requiredFields[key]);
       }
     });
-
     return missing;
   };
 

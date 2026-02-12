@@ -54,13 +54,17 @@ const DetailKaryawan = () => {
   const safeText = (val) =>
     val && val !== "-" ? val : <span className="italic text-gray-400">Tidak tersedia</span>;
 
-  const statusNikah = (val) =>
-    val
-      ? val
-        .replace(/_/g, " ")
-        .toLowerCase()
-        .replace(/\b\w/g, (c) => c.toUpperCase())
-      : "Tidak tersedia";
+  const STATUS_NIKAH_MAP = {
+    0: "Belum Menikah",
+    1: "Menikah",
+    2: "Bercerai",
+  };
+
+  const statusNikah = (val) => {
+    if (val === null || val === undefined) return "Tidak tersedia";
+    return STATUS_NIKAH_MAP[val] ?? "Tidak diketahui";
+  };
+
 
   const statusKaryawan = (val) => (
     <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${val ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
@@ -182,10 +186,10 @@ const DetailKaryawan = () => {
 
             {/* STRUKTUR ORGANISASI */}
             {/* <DataSection title="Struktur Organisasi">
-              <DataGrid>
-                <DataItem icon={faUserTie} label="Kepala Divisi" value={safeText(karyawan.nama_kadiv)}/>
-              </DataGrid>
-            </DataSection> */}
+                <DataGrid>
+                  <DataItem icon={faUserTie} label="Kepala Divisi" value={safeText(karyawan.nama_kadiv)}/>
+                </DataGrid>
+              </DataSection> */}
 
             {/* PEKERJAAN */}
             <DataSection title="Informasi Pekerjaan">

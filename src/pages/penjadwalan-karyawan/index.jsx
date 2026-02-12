@@ -173,27 +173,33 @@ const PenjadwalanKaryawan = () => {
                     </table>
                 </div>
             )}
+
+
             {/* MOBILE VIEW */}
             {!loading && !error && data.length > 0 && (
                 <div className="block md:hidden space-y-3 mb-20">
                     {filteredData.map((item) => (
-                        <div key={item.id_user} className="border rounded-xl p-4 bg-white shadow-sm flex flex-col gap-3">
-                            {/* Content */}
-                            <div className="flex flex-col gap-1">
-                                <p className="font-semibold text-base text-gray-900">
-                                    {item.nama}
-                                </p>
-
-                                <p className="text-sm text-gray-500">
-                                    {item.nip} • {item.role}
-                                </p>
+                        <div key={item.id_user} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="font-semibold text-gray-900">
+                                        {item.nama}
+                                    </p>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        {item.nip} • {item.role}
+                                    </p>
+                                </div>
+                                <div>
+                                    {renderStatus(item.has_ongoing)}
+                                </div>
                             </div>
-
-                            {/* Footer */}
-                            <div className="flex items-center justify-between pt-2">
-                                {renderStatus(item.has_ongoing)}
-                                <button onClick={() => navigate(`/penjadwalan/detail/${item.id_user}`)} className="px-4 py-2 bg-blue-500 text-white text-sm font-semibold rounded-md">
+                            <div className="border-t border-gray-100 my-4"></div>
+                            <div className="flex justify-end gap-2">
+                                <button onClick={() => navigate(`/penjadwalan/detail/${item.id_user}`)} className="px-3 py-1.5 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-md">
                                     <FontAwesomeIcon icon={faEye} /> Detail
+                                </button>
+                                <button onClick={() => handleDelete(item.id_user)} className="px-3 py-1.5 text-sm bg-red-500 hover:bg-red-600 text-white rounded-md">
+                                    <FontAwesomeIcon icon={faTrash} /> Hapus
                                 </button>
                             </div>
                         </div>

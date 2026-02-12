@@ -1,7 +1,7 @@
 import CryptoJS from "crypto-js";
 
 const STORAGE_KEY = "device_user_lock"; // nama masuk akal & eksplisit
-const SECRET_KEY = "nico-device-lock-v1"; 
+const SECRET_KEY = "nico-device-lock-v1";
 // 👉 idealnya dari env, tapi frontend-only cukup
 
 export function encryptUserId(userId) {

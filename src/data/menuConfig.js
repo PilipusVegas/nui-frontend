@@ -1,3 +1,4 @@
+import { faReadme } from "@fortawesome/free-brands-svg-icons";
 import {
     faHome,
     faPeopleGroup,
@@ -161,7 +162,7 @@ export const menuConfig = [
                     //     perusahaan: [1, 4],
                     // },
                     {
-                        label: "Persetujuan Absensi Lapangan",
+                        label: "Monitoring Absensi Lapangan",
                         icon: faCheckSquare,
                         path: "/pengajuan-absensi",
                         roles: [1, 4, 5, 6, 18, 20],

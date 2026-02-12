@@ -24,12 +24,18 @@ const Absensi = () => {
   const [isCheckingAttendance, setIsCheckingAttendance] = useState(true);
   const [attendanceData, setAttendanceData] = useState({ userId: "", username: "", id_absen: "" });
 
-useEffect(() => {
-  Swal.fire({
-    icon: "warning",
-    title: "PERHATIAN!",
-    html: `
-    <div style="text-align:left; font-size:12px; line-height:1.5;">
+
+  useEffect(() => {
+    const STORAGE_KEY = "absensi_warning_last_shown";
+    const WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
+    const lastShown = localStorage.getItem(STORAGE_KEY);
+    const now = Date.now();
+    if (!lastShown || now - Number(lastShown) > WEEK_IN_MS) {
+      Swal.fire({
+        icon: "warning",
+        title: "PERHATIAN!",
+        html: `
+        <div style="text-align:left; font-size:12px; line-height:1.5;">
       <p><strong>ABSENSI HANYA BOLEH DILAKUKAN DI LOKASI KERJA.</strong></p>
       <p>
         Anda <strong>WAJIB</strong> berada dalam radius <strong>maksimal 60 meter</strong> 
@@ -67,12 +73,15 @@ useEffect(() => {
       </p>
       <p><strong>Terima kasih.</strong></p>
     </div>
-    `,
-    confirmButtonText: "Saya Mengerti",
-    confirmButtonColor: "#dc2626",
-    allowOutsideClick: false,
-  });
-}, []);
+      `,
+        confirmButtonText: "Saya Mengerti",
+        confirmButtonColor: "#dc2626",
+        allowOutsideClick: false,
+      }).then(() => {
+        localStorage.setItem(STORAGE_KEY, now.toString());
+      });
+    }
+  }, []);
 
 
   useEffect(() => {

@@ -14,7 +14,6 @@ const PrivateRoute = ({ children, allowedRoles, allowedCompanies }) => {
         return <Navigate to="/home" replace />;
     }
 
-
     // Perusahaan tidak sesuai
     if (
         allowedCompanies &&

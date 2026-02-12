@@ -21,9 +21,7 @@ const EditKaryawan = () => {
     const [groupList, setGroupList] = useState([]);
     const [initialPlacement, setInitialPlacement] = useState(null);
     const [loginUser, setLoginUser] = useState(null);
-    const allowKadivInput =
-        loginUser &&
-        [1, 4].includes(Number(loginUser.id_perusahaan));
+    const allowKadivInput = loginUser && [1, 4].includes(Number(loginUser.id_perusahaan));
 
     const isMovedPlacement =
         initialPlacement &&
@@ -146,7 +144,6 @@ const EditKaryawan = () => {
                     `${apiUrl}/profil/kadiv-access/group/kadiv/${currentUser.id_kadiv}`
                 );
                 const json = await res.json();
-
                 if (json.success) {
                     setGroupList(json.data);
                 }
@@ -187,11 +184,7 @@ const EditKaryawan = () => {
 
     return (
         <div className="bg-white flex flex-col">
-            <SectionHeader
-                title="Edit Karyawan"
-                onBack={() => navigate(-1)}
-                subtitle="Formulir untuk mengedit data karyawan"
-            />
+            <SectionHeader title="Edit Karyawan" onBack={() => navigate(-1)} subtitle="Formulir untuk mengedit data karyawan" />
             <form onSubmit={handleSubmit} className="flex-grow pb-5 px-3 w-full mx-auto space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="col-span-full flex flex-col">
@@ -249,26 +242,38 @@ const EditKaryawan = () => {
                     <div>
                         <label className="block mb-1 font-medium text-gray-700">Status Pernikahan</label>
                         <p className="text-sm text-gray-500 mb-2 -mt-1.5">Pilih status pernikahan karyawan.</p>
-                        <select
-                            name="status_nikah"
-                            value={currentUser.status_nikah || ""}
-                            onChange={handleChange}
+                        <select name="status_nikah" value={currentUser.status_nikah ?? ""}
+                            onChange={(e) =>
+                                setCurrentUser((prev) => ({
+                                    ...prev,
+                                    status_nikah:
+                                        e.target.value === "" ? null : parseInt(e.target.value),
+                                }))
+                            }
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
                         >
                             <option value="">Pilih Status</option>
-                            <option value="Belum_Menikah">Belum Menikah</option>
-                            <option value="Sudah_Menikah">Sudah Menikah</option>
-                            <option value="Cerai">Cerai</option>
+                            <option value={0}>Belum Menikah</option>
+                            <option value={1}>Menikah</option>
+                            <option value={2}>Bercerai</option>
                         </select>
                     </div>
 
-                    {currentUser.status_nikah === "Sudah_Menikah" && (
+                    {[1, 2].includes(currentUser.status_nikah) && (
                         <div>
                             <label className="block mb-1 font-medium text-gray-700">Jumlah Anak</label>
                             <p className="text-sm text-gray-500 mb-2 -mt-1.5">
                                 Masukkan jumlah anak (jika ada). Jika belum mempunyai anak maka isi 0 saja
                             </p>
-                            <input type="number" name="jml_anak" value={currentUser.jml_anak || ""} onChange={handleChange} min="0" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                            <input type="number" name="jml_anak" value={currentUser.jml_anak ?? 0} min="0"
+                                onChange={(e) =>
+                                    setCurrentUser((prev) => ({
+                                        ...prev,
+                                        jml_anak: parseInt(e.target.value) || 0,
+                                    }))
+                                }
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                            />
                         </div>
                     )}
 
@@ -415,14 +420,8 @@ const EditKaryawan = () => {
                                         : "Tentukan peran karyawan dalam tim."}
                             </p>
 
-                            <select
-                                name="level"
-                                value={currentUser.level ?? 2}
-                                onChange={handleChange}
-                                disabled={disableLeaderSelect}
-                                className={`w-full px-4 py-2 border-2 rounded-lg
-                ${disableLeaderSelect ? "bg-gray-100 cursor-not-allowed" : ""}
-            `}
+                            <select name="level" value={currentUser.level ?? 2} onChange={handleChange} disabled={disableLeaderSelect}
+                                className={`w-full px-4 py-2 border-2 rounded-lg ${disableLeaderSelect ? "bg-gray-100 cursor-not-allowed" : ""}`}
                             >
                                 {/* Team Leader hanya muncul jika BELUM ADA leader */}
                                 {!groupHasLeader && (

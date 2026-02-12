@@ -165,6 +165,7 @@ export const routes = [
   { path: "/kelola-absensi", element: <KelolaAbsensi />, roles: ["1", "4", "6"] },
   { path: "/kelola-absensi/:id", element: <DetailKelolaAbsensi />, roles: ["1", "4", "6"], layout: SidebarLayout },
   { path: "/remark-absensi", element: <RemarkAbsensi />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  
 
   { path: "/karyawan", element: <DataKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
   { path: "/karyawan/tambah", element: <TambahKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
