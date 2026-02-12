@@ -55,25 +55,39 @@ const SuratDinasDetail = () => {
 
     html2pdf().set(opt).from(element).save();
   };
+  
+    const getAreaDinas = (kategori) => {
+      switch (Number(kategori)) {
+        case 1:
+          return "Jabodetabek";
+        case 2:
+          return "Jawa & Bali (Non-Jabodetabek)";
+        case 3:
+          return "Luar Jawa & Bali";
+        default:
+          return "-";
+      }
+    };
 
-  const tanggalPerjalanan = data.kategori === 1 ? formatFullDate(data.tgl_berangkat) : data.tgl_pulang ? `${formatFullDate(data.tgl_berangkat)} s/d ${formatFullDate(data.tgl_pulang)}` : formatFullDate(data.tgl_berangkat);
+  const tanggalPerjalanan = data.tgl_pulang
+    ? `${formatFullDate(data.tgl_berangkat)} s/d ${formatFullDate(data.tgl_pulang)}`
+    : formatFullDate(data.tgl_berangkat);
 
-  // Kategori
-  const kategoriLabel = data.kategori === "1" ? "Dinas Dalam Kota" : "Dinas Luar Kota";
 
   const detailItems = [
     { label: "Nama Karyawan", value: data.nama },
     { label: "Hari/Tanggal", value: tanggalPerjalanan },
     { label: "Divisi", value: data.divisi },
     { label: "Keterangan", value: data.keterangan },
-    { label: "Kategori", value: kategoriLabel },
+    { label: "Kategori", value: getAreaDinas(data.kategori) },
     { label: "Berangkat Jam", value: data.waktu?.split(":").slice(0, 2).join(":") + " WIB" },
     { label: "Persetujuan Ka Dept/Kadiv", value: data.status === 0 ? "Belum disetujui" : `Disetujui pada ${formatFullDate(data.updated_at)}`, },
   ];
 
+
   return (
     <div>
-      <SectionHeader title="Detail Surat Dinas" subtitle="Detail Surat Dinas jika dibutuhkan untuk mencetak" onBack={() => navigate(-1)}/>
+      <SectionHeader title="Detail Surat Dinas" subtitle="Detail Surat Dinas jika dibutuhkan untuk mencetak" onBack={() => navigate(-1)} />
       <div className="max-w-4xl mx-auto mt-20">
         <div id="cetak-area" className="border-y-4 border-double border-gray-700 border-x-8 p-6 rounded-lg bg-white shadow-md">
           <h2 className="text-center text-4xl font-bold mb-4 text-gray-800">
