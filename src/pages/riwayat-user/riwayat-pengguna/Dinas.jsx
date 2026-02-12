@@ -46,6 +46,14 @@ export default function SuratDinas() {
         load();
     }, [apiUrl, user.id_user]);
 
+    const getKategoriDinas = (kategori) => {
+        if (kategori === "1" || kategori === 1) return "Jabodetabek";
+        if (kategori === "2" || kategori === 2) return "Jawa & Bali (Non-Jabodetabek)";
+        if (kategori === "3" || kategori === 3) return "Luar Jawa & Bali";
+        return "-";
+    };
+
+
     const filtered = data.filter((item) =>
         `${item.keterangan} ${formatFullDate(item.tgl_berangkat)}`
             .toLowerCase()
@@ -68,7 +76,7 @@ export default function SuratDinas() {
                     <EmptyState message="Tidak ada riwayat surat dinas ditemukan." />
                 ) : (
                     filtered.map((item, idx) => {
-                        const isDalamKota = item.kategori === "1";
+                        const isAreaA = item.kategori === "1" || item.kategori === 1;
                         const statusColor =
                             item.status === 1
                                 ? "bg-green-600"
@@ -96,7 +104,7 @@ export default function SuratDinas() {
                                     <div className="flex items-center gap-2">
                                         <FontAwesomeIcon icon={faCity} className="w-4" />
                                         <span>
-                                            Dinas: {item.kategori === "1" ? "Dalam Kota" : "Luar Kota"}
+                                            {getKategoriDinas(item.kategori)}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -107,7 +115,7 @@ export default function SuratDinas() {
                                         </span>
                                     </div>
 
-                                    {!isDalamKota && (
+                                    {!isAreaA && (
                                         <div className="flex items-center gap-2">
                                             <FontAwesomeIcon icon={faPlaneArrival} className="w-4 text-blue-500" />
                                             <span>
