@@ -75,7 +75,7 @@ const DataAbsensi = () => {
 
   return (
     <div className="flex flex-col justify-start">
-      <SectionHeader title="Persetujuan Absensi Lapangan" subtitle="Monitoring kehadiran karyawan lapangan secara real-time setiap hari." onBack={() => navigate("/home")}
+      <SectionHeader title="Monitoring Absensi Lapangan" subtitle="Monitoring kehadiran karyawan lapangan secara real-time setiap hari." onBack={() => navigate("/home")}
         actions={
           <button onClick={() => navigate("/riwayat-persetujuan-absensi")}title="Riwayat Persetujuan"
             className=" inline-flex items-center justify-center px-3 py-2 text-blue-700 bg-blue-100 border border-blue-300 rounded-lg hover:bg-blue-200 transition"
