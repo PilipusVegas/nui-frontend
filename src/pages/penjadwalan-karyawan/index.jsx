@@ -87,16 +87,30 @@ const PenjadwalanKaryawan = () => {
         });
 
 
-    const renderStatus = (hasOngoing) => {
-        return !hasOngoing ? (
-            <span className="px-2 py-1 text-xs font-semibold rounded bg-red-100 text-red-700">
-                Jadwal Kosong
-            </span>
-        ) : (
-            <span className="px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-700">
-                Jadwal Tersedia
-            </span>
-        );
+    const badgeBase = "inline-flex items-center justify-center min-w-[110px] px-3 py-1.5 text-xs font-semibold rounded";
+    const renderStatus = (hasOngoing, ongoingType) => {
+        if (!hasOngoing) {
+            return (
+                <span className={`${badgeBase} bg-red-100 text-red-700`}>
+                    Jadwal Kosong
+                </span>
+            );
+        }
+        if (ongoingType === "permanent") {
+            return (
+                <span className={`${badgeBase} bg-blue-100 text-blue-700`}>
+                    Permanent
+                </span>
+            );
+        }
+        if (ongoingType === "range") {
+            return (
+                <span className={`${badgeBase} bg-green-100 text-green-700`}>
+                    Range
+                </span>
+            );
+        }
+        return null;
     };
 
     return (
@@ -137,7 +151,7 @@ const PenjadwalanKaryawan = () => {
                                 </th>
                                 <th className="px-4 py-3 text-center">
                                     <button onClick={() => setStatusSort(prev => prev === "empty-first" ? "available-first" : "empty-first")} className="flex items-center justify-center gap-2 w-full hover:text-gray-200 transition cursor-pointer" title="Urutkan status" type="button">
-                                        <span>Status</span>
+                                        <span>Tipe Penjadwalan</span>
                                         <FontAwesomeIcon icon={statusSort === "empty-first" ? faSortUp : faSortDown} />
                                     </button>
                                 </th>
@@ -155,7 +169,7 @@ const PenjadwalanKaryawan = () => {
                                     <td className="px-4 py-2 font-semibold">{item.nama}</td>
                                     <td className="px-4 py-2 text-center">{item.role}</td>
                                     <td className="px-4 py-2 text-center">
-                                        {renderStatus(item.has_ongoing)}
+                                        {renderStatus(item.has_ongoing, item.ongoing_type)}
                                     </td>
                                     <td className="px-4 py-2">
                                         <div className="flex justify-center gap-2">
@@ -190,7 +204,7 @@ const PenjadwalanKaryawan = () => {
                                     </p>
                                 </div>
                                 <div>
-                                    {renderStatus(item.has_ongoing)}
+                                    {renderStatus(item.has_ongoing, item.ongoing_type)}
                                 </div>
                             </div>
                             <div className="border-t border-gray-100 my-4"></div>

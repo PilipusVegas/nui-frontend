@@ -5,7 +5,7 @@ import { getDefaultPeriod } from "../../utils/getDefaultPeriod";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { formatFullDate, formatTime } from "../../utils/dateUtils";
-import { faClock, faInfo, faUserCheck, faDownload, faBusinessTime, faUserTimes, faExclamationCircle, faLocationDot, faMoneyBillWave, faInfoCircle, faCalendarDays, faCircleExclamation, faChartColumn, faClipboardList, } from "@fortawesome/free-solid-svg-icons";
+import { faClock, faInfo, faUserCheck, faDownload, faBusinessTime, faUserTimes, faExclamationCircle, faInfoCircle, faCalendarDays, faCircleExclamation, faChartColumn, faClipboardList, } from "@fortawesome/free-solid-svg-icons";
 import { LoadingSpinner, SectionHeader, EmptyState, ErrorState, Modal } from "../../components";
 import { exportExcelDetail } from "./exportExcelDetail";
 
@@ -176,18 +176,6 @@ const DetailKelolaPresensi = () => {
                     </p>
                   </div>
                 </div>
-
-                {/* <div className="flex items-center gap-3 p-4 rounded-xl border border-red-100 ">
-                  <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-white text-red-500 shadow-inner">
-                    <FontAwesomeIcon icon={faMoneyBillWave} />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600">Total Potongan</p>
-                    <p className="text-base font-bold text-red-600">
-                      - Rp {dataUser?.total_nominal_cut?.toLocaleString("id-ID") ?? 0}
-                    </p>
-                  </div>
-                </div> */}
               </div>
             </div>
           </div>
@@ -202,7 +190,6 @@ const DetailKelolaPresensi = () => {
                 <th className="px-2 py-2 border-t border-b">Terlambat</th>
                 <th className="px-2 py-2 border-t border-b">Pulang</th>
                 <th className="px-2 py-2 border-t border-b">Total Lembur</th>
-                {/* <th className="px-2 py-2 border-t border-b">Potongan</th> */}
                 <th className="px-2 py-2 border-t border-b rounded-tr-xl">Remark</th>
               </tr>
             </thead>
@@ -255,11 +242,6 @@ const DetailKelolaPresensi = () => {
                         "-"
                       )}
                     </td>
-                    {/* <td className="px-4 py-2">
-                      {rec?.nominal_cut && rec.nominal_cut !== 0
-                        ? `- Rp ${rec.nominal_cut.toLocaleString("id-ID")}`
-                        : "-"}
-                    </td> */}
                     <td className="px-4 py-2">
                       {rec?.remark ? (
                         <div className="flex justify-center">

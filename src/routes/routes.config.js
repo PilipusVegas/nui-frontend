@@ -14,6 +14,7 @@ import EditProfile from "../pages/user-profile/edit";
 
 /* ===================== ABSENSI / LEMBUR / CUTI ===================== */
 import Absen from "../pages/absensi";
+import AbsensiTim from "../pages/absensi-tim";
 import Lembur from "../pages/lembur";
 import Cuti from "../pages/cuti";
 import PermohonanCuti from "../pages/cuti/formCuti";
@@ -125,6 +126,7 @@ export const routes = [
 
   /* ===== ABSENSI / LEMBUR / CUTI ===== */
   { path: "/absensi", element: <Absen />, roles: [] },
+  { path: "/absensi-tim", element: <AbsensiTim />, roles: [] },
   { path: "/lembur", element: <Lembur />, roles: [] },
   { path: "/cuti", element: <Cuti />, roles: [] },
   { path: "/formulir-cuti", element: <PermohonanCuti />, roles: [] },

@@ -106,6 +106,7 @@ const KadivMember = () => {
                         <table className="min-w-full text-sm text-gray-700">
                             <thead className="bg-green-500 text-white shadow-sm">
                                 <tr>
+                                    <th className="py-2 px-4 text-center font-semibold">No.</th>
                                     <th className="py-2 px-4 text-center font-semibold">NIP</th>
                                     <th className="py-2 px-4 text-left font-semibold">Kepala Divisi</th>
                                     <th className="py-2 px-4 text-center font-semibold">Perusahaan</th>
@@ -114,19 +115,17 @@ const KadivMember = () => {
                             </thead>
 
                             <tbody className="divide-y divide-gray-100">
-                                {filteredList.map((kadiv) => (
+                                {filteredList.map((kadiv, index) => (
                                     <tr key={kadiv.id} className="hover:bg-green-50/60 transition">
+                                        <td className="py-2 px-4 text-center">
+                                            {index + 1}
+                                        </td>
                                         <td className="py-2 px-4 text-center font-medium">
                                             {kadiv.nip}
                                         </td>
 
                                         <td className="py-2 px-4">
-                                            <div className="flex flex-col">
-                                                <span className="font-semibold">{kadiv.nama}</span>
-                                                <span className="text-xs text-gray-500">
-                                                    ID Kadiv : {kadiv.id_user}
-                                                </span>
-                                            </div>
+                                            <span className="font-semibold">{kadiv.nama}</span>
                                         </td>
 
                                         <td className="py-2 px-4 text-center">

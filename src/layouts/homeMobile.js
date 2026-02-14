@@ -17,7 +17,6 @@ const HomeMobile = () => {
   const allowedKunjunganRoles = [22, 48];
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const [attendanceData, setAttendanceData] = useState([]);
-  const [hasNewNotifications, setHasNewNotifications] = useState(false);
 
   useEffect(() => {
     const user = getUserFromToken();
@@ -150,14 +149,6 @@ const HomeMobile = () => {
   }, [user?.id_user]);
 
 
-
-
-
-  const handleNotificationClick = () => {
-    navigate("/notification");
-    setHasNewNotifications(false);
-  };
-
   const MainMenuButton = ({ icon, image, label, onClick, color, hasNotification }) => (
     <div className="flex flex-col items-center justify-center mb-2">
       <div onClick={onClick} className="relative cursor-pointer transition-transform duration-300 hover:scale-105 active:scale-95">
@@ -180,13 +171,11 @@ const HomeMobile = () => {
           </>
         )}
       </div>
-      <span className="mt-1 text-xs font-medium text-gray-700 select-none">
+      <span className="mt-1 text-[11px] font-medium text-gray-700 select-none tracking-wide">
         {label}
       </span>
     </div>
   );
-
-
 
   const confirmLogout = () => {
     Swal.fire({
@@ -203,7 +192,6 @@ const HomeMobile = () => {
       }
     });
   };
-
 
   return (
     <div className="flex flex-col font-sans bg-gray-50 min-h-screen pb-40">
@@ -285,6 +273,7 @@ const HomeMobile = () => {
       </div>
       <div className="grid grid-cols-4 gap-2 px-3">
         <MainMenuButton icon={faCalendarCheck} label="Absensi" onClick={() => navigate("/absensi")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-emerald-600 hover:scale-105 transition" />
+        <MainMenuButton icon={faPeopleGroup} label="Absensi Tim" onClick={() => navigate("/absensi-tim")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-orange-600 hover:scale-105 transition" />
         <MainMenuButton icon={faClockFour} label="Lembur" onClick={() => navigate("/lembur")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-teal-600 hover:scale-105 transition" />
         <MainMenuButton icon={faPenFancy} label="Dinas" onClick={() => navigate("/formulir-dinas-aplikasi")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-blue-600 hover:scale-105 transition" />
         <MainMenuButton icon={faTasks} label="Tugas" onClick={() => navigate("/tugas")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-lime-600 hover:scale-105 transition" />
@@ -292,8 +281,7 @@ const HomeMobile = () => {
           <MainMenuButton icon={faMotorcycle} label="Kunjungan" onClick={() => navigate("/kunjungan")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-indigo-600 hover:scale-105 transition" />
         )} */}
 
-        {/* <MainMenuButton icon={faBell} label="Notifikasi" onClick={handleNotificationClick} hasNotification={hasNewNotifications} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-amber-600 hover:scale-105 transition" /> */}
-        <MainMenuButton icon={faHistory} label="Riwayat" onClick={() => navigate("/riwayat-pengguna")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-indigo-600 hover:scale-105 transition" />
+        {/* <MainMenuButton icon={faHistory} label="Riwayat" onClick={() => navigate("/riwayat-pengguna")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-indigo-600 hover:scale-105 transition" /> */}
         <MainMenuButton image="/NOS.png" label="NOS" onClick={() => window.open("https://nos.nicourbanindonesia.com/mypanel/maintenance", "_blank")} color="rounded-xl bg-gradient-to-br from-green-50 to-green-200 hover:scale-105 transition" />
         {/* <MainMenuButton icon={faClipboardList} label="Cuti" onClick={() => navigate("/cuti")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-indigo-600 hover:scale-105 transition" /> */}
         {/* <MainMenuButton icon={faThList} label="Lainnya" onClick={() => navigate("/menu")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-teal-600 hover:scale-105 transition" /> */}
