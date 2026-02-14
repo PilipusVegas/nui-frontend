@@ -79,18 +79,11 @@ const DataLokasi = () => {
   return (
     <div className="flex flex-col bg-white">
 
-      <SectionHeader
-        title="Kelola Lokasi Presensi"
-        subtitle={`Kelola ${lokasiData.length} lokasi presensi karyawan lapangan.`}
-        onBack={() => navigate("/home")}
-        actions={
-          <button
-            onClick={() => navigate("/lokasi-presensi/tambah")}
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"
-          >
+      <SectionHeader title="Data Lokasi" subtitle={`Daftar seluruh lokasi yang terdaftar dalam sistem sebanyak ${filteredLokasiData.length} lokasi`} onBack={() => navigate("/home")}
+        actions={ 
+          <button onClick={() => navigate("/data-lokasi/tambah")} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg transition-all duration-200 hover:scale-105 active:scale-95">
             <FontAwesomeIcon icon={faPlus} />
-            <span className="inline sm:hidden">Tambah</span>
-            <span className="hidden sm:inline">Tambah Lokasi</span>
+            <span>Tambah</span>
           </button>
         }
       />
@@ -122,10 +115,7 @@ const DataLokasi = () => {
           <tbody>
             {filteredLokasiData.length > 0 ? (
               currentItemsDesktop.map((lokasi, index) => (
-                <tr
-                  key={lokasi.id}
-                  className="hover:bg-gray-200 transition-colors duration-150"
-                >
+                <tr key={lokasi.id} className="hover:bg-gray-200 transition-colors duration-150">
                   <td className="px-4 py-1 border-b text-xs text-center">
                     {(currentPageDesktop - 1) * itemsPerPageDesktop + index + 1}
                   </td>
@@ -137,7 +127,7 @@ const DataLokasi = () => {
                     {lokasi.timezone}
                   </td>
                   <td className="px-4 py-1 border-b text-xs text-center">
-                    <button onClick={() => navigate(`/lokasi-presensi/edit/${lokasi.id}`)} className="flex items-center space-x-1 text-xs bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">
+                    <button onClick={() => navigate(`/data-lokasi/edit/${lokasi.id}`)} className="flex items-center space-x-1 text-xs bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">
                       <FontAwesomeIcon icon={faEdit} />
                       <span>Edit</span>
                     </button>
@@ -158,10 +148,7 @@ const DataLokasi = () => {
       {/* MOBILE CARD */}
       <div className="md:hidden">
         {currentItemsMobile.map((lokasi) => (
-          <div
-            key={lokasi.id}
-            className="bg-white border border-gray-200 rounded-xl shadow-sm mb-3 overflow-hidden"
-          >
+          <div key={lokasi.id} className="bg-white border border-gray-200 rounded-xl shadow-sm mb-3 overflow-hidden">
             <div className="p-4 space-y-2">
               <h3 className="text-sm font-semibold text-gray-800 truncate">
                 {lokasi.nama}
@@ -176,18 +163,12 @@ const DataLokasi = () => {
             <hr className="border-gray-200" />
 
             <div className="flex divide-x divide-gray-200">
-              <div
-                onClick={() => handleDelete(lokasi.id)}
-                className="w-1/2 flex items-center justify-center gap-2 py-2 text-red-500 hover:bg-red-50 text-sm font-medium cursor-pointer transition"
-              >
+              <div onClick={() => handleDelete(lokasi.id)} className="w-1/2 flex items-center justify-center gap-2 py-2 text-red-500 hover:bg-red-50 text-sm font-medium cursor-pointer transition">
                 <FontAwesomeIcon icon={faTrash} />
                 <span>Hapus</span>
               </div>
 
-              <div
-                onClick={() => navigate(`/lokasi-presensi/edit/${lokasi.id}`)}
-                className="w-1/2 flex items-center justify-center gap-2 py-2 text-yellow-600 hover:bg-yellow-50 text-sm font-medium cursor-pointer transition"
-              >
+              <div onClick={() => navigate(`/data-lokasi/edit/${lokasi.id}`)} className="w-1/2 flex items-center justify-center gap-2 py-2 text-yellow-600 hover:bg-yellow-50 text-sm font-medium cursor-pointer transition">
                 <FontAwesomeIcon icon={faEdit} />
                 <span>Edit</span>
               </div>

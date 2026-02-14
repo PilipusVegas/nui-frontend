@@ -4,15 +4,7 @@ import { faEdit, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { fetchWithJwt } from "../../utils/jwtHelper";
-import { 
-  Modal, 
-  SectionHeader, 
-  MobileDataCard, 
-  EmptyState, 
-  ErrorState, 
-  LoadingSpinner,
-  DataView
-} from "../../components";
+import { Modal, SectionHeader, MobileDataCard, EmptyState, ErrorState, LoadingSpinner, DataView} from "../../components";
 
 const PerangkatAbsensi = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -160,15 +152,9 @@ const PerangkatAbsensi = () => {
 
   return (
     <div className="w-full mx-auto">
-      <SectionHeader
-        title="Perangkat Absensi"
-        subtitle="Data Perangkat Absensi Face Recognition."
-        onBack={() => navigate(-1)}
+      <SectionHeader title="Perangkat Absensi" subtitle="Data perangkat yang digunakan untuk absensi berbasis Face Recognition." onBack={() => navigate(-1)}
         actions={
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition"
-          >
+          <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition">
             <FontAwesomeIcon icon={faPlus} />
             <span className="hidden sm:inline">Tambah</span>
           </button>
@@ -178,11 +164,7 @@ const PerangkatAbsensi = () => {
       {loading && <LoadingSpinner />}
 
       {!loading && error && (
-        <ErrorState
-          message="Gagal Memuat Data"
-          detail="Terjadi kesalahan saat mengambil data perangkat absensi."
-          onRetry={fetchMenu}
-        />
+        <ErrorState message="Gagal Memuat Data" detail="Terjadi kesalahan saat mengambil data perangkat absensi." onRetry={fetchMenu}/>
       )}
 
       {!loading && !error && menu.length === 0 && (

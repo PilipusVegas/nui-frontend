@@ -65,7 +65,7 @@ const TambahLokasi = () => {
       iconColor: "#F87171",
     });
     if (confirm.isConfirmed) {
-      navigate("/lokasi-presensi");
+      navigate("/data-lokasi");
     }
   };
 
@@ -104,7 +104,7 @@ const TambahLokasi = () => {
         text: "Lokasi berhasil ditambahkan.",
         icon: "success",
         confirmButtonText: "OK",
-      }).then(() => navigate("/lokasi-presensi"));
+      }).then(() => navigate("/data-lokasi"));
     } catch (err) {
       Swal.fire("Gagal", err.message || "Terjadi kesalahan saat menambah lokasi.", "error");
     }

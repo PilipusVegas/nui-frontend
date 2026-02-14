@@ -347,9 +347,9 @@ export const menuConfig = [
         sectionTitle: "Pengaturan Sistem",
         items: [
             {
-                label: "Lokasi Absensi",
+                label: "Data Lokasi",
                 icon: faMapMarkerAlt,
-                path: "/lokasi-presensi",
+                path: "/data-lokasi",
                 roles: [1],
             },
             {

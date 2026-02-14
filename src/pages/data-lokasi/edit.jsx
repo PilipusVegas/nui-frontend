@@ -94,7 +94,7 @@ const EditLokasi = () => {
       cancelButtonText: "Kembali",
       iconColor: "#F87171",
     });
-    if (confirm.isConfirmed) navigate("/lokasi-presensi");
+    if (confirm.isConfirmed) navigate("/data-lokasi");
   };
 
   // === SUBMIT ===
@@ -126,7 +126,7 @@ const EditLokasi = () => {
         text: "Data lokasi berhasil diperbarui.",
         icon: "success",
         confirmButtonText: "OK",
-      }).then(() => navigate("/lokasi-presensi"));
+      }).then(() => navigate("/data-lokasi"));
 
     } catch (err) {
       Swal.fire("Gagal", err.message || "Terjadi kesalahan saat menyimpan.", "error");

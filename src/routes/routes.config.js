@@ -47,9 +47,9 @@ import PengajuanLembur from "../pages/pengajuan/lembur";
 import RiwayatLembur from "../pages/pengajuan/lembur/riwayat";
 
 /* ===================== MASTER DATA ===================== */
-import LokasiPresensi from "../pages/lokasi";
-import TambahLokasi from "../pages/lokasi/tambah";
-import EditLokasi from "../pages/lokasi/edit";
+import DataLokasi from "../pages/data-lokasi";
+import TambahLokasi from "../pages/data-lokasi/tambah";
+import EditLokasi from "../pages/data-lokasi/edit";
 import Divisi from "../pages/divisi";
 import Shift from "../pages/shift";
 import TambahShift from "../pages/shift/tambah";
@@ -77,7 +77,7 @@ import KelolaAbsensi from "../pages/kelola-absensi";
 import DetailKelolaAbsensi from "../pages/kelola-absensi/show";
 import RemarkAbsensi from "../pages/remark-absensi";
 import ManajemenMenu from "../pages/menu-management";
-import PerangkatAbsensi from "../pages/perangkat-absensi";
+import PerangkatAbsensi from "../pages/data-perangkat-absensi";
 import HrdAccess from "../pages/hrd-akses";
 import TambahHrdAccess from "../pages/hrd-akses/tambah";
 import EditHrdAccess from "../pages/hrd-akses/edit";
@@ -160,9 +160,9 @@ export const routes = [
   { path: "/pengajuan-dinas/:id", element: <DetailPengajuanDinas />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
   { path: "/riwayat-surat-dinas", element: <RiwayatSuratDinas />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
 
-  { path: "/lokasi-presensi", element: <LokasiPresensi />, roles: ["1", "5"], layout: SidebarLayout },
-  { path: "/lokasi-presensi/tambah", element: <TambahLokasi />, roles: ["1", "5"], layout: SidebarLayout },
-  { path: "/lokasi-presensi/edit/:id", element: <EditLokasi />, roles: ["1", "5"], layout: SidebarLayout },
+  { path: "/data-lokasi", element: <DataLokasi />, roles: ["1", "5"], layout: SidebarLayout },
+  { path: "/data-lokasi/tambah", element: <TambahLokasi />, roles: ["1", "5"], layout: SidebarLayout },
+  { path: "/data-lokasi/edit/:id", element: <EditLokasi />, roles: ["1", "5"], layout: SidebarLayout },
 
   { path: "/kelola-absensi", element: <KelolaAbsensi />, roles: ["1", "4", "6"] },
   { path: "/kelola-absensi/:id", element: <DetailKelolaAbsensi />, roles: ["1", "4", "6"], layout: SidebarLayout },
