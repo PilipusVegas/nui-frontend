@@ -214,8 +214,28 @@ export const menuConfig = [
 
     // PENGAJUAN & PERSETUJUAN (HRD / ATASAN)
     {
-        sectionTitle: "Pengajuan & Riwayat",
+        sectionTitle: "Permohonan & Riwayat",
         items: [
+            {
+                label: "Absensi Tim",
+                icon: faUserGroup,
+                roles: [1, 4, 5, 6, 20],
+                perusahaan: [1, 4],
+                submenu: [
+                    {
+                        label: "Permohonan Absensi Tim",
+                        icon: faPenFancy,
+                        path: "/permohonan-absensi-tim",
+                        roles: [1, 4, 5, 6, 20],
+                    },
+                    {
+                        label: "Riwayat Lembur",
+                        icon: faHistory,
+                        path: "/riwayat-lembur",
+                        roles: [1, 4, 5, 6, 20],
+                    },
+                ],
+            },
             {
                 label: "Lembur",
                 icon: faBusinessTime,

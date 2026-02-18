@@ -103,6 +103,7 @@ import PengajuanKunjungan from "../pages/pengajuan/kunjungan";
 import RiwayatKunjungan from "../pages/pengajuan/kunjungan/riwayat";
 import DetailKunjungan from "../pages/pengajuan/kunjungan/show";
 import Kunjungan from "../pages/kunjungan";
+import PermohonanAbsensiTim from "../pages/permohonan-absensi-tim";
 
 /* ===================== ROUTES CONFIG ===================== */
 export const routes = [
@@ -153,6 +154,8 @@ export const routes = [
   { path: "/riwayat-persetujuan-absensi", element: <RiwayatPersetujuanAbsensi />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
   { path: "/riwayat-persetujuan-absensi/:id_user", element: <RiwayatPersetujuanAbsensiDetail />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
 
+  { path: "/permohonan-absensi-tim", element: <PermohonanAbsensiTim />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+
   { path: "/pengajuan-lembur", element: <PengajuanLembur />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
   { path: "/riwayat-lembur", element: <RiwayatLembur />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
 
@@ -168,7 +171,6 @@ export const routes = [
   { path: "/kelola-absensi/:id", element: <DetailKelolaAbsensi />, roles: ["1", "4", "6"], layout: SidebarLayout },
   { path: "/remark-absensi", element: <RemarkAbsensi />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
   
-
   { path: "/karyawan", element: <DataKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
   { path: "/karyawan/tambah", element: <TambahKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
   { path: "/karyawan/edit/:id", element: <EditKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
