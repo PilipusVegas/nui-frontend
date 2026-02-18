@@ -254,7 +254,7 @@ const AbsensiTidakValid = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await fetchWithJwt(`${apiUrl}/absen/status/batch`);
+            const response = await fetchWithJwt(`${apiUrl}/absen/pending?kategori=1`);
             const res = await response.json();
             if (res.success) {
                 setData(res.data);

@@ -90,6 +90,13 @@ export const menuConfig = [
                         roles: [1, 5, 20],
                         perusahaan: [1, 4],
                     },
+                    {
+                        label: "Kelola Tim Kerja",
+                        icon: faUserGroup,
+                        path: "/kelola-tim-kerja",
+                        roles: [1, 5, 20],
+                        perusahaan: [1, 4],
+                    },
                 ]
             },
             {
@@ -113,7 +120,6 @@ export const menuConfig = [
             },
         ],
     },
-
     {
         sectionTitle: "Kelola Shift & Jam Kerja",
         items: [

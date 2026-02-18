@@ -62,23 +62,19 @@ export default function AbsenTim() {
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const navigate = useNavigate();
     const webcamRef = useRef(null);
-
     const [user, setUser] = useState(null);
     const [jadwal, setJadwal] = useState(null);
     const [lokasiList, setLokasiList] = useState([]);
     const [members, setMembers] = useState([]);
-
     const [selectedLokasi, setSelectedLokasi] = useState(null);
     const [foto, setFoto] = useState(null);
     const [deskripsi, setDeskripsi] = useState("");
     const [checkedUsers, setCheckedUsers] = useState({});
     const [loading, setLoading] = useState(false);
-
     const [cameraReady, setCameraReady] = useState(false);
     const [fotoPreview, setFotoPreview] = useState(null);
     const [userPos, setUserPos] = useState(null);
     const [isWithinRadius, setIsWithinRadius] = useState(false);
-    const [distanceMeter, setDistanceMeter] = useState(null);
 
     /* ================= INIT ================= */
     useEffect(() => {
@@ -176,12 +172,9 @@ export default function AbsenTim() {
             .then((blob) => {
                 const file = new File([blob], "absen-tim.jpg", { type: "image/jpeg" });
                 const previewUrl = URL.createObjectURL(file);
-
                 setFoto(file);
                 setFotoPreview(previewUrl);
                 setCameraReady(false);
-
-                // 🔴 INI PENTING
                 stopCamera();
             });
     };
@@ -424,41 +417,56 @@ export default function AbsenTim() {
                         />
                     </div>
 
-                    {/* ANGGOTA TIM (SCROLLABLE) */}
+                    {/* ANGGOTA TIM */}
                     <div>
                         <div className="text-sm font-medium mb-2">
                             Anggota Tim Anda
                         </div>
 
-                        <div className="max-h-64 overflow-y-auto space-y-2">
-                            {members.map((m) => {
-                                const isDisabled = !!m.absen?.jam_selesai;
-                                return (
-                                    <label key={m.id_user}
-                                        className={`flex items-center gap-3 p-2 rounded-lg border text-sm cursor-pointer
-                                        ${isDisabled ? "bg-gray-100 text-gray-400" : ""}`}
-                                        onClick={() => {
-                                            if (isDisabled) {
-                                                toast.error(
-                                                    "Absensi karyawan ini sudah lengkap. Absensi berikutnya dapat dilakukan setelah 24 jam."
-                                                );
-                                            }
-                                        }}
-                                    >
-                                        <input type="checkbox" checked={!!checkedUsers[m.id_user]} disabled={isDisabled}
-                                            onChange={(e) =>
-                                                setCheckedUsers((p) => ({
-                                                    ...p,
-                                                    [m.id_user]: e.target.checked,
-                                                }))
-                                            }
-                                        />
-                                        <span className="leading-tight">{m.nama}</span>
-                                    </label>
-                                );
-                            })}
-                        </div>
+                        {members.length === 0 ? (
+                            <div className="border border-yellow-300 bg-yellow-50 text-yellow-800 rounded-lg p-4 text-sm leading-relaxed">
+                                <p className="font-semibold mb-1">
+                                    Anggota Tim Belum Tersedia
+                                </p>
+                                <p>
+                                    Saat ini belum ada anggota tim yang terdaftar untuk Anda.
+                                    Silakan menghubungi <strong>Kepala Divisi</strong> atau
+                                    <strong> Admin Perusahaan</strong> untuk menambahkan anggota tim
+                                    sebelum melakukan <strong>Absensi Tim</strong>.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="max-h-64 overflow-y-auto space-y-2">
+                                {members.map((m) => {
+                                    const isDisabled = !!m.absen?.jam_selesai;
+
+                                    return (
+                                        <label key={m.id_user} className={`flex items-center gap-3 p-2 rounded-lg border text-sm cursor-pointer
+                                            ${isDisabled ? "bg-gray-100 text-gray-400" : ""}`}
+                                            onClick={() => {
+                                                if (isDisabled) {
+                                                    toast.error(
+                                                        "Absensi karyawan ini sudah lengkap. Absensi berikutnya dapat dilakukan setelah 24 jam."
+                                                    );
+                                                }
+                                            }}
+                                        >
+                                            <input type="checkbox" checked={!!checkedUsers[m.id_user]} disabled={isDisabled}
+                                                onChange={(e) =>
+                                                    setCheckedUsers((p) => ({
+                                                        ...p,
+                                                        [m.id_user]: e.target.checked,
+                                                    }))
+                                                }
+                                            />
+                                            <span className="leading-tight">{m.nama}</span>
+                                        </label>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
+
                     <div>
                         <label className="text-sm font-medium">Alasan Kendala</label>
                         <textarea rows={3} className="w-full border rounded-lg px-3 py-2 text-sm" value={deskripsi} onChange={(e) => setDeskripsi(e.target.value)} placeholder="Contoh: Absensi pagi tim lapangan" />

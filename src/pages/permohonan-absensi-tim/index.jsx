@@ -1,35 +1,33 @@
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faInfoCircle, faTimes } from "@fortawesome/free-solid-svg-icons";
+import Lightbox from "yet-another-react-lightbox";
 import { fetchWithJwt } from "../../utils/jwtHelper";
-import { formatFullDate } from "../../utils/dateUtils";
-import {
-    SectionHeader,
-    Modal,
-    LoadingSpinner,
-    ErrorState,
-    EmptyState,
-    SearchBar,
-    Pagination,
-} from "../../components";
+import { formatFullDate, formatTime } from "../../utils/dateUtils";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faInfoCircle, faCalendarDay, faClock, } from "@fortawesome/free-solid-svg-icons";
+import { SectionHeader, Modal, LoadingSpinner, ErrorState, EmptyState, SearchBar, Pagination, } from "../../components";
+
 
 const PermohonanAbsensiTim = () => {
     const navigate = useNavigate();
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
-    const itemsPerPage = 10;
-
+    const itemsPerPage = 5;
     const [isLoading, setIsLoading] = useState(true);
     const [errorMessage, setErrorMessage] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState("");
     const [approvalData, setApprovalData] = useState([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
-    const [modalDescription, setModalDescription] = useState("");
+    const [lightboxOpen, setLightboxOpen] = useState(false);
+    const [lightboxSlides, setLightboxSlides] = useState([]);
 
-    /* ================= PAGINATION + SEARCH ================= */
+    const openLightbox = (slides) => {
+        setLightboxSlides(slides);
+        setLightboxOpen(true);
+    };
+
+    /* ===== PAGINATION + SEARCH ===== */
     const paginatedData = (() => {
         const filtered = approvalData.filter((a) =>
             a.nama_user.toLowerCase().includes(searchQuery.toLowerCase())
@@ -41,29 +39,25 @@ const PermohonanAbsensiTim = () => {
         };
     })();
 
-    /* ================= FETCH DATA ================= */
+    /* ===== FETCH DATA ===== */
     const fetchApprovalData = async () => {
         try {
             setIsLoading(true);
             setErrorMessage("");
 
-            const res = await fetchWithJwt(`${apiUrl}/absen/status/batch`);
+            const res = await fetchWithJwt(`${apiUrl}/absen/pending?kategori=3`);
             if (res.status === 404) {
                 setApprovalData([]);
                 return;
             }
-            if (!res.ok) {
-                throw new Error("Gagal mengambil data permohonan absensi.");
-            }
-
+            if (!res.ok) throw new Error("Gagal mengambil data permohonan absensi.");
             const result = await res.json();
-
             const flattened = Array.isArray(result.data)
                 ? result.data.flatMap((user) =>
                     (user.absen || [])
-                        .filter((absen) => absen.kategori === 3) // ✅ kategori 3
-                        .map((absen) => ({
-                            ...absen,
+                        .filter((a) => a.kategori === 3)
+                        .map((a) => ({
+                            ...a,
                             nama_user: user.nama,
                             nip: user.nip,
                             role: user.role,
@@ -87,12 +81,7 @@ const PermohonanAbsensiTim = () => {
         setCurrentPage(1);
     }, [searchQuery]);
 
-    /* ================= ACTIONS ================= */
-    const openModalWithDescription = (desc) => {
-        setModalDescription(desc);
-        setIsModalOpen(true);
-    };
-
+    /* ===== ACTION ===== */
     const handleUpdateStatus = async (item, status) => {
         try {
             const res = await fetchWithJwt(`${apiUrl}/absen/status/${item.id}`, {
@@ -100,15 +89,8 @@ const PermohonanAbsensiTim = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ status }),
             });
-
             if (!res.ok) throw new Error("Gagal memperbarui status absensi.");
-
-            toast.success(
-                status === 1
-                    ? "Permohonan absensi berhasil disetujui."
-                    : "Permohonan absensi ditolak."
-            );
-
+            toast.success(status === 1 ? "Permohonan absensi tim disetujui." : "Permohonan absensi tim ditolak.");
             fetchApprovalData();
         } catch (err) {
             toast.error(err.message);
@@ -118,7 +100,6 @@ const PermohonanAbsensiTim = () => {
     const handleApprove = (item) => handleUpdateStatus(item, 1);
     const handleReject = (item) => handleUpdateStatus(item, 2);
 
-    /* ================= RENDER ================= */
     return (
         <div className="flex flex-col">
             <SectionHeader title="Permohonan Absensi Tim" subtitle="Daftar permohonan validasi absensi anggota tim" onBack={() => navigate("/home")}
@@ -131,232 +112,184 @@ const PermohonanAbsensiTim = () => {
             />
 
             <div className="mb-4">
-                <SearchBar
-                    value={searchQuery}
-                    onSearch={setSearchQuery}
-                    placeholder="Cari Nama Karyawan..."
-                />
+                <SearchBar value={searchQuery} onSearch={setSearchQuery} placeholder="Cari Nama Karyawan..." />
             </div>
+            {isLoading && <LoadingSpinner />}
+            {!isLoading && errorMessage && (
+                <ErrorState message="Gagal Memuat Data" detail={errorMessage} onRetry={fetchApprovalData} />
+            )}
+            {!isLoading && !errorMessage && paginatedData.data.length === 0 && (
+                <EmptyState title="Tidak Ada Permohonan" description="Belum ada permohonan absensi Tim." />
+            )}
 
-            {/* ================= MOBILE CARD ================= */}
-            <div className="lg:hidden space-y-4">
-                {isLoading && <LoadingSpinner />}
 
-                {!isLoading && errorMessage && (
-                    <ErrorState
-                        message="Gagal Memuat Data"
-                        detail={errorMessage}
-                        onRetry={fetchApprovalData}
-                    />
-                )}
-
-                {!isLoading && !errorMessage && paginatedData.data.length === 0 && (
-                    <EmptyState
-                        title="Tidak Ada Permohonan"
-                        description="Belum ada permohonan absensi."
-                    />
-                )}
-
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 {!isLoading &&
                     !errorMessage &&
-                    paginatedData.data.map((a) => (
-                        <div key={a.id} className="bg-white border rounded-lg shadow-sm p-4 space-y-3">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <div className="font-semibold uppercase">
-                                        {a.nama_user}
+                    paginatedData.data.map((a) => {
+                        const fotoMulai = a.foto_mulai ? `${apiUrl}/uploads/img/absen/${a.foto_mulai}`
+                            : null;
+                        const fotoSelesai = a.foto_selesai
+                            ? `${apiUrl}/uploads/img/absen/${a.foto_selesai}`
+                            : null;
+
+                        return (
+                            <div
+                                key={a.id}
+                                className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition p-5 flex flex-col gap-5"
+                            >
+                                {/* HEADER */}
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="space-y-0.5">
+                                        <h3 className="text-sm font-semibold text-gray-900">
+                                            {a.nama_user}
+                                        </h3>
+                                        <p className="text-xs text-gray-500">{a.role}</p>
                                     </div>
-                                    <div className="text-xs text-gray-500">
-                                        {a.role}
+
+                                    <span className="text-[11px] px-3 py-1 rounded-full bg-green-50 text-green-700 font-medium">
+                                        Absensi Tim
+                                    </span>
+                                </div>
+
+                                {/* SUBMITTER */}
+                                <div className="text-xs text-gray-600 bg-gray-50 rounded-md px-3 py-2">
+                                    Diajukan oleh{" "}
+                                    <span className="font-medium text-gray-800">
+                                        {a.created_by || "-"}
+                                    </span>
+                                </div>
+
+                                {/* INFO SHIFT */}
+                                <div className="space-y-2 text-sm text-gray-700">
+                                    <div className="flex items-center gap-2">
+                                        <FontAwesomeIcon
+                                            icon={faCalendarDay}
+                                            className="text-gray-400 text-sm"
+                                        />
+                                        <span>{formatFullDate(a.tanggal_absen)}</span>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <FontAwesomeIcon
+                                            icon={faClock}
+                                            className="text-gray-400 text-sm"
+                                        />
+                                        <span>
+                                            {a.nama_shift} ({a.shift_masuk} – {a.shift_pulang})
+                                        </span>
                                     </div>
                                 </div>
-                                <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
-                                    Kategori Khusus
-                                </span>
-                            </div>
 
-                            <div className="text-sm space-y-1">
-                                <div>
-                                    <span className="font-medium">Tanggal:</span>{" "}
-                                    {formatFullDate(a.tanggal_absen)}
-                                </div>
-                                <div>
-                                    <span className="font-medium">Shift:</span>{" "}
-                                    {a.nama_shift} ({a.shift_masuk} –{" "}
-                                    {a.shift_pulang})
-                                </div>
-                                <div>
-                                    <span className="font-medium">Lokasi:</span>{" "}
-                                    {a.tempat_mulai || "-"}
-                                </div>
-                            </div>
+                                {/* ABSENSI */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {/* MASUK */}
+                                    <div className="bg-gray-50 rounded-xl p-3 flex flex-col gap-2">
+                                        <p className="text-[11px] font-semibold text-gray-500 uppercase">
+                                            Absen Masuk
+                                        </p>
 
-                            <div className="flex gap-2 pt-2">
-                                <button onClick={() => openModalWithDescription(a.deskripsi)} className="flex-1 text-xs py-2 rounded bg-blue-500 text-white">
-                                    Detail
-                                </button>
-                                <button onClick={() => handleApprove(a)} className="flex-1 text-xs py-2 rounded bg-green-600 text-white">
-                                    <FontAwesomeIcon icon={faCheck} />
-                                </button>
-                                <button onClick={() => handleReject(a)} className="flex-1 text-xs py-2 rounded bg-red-600 text-white">
-                                    <FontAwesomeIcon icon={faTimes} />
-                                </button>
+                                        <div className="flex items-center gap-3">
+                                            {fotoMulai ? (
+                                                <button
+                                                    onClick={() =>
+                                                        openLightbox([{ src: fotoMulai, title: "Absen Masuk" }])
+                                                    }
+                                                    className="shrink-0"
+                                                >
+                                                    <img
+                                                        src={fotoMulai}
+                                                        alt="Absen Masuk"
+                                                        className="w-14 h-14 rounded-lg object-cover"
+                                                    />
+                                                </button>
+                                            ) : (
+                                                <div className="w-14 h-14 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] text-gray-400">
+                                                    No Photo
+                                                </div>
+                                            )}
+
+                                            <div className="flex flex-col leading-tight">
+                                                <span className="text-xs text-gray-500">Jam Masuk</span>
+                                                <span className="text-sm font-medium text-gray-900">
+                                                    {a.absen_masuk ? formatTime(a.absen_masuk) : "-"}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <p className="text-xs text-gray-600 truncate">
+                                            {a.tempat_mulai || "-"}
+                                        </p>
+                                    </div>
+
+                                    {/* PULANG */}
+                                    <div className="bg-gray-50 rounded-xl p-3 flex flex-col gap-2">
+                                        <p className="text-[11px] font-semibold text-gray-500 uppercase">
+                                            Absen Pulang
+                                        </p>
+
+                                        <div className="flex items-center gap-3">
+                                            {fotoSelesai ? (
+                                                <button
+                                                    onClick={() =>
+                                                        openLightbox([{ src: fotoSelesai, title: "Absen Pulang" }])
+                                                    }
+                                                    className="shrink-0"
+                                                >
+                                                    <img
+                                                        src={fotoSelesai}
+                                                        alt="Absen Pulang"
+                                                        className="w-14 h-14 rounded-lg object-cover"
+                                                    />
+                                                </button>
+                                            ) : (
+                                                <div className="w-14 h-14 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] text-gray-400">
+                                                    No Photo
+                                                </div>
+                                            )}
+
+                                            <div className="flex flex-col leading-tight">
+                                                <span className="text-xs text-gray-500">Jam Pulang</span>
+                                                <span className="text-sm font-medium text-gray-900">
+                                                    {a.absen_pulang ? formatTime(a.absen_pulang) : "-"}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <p className="text-xs text-gray-600 truncate">
+                                            {a.tempat_selesai || "-"}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* KENDALA */}
+                                <div className="text-sm text-gray-700">
+                                    <p className="text-xs text-gray-500 mb-1">Deskripsi Kendala</p>
+                                    <p className="leading-relaxed">{a.deskripsi || "-"}</p>
+                                </div>
+
+                                {/* ACTION */}
+                                <div className="grid grid-cols-2 gap-3 pt-2">
+                                    <button onClick={() => handleReject(a)} className="py-2 rounded-lg border border-gray-200 text-sm text-gray-700 hover:bg-gray-50 transition">
+                                        Tolak
+                                    </button>
+
+                                    <button onClick={() => handleApprove(a)} className="py-2 rounded-lg bg-green-600 text-sm text-white hover:bg-green-700 transition"  >
+                                        Setujui
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
             </div>
-
-            {/* ================= DESKTOP TABLE ================= */}
-            <div className="hidden lg:block">
-                <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
-                    <table className="min-w-full text-sm">
-                        <thead>
-                            <tr className="bg-green-600 text-white uppercase text-xs">
-                                <th className="py-3 px-4 text-center font-semibold">No</th>
-                                <th className="py-3 px-4 text-center font-semibold">Tanggal</th>
-                                <th className="py-3 px-4 text-left font-semibold">Karyawan</th>
-                                <th className="py-3 px-4 text-center font-semibold">Shift</th>
-                                <th className="py-3 px-4 text-left font-semibold">Lokasi</th>
-                                <th className="py-3 px-4 text-center font-semibold">Aksi</th>
-                            </tr>
-                        </thead>
-
-                        <tbody className="divide-y">
-                            {isLoading && (
-                                <tr>
-                                    <td colSpan={6} className="py-20">
-                                        <LoadingSpinner />
-                                    </td>
-                                </tr>
-                            )}
-
-                            {!isLoading && errorMessage && (
-                                <tr>
-                                    <td colSpan={6} className="py-20">
-                                        <ErrorState
-                                            message="Gagal Memuat Data"
-                                            detail={errorMessage}
-                                            onRetry={fetchApprovalData}
-                                        />
-                                    </td>
-                                </tr>
-                            )}
-
-                            {!isLoading && !errorMessage && paginatedData.data.length === 0 && (
-                                <tr>
-                                    <td colSpan={6} className="py-20">
-                                        <EmptyState
-                                            title="Tidak Ada Permohonan"
-                                            description="Belum ada permohonan absensi."
-                                        />
-                                    </td>
-                                </tr>
-                            )}
-
-                            {!isLoading &&
-                                !errorMessage &&
-                                paginatedData.data.map((a, i) => {
-                                    const idx =
-                                        (currentPage - 1) * itemsPerPage + i + 1;
-
-                                    return (
-                                        <tr key={a.id} className="hover:bg-gray-50">
-                                            {/* NO */}
-                                            <td className="text-center font-medium">
-                                                {idx}
-                                            </td>
-
-                                            {/* TANGGAL */}
-                                            <td className="text-center">
-                                                {formatFullDate(a.tanggal_absen)}
-                                            </td>
-
-                                            {/* KARYAWAN */}
-                                            <td>
-                                                <div className="font-semibold uppercase">
-                                                    {a.nama_user}
-                                                </div>
-                                                <div className="text-xs text-gray-500">
-                                                    {a.role}
-                                                </div>
-                                            </td>
-
-                                            {/* SHIFT */}
-                                            <td className="text-center">
-                                                <div className="font-medium">
-                                                    {a.nama_shift}
-                                                </div>
-                                                <div className="text-xs text-gray-500">
-                                                    {a.shift_masuk} – {a.shift_pulang}
-                                                </div>
-                                            </td>
-
-                                            {/* LOKASI */}
-                                            <td className="text-sm">
-                                                <div>{a.tempat_mulai || "-"}</div>
-                                                <div className="text-xs text-gray-500">
-                                                    Jarak: {a.jarak_mulai ?? "-"} m
-                                                </div>
-                                            </td>
-
-                                            {/* AKSI */}
-                                            <td>
-                                                <div className="flex justify-center gap-2">
-                                                    <button
-                                                        onClick={() =>
-                                                            openModalWithDescription(
-                                                                a.deskripsi
-                                                            )
-                                                        }
-                                                        className="px-3 py-1 text-xs rounded bg-blue-500 hover:bg-blue-600 text-white"
-                                                    >
-                                                        Detail
-                                                    </button>
-
-                                                    <button onClick={() => handleApprove(a)} className="px-3 py-1 text-xs rounded bg-green-600 hover:bg-green-700 text-white">
-                                                        <FontAwesomeIcon icon={faCheck} />
-                                                    </button>
-
-                                                    <button onClick={() => handleReject(a)} className="px-3 py-1 text-xs rounded bg-red-600 hover:bg-red-700 text-white">
-                                                        <FontAwesomeIcon icon={faTimes} />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
 
             {paginatedData.total > itemsPerPage && (
                 <Pagination currentPage={currentPage} totalItems={paginatedData.total} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} className="mt-6" />
             )}
 
-            {/* ================= MODALS ================= */}
-            <Modal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                title="Rincian Absensi"
-                note="Detail aktivitas absensi"
-            >
-                <p className="whitespace-pre-line text-gray-600">
-                    {modalDescription || "Tidak ada deskripsi."}
-                </p>
-            </Modal>
 
-            <Modal isOpen={isInfoModalOpen}
-                onClose={() => setIsInfoModalOpen(false)}
-                title="Informasi Permohonan Absensi"
-                note="Panduan Penggunaan"
-            >
-                <p className="text-sm text-gray-600">
-                    Halaman ini digunakan untuk memvalidasi absensi anggota tim,
-                    termasuk absensi dinas dan kepatuhan jam kerja.
-                </p>
-            </Modal>
+            {/* ===== LIGHTBOX ===== */}
+            <Lightbox open={lightboxOpen} close={() => setLightboxOpen(false)} slides={lightboxSlides} />
         </div>
     );
 };

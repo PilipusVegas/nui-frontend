@@ -51,9 +51,9 @@ import DataLokasi from "../pages/data-lokasi";
 import TambahLokasi from "../pages/data-lokasi/tambah";
 import EditLokasi from "../pages/data-lokasi/edit";
 import Divisi from "../pages/divisi";
-import Shift from "../pages/shift";
-import TambahShift from "../pages/shift/tambah";
-import EditShift from "../pages/shift/edit";
+import Shift from "../pages/data-shift";
+import TambahShift from "../pages/data-shift/tambah";
+import EditShift from "../pages/data-shift/edit";
 
 /* ===================== KARYAWAN ===================== */
 import DataKaryawan from "../pages/karyawan";

@@ -10,7 +10,6 @@ const JadwalShift = () => {
   const [shiftList, setShiftList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const navigate = useNavigate();
 
@@ -41,8 +40,8 @@ const JadwalShift = () => {
       showCancelButton: true,
       confirmButtonText: "Ya, Hapus",
       cancelButtonText: "Batal",
-      confirmButtonColor: "#dc2626", // merah (danger)
-      cancelButtonColor: "#6b7280",  // abu-abu
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
       reverseButtons: true,
     });
 
