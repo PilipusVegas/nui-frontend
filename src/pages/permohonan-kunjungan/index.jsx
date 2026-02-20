@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye } from "@fortawesome/free-solid-svg-icons";
-import { SectionHeader, LoadingSpinner, ErrorState, EmptyState, SearchBar} from "../../../components";
-import { fetchWithJwt } from "../../../utils/jwtHelper";
+import { SectionHeader, LoadingSpinner, ErrorState, EmptyState, SearchBar} from "../../components";
+import { fetchWithJwt } from "../../utils/jwtHelper";
 import toast from "react-hot-toast";
-import { formatFullDate } from "../../../utils/dateUtils";
+import { formatFullDate } from "../../utils/dateUtils";
 
 const Kunjungan = () => {
     const apiUrl = process.env.REACT_APP_API_BASE_URL;

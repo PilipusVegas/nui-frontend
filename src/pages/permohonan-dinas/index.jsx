@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faInfoCircle, faSpinner, faCircleInfo, faTimes, faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
 import toast from "react-hot-toast";
-import { fetchWithJwt } from "../../../utils/jwtHelper";
-import { formatFullDate } from "../../../utils/dateUtils";
-import { SectionHeader, LoadingSpinner, SearchBar, EmptyState, ErrorState, Pagination, Modal, } from "../../../components";
+import { fetchWithJwt } from "../../utils/jwtHelper";
+import { formatFullDate } from "../../utils/dateUtils";
+import { SectionHeader, LoadingSpinner, SearchBar, EmptyState, ErrorState, Pagination, Modal, } from "../../components";
 
 const SuratDinas = () => {
   const itemsPerPage = 10;
@@ -129,7 +129,7 @@ const SuratDinas = () => {
     setCurrentPage(1);
   }, [searchTerm, data]);
 
-  const handleDetail = (item) => navigate(`/pengajuan-dinas/${item.id}`);
+  const handleDetail = (item) => navigate(`/permohonan-dinas/${item.id}`);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;

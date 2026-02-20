@@ -1,11 +1,9 @@
-import { faReadme } from "@fortawesome/free-brands-svg-icons";
 import {
     faHome,
     faPeopleGroup,
     faUsersCog,
     faBuilding,
     faCalendarDays,
-    faUserEdit,
     faUserCheck,
     faCheckSquare,
     faMoneyBillWave,
@@ -22,16 +20,14 @@ import {
     faBriefcase,
     faClock,
     faFolderOpen,
-    faEdit,
     faUserGear,
     faGift,
     faCalendarCheck,
     faUserGroup,
     faPenFancy,
     faListAlt,
-    faMotorcycle,
     faTimesCircle,
-    faCalendarXmark
+    faHelmetSafety
 } from "@fortawesome/free-solid-svg-icons";
 
 export const menuConfig = [
@@ -53,76 +49,84 @@ export const menuConfig = [
         sectionTitle: "Manajemen SDM",
         items: [
             {
-                label: "Kelola Karyawan",
+                label: "Data Karyawan",
                 icon: faPeopleGroup,
                 roles: [1, 4, 5, 6, 20],
                 submenu: [
                     {
-                        label: "Kelola Data Karyawan",
+                        label: "Kelola Karyawan",
                         icon: faUserGroup,
                         path: "/karyawan",
                         roles: [1, 4, 6],
                     },
                     {
-                        label: "Kelola Tunjangan Karyawan",
+                        label: "Tunjangan Karyawan",
                         icon: faMoneyBillWave,
                         path: "/tunjangan-karyawan",
                         roles: [1, 4, 6],
                         perusahaan: [1, 4],
                     },
+                ],
+            },
+            {
+                label: "Struktur Organisasi",
+                icon: faUsersCog,
+                roles: [1, 4, 6],
+                submenu: [
                     {
-                        label: "Kelola Data Divisi",
+                        label: "Data Divisi",
                         icon: faUsersCog,
                         path: "/divisi",
                         roles: [1, 4, 6],
                     },
                     {
-                        label: "Kelola Kepala Divisi",
+                        label: "Data Kepala Divisi",
                         icon: faUserGroup,
                         path: "/kadiv-member",
                         roles: [1, 4, 6],
                         perusahaan: [1, 4],
                     },
+                ],
+            },
+            {
+                label: "Manajemen Tim",
+                icon: faUserGroup,
+                roles: [1, 5, 20],
+                submenu: [
                     {
-                        label: "Penjadwalan Karyawan",
+                        label: "Kelola Anggota Tim",
+                        icon: faUserGroup,
+                        path: "/kelola-anggota-tim",
+                        roles: [1, 5, 20],
+                        perusahaan: [1, 4],
+                    },
+                ],
+            },
+            {
+                label: "Penjadwalan Kerja",
+                icon: faCalendarCheck,
+                roles: [1, 5, 20],
+                submenu: [
+                    {
+                        label: "Jadwal Karyawan",
                         icon: faCalendarCheck,
                         path: "/penjadwalan",
                         roles: [1, 5, 20],
                         perusahaan: [1, 4],
                     },
-                    {
-                        label: "Kelola Tim Kerja",
-                        icon: faUserGroup,
-                        path: "/kelola-tim-kerja",
-                        roles: [1, 5, 20],
-                        perusahaan: [1, 4],
-                    },
-                ]
-            },
-            {
-                label: "Kelola Perusahaan",
-                icon: faBuilding,
-                roles: [1, 4, 6],
-                submenu: [
-                    {
-                        label: "Data Perusahaan",
-                        icon: faBuilding,
-                        path: "/perusahaan",
-                        roles: [1, 4, 6],
-                    },
-                    // {
-                    //     label: "Hari Libur",
-                    //     icon: faCalendarDays,
-                    //     path: "/manajemen-hari-libur",
-                    //     roles: [1],
-                    // },
                 ],
-            },
+            }
         ],
     },
     {
-        sectionTitle: "Kelola Shift & Jam Kerja",
+        sectionTitle: "Manajemen Perusahaan",
         items: [
+            {
+                label: "Data Perusahaan",
+                icon: faBuilding,
+                path: "/perusahaan",
+                roles: [1, 4, 6],
+            },
             {
                 label: "Data Shift",
                 icon: faClock,
@@ -140,17 +144,24 @@ export const menuConfig = [
 
     // ABSENSI
     {
-        sectionTitle: "Absensi",
+        sectionTitle: "Manajemen Absensi",
         items: [
             {
-                label: "Absensi",
+                label: "Formulir Absensi",
                 icon: faCalendarCheck,
                 path: "/absensi",
-                roles: [5, 20],
+                roles: [1, 5, 20],
             },
             {
-                label: "Manajemen Absensi",
-                icon: faUserEdit,
+                label: "Kelola Presensi Karyawan",
+                icon: faUserCheck,
+                path: "/kelola-absensi",
+                roles: [1, 4, 6],
+                target: "_blank",
+            },
+            {
+                label: "Absensi Lapangan",
+                icon: faHelmetSafety,
                 roles: [1, 4, 5, 6, 18, 20],
                 submenu: [
                     {
@@ -160,60 +171,40 @@ export const menuConfig = [
                         roles: [1, 4, 5, 6],
                         perusahaan: [1, 4],
                     },
-                    // {
-                    //     label: "Absensi WFH",
-                    //     icon: faTimesCircle,
-                    //     path: "/absensi-tidak-valid",
-                    //     roles: [1, 4, 5, 6, 18, 20],
-                    //     perusahaan: [1, 4],
-                    // },
                     {
-                        label: "Monitoring Absensi Lapangan",
+                        label: "Monitoring Absensi",
                         icon: faCheckSquare,
                         path: "/pengajuan-absensi",
                         roles: [1, 4, 5, 6, 18, 20],
                         perusahaan: [1, 4],
                     },
                     {
-                        label: "Kelola Presensi Karyawan",
-                        icon: faUserCheck,
-                        path: "/kelola-absensi",
-                        roles: [1, 4, 6],
-                        target: "_blank",
+                        label: "Riwayat Absensi",
+                        icon: faCalendarDays,
+                        path: "/riwayat-persetujuan-absensi",
+                        roles: [1, 4, 5, 6, 18, 20],
+                        perusahaan: [1, 4],
                     },
                 ],
-            },
-            {
-                label: "Riwayat Persetujuan Absensi",
-                icon: faCalendarDays,
-                path: "/riwayat-persetujuan-absensi",
-                roles: [1, 4, 5, 6, 18, 20],
-                perusahaan: [1, 4],
-            },
-            {
-                label: "Remark Absensi",
-                icon: faEdit,
-                path: "/remark-absensi",
-                roles: [1, 4, 5, 6, 18, 20],
-            },
+            }
+            // {
+            //     label: "Remark Absensi",
+            //     icon: faEdit,
+            //     path: "/remark-absensi",
+            //     roles: [1, 4, 5, 6, 18, 20],
+            // },
         ],
     },
 
     // PENGAJUAN (KARYAWAN)
     {
-        sectionTitle: "Pengajuan",
+        sectionTitle: "Menu Pengajuan",
         items: [
-            // {
-            //     label: "Pengajuan Lembur",
-            //     icon: faClock,
-            //     path: "/lembur",
-            //     roles: [5, 20],
-            // },
             {
-                label: "Pengajuan Dinas",
+                label: "Formulir Dinas",
                 icon: faPlaneDeparture,
                 path: "/formulir-dinas",
-                roles: [5, 20],
+                roles: [1, 5, 20],
             },
         ],
     },
@@ -234,12 +225,6 @@ export const menuConfig = [
                         path: "/permohonan-absensi-tim",
                         roles: [1, 4, 5, 6, 20],
                     },
-                    {
-                        label: "Riwayat Lembur",
-                        icon: faHistory,
-                        path: "/riwayat-lembur",
-                        roles: [1, 4, 5, 6, 20],
-                    },
                 ],
             },
             {
@@ -249,9 +234,9 @@ export const menuConfig = [
                 perusahaan: [1, 4],
                 submenu: [
                     {
-                        label: "Daftar Pengajuan Lembur",
+                        label: "Daftar permohonan Lembur",
                         icon: faPenFancy,
-                        path: "/pengajuan-lembur",
+                        path: "/permohonan-lembur",
                         roles: [1, 4, 5, 6, 20],
                     },
                     {
@@ -269,9 +254,9 @@ export const menuConfig = [
                 perusahaan: [1, 4],
                 submenu: [
                     {
-                        label: "Daftar Pengajuan Dinas",
+                        label: "Daftar permohonan Dinas",
                         icon: faFileSignature,
-                        path: "/pengajuan-dinas",
+                        path: "/permohonan-dinas",
                         roles: [1, 4, 5, 6, 20],
                     },
                     {
@@ -282,26 +267,6 @@ export const menuConfig = [
                     },
                 ],
             },
-            // {
-            //     label: "Kunjungan",
-            //     icon: faMotorcycle,
-            //     roles: [1, 4, 5, 6, 20],
-            //     perusahaan: [1, 4],
-            //     submenu: [
-            //         {
-            //             label: "Pengajuan Kunjungan",
-            //             icon: faMotorcycle,
-            //             path: "/pengajuan-kunjungan",
-            //             roles: [1, 4, 5, 6, 20],
-            //         },
-            //         {
-            //             label: "Riwayat Kunjungan",
-            //             icon: faHistory,
-            //             path: "/pengajuan/riwayat-kunjungan",
-            //             roles: [1, 4, 5, 6, 20],
-            //         },
-            //     ],
-            // },
         ],
     },
 
@@ -342,10 +307,10 @@ export const menuConfig = [
 
     // REMINDER
     {
-        sectionTitle: "NICO Reminder",
+        sectionTitle: "NICO Reminder & Riwayat",
         items: [
             {
-                label: "Reminder",
+                label: "NICO Reminder",
                 icon: faTasks,
                 roles: [1, 5, 20],
                 submenu: [

@@ -22,9 +22,9 @@ import PermohonanCuti from "../pages/cuti/formCuti";
 /* ===================== DINAS ===================== */
 import FormulirDinas from "../pages/dinas";
 import FormulirDinasAplikasi from "../pages/dinas/formDinasAplikasi";
-import PengajuanDinas from "../pages/pengajuan/surat-dinas";
-import DetailPengajuanDinas from "../pages/pengajuan/surat-dinas/show";
-import RiwayatSuratDinas from "../pages/pengajuan/surat-dinas/riwayat";
+import PermohonanDinas from "../pages/permohonan-dinas/";
+import DetailPermohonanDinas from "../pages/permohonan-dinas/show";
+import RiwayatPermohonanDinas from "../pages/permohonan-dinas/riwayat";
 
 /* ===================== TUGAS ===================== */
 import Tugas from "../pages/tugas";
@@ -43,14 +43,14 @@ import RiwayatPersetujuanAbsensi from "../pages/riwayat-persetujuan-absensi";
 import RiwayatPersetujuanAbsensiDetail from "../pages/riwayat-persetujuan-absensi/Show";
 
 /* ===================== LEMBUR ===================== */
-import PengajuanLembur from "../pages/pengajuan/lembur";
-import RiwayatLembur from "../pages/pengajuan/lembur/riwayat";
+import PermohonanLembur from "../pages/permohonan-lembur";
+import RiwayatPermohonanLembur from "../pages/permohonan-lembur/riwayat";
 
 /* ===================== MASTER DATA ===================== */
 import DataLokasi from "../pages/data-lokasi";
 import TambahLokasi from "../pages/data-lokasi/tambah";
 import EditLokasi from "../pages/data-lokasi/edit";
-import Divisi from "../pages/divisi";
+import Divisi from "../pages/data-divisi";
 import Shift from "../pages/data-shift";
 import TambahShift from "../pages/data-shift/tambah";
 import EditShift from "../pages/data-shift/edit";
@@ -99,9 +99,9 @@ import TambahPenjadwalanKaryawan from "../pages/penjadwalan-karyawan/tambah";
 import EditPenjadwalanKaryawan from "../pages/penjadwalan-karyawan/edit";
 import DetailPenjadwalanKaryawan from "../pages/penjadwalan-karyawan/show";
 import TambahPenjadwalan from "../pages/penjadwalan-karyawan/TambahJadwal";
-import PengajuanKunjungan from "../pages/pengajuan/kunjungan";
-import RiwayatKunjungan from "../pages/pengajuan/kunjungan/riwayat";
-import DetailKunjungan from "../pages/pengajuan/kunjungan/show";
+import PengajuanKunjungan from "../pages/permohonan-kunjungan";
+import RiwayatKunjungan from "../pages/permohonan-kunjungan/riwayat";
+import DetailKunjungan from "../pages/permohonan-kunjungan/show";
 import Kunjungan from "../pages/kunjungan";
 import PermohonanAbsensiTim from "../pages/permohonan-absensi-tim";
 
@@ -156,12 +156,12 @@ export const routes = [
 
   { path: "/permohonan-absensi-tim", element: <PermohonanAbsensiTim />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
 
-  { path: "/pengajuan-lembur", element: <PengajuanLembur />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-  { path: "/riwayat-lembur", element: <RiwayatLembur />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/permohonan-lembur", element: <PermohonanLembur />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/riwayat-lembur", element: <RiwayatPermohonanLembur />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
 
-  { path: "/pengajuan-dinas", element: <PengajuanDinas />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-  { path: "/pengajuan-dinas/:id", element: <DetailPengajuanDinas />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-  { path: "/riwayat-surat-dinas", element: <RiwayatSuratDinas />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/permohonan-dinas", element: <PermohonanDinas />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/permohonan-dinas/:id", element: <DetailPermohonanDinas />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/riwayat-surat-dinas", element: <RiwayatPermohonanDinas />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
 
   { path: "/data-lokasi", element: <DataLokasi />, roles: ["1", "5"], layout: SidebarLayout },
   { path: "/data-lokasi/tambah", element: <TambahLokasi />, roles: ["1", "5"], layout: SidebarLayout },

@@ -1,12 +1,12 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { fetchWithJwt } from "../../../utils/jwtHelper";
-import { getDefaultPeriod } from "../../../utils/getDefaultPeriod";
+import { fetchWithJwt } from "../../utils/jwtHelper";
+import { getDefaultPeriod } from "../../utils/getDefaultPeriod";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { SectionHeader, Modal, EmptyState, Pagination, SearchBar, LoadingSpinner, ErrorState } from "../../../components";
+import { SectionHeader, Modal, EmptyState, Pagination, SearchBar, LoadingSpinner, ErrorState } from "../../components";
 import { faInfoCircle, faTriangleExclamation, } from "@fortawesome/free-solid-svg-icons";
-import { formatFullDate } from "../../../utils/dateUtils";
+import { formatFullDate } from "../../utils/dateUtils";
 
 const RiwayatLembur = () => {
     const itemsPerPage = 10;

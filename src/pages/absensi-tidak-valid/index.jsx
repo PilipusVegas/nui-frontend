@@ -325,7 +325,7 @@ const AbsensiTidakValid = () => {
 
     return (
         <div className="min-h-screen flex flex-col relative">
-            <SectionHeader title="Absensi Tidak Valid" subtitle="Daftar absensi yang perlu diverifikasi dan disetujui untuk menjaga data kehadiran tetap akurat." onBack={() => navigate("/pengajuan-absensi")}
+            <SectionHeader title="Absensi Tidak Valid" subtitle="Data absensi tidak valid yang memerlukan proses verifikasi." onBack={() => navigate("/pengajuan-absensi")}
                 actions={
                     <button onClick={() => setIsInfoModalOpen(true)} className="flex items-center justify-center px-4 sm:px-4 py-2 text-sm font-semibold rounded-md text-white bg-blue-500 hover:bg-blue-600 gap-1">
                         <FontAwesomeIcon icon={faInfo} className="mr-0 sm:mr-1" />

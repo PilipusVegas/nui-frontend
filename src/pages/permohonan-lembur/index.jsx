@@ -3,11 +3,11 @@ import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import "sweetalert2/dist/sweetalert2.min.css";
 import { useNavigate } from "react-router-dom";
-import { formatFullDate } from "../../../utils/dateUtils";
+import { formatFullDate } from "../../utils/dateUtils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { fetchWithJwt } from "../../../utils/jwtHelper";
+import { fetchWithJwt } from "../../utils/jwtHelper";
 import { faCheck, faInfoCircle, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { SectionHeader, Modal, LoadingSpinner, ErrorState, EmptyState, SearchBar, Pagination } from "../../../components";
+import { SectionHeader, Modal, LoadingSpinner, ErrorState, EmptyState, SearchBar, Pagination } from "../../components";
 
 const PersetujuanLembur = () => {
   const itemsPerPage = 10;

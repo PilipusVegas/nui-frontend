@@ -19,7 +19,6 @@ const KadivMember = () => {
     const [selectedKadiv, setSelectedKadiv] = useState(null);
     const [formModalOpen, setFormModalOpen] = useState(false);
     const [editKadiv, setEditKadiv] = useState(null);
-    const [addMemberModalOpen, setAddMemberModalOpen] = useState(false);
 
     const toggleDetail = async (id) => {
         try {
@@ -80,7 +79,7 @@ const KadivMember = () => {
 
     return (
         <div className="w-full mx-auto animate-fadeIn">
-            <SectionHeader title="Kelola Kepala Divisi & Anggota Tim" subtitle="Kelola daftar kepala divisi beserta informasinya." onBack={() => navigate(-1)}
+            <SectionHeader title="Data Kepala Divisi" subtitle="Mengatur karyawan yang ditetapkan sebagai Kepala Divisi." onBack={() => navigate(-1)}
                 actions={
                     <div>
                         <button onClick={() => { setEditKadiv(null); setFormModalOpen(true); }} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 shadow-sm transition-all duration-200 font-semibold">

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { faCheck, faEye, faExclamationTriangle, faCalendarAlt, faCheckCircle, faSortDown, faSortUp, faCalendarXmark, faClockRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
-import { fetchWithJwt, getUserFromToken } from "../../../utils/jwtHelper";
+import { fetchWithJwt } from "../../../utils/jwtHelper";
 import SectionHeader from "../../../components/desktop/SectionHeader";
 import { LoadingSpinner, ErrorState, SearchBar, Pagination, EmptyState, SummaryCard } from "../../../components";
 
@@ -16,7 +16,6 @@ const DataAbsensi = () => {
   const [searchName, setSearchName] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOrder, setSortOrder] = useState("desc");
-  const user = getUserFromToken();
 
   const handleSortStatus = () => {
     setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
@@ -82,15 +81,14 @@ const DataAbsensi = () => {
           >
             <FontAwesomeIcon icon={faClockRotateLeft} />
             <span className="hidden sm:inline ml-2 text-sm font-semibold">
-              Riwayat Persetujuan
+              Riwayat Absensi Lapangan
             </span>
           </button>
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 mb-4">
+      <div className="mb-4">
         <SummaryCard icon={faCheckCircle} title="Total Karyawan Lapangan" value={absenData.length} />
-        <SummaryCard icon={faCalendarXmark} title="Data Absensi Tidak Valid" value={absenData.reduce((sum, d) => sum + Number(d.unapproved || 0), 0)} note={[1, 4].includes(user?.id_role) ? "Lihat semua Data" : undefined} onClick={[1, 4].includes(user?.id_role) ? () => navigate("/absensi-tidak-valid") : undefined} />
       </div>
 
       <SearchBar onSearch={(val) => { setSearchName(val); setCurrentPage(1); }} placeholder="Cari nama dan divisi..." className="mb-4" />

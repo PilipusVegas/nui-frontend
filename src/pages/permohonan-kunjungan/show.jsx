@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
-import { LoadingSpinner, ErrorState, EmptyState, SectionHeader, MapRouteMulti } from "../../../components";
-import { fetchWithJwt } from "../../../utils/jwtHelper";
-import { formatFullDate, formatTime } from "../../../utils/dateUtils";
+import { LoadingSpinner, ErrorState, EmptyState, SectionHeader, MapRouteMulti } from "../../components";
+import { fetchWithJwt } from "../../utils/jwtHelper";
+import { formatFullDate, formatTime } from "../../utils/dateUtils";
 import toast from "react-hot-toast";
 
 /* ================= KONSTANTA ================= */

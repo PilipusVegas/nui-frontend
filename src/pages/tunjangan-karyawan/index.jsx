@@ -128,7 +128,7 @@ const TunjanganKaryawan = () => {
 
     return (
         <div className="w-full animate-fadeIn">
-            <SectionHeader title="Tunjangan Karyawan" subtitle="Halaman untuk mengelola tunjangan karyawan" onBack={() => navigate(-1)}
+            <SectionHeader title="Tunjangan Karyawan" subtitle="Menentukan dan mengelola penerima tunjangan karyawan." onBack={() => navigate(-1)}
                 actions={
                     <div className="flex gap-2">
                         <button onClick={() => { setEditData(null); setFormOpen(true); }} className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg">

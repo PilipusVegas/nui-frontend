@@ -199,10 +199,10 @@ const DataKaryawan = () => {
   return (
     <div className="flex flex-col">
       <div className="flex-grow">
-        <SectionHeader title="Kelola Data Karyawan" subtitle="Halaman Untuk Menampilkan Data Karyawan." onBack={() => navigate("/home")} actions={
+        <SectionHeader title="Kelola Karyawan" subtitle="Mengatur data karyawan yang terdaftar dalam sistem." onBack={() => navigate("/home")} actions={
           <button onClick={() => navigate("/karyawan/tambah")} className="flex items-center justify-center px-3 py-2 sm:px-5 sm:py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg transition-all duration-200 ease-in-out active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
             <FontAwesomeIcon icon={faPlus} className="text-base sm:mr-2" />
-            <span className="hidden sm:inline">Tambah Karyawan</span>
+            <span className="hidden sm:inline">Tambah</span>
           </button>
         }
         />

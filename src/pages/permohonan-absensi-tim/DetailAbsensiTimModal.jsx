@@ -4,9 +4,9 @@ import { Modal } from "../../components";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSuitcaseRolling, faGasPump, faHotel} from "@fortawesome/free-solid-svg-icons";
+import { faUserTie, faLocationDot, faClock } from "@fortawesome/free-solid-svg-icons";
 
-const DetailAbsensiTimModal = ({ isOpen, onClose, data, onApprove, onReject}) => {
+const DetailAbsensiTimModal = ({ isOpen, onClose, data, onApprove, onReject }) => {
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxSlides, setLightboxSlides] = useState([]);
 
@@ -19,106 +19,178 @@ const DetailAbsensiTimModal = ({ isOpen, onClose, data, onApprove, onReject}) =>
 
     return (
         <>
-            <Modal isOpen={isOpen} onClose={onClose} title={`Detail Absensi Tim • ${data.nama}`} size="lg">
+            <Modal isOpen={isOpen} onClose={onClose} title={`Detail Absensi Tim • ${data.nama}`} note="Detail permohonan absensi tim yang diajukan oleh team leader" size="lg">
                 <div className="space-y-4">
                     {data.absen.map((a) => (
-                        <div key={a.id} className="bg-white border rounded-xl p-4 space-y-3">
+                        <div key={a.id} className="bg-white border border-gray-200 rounded-xl px-4 py-3 space-y-3">
                             {/* HEADER */}
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <p className="text-sm font-semibold text-gray-900">
+                            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3">
+
+                                <div className="space-y-2">
+                                    <p className="text-sm font-semibold text-gray-900 leading-tight">
                                         {formatFullDate(a.tanggal_absen)}
                                     </p>
-                                    <p className="text-xs text-gray-500">
-                                        Shift {a.nama_shift} ({a.shift_masuk} – {a.shift_pulang})
-                                    </p>
-                                </div>
-                            </div>
 
-                            {/* META */}
-                            <div className="flex items-center justify-between text-xs text-gray-600">
-                                <span>
-                                    Diajukan oleh{" "}
-                                    <span className="font-medium text-gray-800">
-                                        {a.created_by || "-"}
-                                    </span>
-                                </span>
+                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="font-medium text-gray-800">
+                                                {a.nama_shift}
+                                            </span>
+                                        </div>
 
-                                {/* TUNJANGAN ICON */}
-                                <div className="flex items-center gap-3 text-sm text-gray-700">
-                                    {a.dinas?.is_dinas && (
-                                        <FontAwesomeIcon icon={faSuitcaseRolling} title="Tunjangan Dinas"/>
-                                    )}
-                                    {a.tunjangan?.transport && (
-                                        <FontAwesomeIcon icon={faGasPump} title="Tunjangan Transport"/>
-                                    )}
-                                    {a.tunjangan?.night_shift && (
-                                        <FontAwesomeIcon icon={faHotel} title="Night Shift"/>
-                                    )}
-                                </div>
-                            </div>
+                                        <span className="hidden sm:inline text-gray-300">•</span>
 
-                            {/* JAM ABSEN */}
-                            <div className="grid grid-cols-2 gap-3 text-sm">
-                                <div className="bg-gray-50 rounded-lg p-2.5">
-                                    <p className="text-[11px] text-gray-500">Masuk</p>
-                                    <p className="font-medium">
-                                        {a.absen_masuk ? formatTime(a.absen_masuk) : "-"}
-                                    </p>
-                                </div>
-
-                                <div className="bg-gray-50 rounded-lg p-2.5">
-                                    <p className="text-[11px] text-gray-500">Pulang</p>
-                                    <p className="font-medium">
-                                        {a.absen_pulang ? formatTime(a.absen_pulang) : "-"}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* FOTO */}
-                            <div className="grid grid-cols-2 gap-3">
-                                {[
-                                    { label: "Masuk", file: a.foto_mulai },
-                                    { label: "Pulang", file: a.foto_selesai },
-                                ].map((f) => (
-                                    <div key={f.label}>
-                                        <p className="text-[11px] text-gray-500 mb-1">
-                                            Foto {f.label}
-                                        </p>
-                                        {f.file ? (
-                                            <button
-                                                onClick={() =>
-                                                    openLightbox(
-                                                        `${process.env.REACT_APP_API_BASE_URL}/uploads/img/absen/${f.file}`,
-                                                        `Absen ${f.label}`
-                                                    )
-                                                }
-                                                className="block"
-                                            >
-                                                <img src={`${process.env.REACT_APP_API_BASE_URL}/uploads/img/absen/${f.file}`} alt={`Foto ${f.label}`} className="h-24 w-full object-cover rounded-lg border hover:opacity-90 transition"/>
-                                            </button>
-                                        ) : (
-                                            <div className="h-24 flex items-center justify-center text-xs text-gray-400 border rounded-lg">
-                                                Tidak ada foto
-                                            </div>
-                                        )}
+                                        <div className="flex items-center gap-1.5">
+                                            <FontAwesomeIcon icon={faClock} className="text-emerald-600" />
+                                            <span>
+                                                {a.shift_masuk} – {a.shift_pulang}
+                                            </span>
+                                        </div>
                                     </div>
-                                ))}
+                                </div>
+
+                                {/* STATUS / DIAJUKAN OLEH */}
+                                <div className="flex sm:justify-end">
+                                    <div className="flex sm:justify-end">
+                                        <div className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs text-emerald-700 bg-emerald-50/40 rounded-md whitespace-nowrap">
+                                            <FontAwesomeIcon icon={faUserTie} className="text-emerald-600 text-xs"/>
+                                            <span className="opacity-80">
+                                                Diajukan oleh
+                                            </span>
+                                            <span className="font-medium text-emerald-800">
+                                                {a.created_by || "-"}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
 
-                            {/* DESKRIPSI */}
+                            {/* SEPARATOR */}
+                            <div className="h-px bg-gray-100" />
+
+                            {/* WAKTU, LOKASI & BUKTI */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                                {/* MASUK */}
+                                <div className="rounded-xl bg-gray-50 p-3">
+                                    <p className="text-[11px] font-semibold tracking-wide text-gray-600 uppercase mb-2">
+                                        Absen Masuk
+                                    </p>
+
+                                    <div className="flex gap-3">
+                                        {/* FOTO */}
+                                        <div className="shrink-0">
+                                            {a.foto_mulai ? (
+                                                <button
+                                                    onClick={() =>
+                                                        openLightbox(
+                                                            `${process.env.REACT_APP_API_BASE_URL}/uploads/img/absen/${a.foto_mulai}`,
+                                                            "Foto Absen Masuk"
+                                                        )
+                                                    }
+                                                    className="group relative"
+                                                >
+                                                    <img
+                                                        src={`${process.env.REACT_APP_API_BASE_URL}/uploads/img/absen/${a.foto_mulai}`}
+                                                        alt="Foto Absen Masuk"
+                                                        className="h-14 w-14 object-cover rounded-md border hover:opacity-90 transition"
+                                                    />
+                                                    <div className="absolute inset-0 rounded-md bg-black/0 group-hover:bg-black/10 transition" />
+                                                </button>
+                                            ) : (
+                                                <div className="h-14 w-14 flex items-center justify-center text-[10px] text-gray-400 border rounded-md">
+                                                    Tidak ada
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* INFO */}
+                                        <div className="flex flex-col gap-0.5 min-w-0">
+                                            {/* TANGGAL */}
+                                            <p className="text-sm font-semibold text-gray-800 truncate">
+                                                {a.absen_masuk ? formatFullDate(a.absen_masuk) : "-"}
+                                            </p>
+
+                                            {/* JAM */}
+                                            <p className="text-xs text-gray-500">
+                                                {a.absen_masuk ? formatTime(a.absen_masuk) : "-"}
+                                            </p>
+
+                                            {/* LOKASI */}
+                                            <div className="mt-1 flex items-start gap-1 text-xs text-gray-500">
+                                                <FontAwesomeIcon
+                                                    icon={faLocationDot}
+                                                    className="mt-0.5 text-emerald-600"
+                                                />
+                                                <span className="line-clamp-2">
+                                                    {a.tempat_mulai || "-"}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* PULANG */}
+                                <div className="rounded-xl bg-gray-50 p-3">
+                                    <p className="text-[11px] font-semibold tracking-wide text-gray-600 uppercase mb-2">
+                                        Absen Pulang
+                                    </p>
+
+                                    <div className="flex gap-3">
+                                        {/* FOTO */}
+                                        <div className="shrink-0">
+                                            {a.foto_selesai ? (
+                                                <button onClick={() => openLightbox(`${process.env.REACT_APP_API_BASE_URL}/uploads/img/absen/${a.foto_selesai}`, "Foto Absen Pulang")} className="group relative">
+                                                    <img src={`${process.env.REACT_APP_API_BASE_URL}/uploads/img/absen/${a.foto_selesai}`} alt="Foto Absen Pulang" className="h-14 w-14 object-cover rounded-md border hover:opacity-90 transition" />
+                                                    <div className="absolute inset-0 rounded-md bg-black/0 group-hover:bg-black/10 transition" />
+                                                </button>
+                                            ) : (
+                                                <div className="h-14 w-14 flex items-center justify-center text-[10px] text-gray-400 border rounded-md">
+                                                    Tidak ada
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* INFO */}
+                                        <div className="flex flex-col gap-0.5 min-w-0">
+                                            {/* TANGGAL */}
+                                            <p className="text-sm font-semibold text-gray-800 truncate">
+                                                {a.absen_pulang ? formatFullDate(a.absen_pulang) : "-"}
+                                            </p>
+
+                                            {/* JAM */}
+                                            <p className="text-xs text-gray-500">
+                                                {a.absen_pulang ? formatTime(a.absen_pulang) : "-"}
+                                            </p>
+
+                                            {/* LOKASI */}
+                                            <div className="mt-1 flex items-start gap-1 text-xs text-gray-500">
+                                                <FontAwesomeIcon icon={faLocationDot} className="mt-0.5 text-emerald-600" />
+                                                <span className="line-clamp-2">
+                                                    {a.tempat_selesai || "-"}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            {/* KETERANGAN */}
                             {a.deskripsi && (
                                 <p className="text-xs text-gray-600 leading-relaxed">
+                                    <span className="font-medium text-gray-800">Keterangan Kendala:</span>{" "}
                                     {a.deskripsi}
                                 </p>
                             )}
 
                             {/* ACTION */}
-                            <div className="flex justify-end gap-2 pt-2 border-t">
-                                <button onClick={() => onReject(a)} className="px-4 py-1.5 text-sm rounded-md border bg-red-500 text-white hover:bg-red-600">
+                            <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+                                <button onClick={() => onReject(a)} className="px-4 py-1.5 text-sm rounded-md bg-red-500 text-white hover:bg-red-600 active:scale-[0.98] transition">
                                     Tolak
                                 </button>
-                                <button onClick={() => onApprove(a)} className="px-4 py-1.5 text-sm rounded-md bg-green-600 text-white hover:bg-green-700">
+                                <button onClick={() => onApprove(a)} className="px-4 py-1.5 text-sm rounded-md bg-emerald-600 text-white hover:bg-emerald-700 active:scale-[0.98] transition">
                                     Setujui
                                 </button>
                             </div>
@@ -127,7 +199,7 @@ const DetailAbsensiTimModal = ({ isOpen, onClose, data, onApprove, onReject}) =>
                 </div>
             </Modal>
 
-            <Lightbox open={lightboxOpen} close={() => setLightboxOpen(false)} slides={lightboxSlides}/>
+            <Lightbox open={lightboxOpen} close={() => setLightboxOpen(false)} slides={lightboxSlides} />
         </>
     );
 };

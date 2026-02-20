@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { SectionHeader, LoadingSpinner, ErrorState, EmptyState } from "../../components";
 import Swal from "sweetalert2";
+import { getUserFromToken } from "../../utils/jwtHelper";
 
 const JadwalShift = () => {
   const [shiftList, setShiftList] = useState([]);

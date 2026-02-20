@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
-import { fetchWithJwt } from "../../../utils/jwtHelper";
-import { formatFullDate, formatCustomDateTime } from "../../../utils/dateUtils";
+import { fetchWithJwt } from "../../utils/jwtHelper";
+import { formatFullDate, formatCustomDateTime } from "../../utils/dateUtils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { getDefaultPeriod } from "../../../utils/getDefaultPeriod";
-import { faCalendarAlt, faEye, faInfo, faInfoCircle, faSearch } from "@fortawesome/free-solid-svg-icons";
-import { SectionHeader, LoadingSpinner, SearchBar, Pagination, EmptyState, ErrorState, Modal } from "../../../components";
+import { getDefaultPeriod } from "../../utils/getDefaultPeriod";
+import { faCalendarAlt, faEye, faInfo, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import { SectionHeader, LoadingSpinner, SearchBar, Pagination, EmptyState, ErrorState, Modal } from "../../components";
 
 const RiwayatSuratDinas = () => {
     const navigate = useNavigate();
@@ -86,6 +86,12 @@ const RiwayatSuratDinas = () => {
             approved: riwayat.filter((r) => r.status_dinas === 1).length,
             rejected: riwayat.filter((r) => r.status_dinas === 2).length,
         };
+    };
+
+    const kategoriColorMap = {
+        "1": "bg-blue-50 text-blue-700 border-blue-200",     // Area A
+        "2": "bg-purple-50 text-purple-700 border-purple-200", // Area B
+        "3": "bg-orange-50 text-orange-700 border-orange-200", // Area C
     };
 
 
@@ -308,12 +314,16 @@ const RiwayatSuratDinas = () => {
                                         const statusLabel = isApproved ? "Disetujui" : "Ditolak";
                                         const statusStyle = isApproved ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-700 border-red-200";
                                         const kategoriLabel = getKategoriDinas(r.kategori);
-                                        const kategoriStyle = r.kategori === "1" ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-purple-50 text-purple-700 border-purple-200";
+                                        const kategoriStyle = kategoriColorMap[String(r.kategori)] || "bg-gray-50 text-gray-600 border-gray-200";
 
                                         return (
-                                            <div key={r.id} onClick={(e) => { e.stopPropagation(); window.open(`/pengajuan-dinas/${r.id}`, "_blank"); }}
-                                                className="bg-white border border-gray-200 rounded-xl p-4 hover:border-emerald-300 hover:shadow-sm transition cursor-pointer"
+                                            <div key={r.id} onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    window.open(`/permohonan-dinas/${r.id}`, "_blank");
+                                                }}
+                                                className="group relative bg-white border border-green-100 rounded-xl p-4 cursor-pointer transition-all duration-200 hover:border-green-300 hover:shadow-sm active:scale-[0.995]"
                                             >
+                                                {/* Header badges */}
                                                 <div className="flex justify-between items-center mb-2">
                                                     <span className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${kategoriStyle}`}>
                                                         {kategoriLabel}
@@ -323,23 +333,20 @@ const RiwayatSuratDinas = () => {
                                                     </span>
                                                 </div>
 
+                                                {/* Date */}
                                                 <p className="text-sm sm:text-[15px] font-semibold text-gray-900">
                                                     {formatFullDate(r.tgl_berangkat)}
-                                                    {r.kategori === "2" && r.tgl_pulang && (
+                                                    {(r.kategori === "2" || r.kategori === "3") && r.tgl_pulang && (
                                                         <> – {formatFullDate(r.tgl_pulang)}</>
                                                     )}
                                                 </p>
 
-                                                <div className="mt-1 text-xs sm:text-sm text-gray-600 flex gap-x-4">
-                                                    <span>
-                                                        Jam: <b>{r.waktu?.substring(0, 5) || "-"}</b>
-                                                    </span>
-                                                    {r.kategori === "2" && !r.tgl_pulang && (
-                                                        <span className="text-amber-600 font-semibold">
-                                                            Belum Pulang
-                                                        </span>
-                                                    )}
+                                                {/* Time */}
+                                                <div className="mt-1 text-xs sm:text-sm text-gray-600">
+                                                    Jam: <b>{r.waktu?.substring(0, 5) || "-"}</b>
                                                 </div>
+
+                                                {/* Approval info */}
                                                 <p className="mt-2 text-xs text-gray-500">
                                                     {statusLabel} oleh{" "}
                                                     <span className="font-semibold text-gray-700">
@@ -349,6 +356,13 @@ const RiwayatSuratDinas = () => {
                                                         <> • {formatCustomDateTime(r.approved_at)}</>
                                                     )}
                                                 </p>
+
+                                                {/* Persistent subtle hint */}
+                                                <div className="mt-3 flex justify-end">
+                                                    <span className="text-[11px] font-medium text-gray-400 transition-colors duration-200 group-hover:text-green-600 select-none">
+                                                        klik untuk melihat detail
+                                                    </span>
+                                                </div>
                                             </div>
                                         );
                                     })}

@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye } from "@fortawesome/free-solid-svg-icons";
-import { SectionHeader, LoadingSpinner, ErrorState, EmptyState, SearchBar, Modal } from "../../../components";
-import { fetchWithJwt } from "../../../utils/jwtHelper";
-import { formatFullDate } from "../../../utils/dateUtils";
-import { getDefaultPeriodWeek } from "../../../utils/getDefaultPeriod";
+import { SectionHeader, LoadingSpinner, ErrorState, EmptyState, SearchBar, Modal } from "../../components";
+import { fetchWithJwt } from "../../utils/jwtHelper";
+import { formatFullDate } from "../../utils/dateUtils";
+import { getDefaultPeriodWeek } from "../../utils/getDefaultPeriod";
 import toast from "react-hot-toast";
 
 const RiwayatKunjungan = () => {
