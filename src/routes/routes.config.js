@@ -104,6 +104,7 @@ import RiwayatKunjungan from "../pages/permohonan-kunjungan/riwayat";
 import DetailKunjungan from "../pages/permohonan-kunjungan/show";
 import Kunjungan from "../pages/kunjungan";
 import PermohonanAbsensiTim from "../pages/permohonan-absensi-tim";
+import KelolaAnggotaTim from "../pages/kelola-anggota-tim";
 
 /* ===================== ROUTES CONFIG ===================== */
 export const routes = [
@@ -213,6 +214,8 @@ export const routes = [
   { path: "/rekap-tunjangan", element: <RekapTunjangan />, roles: ["1", "4", "6"] },
 
   { path: "/log-sistem", element: <LogSistem />, roles: ["1", "4", "6"], layout: SidebarLayout },
+
+  { path: "kelola-anggota-tim", element: <KelolaAnggotaTim />, roles: ["1", "5", "20"], layout: SidebarLayout },
 
   { path: "/penjadwalan", element: <PenjadwalanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
   { path: "/penjadwalan/tambah", element: <TambahPenjadwalanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },

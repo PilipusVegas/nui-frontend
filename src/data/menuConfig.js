@@ -51,7 +51,7 @@ export const menuConfig = [
             {
                 label: "Data Karyawan",
                 icon: faPeopleGroup,
-                roles: [1, 4, 5, 6, 20],
+                roles: [1, 4, 6],
                 submenu: [
                     {
                         label: "Kelola Karyawan",
