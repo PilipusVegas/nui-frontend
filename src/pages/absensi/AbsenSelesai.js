@@ -43,7 +43,7 @@ const AbsenSelesai = ({ handleNextStepData }) => {
       setUserId(user.id_user);
       setUsername(user.nama_user?.trim() || "");
       setRoleName(user.role || "");
-      setIsKadiv(!!user.is_kadiv);
+      setIsKadiv(!!user.is_kadiv?.status);
     }
   }, []);
 

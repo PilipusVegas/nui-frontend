@@ -85,7 +85,7 @@ const AbsenMulai = ({ handleNextStepData }) => {
       setUserId(user.id_user);
       setUsername(user.nama_user?.trim());
       setRoleName(user.role);
-      setIsKadiv(!!user.is_kadiv);
+      setIsKadiv(!!user.is_kadiv?.status);
     }
   }, []);
 
@@ -96,70 +96,38 @@ const AbsenMulai = ({ handleNextStepData }) => {
   }, [jadwal]);
 
 
-  useEffect(() => {
-    if (!userId || isKadiv) return;
+useEffect(() => {
+  if (!userId || isKadiv) return;
 
-    const fetchJadwal = async () => {
-      try {
-        const res = await fetchWithJwt(`${apiUrl}/jadwal/cek/${userId}`);
-
-        if (res.status === 404) {
-          setJadwal(null);
-          setLockLocation(false);
-          setLockShift(false);
-          return;
-        }
-
-        if (!res.ok) throw new Error("Gagal ambil jadwal");
-        const json = await res.json();
-        // NORMALISASI: object -> array
-        const jadwalList = json?.data
-          ? Array.isArray(json.data)
-            ? json.data
-            : [json.data]
-          : [];
-
-        if (jadwalList.length === 0) {
-          setJadwal(null);
-          setLockLocation(false);
-          setLockShift(false);
-          return;
-        }
-
-        const data = jadwalList[0];
-        setJadwal(data);
-
-        setSelectedShift({
-          id: data.id_shift,
-          nama: data.nama_shift,
-        });
-
-        setLockShift(true);
-
-        if (data.lokasi?.length === 1 && locations.length > 0) {
-          const loc = data.lokasi[0];
-          const fullLocation = locations.find(l => l.value === loc.id);
-
-          if (fullLocation) {
-            setSelectedLocation(fullLocation);
-            setLockLocation(true);
-          } else {
-            setLockLocation(false);
-          }
-        } else {
-          setLockLocation(false);
-        }
-
-      } catch (err) {
-        console.error("Cek jadwal error:", err);
+  const fetchJadwal = async () => {
+    try {
+      const res = await fetchWithJwt(`${apiUrl}/jadwal/cek/${userId}`);
+      if (res.status === 404) {
         setJadwal(null);
         setLockLocation(false);
         setLockShift(false);
+        return;
       }
-    };
 
-    fetchJadwal();
-  }, [userId, isKadiv, apiUrl, locations]);
+      const json = await res.json();
+      const data = Array.isArray(json.data) ? json.data[0] : json.data;
+
+      if (!data) return;
+
+      setJadwal(data);
+      setSelectedShift({
+        id: data.id_shift,
+        nama: data.nama_shift,
+      });
+      setLockShift(true);
+
+    } catch (err) {
+      console.error("Cek jadwal error:", err);
+    }
+  };
+
+  fetchJadwal();
+}, [userId, isKadiv, apiUrl]);  
 
 
 
