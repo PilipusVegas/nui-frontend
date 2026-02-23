@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { faCheck, faEye, faExclamationTriangle, faCalendarAlt, faCheckCircle, faSortDown, faSortUp, faCalendarXmark, faClockRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
-import { fetchWithJwt } from "../../../utils/jwtHelper";
-import SectionHeader from "../../../components/desktop/SectionHeader";
-import { LoadingSpinner, ErrorState, SearchBar, Pagination, EmptyState, SummaryCard } from "../../../components";
+import { fetchWithJwt } from "../../utils/jwtHelper";
+import SectionHeader from "../../components/desktop/SectionHeader";
+import { LoadingSpinner, ErrorState, SearchBar, Pagination, EmptyState, SummaryCard } from "../../components";
 
 const DataAbsensi = () => {
   const itemsPerPage = 15;
@@ -76,7 +76,7 @@ const DataAbsensi = () => {
     <div className="flex flex-col justify-start">
       <SectionHeader title="Monitoring Absensi Lapangan" subtitle="Monitoring kehadiran karyawan lapangan secara real-time setiap hari." onBack={() => navigate("/home")}
         actions={
-          <button onClick={() => navigate("/riwayat-persetujuan-absensi")}title="Riwayat Persetujuan"
+          <button onClick={() => navigate("/riwayat-absensi-lapangan")}title="Riwayat Persetujuan"
             className=" inline-flex items-center justify-center px-3 py-2 text-blue-700 bg-blue-100 border border-blue-300 rounded-lg hover:bg-blue-200 transition"
           >
             <FontAwesomeIcon icon={faClockRotateLeft} />
@@ -163,7 +163,7 @@ const DataAbsensi = () => {
                   </div>
                 </td>
                 <td className="text-center px-4 py-1">
-                  <button onClick={() => navigate(`/pengajuan-absensi/${absen.id_user}`)} className="bg-blue-500 text-white px-3 py-1 text-xs rounded hover:bg-blue-600 transition-colors duration-150">
+                  <button onClick={() => navigate(`/monitoring-absensi/${absen.id_user}`)} className="bg-blue-500 text-white px-3 py-1 text-xs rounded hover:bg-blue-600 transition-colors duration-150">
                     <FontAwesomeIcon icon={faEye} className="mr-1" />
                     Detail
                   </button>
@@ -179,7 +179,7 @@ const DataAbsensi = () => {
           const isApproved = Number(absen.unapproved) === 0;
 
           return (
-            <div key={absen.id_user} onClick={() => navigate(`/pengajuan-absensi/${absen.id_user}`)} className="cursor-pointer rounded-lg bg-white shadow hover:shadow-md hover:ring-1 hover:ring-blue-200 transition-all duration-150">
+            <div key={absen.id_user} onClick={() => navigate(`/monitoring-absensi/${absen.id_user}`)} className="cursor-pointer rounded-lg bg-white shadow hover:shadow-md hover:ring-1 hover:ring-blue-200 transition-all duration-150">
               <div className="px-4 pt-3 pb-2 border-b border-gray-100">
                 <h4 className="text-sm font-semibold text-gray-900">{absen.nama}</h4>
                 <p className="text-xs text-gray-500">{absen.role}</p>

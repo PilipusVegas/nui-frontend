@@ -1,9 +1,9 @@
 // components/DetailKadiv.jsx
 import React, { useEffect, useState, useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUserTie, faBuilding, faUsers, faUserShield, faTrash, faUserPlus, faUserGroup, faRightLeft } from "@fortawesome/free-solid-svg-icons";
+import { faUserTie, faBuilding, faUsers, faUserShield, faTrash, faUserPlus, faUserGroup, faRightLeft, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt } from "../../utils/jwtHelper";
-import { LoadingSpinner, ErrorState, EmptyState } from "../../components";
+import { LoadingSpinner, ErrorState, EmptyState, SearchBar } from "../../components";
 import { toast } from "react-hot-toast";
 import Swal from "sweetalert2";
 import MutasiMember from "./MutasiMember";
@@ -26,6 +26,8 @@ const DetailKadiv = ({ data }) => {
     const [showMutasi, setShowMutasi] = useState(false);
     const [memberToMutate, setMemberToMutate] = useState(null);
     const [selectedDivisi, setSelectedDivisi] = useState(null);
+    const [showSearchMember, setShowSearchMember] = useState(false);
+    const [searchTeamMember, setSearchTeamMember] = useState("");
 
 
     const divisiOptions = useMemo(() => {
@@ -35,6 +37,20 @@ const DetailKadiv = ({ data }) => {
             label: role,
         }));
     }, [userList]);
+
+
+    const filteredTeamMembers = useMemo(() => {
+        if (!searchTeamMember) return groupDetail?.member ?? [];
+
+        const q = searchTeamMember.toLowerCase();
+
+        return (groupDetail?.member ?? []).filter(m =>
+            m.nama.toLowerCase().includes(q) ||
+            m.nip?.toLowerCase().includes(q) ||
+            m.perusahaan?.toLowerCase().includes(q) ||
+            m.role?.toLowerCase().includes(q)
+        );
+    }, [groupDetail, searchTeamMember]);
 
 
     /* INIT TEAMS */
@@ -176,6 +192,8 @@ const DetailKadiv = ({ data }) => {
             setLoadingGroup(true);
             setSelectedGroupId(id_group);
             setGroupDetail(null);
+            setShowSearchMember(false);
+            setSearchTeamMember("");
             const res = await fetchWithJwt(
                 `${apiUrl}/profil/kadiv-access/group/${id_group}`
             );
@@ -324,6 +342,7 @@ const DetailKadiv = ({ data }) => {
 
     const hasTeamLeader = Boolean(groupDetail?.team_lead);
 
+
     return (
         <div className="space-y-6">
 
@@ -397,9 +416,7 @@ const DetailKadiv = ({ data }) => {
                 {teams.length > 0 && (
                     <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                         {teams.map(team => {
-                            const leaders = Array.isArray(team.team_lead)
-                                ? team.team_lead.map(l => l.nama).join(", ")
-                                : null;
+                            const leaders = Array.isArray(team.team_lead) ? team.team_lead.map(l => l.nama).join(", ") : null;
 
                             return (
                                 <button key={team.id_group} onClick={() => loadGroupDetail(team.id_group)} className={` text-left rounded-xl border p-3 sm:p-4 transition-all duration-200 hover:shadow-md
@@ -494,8 +511,7 @@ const DetailKadiv = ({ data }) => {
 
                                             {/* ACTION */}
                                             <div className="flex items-center gap-2 self-end sm:self-auto">
-                                                <select value={groupDetail.team_lead.level}
-                                                    onChange={e => handleUpdateLevel(groupDetail.team_lead, Number(e.target.value))}
+                                                <select value={groupDetail.team_lead.level} onChange={e => handleUpdateLevel(groupDetail.team_lead, Number(e.target.value))}
                                                     className="text-xs border rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                 >
                                                     <option value={1}>Tim Leader</option>
@@ -527,12 +543,7 @@ const DetailKadiv = ({ data }) => {
                                     <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-3 items-center">
                                         {/* SELECT ALL */}
                                         <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
-                                            <input
-                                                type="checkbox"
-                                                checked={isAllSelected}
-                                                ref={el => {
-                                                    if (el) el.indeterminate = isSomeSelected;
-                                                }}
+                                            <input type="checkbox" checked={isAllSelected} ref={el => { if (el) el.indeterminate = isSomeSelected; }}
                                                 onChange={handleToggleSelectAll}
                                                 className="accent-green-600 w-4 h-4"
                                             />
@@ -606,22 +617,39 @@ const DetailKadiv = ({ data }) => {
                             <div>
                                 <div className="flex items-center justify-between mb-3">
                                     <p className="text-sm text-gray-500">
-                                        Anggota Tim
+                                        Anggota Tim ({(groupDetail.member ?? []).length} anggota)
                                     </p>
 
-                                    <p className="text-sm font-medium text-gray-700">
-                                        {(groupDetail.member ?? []).length} anggota
-                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm font-medium text-gray-700">
+                                        </span>
+
+                                        <button onClick={() => setShowSearchMember(prev => !prev)} className="flex items-center gap-1 px-2.5 py-1.5 text-xs border rounded-md text-gray-600 hover:bg-gray-100 transition">
+                                            <FontAwesomeIcon icon={faSearch} />
+                                            Cari
+                                        </button>
+                                    </div>
                                 </div>
 
+                                {showSearchMember && (
+                                    <div className="mb-3">
+                                        <SearchBar placeholder="Cari anggota (nama / NIP / perusahaan / divisi)" onSearch={setSearchTeamMember} />
+                                    </div>
+                                )}
 
                                 {(groupDetail.member ?? []).length === 0 && (
-                                    <EmptyState title="Belum Ada Anggota" description="Tim ini belum memiliki anggota." />
+                                    <EmptyState title="Belum Ada Anggota" description="Tim ini belum memiliki anggota."/>
+                                )}
+
+                                {(groupDetail.member ?? []).length > 0 && filteredTeamMembers.length === 0 && (
+                                    <p className="text-sm text-gray-500 text-center py-6">
+                                        Anggota tidak ditemukan
+                                    </p>
                                 )}
 
                                 {(groupDetail.member ?? []).length > 0 && (
                                     <ul className="space-y-2">
-                                        {(groupDetail.member ?? []).map(m => (
+                                        {filteredTeamMembers.map(m => (
                                             <li key={m.id} className="border rounded-xl p-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                                 <div className="min-w-0">
                                                     <p className="font-medium text-sm sm:text-base text-gray-900 truncate">

@@ -36,11 +36,11 @@ import RiwayatPengguna from "../pages/riwayat-user/riwayat-pengguna";
 import RiwayatFace from "../pages/riwayat-user/absen-face";
 
 /* ===================== PENGAJUAN ABSENSI ===================== */
-import PengajuanAbsensi from "../pages/pengajuan/absensi";
-import DetailPengajuanAbsensi from "../pages/pengajuan/absensi/show";
+import MonitoringAbsensi from "../pages/monitoring-absensi-lapangan";
+import DetailMonitoringAbsensi from "../pages/monitoring-absensi-lapangan/show";
 import AbsensiTidakValid from "../pages/absensi-tidak-valid";
-import RiwayatPersetujuanAbsensi from "../pages/riwayat-persetujuan-absensi";
-import RiwayatPersetujuanAbsensiDetail from "../pages/riwayat-persetujuan-absensi/Show";
+import RiwayatAbsensiLapangan from "../pages/riwayat-absensi-lapangan";
+import RiwayatAbsensiLapanganDetail from "../pages/riwayat-absensi-lapangan/Show";
 
 /* ===================== LEMBUR ===================== */
 import PermohonanLembur from "../pages/permohonan-lembur";
@@ -149,11 +149,11 @@ export const routes = [
   { path: "/tugas/:id", element: <DetailTugas />, roles: [] },
 
   /* ===== DESKTOP (SIDEBAR LAYOUT) ===== */
-  { path: "/pengajuan-absensi", element: <PengajuanAbsensi />, roles: ["1", "4", "5", "6", "18", "20"], layout: SidebarLayout },
-  { path: "/pengajuan-absensi/:id_user", element: <DetailPengajuanAbsensi />, roles: ["1", "4", "5", "6", "18", "20"], layout: SidebarLayout },
+  { path: "/monitoring-absensi", element: <MonitoringAbsensi />, roles: ["1", "4", "5", "6", "18", "20"], layout: SidebarLayout },
+  { path: "/monitoring-absensi/:id_user", element: <DetailMonitoringAbsensi />, roles: ["1", "4", "5", "6", "18", "20"], layout: SidebarLayout },
   { path: "/absensi-tidak-valid", element: <AbsensiTidakValid />, roles: ["1", "4", "5", "6", "18", "20"], layout: SidebarLayout },
-  { path: "/riwayat-persetujuan-absensi", element: <RiwayatPersetujuanAbsensi />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-  { path: "/riwayat-persetujuan-absensi/:id_user", element: <RiwayatPersetujuanAbsensiDetail />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/riwayat-absensi-lapangan", element: <RiwayatAbsensiLapangan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/riwayat-absensi-lapangan/:id_user", element: <RiwayatAbsensiLapanganDetail />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
 
   { path: "/permohonan-absensi-tim", element: <PermohonanAbsensiTim />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
 

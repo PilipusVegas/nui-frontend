@@ -103,12 +103,12 @@ export const menuConfig = [
                 ],
             },
             {
-                label: "Penjadwalan Kerja",
+                label: "Jadwal Kerja",
                 icon: faCalendarCheck,
                 roles: [1, 5, 20],
                 submenu: [
                     {
-                        label: "Jadwal Karyawan",
+                        label: "Penjadwalan Karyawan",
                         icon: faCalendarCheck,
                         path: "/penjadwalan",
                         roles: [1, 5, 20],
@@ -174,14 +174,14 @@ export const menuConfig = [
                     {
                         label: "Monitoring Absensi",
                         icon: faCheckSquare,
-                        path: "/pengajuan-absensi",
+                        path: "/monitoring-absensi",
                         roles: [1, 4, 5, 6, 18, 20],
                         perusahaan: [1, 4],
                     },
                     {
                         label: "Riwayat Absensi",
                         icon: faCalendarDays,
-                        path: "/riwayat-persetujuan-absensi",
+                        path: "/riwayat-absensi-lapangan",
                         roles: [1, 4, 5, 6, 18, 20],
                         perusahaan: [1, 4],
                     },
@@ -216,7 +216,7 @@ export const menuConfig = [
             {
                 label: "Absensi Tim",
                 icon: faUserGroup,
-                roles: [1, 4, 5, 6, 20],
+                roles: [1, 5, 20],
                 perusahaan: [1, 4],
                 submenu: [
                     {

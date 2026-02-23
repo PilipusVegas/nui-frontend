@@ -8,7 +8,7 @@ import { LoadingSpinner, ErrorState, SearchBar, Pagination, EmptyState, } from "
 import { formatLongDate, toLocalISODate } from "../../utils/dateUtils";
 
 
-const RiwayatPersetujuanAbsensi = () => {
+const RiwayatAbsensiLapangan = () => {
     const navigate = useNavigate();
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const itemsPerPage = 10;
@@ -125,7 +125,7 @@ const RiwayatPersetujuanAbsensi = () => {
 
     return (
         <div className="flex flex-col">
-            <SectionHeader title="Riwayat Persetujuan Absensi" subtitle="Riwayat Persetujuan Absensi Karyawan Lapangan." onBack={() => navigate("/pengajuan-absensi")} />
+            <SectionHeader title="Riwayat Absensi Lapangan" subtitle="Riwayat absensi karyawan lapangan yang diajukan melalui aplikasi absensi online." onBack={() => navigate("/pengajuan-absensi")} />
 
             <div className="mb-4 flex flex-col sm:flex-row sm:items-end gap-2">
                 <div className="w-full sm:flex-1">
@@ -204,7 +204,7 @@ const RiwayatPersetujuanAbsensi = () => {
                                     </td>
                                     <td className="text-center text-sm">{item.total_absen} Hari</td>
                                     <td className="text-center">
-                                        <a href={`/riwayat-persetujuan-absensi/${item.id_user}?startDate=${toLocalISODate(selectedPeriode.tgl_awal)}&endDate=${toLocalISODate(selectedPeriode.tgl_akhir)}`} target="_blank" rel="noopener noreferrer"
+                                        <a href={`/riwayat-absensi-lapangan/${item.id_user}?startDate=${toLocalISODate(selectedPeriode.tgl_awal)}&endDate=${toLocalISODate(selectedPeriode.tgl_akhir)}`} target="_blank" rel="noopener noreferrer"
                                             className={`inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-md transition
                                             ${isValidPeriode ? "bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300" : "bg-gray-300 text-gray-500 pointer-events-none cursor-not-allowed"}`}
                                         >
@@ -223,4 +223,4 @@ const RiwayatPersetujuanAbsensi = () => {
     );
 };
 
-export default RiwayatPersetujuanAbsensi;
+export default RiwayatAbsensiLapangan;

@@ -4,11 +4,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
-import { fetchWithJwt, getUserFromToken } from "../../../utils/jwtHelper";
-import { getDefaultPeriod } from "../../../utils/getDefaultPeriod";
-import { Modal } from "../../../components";
-import { formatFullDate, formatTime } from "../../../utils/dateUtils";
-import { LoadingSpinner, ErrorState, EmptyState, SectionHeader, SearchBar, Pagination } from "../../../components";
+import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
+import { getDefaultPeriod } from "../../utils/getDefaultPeriod";
+import { Modal } from "../../components";
+import { formatFullDate, formatTime } from "../../utils/dateUtils";
+import { LoadingSpinner, ErrorState, EmptyState, SectionHeader, SearchBar, Pagination } from "../../components";
 
 const DetailAbsensi = () => {
   const [sortColumn, setSortColumn] = useState(null);
@@ -271,8 +271,7 @@ const DetailAbsensi = () => {
 
   return (
     <div className="flex flex-col justify-start">
-      <SectionHeader title="Detail Persetujuan Presensi" subtitle="Detail Persetujuan Absensi Karyawan" onBack={() => Navigate("/pengajuan-absensi")} />
-
+      <SectionHeader title="Detail Monitoring Absensi" subtitle="Menampilkan detail persetujuan absensi karyawan yang tercatat melalui aplikasi absensi online." onBack={() => Navigate("/monitoring-absensi")}/>
       {cardNama ? (
         <div className="w-full rounded-xl bg-white border border-emerald-100 shadow-sm hover:shadow-md transition-all duration-300 p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
@@ -653,7 +652,7 @@ const DetailAbsensi = () => {
                           <div className="w-32 h-32 rounded-lg overflow-hidden border border-green-100 shadow-sm flex-shrink-0 bg-green-50">
                             {fotoUrl ? (
                               <a href={fotoUrl} target="_blank" rel="noopener noreferrer">
-                                <img src={fotoUrl} alt={item.label} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"/>
+                                <img src={fotoUrl} alt={item.label} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
                               </a>
                             ) : (
                               <div className="flex h-full items-center justify-center text-green-400 text-xs">
@@ -662,68 +661,68 @@ const DetailAbsensi = () => {
                             )}
                           </div>
 
-                        {/* INFORMASI */}
-                        <div className="flex-1 flex flex-col gap-3 text-gray-700">
-                          <div>
-                            <p className="text-xs text-gray-500">Waktu</p>
-                            <p className="font-medium text-gray-800">
-                              {item.jam ? formatTime(item.jam) : "-"}
-                            </p>
-                          </div>
-
-                          <div>
-                            <p className="text-xs text-gray-500">Jadwal Kerja</p>
-                            <p className="font-medium text-gray-800">{item.lokasi || "-"}</p>
-                          </div>
-
-                          <div>
-                            <p className="text-xs text-gray-500">Lokasi Absen Karyawan</p>
-                            {item.titik ? (
-                              <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.titik)}`} target="_blank" rel="noopener noreferrer" className="font-medium text-green-600 underline hover:text-green-800 inline-block">
-                                Lihat di Maps
-                              </a>
-                            ) : (
-                              <p className="font-medium text-gray-800">-</p>
-                            )}
-                          </div>
-
-                          <div className="flex justify-between items-center">
+                          {/* INFORMASI */}
+                          <div className="flex-1 flex flex-col gap-3 text-gray-700">
                             <div>
-                              <p className="text-xs text-gray-500">Jarak Lokasi Bekerja dari Titik Presensi</p>
-                              <p className="font-medium text-gray-800">{formatDistance(item.jarak)}</p>
+                              <p className="text-xs text-gray-500">Waktu</p>
+                              <p className="font-medium text-gray-800">
+                                {item.jam ? formatTime(item.jam) : "-"}
+                              </p>
                             </div>
 
-                            {i === 0 && item.keterlambatan && item.keterlambatan !== "00:00" && (
-                              <div className="text-red-600 font-semibold text-sm flex items-center gap-1">
-                                <FontAwesomeIcon icon={faExclamationTriangle} />
-                                <span>{item.keterlambatan}</span>
+                            <div>
+                              <p className="text-xs text-gray-500">Jadwal Kerja</p>
+                              <p className="font-medium text-gray-800">{item.lokasi || "-"}</p>
+                            </div>
+
+                            <div>
+                              <p className="text-xs text-gray-500">Lokasi Absen Karyawan</p>
+                              {item.titik ? (
+                                <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.titik)}`} target="_blank" rel="noopener noreferrer" className="font-medium text-green-600 underline hover:text-green-800 inline-block">
+                                  Lihat di Maps
+                                </a>
+                              ) : (
+                                <p className="font-medium text-gray-800">-</p>
+                              )}
+                            </div>
+
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <p className="text-xs text-gray-500">Jarak Lokasi Bekerja dari Titik Presensi</p>
+                                <p className="font-medium text-gray-800">{formatDistance(item.jarak)}</p>
                               </div>
-                            )}
+
+                              {i === 0 && item.keterlambatan && item.keterlambatan !== "00:00" && (
+                                <div className="text-red-600 font-semibold text-sm flex items-center gap-1">
+                                  <FontAwesomeIcon icon={faExclamationTriangle} />
+                                  <span>{item.keterlambatan}</span>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                      </div>
-                )
+                    )
                   })}
-              </div>
-            </section>
+                </div>
+              </section>
 
 
-          {/* 🔸 SECTION 5 — Keterangan Karyawan */}
-          <section className="p-5">
-            <h4 className="flex items-center gap-2 text-base font-semibold text-green-700 mb-2">
-              <FontAwesomeIcon icon={faFileSignature} className="text-green-500" />
-              Keterangan Karyawan
-            </h4>
-            <p className="text-gray-700 bg-green-50 p-3 rounded border border-green-100 text-sm">
-              {selectedAbsen?.deskripsi || (
-                <span className="italic text-gray-400">Tidak ada keterangan tambahan.</span>
-              )}
-            </p>
-          </section>
-        </>
+              {/* 🔸 SECTION 5 — Keterangan Karyawan */}
+              <section className="p-5">
+                <h4 className="flex items-center gap-2 text-base font-semibold text-green-700 mb-2">
+                  <FontAwesomeIcon icon={faFileSignature} className="text-green-500" />
+                  Keterangan Karyawan
+                </h4>
+                <p className="text-gray-700 bg-green-50 p-3 rounded border border-green-100 text-sm">
+                  {selectedAbsen?.deskripsi || (
+                    <span className="italic text-gray-400">Tidak ada keterangan tambahan.</span>
+                  )}
+                </p>
+              </section>
+            </>
           )}
-    </div>
+        </div>
       </Modal >
     </div >
   );

@@ -42,8 +42,8 @@ const DataRekapAbsensi = () => {
   const [remarkDetail, setRemarkDetail] = useState(null);
   const hasRemark = (att) =>
     att?.remark_status !== null &&
-    att?.remark_status !== undefined;
-
+    att?.remark_status !== undefined &&
+    att?.remark_status !== 0;
   const isFullSpanRemark = (att) =>
     REMARK_FULLSPAN.includes(att?.remark_status);
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUsers, faUserTie, faBuilding, faIdCard, faPlus, } from "@fortawesome/free-solid-svg-icons";
+import { faUsers, faUserTie, faPlus, } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import Tambah from "./Tambah";
@@ -60,9 +60,7 @@ const KelolaAnggotaTim = () => {
             <div className="w-full mx-auto">
                 <SectionHeader title="Kelola Anggota Tim" subtitle="Manajemen grup dan tim kerja yang berada di bawah tanggung jawab Anda." onBack={() => navigate(-1)}
                     actions={
-                        <button onClick={() => setOpenTambah(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition"
-                        >
+                        <button onClick={() => setOpenTambah(true)} className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition">
                             <FontAwesomeIcon icon={faPlus} />
                             <span>Tambah Grup</span>
                         </button>
@@ -87,9 +85,7 @@ const KelolaAnggotaTim = () => {
 
                                 return (
                                     <div key={group.id} onClick={() => { setSelectedGroupId(group.id); setSelectedGroupName(group.nama_grup); setOpenShow(true); }}
-                                        className={`group bg-white border rounded-xl cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg
-                                        ${hasLeader ? "border-gray-200 hover:border-green-600" : "border-green-300"}
-                                    `}
+                                        className="group bg-white border rounded-xl cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg border-green-300"
                                     >
                                         {/* Header */}
                                         <div className="px-4 py-3 border-b border-gray-100">
@@ -102,8 +98,7 @@ const KelolaAnggotaTim = () => {
                                         <div className="px-4 py-5 space-y-4">
                                             {/* Leader */}
                                             <div className="flex items-start gap-3">
-                                                <div
-                                                    className={`flex items-center justify-center w-9 h-9 rounded-full
+                                                <div className={`flex items-center justify-center w-9 h-9 rounded-full
                                                     ${hasLeader ? "bg-green-100 text-green-700" : "bg-green-100 text-green-700"}
                                                 `}
                                                 >
