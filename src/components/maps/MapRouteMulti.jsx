@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Polyline, Circle, Tooltip, useMap,} from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Polyline, Circle, Tooltip, useMap, } from "react-leaflet";
 import L from "leaflet";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCrosshairs } from "@fortawesome/free-solid-svg-icons";
@@ -101,9 +101,10 @@ const AutoFitOnce = ({ points }) => {
 
 
 /* MAIN */
-const MapRouteMulti = ({ locations = [] }) => {
+const MapRouteMulti = ({ locations = [], onDistanceCalculated }) => {
     const [orderedPoints, setOrderedPoints] = useState([]);
     const [routes, setRoutes] = useState([]);
+    const [totalDistance, setTotalDistance] = useState(0);
 
     useEffect(() => {
         if (!locations.length) return;
@@ -143,6 +144,7 @@ const MapRouteMulti = ({ locations = [] }) => {
         // 3️⃣ GRAPHOPPER ROUTE
         const fetchRoutes = async () => {
             const allRoutes = [];
+            let distanceSum = 0;
 
             for (let i = 0; i < points.length - 1; i++) {
                 const a = points[i];
@@ -155,7 +157,12 @@ const MapRouteMulti = ({ locations = [] }) => {
 
                     if (!json?.paths?.length) continue;
 
-                    const coords = json.paths[0].points.coordinates.map(
+                    const path = json.paths[0];
+
+                    // ⬅️ AKUMULASI JARAK (METER)
+                    distanceSum += Number(path.distance || 0);
+
+                    const coords = path.points.coordinates.map(
                         ([lng, lat]) => [lat, lng]
                     );
 
@@ -166,6 +173,8 @@ const MapRouteMulti = ({ locations = [] }) => {
             }
 
             setRoutes(allRoutes);
+            setTotalDistance(distanceSum); // ⬅️ SIMPAN TOTAL
+            onDistanceCalculated?.(distanceSum);
         };
 
         fetchRoutes();

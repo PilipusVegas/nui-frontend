@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faEdit, faExclamationCircle, faInfo, faInfoCircle, faPlus, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import { faEdit, faExclamationCircle, faPlus, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { SectionHeader } from "../../components";

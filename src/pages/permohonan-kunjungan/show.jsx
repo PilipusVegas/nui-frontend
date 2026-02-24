@@ -21,17 +21,22 @@ const STATUS_APPROVAL_MAP = {
 };
 
 
-const formatMeter = (v = 0) => {
+const formatMeter = (v) => {
     const value = Number(v);
-
+    if (v === null || v === undefined || isNaN(value)) return "-";
     if (value >= 1000) {
         return `${(value / 1000).toLocaleString("id-ID", {
             minimumFractionDigits: 1,
             maximumFractionDigits: 2,
         })} km`;
     }
-
     return `${value.toLocaleString("id-ID")} m`;
+};
+
+const formatRupiah = (v) => {
+    const num = Number(v);
+    if (v === null || v === undefined || isNaN(num)) return "-";
+    return `Rp ${num.toLocaleString("id-ID")}`;
 };
 
 
@@ -43,6 +48,7 @@ const DetailKunjungan = () => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [totalJarakMap, setTotalJarakMap] = useState(null);
 
     const fetchDetail = async () => {
         try {
@@ -65,11 +71,19 @@ const DetailKunjungan = () => {
 
     const handleUpdateStatus = async (status) => {
         try {
-            const res = await fetchWithJwt(`${apiUrl}/trip/${data.id_trip}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status }), // status = 1 atau 2
-            });
+            const payload = {
+                status,
+                total_jarak: Number(totalJarakMap ?? data.total_jarak ?? 0),
+            };
+
+            const res = await fetchWithJwt(
+                `${apiUrl}/trip/${data.id_trip}`,
+                {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                }
+            );
 
             const json = await res.json();
 
@@ -128,9 +142,9 @@ const DetailKunjungan = () => {
                     <InfoItem label="Nama" value={data.nama} />
                     <InfoItem label="NIP" value={data.nip} />
                     <InfoItem label="Tanggal" value={formatFullDate(data.tanggal)} />
-                    <InfoItem label="Status Perjalanan" value={data.is_complete ? "Perjalanan Selesai" : "Belum Selesai"} highlight/>
-                    <InfoItem label="Total Jarak" value={formatMeter(data.total_jarak)} />
-                    <InfoItem label="Nominal" value={`Rp ${data.nominal.toLocaleString("id-ID")}`} />
+                    <InfoItem label="Status Perjalanan" value={data.is_complete ? "Perjalanan Selesai" : "Belum Selesai"} highlight />
+                    <InfoItem label="Total Jarak (Map)" value={formatMeter(totalJarakMap)} />
+                    <InfoItem label="Nominal" value={formatRupiah(data.nominal)} />
 
                     {/* ACTION */}
                     {data.status !== 1 && data.status !== 2 && (
@@ -152,7 +166,7 @@ const DetailKunjungan = () => {
                     <h3 className="text-sm font-semibold text-gray-800 mb-3">
                         Rute Perjalanan
                     </h3>
-                    <MapRouteMulti locations={data.lokasi} />
+                    <MapRouteMulti locations={data.lokasi} onDistanceCalculated={(meter) => setTotalJarakMap(meter)} />
                 </div>
             )}
 

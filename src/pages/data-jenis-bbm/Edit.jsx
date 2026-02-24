@@ -1,0 +1,153 @@
+// src/pages/data-bbm/Edit.jsx
+import React, { useEffect, useState } from "react";
+import Swal from "sweetalert2";
+import { Modal } from "../../components/";
+import { fetchWithJwt } from "../../utils/jwtHelper";
+
+/* Mapping (SAMA dgn Tambah) */
+const KATEGORI_LABEL = {
+    1: "Bensin",
+    2: "Listrik",
+};
+
+const SATUAN_BY_KATEGORI = {
+    1: 1, // Bensin -> Liter
+    2: 2, // Listrik -> kWh
+};
+
+const SATUAN_LABEL = {
+    1: "Liter",
+    2: "kWh",
+};
+
+const normalizeSatuan = (value) => {
+    if (value === 1 || value === "liter") return 1;
+    if (value === 2 || value === "kwh" || value === "KWH") return 2;
+    return null;
+};
+
+const EditBBM = ({ isOpen, onClose, apiUrl, data, onSuccess }) => {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [form, setForm] = useState({
+        nama: "",
+        kategori: 1,
+        harga: "",
+        satuan: 1,
+    });
+
+    /*  saat modal buka */
+    useEffect(() => {
+        if (data && isOpen) {
+            const kategori = data.kategori ?? 1;
+
+            setForm({
+                nama: data.nama ?? "",
+                kategori,
+                harga: data.harga ?? data.harga_pl ?? "",
+                satuan:
+                    normalizeSatuan(data.satuan) ??
+                    SATUAN_BY_KATEGORI[kategori],
+            });
+        }
+    }, [data, isOpen]);
+
+    /* =======================
+     * Sinkron satuan ↔ kategori
+     * ======================= */
+    useEffect(() => {
+        setForm((prev) => ({
+            ...prev,
+            satuan: SATUAN_BY_KATEGORI[prev.kategori],
+        }));
+    }, [form.kategori]);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setForm((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = async () => {
+        if (!form.nama || !form.harga) {
+            Swal.fire("Validasi", "Nama dan harga wajib diisi", "warning");
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            const payload = {
+                nama: form.nama.trim(),
+                kategori: Number(form.kategori),
+                harga: Number(form.harga),
+                satuan: Number(form.satuan),
+            };
+
+            const response = await fetchWithJwt(
+                `${apiUrl}/fuels/${data.id}`,
+                {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                }
+            );
+
+            if (response.ok) {
+                Swal.fire("Berhasil", "Data BBM berhasil diperbarui", "success");
+                onSuccess?.();
+                onClose();
+            } else {
+                Swal.fire("Gagal", "Gagal memperbarui data BBM", "error");
+            }
+        } catch (error) {
+            console.error(error);
+            Swal.fire("Error", "Terjadi kesalahan sistem", "error");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} title="Edit Jenis BBM" note="Perubahan data BBM akan berdampak pada perhitungan fitur kunjungan."
+            footer={
+                <div className="w-full flex flex-col sm:flex-row gap-2 justify-end">
+                    <button onClick={onClose} disabled={isSubmitting} className="w-full sm:w-auto px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-sm font-medium transition">
+                        Batal
+                    </button>
+
+                    <button onClick={handleSubmit} disabled={isSubmitting} className=" w-full sm:w-auto px-6 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium transition disabled:opacity-50">
+                        {isSubmitting ? "Menyimpan..." : "Simpan Perubahan"}
+                    </button>
+                </div>
+            }
+        >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                    <label className="text-sm font-medium">Nama BBM</label>
+                    <input name="nama" value={form.nama} onChange={handleChange} className="mt-1 w-full border rounded-lg px-3 py-2 text-sm"/>
+                </div>
+
+                <div>
+                    <label className="text-sm font-medium">Kategori</label>
+                    <select name="kategori" value={form.kategori} onChange={handleChange} className="mt-1 w-full border rounded-lg px-3 py-2 text-sm">
+                        <option value={1}>{KATEGORI_LABEL[1]}</option>
+                        <option value={2}>{KATEGORI_LABEL[2]}</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label className="text-sm font-medium">Satuan</label>
+                    <input value={SATUAN_LABEL[form.satuan]} disabled className="mt-1 w-full border rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600" />
+                </div>
+
+                <div className="sm:col-span-2">
+                    <label className="text-sm font-medium">
+                        Harga per {SATUAN_LABEL[form.satuan]}
+                    </label>
+                    <input type="number" name="harga" value={form.harga} onChange={handleChange} className="mt-1 w-full border rounded-lg px-3 py-2 text-sm"/>
+                </div>
+            </div>
+        </Modal>
+    );
+};
+
+export default EditBBM;

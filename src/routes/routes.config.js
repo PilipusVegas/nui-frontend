@@ -99,12 +99,14 @@ import TambahPenjadwalanKaryawan from "../pages/penjadwalan-karyawan/tambah";
 import EditPenjadwalanKaryawan from "../pages/penjadwalan-karyawan/edit";
 import DetailPenjadwalanKaryawan from "../pages/penjadwalan-karyawan/show";
 import TambahPenjadwalan from "../pages/penjadwalan-karyawan/TambahJadwal";
-import PengajuanKunjungan from "../pages/permohonan-kunjungan";
+import PermohonanKunjungan from "../pages/permohonan-kunjungan";
 import RiwayatKunjungan from "../pages/permohonan-kunjungan/riwayat";
 import DetailKunjungan from "../pages/permohonan-kunjungan/show";
 import Kunjungan from "../pages/kunjungan";
 import PermohonanAbsensiTim from "../pages/permohonan-absensi-tim";
 import KelolaAnggotaTim from "../pages/kelola-anggota-tim";
+import DataKendaraan from "../pages/data-kendaraan";
+import DataJenisBbm from "../pages/data-jenis-bbm";
 
 /* ===================== ROUTES CONFIG ===================== */
 export const routes = [
@@ -138,10 +140,9 @@ export const routes = [
   { path: "/formulir-dinas-aplikasi", element: <FormulirDinasAplikasi />, roles: [] },
 
   /* ===== KUNJUNGAN ===== */
-  { path: "/pengajuan-kunjungan", element: <PengajuanKunjungan />, roles: [], layout: SidebarLayout },
-  { path: "/pengajuan/kunjungan/detail/:id", element: <DetailKunjungan />, roles: [], layout: SidebarLayout },
-  { path: "/pengajuan/riwayat-kunjungan", element: <RiwayatKunjungan />, roles: [], layout: SidebarLayout },
-
+  { path: "/permohonan-kunjungan", element: <PermohonanKunjungan />, roles: [], layout: SidebarLayout },
+  { path: "/permohonan-kunjungan/detail/:id", element: <DetailKunjungan />, roles: [], layout: SidebarLayout },
+  { path: "/permohonan/riwayat-kunjungan", element: <RiwayatKunjungan />, roles: [], layout: SidebarLayout },
   { path: "/kunjungan", element: <Kunjungan />, roles: [] },
 
   /* ===== TUGAS ===== */
@@ -222,4 +223,7 @@ export const routes = [
   { path: "/penjadwalan/edit/:id_user", element: <EditPenjadwalanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
   { path: "/penjadwalan/detail/:id_user", element: <DetailPenjadwalanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
   { path: "/penjadwalan/tambah-jadwal/:id_user", element: <TambahPenjadwalan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+
+  { path: "/jenis-bbm", element: <DataJenisBbm />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/data-kendaraan", element: <DataKendaraan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
 ];

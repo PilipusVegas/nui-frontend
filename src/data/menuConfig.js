@@ -27,7 +27,10 @@ import {
     faPenFancy,
     faListAlt,
     faTimesCircle,
-    faHelmetSafety
+    faHelmetSafety,
+    faGasPump,
+    faMapLocationDot,
+    faBicycle
 } from "@fortawesome/free-solid-svg-icons";
 
 export const menuConfig = [
@@ -331,6 +334,42 @@ export const menuConfig = [
         ],
     },
 
+    {
+        sectionTitle: "Manajemen Operasional",
+        items: [
+            {
+                label: "Data Kendaraan",
+                icon: faBicycle,
+                path: "/data-kendaraan",
+                roles: [1, 4, 6],
+            },
+            {
+                label: "Jenis BBM",
+                icon: faGasPump,
+                path: "/jenis-bbm",
+                roles: [1, 4, 6],
+            },
+            {
+                label: "Kunjungan",
+                icon: faMapLocationDot,
+                roles: [1, 4, 5, 6, 20],
+                submenu: [
+                    {
+                        label: "Permohonan Kunjungan",
+                        icon: faPenFancy,
+                        path: "/permohonan-kunjungan",
+                        roles: [1, 4, 5, 6, 20],
+                    },
+                    {
+                        label: "Riwayat Kunjungan",
+                        icon: faHistory,
+                        path: "/riwayat-kunjungan",
+                        roles: [1, 4, 5, 6, 20],
+                    },
+                ],
+            },
+        ],
+    },
 
 
     // PENGATURAN SISTEM

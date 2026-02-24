@@ -105,7 +105,7 @@ const Kunjungan = () => {
                                         {renderStatus(item.is_complete)}
                                     </td>
                                     <td className="px-4 py-2 text-center">
-                                        <button onClick={() => navigate( `/pengajuan/kunjungan/detail/${item.id_kunjungan}`)} className="px-3 py-1.5 text-xs bg-blue-500 text-white rounded">
+                                        <button onClick={() => navigate( `/pengajuan-kunjungan/detail/${item.id_kunjungan}`)} className="px-3 py-1.5 text-xs bg-blue-500 text-white rounded">
                                             <FontAwesomeIcon icon={faEye} /> Detail
                                         </button>
                                     </td>
@@ -142,7 +142,7 @@ const Kunjungan = () => {
                             </div>
 
                             <div className="mt-3">
-                                <button onClick={() => navigate( `/pengajuan/kunjungan/detail/${item.id_kunjungan}`)} className="w-full py-2 text-xs bg-blue-500 text-white rounded">
+                                <button onClick={() => navigate( `/permohonan-kunjungan/detail/${item.id_kunjungan}`)} className="w-full py-2 text-xs bg-blue-500 text-white rounded">
                                     <FontAwesomeIcon icon={faEye} /> Detail
                                 </button>
                             </div>

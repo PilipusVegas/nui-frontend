@@ -5,10 +5,9 @@ import { useNavigate } from "react-router-dom";
 import MobileLayout from "../../layouts/mobileLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
+import { fetchWithJwt } from "../../utils/jwtHelper";
 
 const DetailAbsen = ({ formData = {} }) => {
-  const user = getUserFromToken();
   const navigate = useNavigate();
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -76,65 +75,6 @@ const DetailAbsen = ({ formData = {} }) => {
     return new File([u8arr], filename, { type: mime });
   };
 
-  /** --- Tambahan: swal konfirmasi identitas --- */
-  const handleConfirmAndSubmit = (e) => {
-    e.preventDefault();
-    Swal.fire({
-      title: "Konfirmasi Akun",
-      html: `
-      <p class="text-gray-700 text-sm mb-2">
-        Apakah Anda benar-benar login sebagai
-      </p>
-      <p class="font-semibold text-lg text-green-700">
-        ${user?.nama_user ?? "User Tidak Diketahui"}
-      </p>
-      <p class="text-gray-500 text-xs mt-3">
-        Pastikan akun ini milik Anda. Jika bukan, silakan kembali ke beranda
-        untuk mengganti akun agar data absensi tidak salah tercatat.
-      </p>
-    `,
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Ya, Itu Saya",
-      cancelButtonText: "Bukan Saya",
-      reverseButtons: true,
-      customClass: {
-        confirmButton:
-          "bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-semibold shadow",
-        cancelButton:
-          "bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md font-semibold shadow",
-        popup: "rounded-2xl p-6",
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        handleSubmit(e);
-      } else if (result.dismiss === Swal.DismissReason.cancel) {
-        Swal.fire({
-          title: "Ganti Akun?",
-          text: "Anda memilih 'Bukan Saya'. Apakah ingin keluar dan login dengan akun lain?",
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonText: "Ya, Logout",
-          cancelButtonText: "Batal",
-          reverseButtons: true,
-          customClass: {
-            confirmButton:
-              "bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-semibold shadow",
-            cancelButton:
-              "bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md font-semibold shadow",
-            popup: "rounded-2xl p-6",
-          },
-        }).then((res) => {
-          if (res.isConfirmed) {
-            localStorage.removeItem("token");
-            navigate("/login");
-          } else {
-            navigate("/home");
-          }
-        });
-      }
-    });
-  };
 
   /** Handle Submit */
   const handleSubmit = async (e) => {
@@ -150,7 +90,6 @@ const DetailAbsen = ({ formData = {} }) => {
         /** Absen Selesai */
         endpoint = "/absen/selesai";
         notificationTitle = "Absen Selesai Berhasil!";
-
         if (timezone) formDataToSend.append("timezone", timezone);
         if (fotoSelesai?.startsWith?.("blob:")) {
           const file = await blobUrlToFile(fotoSelesai, "fotoSelesai.jpg");
@@ -162,7 +101,6 @@ const DetailAbsen = ({ formData = {} }) => {
           formDataToSend.append("foto", file);
         }
         if (id_lokasi) formDataToSend.append("id_lokasi", String(id_lokasi));
-
         const titikSelesai = parseCoordinates(koordinatSelesai);
         if (titikSelesai) {
           formDataToSend.append("lat", String(titikSelesai.latitude));
@@ -170,27 +108,21 @@ const DetailAbsen = ({ formData = {} }) => {
         }
         formDataToSend.append("is_valid", String(is_valid));
         formDataToSend.append("reason", reason || "");
-
       } else {
         endpoint = "/absen/mulai";
         notificationTitle = "Absen Mulai Berhasil!";
-
         if (id_shift) formDataToSend.append("id_shift", String(id_shift));
         if (tugas) formDataToSend.append("deskripsi", tugas);
         if (id_lokasi) formDataToSend.append("id_lokasi", String(id_lokasi));
         if (tipe_absensi) formDataToSend.append("tipe_absensi", String(tipe_absensi));
         if (timezone) formDataToSend.append("timezone", timezone);
-
         const titikMulai = parseCoordinates(koordinatMulai);
         if (titikMulai) {
           formDataToSend.append("lat", String(titikMulai.latitude));
           formDataToSend.append("lon", String(titikMulai.longitude));
         }
-
         formDataToSend.append("is_valid", String(is_valid));
         formDataToSend.append("reason", reason || "");
-
-
         if (fotoMulai?.startsWith?.("blob:")) {
           const file = await blobUrlToFile(fotoMulai, "fotoMulai.jpg");
           formDataToSend.append("foto", file);
@@ -271,14 +203,12 @@ const DetailAbsen = ({ formData = {} }) => {
 
   return (
     <MobileLayout title="Review Detail Absensi" className="min-h-screen bg-gray-50">
-      <form onSubmit={handleConfirmAndSubmit} className="flex flex-col justify-between min-h-screen max-w-2xl mx-auto">
+      <form onSubmit={handleSubmit} className="flex flex-col justify-between min-h-screen max-w-2xl mx-auto">
         <div className="flex flex-col gap-10 pb-24">
           {/* Absen Mulai */}
           {fotoMulai && (
             <div className="bg-white rounded-2xl shadow-md border overflow-hidden hover:shadow-lg transition">
-              {/* Isi */}
               <div className="p-6 py-4 space-y-4">
-                {/* Foto */}
                 <div>
                   <p className="text-sm font-semibold text-gray-700 mb-6 border-b pb-1">
                     Dokumentasi Absen Mulai

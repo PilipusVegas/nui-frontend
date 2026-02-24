@@ -164,7 +164,6 @@ const DataRekapAbsensi = () => {
       remark_label: REMARK_MAP[att.remark_status],
       remark_deskripsi: att.remark_deskripsi,
       remark_by: att.remark_by,
-
       in: att.in,
       out: att.out,
       late: att.late,
@@ -264,7 +263,6 @@ const DataRekapAbsensi = () => {
                           <td onClick={() => { const url = `/kelola-absensi/${item.id_user}?startDate=${startDate}&endDate=${endDate}`; window.open(url, '_blank', 'noopener,noreferrer'); }} className="border border-gray-300 px-2 py-1 text-xs break-words font-semibold tracking-wider uppercase cursor-pointer hover:underline">
                             {item.nama}
                           </td>
-
                           <td className="border border-gray-300 px-3 py-1 text-center text-xs">{item.total_days || "-"}</td>
                           <td className="border border-gray-300 px-3 py-1 text-center text-xs">{item.total_alpha || "-"}</td>
                           <td className={`border border-gray-300 px-3 py-1 text-center text-xs ${isLate ? "text-red-700 font-bold" : ""}`}> {isLate ? item.total_late : "-"}</td>
@@ -337,7 +335,6 @@ const DataRekapAbsensi = () => {
                           const isEvenCol = colIdx % 2 === 0;
                           const remarkClick = isRemark ? () => openRemarkModal({ item, att, tanggal: tgl }) : undefined;
 
-
                           // === Style dasar tiap sel ===
                           const tdBase = `border px-2 py-1 text-center text-xs min-w-[50px] ${m.isSunday
                             ? "border-red-800 bg-red-600 text-white font-semibold group-hover:!bg-red-700 group-hover:!text-white"
@@ -348,41 +345,25 @@ const DataRekapAbsensi = () => {
                             <React.Fragment key={`${tgl}-${rowIdx}`}>
                               {isRemark && isFullSpan ? (
                                 /* ==== CUTI & IZIN SAKIT (COLSPAN + BG KUNING) ==== */
-                                <td
-                                  colSpan={4}
-                                  onClick={() => openRemarkModal({ item, att, tanggal: tgl })}
-                                  className={`${tdBase} bg-yellow-100 cursor-pointer font-bold hover:bg-yellow-200 `}
-                                >
+                                <td colSpan={4} onClick={() => openRemarkModal({ item, att, tanggal: tgl })} className={`${tdBase} bg-yellow-100 cursor-pointer font-bold hover:bg-yellow-200 `}>
                                   {REMARK_MAP[att.remark_status]}
                                 </td>
                               ) : (
                                 /* ==== NORMAL CELL (TERMAsuk REMARK KUNING) ==== */
                                 <>
-                                  <td
-                                    onClick={remarkClick}
-                                    className={`${tdBase} ${isRemark ? "bg-yellow-100 hover:bg-yellow-200 cursor-pointer" : ""}`}
-                                  >
+                                  <td onClick={remarkClick} className={`${tdBase} ${isRemark ? "bg-yellow-100 hover:bg-yellow-200 cursor-pointer" : ""}`}>
                                     {inTime}
                                   </td>
 
-                                  <td
-                                    onClick={remarkClick}
-                                    className={`${tdBase} ${lateVal > 0 ? "text-red-700 font-bold" : ""} ${isRemark ? "bg-yellow-100 hover:bg-yellow-200 cursor-pointer" : ""}`}
-                                  >
+                                  <td onClick={remarkClick} className={`${tdBase} ${lateVal > 0 ? "text-red-700 font-bold" : ""} ${isRemark ? "bg-yellow-100 hover:bg-yellow-200 cursor-pointer" : ""}`}>
                                     {lateMin}
                                   </td>
 
-                                  <td
-                                    onClick={remarkClick}
-                                    className={`${tdBase} ${isRemark ? "bg-yellow-100 hover:bg-yellow-200 cursor-pointer" : ""}`}
-                                  >
+                                  <td onClick={remarkClick} className={`${tdBase} ${isRemark ? "bg-yellow-100 hover:bg-yellow-200 cursor-pointer" : ""}`}>
                                     {outTime}
                                   </td>
 
-                                  <td
-                                    onClick={remarkClick}
-                                    className={`${tdBase} ${isRemark ? "bg-yellow-100 hover:bg-yellow-200 cursor-pointer" : ""}`}
-                                  >
+                                  <td onClick={remarkClick}className={`${tdBase} ${isRemark ? "bg-yellow-100 hover:bg-yellow-200 cursor-pointer" : ""}`}>
                                     {overtime}
                                   </td>
                                 </>
