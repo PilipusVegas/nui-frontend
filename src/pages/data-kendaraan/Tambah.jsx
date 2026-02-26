@@ -89,21 +89,13 @@ const TambahKendaraan = ({ isOpen, onClose, apiUrl, onSuccess }) => {
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Tambah Kendaraan"
-      note="Data kendaraan digunakan untuk perhitungan konsumsi BBM pada fitur kunjungan."
+    <Modal isOpen={isOpen} onClose={onClose} title="Tambah Kendaraan" note="Data kendaraan digunakan untuk perhitungan konsumsi BBM pada fitur kunjungan."
       footer={
         <>
           <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-lg">
             Batal
           </button>
-          <button
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="ml-2 px-6 py-2 bg-green-600 text-white rounded-lg disabled:opacity-50"
-          >
+          <button onClick={handleSubmit} disabled={isSubmitting} className="ml-2 px-6 py-2 bg-green-600 text-white rounded-lg disabled:opacity-50">
             {isSubmitting ? "Menyimpan..." : "Simpan"}
           </button>
         </>

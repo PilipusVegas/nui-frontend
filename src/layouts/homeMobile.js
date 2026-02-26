@@ -17,6 +17,7 @@ const HomeMobile = () => {
   const isLeader = user?.is_leader === true;
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const [attendanceData, setAttendanceData] = useState([]);
+  const allowedKunjunganRoles = [48, 22];
 
   useEffect(() => {
     const user = getUserFromToken();
@@ -279,9 +280,9 @@ const HomeMobile = () => {
         <MainMenuButton icon={faClockFour} label="Lembur" onClick={() => navigate("/lembur")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-teal-600 hover:scale-105 transition" />
         <MainMenuButton icon={faPenFancy} label="Dinas" onClick={() => navigate("/formulir-dinas-aplikasi")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-blue-600 hover:scale-105 transition" />
         <MainMenuButton icon={faTasks} label="Tugas" onClick={() => navigate("/tugas")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-lime-600 hover:scale-105 transition" />
-        {/* {allowedKunjunganRoles.includes(user?.id_role) && (
+        {allowedKunjunganRoles.includes(user?.id_role) && (
           <MainMenuButton icon={faMotorcycle} label="Kunjungan" onClick={() => navigate("/kunjungan")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-indigo-600 hover:scale-105 transition" />
-        )} */}
+        )}
 
         {/* <MainMenuButton icon={faHistory} label="Riwayat" onClick={() => navigate("/riwayat-pengguna")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-indigo-600 hover:scale-105 transition" /> */}
         <MainMenuButton image="/NOS.png" label="NOS" onClick={() => window.open("https://nos.nicourbanindonesia.com/mypanel/maintenance", "_blank")} color="rounded-xl bg-gradient-to-br from-green-50 to-green-200 hover:scale-105 transition" />

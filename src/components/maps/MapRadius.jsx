@@ -131,40 +131,22 @@ const MapRadius = ({ user, location: office, radius = 60 }) => {
         <div className="relative">
             {/* === CONTROL BUTTONS === */}
             <div className="absolute bottom-3 right-3 z-[1000] flex flex-col gap-3">
-                <button type="button"
-                    onClick={zoomToOffice}
-                    className="w-11 h-11 bg-white/80 text-red-600 rounded-full shadow border hover:scale-105"
-                >
+                <button type="button" onClick={zoomToOffice} className="w-11 h-11 bg-white/80 text-red-600 rounded-full shadow border hover:scale-105">
                     <FontAwesomeIcon icon={faBuilding} />
                 </button>
 
-                <button
-                    type="button"
-                    onClick={zoomToBoth}
-                    className="w-11 h-11 bg-neutral-900/90 text-white rounded-full shadow hover:scale-105"
-                >
+                <button type="button" onClick={zoomToBoth} className="w-11 h-11 bg-neutral-900/90 text-white rounded-full shadow hover:scale-105">
                     <FontAwesomeIcon icon={faExpand} />
                 </button>
 
-                <button
-                    type="button"
-                    onClick={zoomToUser}
-                    className="w-11 h-11 bg-white text-blue-500 rounded-full shadow border hover:scale-105"
-                >
+                <button type="button" onClick={zoomToUser} className="w-11 h-11 bg-white text-blue-500 rounded-full shadow border hover:scale-105">
                     <FontAwesomeIcon icon={faCrosshairs} />
                 </button>
             </div>
 
 
             {/* === MAP === */}
-            <MapContainer
-                ref={mapRef}
-                center={[pos.lat, pos.lng]}
-                zoom={17}
-                zoomControl={false}
-                attributionControl={false}
-                className="h-[260px] w-full rounded-xl"
-            >
+            <MapContainer ref={mapRef} center={[pos.lat, pos.lng]} zoom={17} zoomControl={false} attributionControl={false} className="h-[260px] w-full rounded-xl">
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
                 {office?.lat && (
@@ -176,17 +158,12 @@ const MapRadius = ({ user, location: office, radius = 60 }) => {
 
                 {/* USER */}
                 <Marker position={[pos.lat, pos.lng]} icon={userIcon} />
-                {/* <Circle center={[pos.lat, pos.lng]} radius={20} pathOptions={{ color: "#3b82f6", fillOpacity: 0.1 }} /> */}
 
                 {/* OFFICE */}
                 {office?.lat && (
                     <>
                         <Marker position={[office.lat, office.lng]} icon={officeIcon} />
-                        <Circle
-                            center={[office.lat, office.lng]}
-                            radius={radius}
-                            pathOptions={{ color: officeColor, fillOpacity: 0.12 }}
-                        />
+                        <Circle center={[office.lat, office.lng]} radius={radius} pathOptions={{ color: officeColor, fillOpacity: 0.12 }}/>
 
                         {start && end && (
                             <Polyline positions={[start, end]} pathOptions={{ color: "#3388ff", weight: 4, dashArray: "8 6" }} />

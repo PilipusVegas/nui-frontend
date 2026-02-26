@@ -92,11 +92,7 @@ const DetailKunjungan = () => {
                 return;
             }
 
-            toast.success(
-                status === 1
-                    ? "Kunjungan berhasil disetujui"
-                    : "Kunjungan berhasil ditolak"
-            );
+            toast.success( status === 1 ? "Kunjungan berhasil disetujui" : "Kunjungan berhasil ditolak");
 
             fetchDetail();
         } catch (err) {
@@ -160,11 +156,32 @@ const DetailKunjungan = () => {
                 </div>
             </div>
 
+            {/* ================= INFORMASI KENDARAAN ================= */}
+            {data.kendaraan && (
+                <div className="border rounded-xl overflow-hidden bg-white">
+                    <div className="px-4 py-3 border-b">
+                        <h3 className="text-sm font-semibold text-gray-800">
+                            Informasi Kendaraan
+                        </h3>
+                        <p className="text-xs text-gray-500">
+                            Kendaraan yang digunakan selama kunjungan
+                        </p>
+                    </div>
+
+                    <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <InfoItem label="Nama Kendaraan" value={`${data.kendaraan.nama_kendaraan} (${data.kendaraan.tahun_kendaraan})`}/>
+                        <InfoItem label="Jenis BBM" value={data.kendaraan.nama_bb}/>
+                        <InfoItem label="Konsumsi BBM" value={`${data.kendaraan.konsumsi_bb} km / liter`}/>
+                        <InfoItem label="Harga BBM" value={formatRupiah(data.kendaraan.harga_bb)}/>
+                    </div>
+                </div>
+            )}
+
             {/* ================= MAP ================= */}
             {data.lokasi?.length > 1 && (
                 <div className="border rounded-xl p-4">
                     <h3 className="text-sm font-semibold text-gray-800 mb-3">
-                        Rute Perjalanan
+                        Rute Perjalanan {data.nama}
                     </h3>
                     <MapRouteMulti locations={data.lokasi} onDistanceCalculated={(meter) => setTotalJarakMap(meter)} />
                 </div>

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye } from "@fortawesome/free-solid-svg-icons";
-import { SectionHeader, LoadingSpinner, ErrorState, EmptyState, SearchBar} from "../../components";
+import { faEye, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { SectionHeader, LoadingSpinner, ErrorState, EmptyState, SearchBar } from "../../components";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import toast from "react-hot-toast";
 import { formatFullDate } from "../../utils/dateUtils";
+
 
 const Kunjungan = () => {
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -14,6 +15,7 @@ const Kunjungan = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
+    const [deletingId, setDeletingId] = useState(null);
 
     const fetchTrip = async () => {
         try {
@@ -32,6 +34,27 @@ const Kunjungan = () => {
     useEffect(() => {
         fetchTrip();
     }, []);
+
+    const handleDeleteTrip = async (id_trip) => {
+        const confirm = window.confirm("Yakin ingin menghapus data kunjungan ini?");
+        if (!confirm) return;
+
+        try {
+            setDeletingId(id_trip);
+            const res = await fetchWithJwt(`${apiUrl}/trip/${id_trip}`, {
+                method: "DELETE",
+            });
+            if (!res.ok) {
+                throw new Error("Gagal menghapus data");
+            }
+            toast.success("Data kunjungan berhasil dihapus");
+            fetchTrip();
+        } catch (err) {
+            toast.error("Gagal menghapus data kunjungan");
+        } finally {
+            setDeletingId(null);
+        }
+    };
 
     const filteredData = data.filter(item => {
         const q = searchQuery.toLowerCase();
@@ -55,16 +78,16 @@ const Kunjungan = () => {
 
     return (
         <div className="bg-white flex flex-col">
-            <SectionHeader title="Pengajuan Kunjungan" subtitle="Verifikasi perjalanan yang diajukan karyawan" onBack={() => navigate(-1)}/>
+            <SectionHeader title="Permohonan Kunjungan" subtitle="Verifikasi perjalanan yang diajukan karyawan" onBack={() => navigate(-1)} />
 
             <div className="my-3">
-                <SearchBar placeholder="Cari nama, NIP, atau role..." onSearch={setSearchQuery}/>
+                <SearchBar placeholder="Cari nama, NIP, atau role..." onSearch={setSearchQuery} />
             </div>
 
             {loading && <LoadingSpinner />}
             {!loading && error && <ErrorState message={error} />}
             {!loading && !error && filteredData.length === 0 && (
-                <EmptyState message="Tidak ada pengajuan kunjungan" />
+                <EmptyState message="Tidak ada permohonan kunjungan" />
             )}
 
             {/* ================= DESKTOP ================= */}
@@ -104,11 +127,16 @@ const Kunjungan = () => {
                                     <td className="px-4 py-2 text-center">
                                         {renderStatus(item.is_complete)}
                                     </td>
-                                    <td className="px-4 py-2 text-center">
-                                        <button onClick={() => navigate( `/pengajuan-kunjungan/detail/${item.id_kunjungan}`)} className="px-3 py-1.5 text-xs bg-blue-500 text-white rounded">
+                                    <td className="px-4 py-2 text-center space-x-2">
+                                        <button onClick={() => navigate(`/permohonan-kunjungan/detail/${item.id_kunjungan}`)} className="px-3 py-1.5 text-xs bg-blue-500 text-white rounded">
                                             <FontAwesomeIcon icon={faEye} /> Detail
                                         </button>
+
+                                        <button onClick={() => handleDeleteTrip(item.id_kunjungan)} disabled={deletingId === item.id_kunjungan} className="px-3 py-1.5 text-xs bg-red-500 text-white rounded disabled:opacity-50">
+                                            <FontAwesomeIcon icon={faTrash} /> Hapus
+                                        </button>
                                     </td>
+
                                 </tr>
                             ))}
                         </tbody>
@@ -142,7 +170,7 @@ const Kunjungan = () => {
                             </div>
 
                             <div className="mt-3">
-                                <button onClick={() => navigate( `/permohonan-kunjungan/detail/${item.id_kunjungan}`)} className="w-full py-2 text-xs bg-blue-500 text-white rounded">
+                                <button onClick={() => navigate(`/permohonan-kunjungan/detail/${item.id_kunjungan}`)} className="w-full py-2 text-xs bg-blue-500 text-white rounded">
                                     <FontAwesomeIcon icon={faEye} /> Detail
                                 </button>
                             </div>

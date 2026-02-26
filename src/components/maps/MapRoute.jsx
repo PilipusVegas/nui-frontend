@@ -117,7 +117,6 @@ const MapControls = ({ user, destination }) => {
 
 
 
-
 const AutoFitBounds = ({ user, destination }) => {
   const map = useMap();
 
@@ -138,6 +137,7 @@ const AutoFitBounds = ({ user, destination }) => {
 const MapRoute = ({ user, destination, onDistance }) => {
   const [pos, setPos] = useState(null);
   const [routeCoords, setRouteCoords] = useState([]);
+  const GH_BASE_URL = process.env.REACT_APP_GRAPHHOPPER_BASE_URL;
 
   useEffect(() => {
     if (user?.lat && user?.lng) {
@@ -150,7 +150,7 @@ const MapRoute = ({ user, destination, onDistance }) => {
 
     const fetchRoute = async () => {
       try {
-        const url = `http://192.168.80.254:8989/route?point=${user.lat},${user.lng}&point=${destination.lat},${destination.lng}&profile=motorcycle&calc_points=true&points_encoded=false`;
+        const url = `${GH_BASE_URL}/route?point=${user.lat},${user.lng}&point=${destination.lat},${destination.lng}&profile=motorcycle&calc_points=true&points_encoded=false`;
         const res = await fetch(url);
         const data = await res.json();
         const coords = data.paths[0].points.coordinates.map(
@@ -183,13 +183,10 @@ const MapRoute = ({ user, destination, onDistance }) => {
   return (
     <div className="relative w-full">
       <MapContainer zoomControl={false} className="z-10" center={[pos.lat, pos.lng]} zoom={16} attributionControl={false} style={{ height: "160px", borderRadius: "10px" }}>
-
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
         {user && (
           <MapControls user={user} destination={destination} />
         )}
-
         <AutoFitBounds user={user} destination={destination} />
 
 

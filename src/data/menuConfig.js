@@ -338,6 +338,12 @@ export const menuConfig = [
         sectionTitle: "Manajemen Operasional",
         items: [
             {
+                label: "Data Lokasi",
+                icon: faMapMarkerAlt,
+                path: "/data-lokasi",
+                roles: [1],
+            },
+            {
                 label: "Data Kendaraan",
                 icon: faBicycle,
                 path: "/data-kendaraan",
@@ -363,7 +369,7 @@ export const menuConfig = [
                     {
                         label: "Riwayat Kunjungan",
                         icon: faHistory,
-                        path: "/riwayat-kunjungan",
+                        path: "/riwayat-permohonan-kunjungan",
                         roles: [1, 4, 5, 6, 20],
                     },
                 ],
@@ -376,12 +382,6 @@ export const menuConfig = [
     {
         sectionTitle: "Pengaturan Sistem",
         items: [
-            {
-                label: "Data Lokasi",
-                icon: faMapMarkerAlt,
-                path: "/data-lokasi",
-                roles: [1],
-            },
             {
                 label: "Perangkat Absensi",
                 icon: faTabletScreenButton,

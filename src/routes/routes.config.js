@@ -142,7 +142,7 @@ export const routes = [
   /* ===== KUNJUNGAN ===== */
   { path: "/permohonan-kunjungan", element: <PermohonanKunjungan />, roles: [], layout: SidebarLayout },
   { path: "/permohonan-kunjungan/detail/:id", element: <DetailKunjungan />, roles: [], layout: SidebarLayout },
-  { path: "/permohonan/riwayat-kunjungan", element: <RiwayatKunjungan />, roles: [], layout: SidebarLayout },
+  { path: "/riwayat-permohonan-kunjungan", element: <RiwayatKunjungan />, roles: [], layout: SidebarLayout },
   { path: "/kunjungan", element: <Kunjungan />, roles: [] },
 
   /* ===== TUGAS ===== */

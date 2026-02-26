@@ -5,7 +5,7 @@ import { faCalendarCheck, faClock, faClipboardList, faBriefcase, faMotorcycle} f
 import Absensi from "./Absensi";
 import Lembur from "./Lembur";
 // import Cuti from "./Cuti";
-// import KunjunganTeknisi from "./KunjunganTeknisi";
+import KunjunganTeknisi from "./KunjunganTeknisi";
 import Dinas from "./Dinas";
 
 // ✅ import komponen footer
@@ -18,7 +18,7 @@ export default function RiwayatIndex() {
     { key: "absensi", label: "Absensi", icon: faCalendarCheck },
     { key: "lembur", label: "Lembur", icon: faClock },
     // { key: "cuti", label: "Cuti", icon: faClipboardList },
-    // { key: "kunjungan", label: "Kunjungan", icon: faMotorcycle },
+    { key: "kunjungan", label: "Kunjungan", icon: faMotorcycle },
     { key: "dinas", label: "Dinas", icon: faBriefcase },
   ];
 
@@ -49,7 +49,7 @@ export default function RiwayatIndex() {
         {activeTab === "absensi" && <Absensi />}
         {activeTab === "lembur" && <Lembur />}
         {/* {activeTab === "cuti"   && <Cuti />} */}
-        {/* {activeTab === "kunjungan" && <KunjunganTeknisi />} */}
+        {activeTab === "kunjungan" && <KunjunganTeknisi />}
         {activeTab === "dinas"  && <Dinas />}
       </div>
 
