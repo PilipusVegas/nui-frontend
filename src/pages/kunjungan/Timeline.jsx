@@ -1,96 +1,85 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRoute, faCircleCheck, faClock, faMoneyBillWave, faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
-import { formatDate, formatTime } from "../../utils/dateUtils";
+import {
+  faRoute,
+  faCircleCheck,
+  faClock,
+  faCalendarAlt,
+  faArrowRightFromBracket,
+  faPlus,
+} from "@fortawesome/free-solid-svg-icons";
+import { formatFullDate, formatTime } from "../../utils/dateUtils";
 
-
-// ================= HELPERS =================
-const getStyle = (status) => {
-  if (status === "start") return "bg-green-500 ring-green-200";
-  if (status === "end") return "bg-rose-500 ring-rose-200";
-  if (status === "in") return "bg-blue-500 ring-blue-200";
-  return "bg-emerald-500 ring-emerald-200";
+const getDotStyleByKategori = (kategori) => {
+  if (kategori === 1) return "bg-green-500 ring-green-200"; // Mulai
+  if (kategori === 2) return "bg-blue-500 ring-blue-200"; // Checkpoint
+  if (kategori === 3) return "bg-red-500 ring-red-200"; // Akhir
+  return "bg-gray-400 ring-gray-200";
 };
 
-const getLabel = (status, index) => {
-  if (status === "start") return "S";
-  if (status === "end") return "E";
-  return index;
+const getTimelineTitle = (item, index, checkpoints) => {
+  if (item.kategori === 1) return "Mulai Kunjungan";
+  if (item.kategori === 2) {
+    const order = checkpoints.findIndex((c) => c.id === item.id) + 1;
+    const isLastCheckpoint = order === checkpoints.length && item.jam_selesai;
+    if (order === 1) {
+      return "Checkpoint 1 & Absen Masuk";
+    }
+    if (isLastCheckpoint) {
+      return `Checkpoint ${order} & Absen Selesai`;
+    }
+    return `Checkpoint ${order}`;
+  }
+
+  if (item.kategori === 3) return "Kunjungan Berakhir";
+
+  return "Aktivitas Kunjungan";
 };
-
-const formatDistance = (meters) => {
-  if (!meters || meters === 0) return null;
-  if (meters >= 1000) return `${(meters / 1000).toFixed(1)} km`;
-  return `${Math.round(meters)} m`;
-};
-
-const formatCurrency = (value) => {
-  if (!value) return "Rp 0";
-  return "Rp " + value.toLocaleString("id-ID");
-};
-
-
 
 // ================= COMPONENT =================
-const Timeline = ({ history, tripInfo, onCheckout }) => {
-  const isTripCompleted = tripInfo?.is_complete === 1;
-  const navigate = useNavigate();
+const Timeline = ({
+  history,
+  tripInfo,
+  activeLocation,
+  onCheckout,
+  onEndTrip,
+  canAddLocation,
+  onAddLocation,
+}) => {
+  const checkpoints = history.filter((h) => h.kategori === 2);
+  const lastCheckpoint = checkpoints[checkpoints.length - 1];
+  const canEndTrip = checkpoints.length > 0 && lastCheckpoint?.jam_selesai && !history.some((h) => h.kategori === 3);
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-5 mb-20">
-
-      {/* ===== SUMMARY ===== */}
-      {tripInfo && (
-        <div className="border-b border-gray-300 space-y-3 pb-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-800">
-              Ringkasan Kunjungan
-            </h2>
-            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${tripInfo.is_complete === 1 ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
-              {tripInfo.is_complete === 1 ? "Selesai" : "Berlangsung"}
-            </span>
+      {activeLocation && (
+        <div className="space-y-3 border-b border-gray-200 pb-4">
+          <div className="flex gap-3">
+            {/* Accent */}
+            <div className="w-1 rounded-full bg-blue-500"></div>
+            <div className="flex-1 space-y-1.5">
+              <p className="text-xs text-gray-500">Lokasi kunjungan saat ini</p>
+              <p className="text-base font-semibold text-gray-900 leading-snug">
+                {activeLocation.nama}
+              </p>
+              <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                <FontAwesomeIcon icon={faClock} className="text-green-500" />
+                <span>Mulai {formatTime(activeLocation.jam_mulai)}</span>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 text-[11px] text-gray-600">
-            <div className="flex items-center gap-1">
-              <FontAwesomeIcon icon={faCalendarAlt} className="text-green-600" />
-              <span>{formatDate(tripInfo.tanggal)}</span>
-            </div>
-
-            <div className="flex items-center gap-1">
-              <FontAwesomeIcon icon={faRoute} className="text-blue-400" />
-              <span>{formatDistance(tripInfo.total_jarak) || "0 m"}</span>
-            </div>
-
-            {isTripCompleted && (
-              <div className="flex items-center gap-1">
-                <FontAwesomeIcon icon={faCircleCheck} className="text-emerald-500" />
-                <span>Perjalanan selesai</span>
-              </div>
-            )}
-
-            {isTripCompleted && (
-              <div className="flex items-center gap-1 font-semibold text-emerald-700">
-                <FontAwesomeIcon icon={faMoneyBillWave} />
-                <span>{formatCurrency(tripInfo.nominal)}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {isTripCompleted && (
-        <div className="pt-2">
-          <button onClick={() => navigate("/riwayat-pengguna")}
-            className=" w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 text-white text-sm font-semibold shadow-sm hover:shadow-md hover:from-blue-700 hover:to-blue-600 transition"
+          {/* Action */}
+          <button
+            onClick={onCheckout}
+            className="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white py-2.5 rounded-lg text-sm font-semibold transition"
           >
-            <FontAwesomeIcon icon={faRoute} />
-            Lihat Riwayat Kunjungan
+            <FontAwesomeIcon icon={faArrowRightFromBracket} />
+            Check-Out Lokasi
           </button>
         </div>
       )}
-
 
       {/* ===== TIMELINE ===== */}
       {history.length === 0 ? (
@@ -98,113 +87,80 @@ const Timeline = ({ history, tripInfo, onCheckout }) => {
           Belum ada aktivitas perjalanan hari ini.
         </p>
       ) : (
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-gray-800 mb-4">
-            Timeline Kunjungan
-          </h3>
-
-          {history.map((h, i) => (
-            <div key={i} className="flex gap-4 items-stretch">
-
-              <div className="flex flex-col items-center">
-                <div className={`w-8 h-8 rounded-full text-white text-[10px] font-semibold 
-                  flex items-center justify-center shadow ring-4 ${getStyle(h.status)}`}>
-                  {getLabel(h.status, i)}
-                </div>
-
+        <div>
+          <div className="mb-5 space-y-1">
+            <h3 className="text-sm font-semibold text-gray-800">Timeline Perjalanan Anda</h3>
+            <div className="flex items-center gap-1.5 text-xs text-gray-600 font-normal">
+              <FontAwesomeIcon icon={faCalendarAlt} className="text-emerald-600" />
+              <span>{formatFullDate(tripInfo.tanggal)}</span>
+            </div>
+          </div>
+          {history.map((h, i) => {
+            const title = getTimelineTitle(h, i, checkpoints);
+            return (
+              <div key={h.id} className="relative flex gap-4">
                 {i !== history.length - 1 && (
-                  <div className="w-[2px] bg-gray-200 flex-1 mt-1 rounded-full" />
+                  <div className="absolute left-[15px] top-8 bottom-0 w-[2px] bg-gray-200" />
                 )}
-              </div>
+                <div className={`relative w-8 h-8 rounded-full text-white text-[10px] font-semibold flex items-center justify-center shadow ring-4 ${getDotStyleByKategori(h.kategori)}`}>
+                  {i + 1}
+                </div>
+                <div className="flex-1 pb-4">
+                  <p className="text-[10px] font-medium text-gray-500 tracking-wider">{title}</p>
+                  <p className="text-xs text-gray-800 font-medium mb-1">{h.nama}</p>
+                  <div className="flex flex-col gap-0.5 text-[11px] text-gray-600">
+                    {h.kategori === 1 && h.jam_mulai && (
+                      <div className="flex items-center gap-1.5">
+                        <FontAwesomeIcon icon={faClock} className="text-emerald-500" />
+                        <span>Mulai Kunjungan {formatTime(h.jam_mulai)}</span>
+                      </div>
+                    )}
 
-              <div className="flex-1 space-y-2 pb-2">
-                <p className="text-sm font-semibold text-gray-800">
-                  {h.nama}
-                </p>
+                    {h.kategori === 2 && h.jam_mulai && (
+                      <div className="flex items-center gap-1.5">
+                        <FontAwesomeIcon icon={faClock} className="text-emerald-500" />
+                        <span>Check-in {formatTime(h.jam_mulai)}</span>
+                      </div>
+                    )}
 
-                {/* ===== START ===== */}
-                {h.status === "start" && (
-                  <div className="text-[11px] text-gray-600 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <FontAwesomeIcon icon={faCalendarAlt} className="text-green-600" />
-                      <span>
-                        Tanggal Mulai: <strong>{formatDate(h.jam_in)}</strong>
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <FontAwesomeIcon icon={faClock} className="text-green-600" />
-                      <span>
-                        Jam Mulai: <strong>{formatTime(h.jam_in)}</strong>
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {/* ===== CHECKPOINT ===== */}
-                {h.status !== "start" && h.status !== "end" && (
-                  <div className="text-[11px] text-gray-600 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <FontAwesomeIcon icon={faClock} className="text-blue-500" />
-                      <span>
-                        Check-In: <strong>{formatTime(h.jam_in)}</strong>
-                      </span>
-                    </div>
-
-                    {h.jam_out && (
-                      <div className="flex items-center gap-2">
+                    {h.kategori === 2 && h.jam_selesai && (
+                      <div className="flex items-center gap-1.5">
                         <FontAwesomeIcon icon={faClock} className="text-rose-500" />
-                        <span>
-                          Check-Out: <strong>{formatTime(h.jam_out)}</strong>
-                        </span>
+                        <span>Check-out {formatTime(h.jam_selesai)}</span>
+                      </div>
+                    )}
+
+                    {h.kategori === 3 && h.jam_selesai && (
+                      <div className="flex items-center gap-1.5">
+                        <FontAwesomeIcon icon={faClock} className="text-rose-500" />
+                        <span>Kunjungan Berakhir {formatTime(h.jam_selesai)}</span>
                       </div>
                     )}
                   </div>
-                )}
-
-                {/* ===== END ===== */}
-                {h.status === "end" && (
-                  <div className="text-[11px] text-gray-600 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <FontAwesomeIcon icon={faCalendarAlt} className="text-rose-500" />
-                      <span>
-                        Tanggal Selesai: <strong>{formatDate(h.jam_out)}</strong>
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <FontAwesomeIcon icon={faClock} className="text-rose-500" />
-                      <span>
-                        Jam Selesai: <strong>{formatTime(h.jam_out)}</strong>
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {h.status === "in" && (
-                  <div className="relative inline-flex mt-2 animate-pulse">
-                    <span className="absolute inline-flex h-full w-full rounded bg-yellow-400"></span>
-                    <button onClick={onCheckout} className="relative inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-yellow-500 text-white text-xs font-semibold hover:bg-yellow-600 transition shadow-sm">
-                      Check-Out Lokasi
-                    </button>
-                  </div>
-                )}
-
-
-                {formatDistance(h.jarak) && (
-                  <div className="flex items-center gap-2 text-xs leading-tight text-gray-600">
-                    <FontAwesomeIcon icon={faRoute} className="text-blue-400" />
-                    <span>
-                      Jarak dari lokasi sebelumnya:
-                      <strong className="ml-1 text-gray-700">
-                        {formatDistance(h.jarak)}
-                      </strong>
-                    </span>
-                  </div>
-                )}
+                </div>
               </div>
+            );
+          })}
+
+          {canAddLocation && (
+            <div className="pt-4 border-t border-gray-200">
+              <button
+                onClick={onAddLocation}
+                className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xltext-sm font-semibold transition"
+              >
+                <FontAwesomeIcon icon={faPlus} />
+                Tambah Lokasi
+              </button>
             </div>
-          ))}
+          )}
+          {canEndTrip && (
+            <div className="pt-4 border-t border-gray-200">
+              <button onClick={onEndTrip} className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl text-sm font-semibold transition">
+                <FontAwesomeIcon icon={faCircleCheck} />
+                Akhiri Kunjungan
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

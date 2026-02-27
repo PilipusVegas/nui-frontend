@@ -198,7 +198,7 @@ const RiwayatKunjungan = () => {
                                                 <button
                                                     onClick={() => {
                                                         setSelectedUser(null);
-                                                        navigate(`/pengajuan/kunjungan/detail/${r.id_trip}`);
+                                                        navigate(`/permohonan-kunjungan/detail/${r.id_trip}`);
                                                     }}
                                                     className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-blue-500 text-white rounded hover:bg-blue-600"
                                                 >

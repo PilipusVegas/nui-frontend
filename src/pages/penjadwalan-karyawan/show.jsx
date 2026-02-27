@@ -206,7 +206,7 @@ const DetailPenjadwalan = () => {
                 {grouped.map((item, index) =>
                     renderScheduleCard({
                         title: `${formatFullDate(item.tgl_mulai)} – ${formatFullDate(item.tgl_selesai)}`,
-                        subtitle: `Shift: ${item.shift}`,
+                        subtitle: `${item.shift}`,
                         status: status.label,
                         statusClass: status.badge,
                         lokasi: item.lokasi,
@@ -287,13 +287,18 @@ const DetailPenjadwalan = () => {
     const renderScheduleCard = ({ title, subtitle, status, statusClass, lokasi = [], onEdit, onDelete, }) => (
         <div className="bg-white border border-gray-200 rounded-2xl px-6 py-5 space-y-4">
             <div className="flex items-start justify-between gap-4">
-                <div>
+                <div className="space-y-2">
                     <div className="text-sm font-semibold text-gray-800">
                         {title}
                     </div>
                     {subtitle && (
-                        <div className="mt-0.5 text-xs text-gray-500">
-                            {subtitle}
+                        <div>
+                            <div className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                                Shift
+                            </div>
+                            <div className="mt-0.5 text-sm font-semibold text-gray-900">
+                                {subtitle}
+                            </div>
                         </div>
                     )}
                 </div>
@@ -303,7 +308,7 @@ const DetailPenjadwalan = () => {
             </div>
             <div className="border-t border-gray-100" />
             <div>
-                <div className="text-xs font-medium text-gray-500 mb-2">
+                <div className="text-xs font-medium text-gray-600 mb-2 uppercase tracking-wide">
                     Lokasi Penugasan
                 </div>
                 <div className="flex flex-wrap gap-2">

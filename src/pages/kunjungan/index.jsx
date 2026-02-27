@@ -25,6 +25,8 @@ export default function Kunjungan() {
     const [note, setNote] = useState("");
     const [photo, setPhoto] = useState(null);
     const [photoPreview, setPhotoPreview] = useState(null);
+    const [tripInfo, setTripInfo] = useState(null);
+    const [showAddLocation, setShowAddLocation] = useState(false);
 
     // ================= UTIL =================
     const parseCoord = (str) => {
@@ -50,8 +52,6 @@ export default function Kunjungan() {
             getDistanceMeters(gps.lat, gps.lng, lokasiUserCoord.lat, lokasiUserCoord.lng)
         );
     }, [gps, lokasiUserCoord]);
-
-    const activeCheckpoint = history.find(h => h.status === "in");
 
     // ================= EFFECT =================
     useEffect(() => {
@@ -100,11 +100,25 @@ export default function Kunjungan() {
         if (!json.data?.lokasi) return;
 
         setTripId(json.data.id_trip);
+
+        setTripInfo({
+            id_trip: json.data.id_trip,
+            tanggal: json.data.tanggal,
+            is_complete: json.data.is_complete,
+            total_jarak: json.data.total_jarak,
+            nominal: json.data.nominal,
+        });
+
         setHistory(
             json.data.lokasi.map(l => ({
                 id: l.id_trip_lokasi,
-                status: l.jam_selesai ? "out" : "in",
-                id_lokasi: l.id_lokasi
+                kategori: l.kategori,
+                nama: l.nama_lokasi,
+                jam_mulai: l.jam_mulai,
+                jam_selesai: l.jam_selesai,
+                jarak: l.jarak || null,
+                deskripsi: l.deskripsi || null,
+                id_lokasi: l.id_lokasi,
             }))
         );
     };
@@ -127,25 +141,22 @@ export default function Kunjungan() {
         if (!shiftId) return toast.error("Tidak ada shift aktif");
         if (!note || !photo) return toast.error("Foto & keterangan wajib");
         if (!validateLokasiUser()) return;
-
         if (!lokasiUser?.id_lokasi) {
             toast.error("Lokasi awal tidak valid");
             return;
         }
-
         const fd = new FormData();
         fd.append("id_shift", shiftId);
         fd.append("id_lokasi", lokasiUser.id_lokasi);
         fd.append("foto", photo);
         fd.append("deskripsi", note);
         fd.append("koordinat", `${gps.lat},${gps.lng}`);
-
         await fetchWithJwt(`${apiurl}/trip/user`, {
             method: "POST",
             body: fd,
         });
-
         toast.success("Kunjungan dimulai");
+        resetModalState();
         setModal(null);
         fetchTrip();
     };
@@ -153,8 +164,11 @@ export default function Kunjungan() {
     const checkIn = async () => {
         if (!selectedStore) return toast.error("Pilih lokasi");
         if (!photo) return toast.error("Foto & keterangan wajib");
+
         const target = parseCoord(selectedStore.koordinat);
-        const jarak = Math.round(getDistanceMeters(gps.lat, gps.lng, target.lat, target.lng));
+        const jarak = Math.round(
+            getDistanceMeters(gps.lat, gps.lng, target.lat, target.lng)
+        );
         if (jarak > MAX_RADIUS) return toast.error("Anda di luar radius lokasi");
 
         const fd = new FormData();
@@ -170,14 +184,75 @@ export default function Kunjungan() {
         });
 
         toast.success("Check-in berhasil");
+        resetModalState();
+        setShowAddLocation(false); 
+        setSelectedStore(null);
         setModal(null);
         fetchTrip();
     };
 
+    const checkOut = async () => {
+        if (!activeLocation?.id) {
+            return toast.error("Lokasi aktif tidak ditemukan");
+        }
+        if (!photo) {
+            return toast.error("Foto & keterangan wajib");
+        }
+        const fd = new FormData();
+        fd.append("foto", photo);
+        fd.append("deskripsi", note);
+        fd.append("koordinat", `${gps.lat},${gps.lng}`);
+        await fetchWithJwt(
+            `${apiurl}/trip/user/out/${activeLocation.id}`,
+            {
+                method: "PUT",
+                body: fd,
+            }
+        );
+        toast.success("Check-out lokasi berhasil");
+        resetModalState();
+        setModal(null);
+        fetchTrip();
+    };
+
+    const endTrip = async () => {
+        if (!photo) return toast.error("Foto wajib diambil");
+        if (!note) return toast.error("Keterangan wajib diisi");
+
+        // Ambil lokasi terakhir (checkpoint terakhir)
+        const lastLocation = history[history.length - 1];
+        if (!lastLocation?.id_lokasi) {
+            return toast.error("Lokasi terakhir tidak valid");
+        }
+        const fd = new FormData();
+        fd.append("id_lokasi", lastLocation.id_lokasi);
+        fd.append("foto", photo);
+        fd.append("deskripsi", note);
+        fd.append("koordinat", `${gps.lat},${gps.lng}`);
+        await fetchWithJwt(
+            `${apiurl}/trip/user/end/${tripId}`,
+            {
+                method: "PUT",
+                body: fd,
+            }
+        );
+        toast.success("Kunjungan berhasil diakhiri");
+        resetModalState();
+        setModal(null);
+        fetchTrip();
+    };
+
+    const hasTrip = history.length > 0;
     const activeLocation = useMemo(
-        () => history.find(h => h.status === "in"),
+        () => history.find(h => h.jam_selesai === null),
         [history]
     );
+
+    const resetModalState = () => {
+        setNote("");
+        setPhoto(null);
+        setPhotoPreview(null);
+    };
 
     // ================= EARLY =================
     if (!gps) {
@@ -204,11 +279,11 @@ export default function Kunjungan() {
                     <MapRoute user={gps} destination={destination} />
                 </div>
 
-                {!tripId && (
+                {!hasTrip && (
                     <div className="bg-white rounded-xl border px-4 py-4 space-y-4">
                         <div className="space-y-0.5">
                             <p className="text-base font-semibold text-gray-800">
-                                Fitur Kunjungan Kerja
+                                Penjelasan Tentang Fitur Kunjungan
                             </p>
                             <p className="text-sm text-gray-500 leading-snug">
                                 Digunakan untuk mencatat dan memantau perjalanan kunjungan kerja
@@ -217,85 +292,117 @@ export default function Kunjungan() {
                         </div>
 
                         {/* Info list */}
-                        <div className="space-y-2 text-sm text-gray-600">
+                        <div className="space-y-3 text-sm text-gray-600">
                             <div className="flex items-start gap-2">
-                                <FontAwesomeIcon icon={faLocationDot} className="mt-0.5 text-gray-400" />
+                                <FontAwesomeIcon icon={faLocationDot} className="mt-0.5 text-green-600" />
                                 <p className="leading-snug">
                                     Lokasi tercatat otomatis selama perjalanan
                                 </p>
                             </div>
-
                             <div className="flex items-start gap-2">
-                                <FontAwesomeIcon icon={faCamera} className="mt-0.5 text-gray-400" />
+                                <FontAwesomeIcon icon={faCamera} className="mt-0.5 text-green-600" />
                                 <p className="leading-snug">
                                     Foto diperlukan sebagai bukti di setiap tahap
                                 </p>
                             </div>
-
                             <div className="flex items-start gap-2">
-                                <FontAwesomeIcon icon={faClock} className="mt-0.5 text-gray-400" />
+                                <FontAwesomeIcon icon={faClock} className="mt-0.5 text-green-600" />
                                 <p className="leading-snug">
                                     Aktivitas tersimpan dalam timeline kunjungan
                                 </p>
                             </div>
                         </div>
-
-                        {/* CTA */}
                         <button onClick={() => setModal("start")} className="w-full bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-lg font-semibold transition">
                             Mulai Kunjungan
                         </button>
-
                     </div>
                 )}
 
-                {tripId && !activeCheckpoint && (
-                    <div className="space-y-3 rounded-xl border bg-white p-4">
-                        <div className="space-y-0.5">
-                            <p className="text-sm font-semibold text-gray-800">
-                                Pilih Lokasi Kunjungan
-                            </p>
-                            <p className="text-[11px] text-gray-500">
-                                Check-In hanya dapat dilakukan jika Anda berada
-                                <b className="text-gray-700"> maksimal 60 meter</b> dari lokasi.
-                            </p>
+                {hasTrip &&
+                    tripInfo?.is_complete === 0 &&
+                    !activeLocation &&
+                    showAddLocation && (   // ⬅️ KUNCI UTAMA
+                        <div className="space-y-3 rounded-xl border bg-white p-4">
+                            <div className="space-y-0.5">
+                                <p className="text-sm font-semibold text-gray-800">
+                                    Pilih Lokasi Kunjungan
+                                </p>
+                                <p className="text-[11px] text-gray-500">
+                                    Check-In hanya dapat dilakukan jika Anda berada
+                                    <b className="text-gray-700"> maksimal 60 meter</b> dari lokasi.
+                                </p>
+                            </div>
+
+                            <Select
+                                placeholder="Pilih lokasi kerja / gerai"
+                                options={stores.map(s => ({
+                                    label: s.nama,
+                                    value: s.id,
+                                    data: s,
+                                }))}
+                                onChange={o => setSelectedStore(o?.data || null)}
+                            />
+
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setShowAddLocation(false)}
+                                    className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg text-sm font-medium"
+                                >
+                                    Batal
+                                </button>
+
+                                <button
+                                    onClick={() => {
+                                        if (!selectedStore) {
+                                            toast.error("Silakan pilih lokasi terlebih dahulu");
+                                            return;
+                                        }
+                                        setModal("checkin");
+                                    }}
+                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg text-sm font-semibold transition"
+                                >
+                                    Check-In Lokasi
+                                </button>
+                            </div>
                         </div>
+                    )}
 
-                        <Select
-                            placeholder="Pilih lokasi kerja / gerai"
-                            options={stores.map(s => ({
-                                label: s.nama,
-                                value: s.id,
-                                data: s,
-                            }))}
-                            onChange={o => setSelectedStore(o?.data || null)}
-                        />
-
-                        <button
-                            onClick={() => {
-                                if (!selectedStore) {
-                                    toast.error("Silakan pilih lokasi terlebih dahulu");
-                                    return;
-                                }
-                                setModal("checkin");
-                            }}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition"
-                        >
-                            Check-In Lokasi
-                        </button>
-                    </div>
+                {hasTrip && tripInfo && (
+                    <Timeline history={history} tripInfo={tripInfo} activeLocation={activeLocation} onCheckout={() => setModal("checkout")} onEndTrip={() => setModal("end")}
+                        canAddLocation={
+                            tripInfo?.is_complete === 0 &&
+                            !activeLocation
+                        }
+                        onAddLocation={() => setShowAddLocation(true)}
+                    />
                 )}
             </div>
 
+
             <KunjunganActionModal
                 isOpen={!!modal}
-                title={modal === "start" ? "Mulai Kunjungan" : "Check-In Lokasi"}
+                title={
+                    modal === "start"
+                        ? "Mulai Kunjungan"
+                        : modal === "checkin"
+                            ? "Check-In Lokasi"
+                            : modal === "checkout"
+                                ? "Check-Out Lokasi"
+                                : "Akhiri Kunjungan"
+                }
                 submitLabel="Simpan"
-                onSubmit={modal === "start" ? startVisit : checkIn}
+                onSubmit={
+                    modal === "start"
+                        ? startVisit
+                        : modal === "checkin"
+                            ? checkIn
+                            : modal === "checkout"
+                                ? checkOut
+                                : endTrip
+                }
                 onClose={() => {
+                    resetModalState();
                     setModal(null);
-                    setPhoto(null);
-                    setPhotoPreview(null);
-                    setNote("");
                 }}
                 note={note}
                 setNote={setNote}
