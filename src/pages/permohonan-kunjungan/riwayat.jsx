@@ -87,7 +87,7 @@ const RiwayatKunjungan = () => {
 
             {!loading && !error && filteredData.length > 0 && (
                 <div className="hidden md:block">
-                    <table className="min-w-full text-sm border-separate border-spacing-0">
+                    <table className="table-auto w-full border-collapse text-sm">
                         <thead className="bg-green-500 text-white">
                             <tr>
                                 <th className="px-4 py-3 text-center rounded-tl-lg">
@@ -97,7 +97,7 @@ const RiwayatKunjungan = () => {
                                     NIP
                                 </th>
                                 <th className="px-4 py-3 text-left">
-                                    Nama
+                                    Nama Karyawan
                                 </th>
                                 <th className="px-4 py-3 text-center">
                                     Total Riwayat
@@ -120,7 +120,7 @@ const RiwayatKunjungan = () => {
                                         {user.riwayat?.length || 0}
                                     </td>
                                     <td className="px-4 py-2 text-center">
-                                        <button onClick={() => setSelectedUser(user)} className="flex items-center gap-1 px-3 py-1.5 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 mx-auto">
+                                        <button onClick={() => setSelectedUser(user)} className="flex items-center gap-1 px-3 py-2 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 mx-auto">
                                             <FontAwesomeIcon icon={faEye} />
                                             Lihat Riwayat
                                         </button>

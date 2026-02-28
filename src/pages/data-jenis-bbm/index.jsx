@@ -156,44 +156,41 @@ const DataJenisBBM = () => {
                         {currentItems.length > 0 ? (
                             currentItems.map((item, index) => (
                                 <tr key={item.id} className="hover:bg-gray-200 transition-colors duration-150">
-                                    <td className="px-4 py-1 border-b text-xs text-center">
+                                    <td className="px-4 py-2 border-b text-xs text-center">
                                         {startIndex + index + 1}
                                     </td>
 
-                                    <td className="px-4 py-1 border-b text-xs font-semibold uppercase">
+                                    <td className="px-4 py-2 border-b text-xs font-semibold uppercase">
                                         {item.nama || "-"}
                                     </td>
 
                                     {/* KATEGORI (LABEL, BUKAN ANGKA) */}
-                                    <td className="px-4 py-1 border-b text-xs text-center">
+                                    <td className="px-4 py-2 border-b text-xs text-center">
                                         {getKategoriLabel(item.kategori)}
                                     </td>
 
                                     {/* HARGA + SATUAN */}
-                                    <td className="px-4 py-1 border-b text-xs text-right font-medium">
+                                    <td className="px-4 py-2 border-b text-xs text-right font-medium">
                                         {formatRupiah(item.harga ?? item.harga_pl)}
                                         <span className="text-gray-500">
                                             {" "} / {getSatuanLabel(item.satuan)}
                                         </span>
                                     </td>
 
-                                    <td className="px-4 py-1 border-b text-xs text-center">
+                                    <td className="px-4 py-2 border-b text-xs text-center">
                                         <div className="flex items-center justify-center gap-2">
                                             <button
                                                 onClick={() => {
                                                     setSelectedBBM(item);
                                                     setIsEditOpen(true);
                                                 }}
-                                                className="flex items-center gap-1 text-xs bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition"
+                                                className="flex items-center gap-1 text-xs bg-yellow-500 text-white px-3 py-2 rounded hover:bg-yellow-600 transition"
                                             >
                                                 <FontAwesomeIcon icon={faEdit} />
                                                 <span>Edit</span>
                                             </button>
 
-                                            <button
-                                                onClick={() => handleDelete(item.id)}
-                                                className="flex items-center gap-1 text-xs bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
-                                            >
+                                            <button onClick={() => handleDelete(item.id)} className="flex items-center gap-1 text-xs bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition">
                                                 <FontAwesomeIcon icon={faTrash} />
                                                 <span>Hapus</span>
                                             </button>

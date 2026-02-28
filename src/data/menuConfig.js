@@ -350,7 +350,7 @@ export const menuConfig = [
                 roles: [1, 4, 6],
             },
             {
-                label: "Jenis BBM",
+                label: "Data Jenis BBM",
                 icon: faGasPump,
                 path: "/jenis-bbm",
                 roles: [1, 4, 6],

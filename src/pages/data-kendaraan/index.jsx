@@ -2,23 +2,14 @@ import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faPlus,
-    faEdit,
-    faTrash,
-    faEye,
-    faSearch,
-} from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faEdit, faTrash, faEye, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { SectionHeader, Pagination } from "../../components/";
-
 import TambahKendaraan from "./Tambah";
 import EditKendaraan from "./Edit";
 import ShowKendaraan from "./Show";
 
-/* ======================
- * Mapping Kategori Kendaraan
- * ====================== */
+/* Mapping Kategori Kendaraan */
 const KATEGORI_KENDARAAN = {
     1: "Motor",
     2: "Mobil",
@@ -177,57 +168,81 @@ const DataKendaraan = () => {
                         {currentItems.length > 0 ? (
                             currentItems.map((item, index) => (
                                 <tr key={item.id} className="hover:bg-gray-200 transition">
-                                    <td className="px-4 py-1 border-b text-xs text-center">
+                                    <td className="px-4 py-2 border-b text-xs text-center">
                                         {startIndex + index + 1}
                                     </td>
-                                    <td className="px-4 py-1 border-b text-xs font-semibold uppercase">
+                                    <td className="px-4 py-2 border-b text-xs font-semibold uppercase">
                                         {item.nama}
                                     </td>
-                                    <td className="px-4 py-1 border-b text-xs text-center">
+                                    <td className="px-4 py-2 border-b text-xs text-center">
                                         {getKategoriLabel(item.kategori)}
                                     </td>
-                                    <td className="px-4 py-1 border-b text-xs text-center">
+                                    <td className="px-4 py-2 border-b text-xs text-center">
                                         {item.tahun}
                                     </td>
-                                    <td className="px-4 py-1 border-b text-xs text-center">
+                                    <td className="px-4 py-2 border-b text-xs text-center">
                                         {item.konsumsi_bb} km/l
                                     </td>
-                                    <td className="px-4 py-1 border-b text-xs">
+                                    <td className="px-4 py-2 border-b text-xs">
                                         {item.nama_bb}
                                     </td>
-                                    <td className="px-4 py-1 border-b text-xs text-right font-medium">
+                                    <td className="px-4 py-2 border-b text-xs text-right font-medium">
                                         {formatRupiah(item.harga_bb)}
                                     </td>
-                                    <td className="px-4 py-1 border-b text-xs text-center">
+                                    <td className="px-4 py-2 border-b text-xs text-center">
                                         <div className="flex justify-center gap-2">
+                                            {/* Detail */}
                                             <button
                                                 onClick={() => {
                                                     setSelectedVehicle(item);
                                                     setIsShowOpen(true);
                                                 }}
-                                                className="px-2 py-1 bg-blue-500 text-white rounded"
-                                                title="Detail"
+                                                className="
+                flex items-center gap-1.5
+                px-3 py-2
+                rounded-md
+                bg-blue-600 text-white
+                hover:bg-blue-700
+                transition
+            "
                                             >
-                                                <FontAwesomeIcon icon={faEye} />
+                                                <FontAwesomeIcon icon={faEye} className="text-[11px]" />
+                                                <span>Detail</span>
                                             </button>
 
+                                            {/* Edit */}
                                             <button
                                                 onClick={() => {
                                                     setSelectedVehicle(item);
                                                     setIsEditOpen(true);
                                                 }}
-                                                className="px-2 py-1 bg-yellow-500 text-white rounded"
-                                                title="Edit"
+                                                className="
+                flex items-center gap-1.5
+                px-3 py-2
+                rounded-md
+                bg-yellow-500 text-white
+                hover:bg-yellow-600
+                transition
+            "
                                             >
-                                                <FontAwesomeIcon icon={faEdit} />
+                                                <FontAwesomeIcon icon={faEdit} className="text-[11px]" />
+                                                <span>Edit</span>
                                             </button>
 
+                                            {/* Hapus */}
                                             <button
                                                 onClick={() => handleDelete(item.id)}
-                                                className="px-2 py-1 bg-red-500 text-white rounded"
-                                                title="Hapus"
+                                                className="
+                flex items-center gap-1.5
+                px-3 py-2
+                rounded-md
+                bg-red-600 text-white
+                hover:bg-red-700
+                transition
+            "
                                             >
-                                                <FontAwesomeIcon icon={faTrash} />
+                                                <FontAwesomeIcon icon={faTrash} className="text-[11px]" />
+                                                <span>Hapus</span>
                                             </button>
                                         </div>
                                     </td>
@@ -248,10 +263,7 @@ const DataKendaraan = () => {
             <div className="md:hidden space-y-2">
                 {currentItems.length > 0 ? (
                     currentItems.map((item) => (
-                        <div
-                            key={item.id}
-                            className="flex items-center justify-between px-4 py-3 bg-white border rounded-lg shadow-sm"
-                        >
+                        <div key={item.id} className="flex items-center justify-between px-4 py-3 bg-white border rounded-lg shadow-sm">
                             <div className="flex flex-col min-w-0">
                                 <span className="text-sm font-semibold truncate">
                                     {item.nama}
@@ -309,9 +321,9 @@ const DataKendaraan = () => {
             />
 
             {/* ================= MODALS ================= */}
-            <TambahKendaraan isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} apiUrl={apiUrl} onSuccess={fetchVehicleData}/>
-            <EditKendaraan isOpen={isEditOpen} onClose={() => { setIsEditOpen(false); setSelectedVehicle(null);}} apiUrl={apiUrl} data={selectedVehicle} onSuccess={fetchVehicleData}/>
-            <ShowKendaraan isOpen={isShowOpen} onClose={() => { setIsShowOpen(false); setSelectedVehicle(null);}} data={selectedVehicle}/>
+            <TambahKendaraan isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} apiUrl={apiUrl} onSuccess={fetchVehicleData} />
+            <EditKendaraan isOpen={isEditOpen} onClose={() => { setIsEditOpen(false); setSelectedVehicle(null); }} apiUrl={apiUrl} data={selectedVehicle} onSuccess={fetchVehicleData} />
+            <ShowKendaraan isOpen={isShowOpen} onClose={() => { setIsShowOpen(false); setSelectedVehicle(null); }} data={selectedVehicle} />
         </div>
     );
 };

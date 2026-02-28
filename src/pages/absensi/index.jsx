@@ -23,6 +23,8 @@ const Absensi = () => {
   const [attendanceHistory, setAttendanceHistory] = useState([]);
   const [isCheckingAttendance, setIsCheckingAttendance] = useState(true);
   const [attendanceData, setAttendanceData] = useState({ userId: "", username: "", id_absen: "" });
+  const [isAppReady, setIsAppReady] = useState(false);
+  const [apiErrorMessage, setApiErrorMessage] = useState("");
 
 
   useEffect(() => {
@@ -140,14 +142,28 @@ const Absensi = () => {
     if (attendanceData.userId) fetchAttendanceHistory();
   }, [attendanceData.userId]);
 
+
   useEffect(() => {
     const checkAttendance = async () => {
       setIsCheckingAttendance(true);
+      setIsAppReady(false);
+      setApiErrorMessage("");
+
       try {
-        const response = await fetchWithJwt(`${apiUrl}/absen/cek/${attendanceData.userId}`);
+        const response = await fetchWithJwt(
+          `${apiUrl}/absen/cek/${attendanceData.userId}`
+        );
+
         const data = await response.json();
-        if (response.ok && data.success === true && data.data) {
+
+        if (!response.ok) {
+          const msg = data?.message || "Server sedang bermasalah";
+          throw new Error(msg);
+        }
+
+        if (data.success && data.data) {
           const detail = data.data;
+
           setAttendanceData({
             userId: String(detail.id_user),
             username: detail.nama || "",
@@ -160,8 +176,8 @@ const Absensi = () => {
             jam_selesai: detail.jam_selesai ? String(detail.jam_selesai) : null,
             total_tugas_urgent: detail.total_tugas_urgent || 0,
           });
+
           setIsSelesaiFlow(!!detail.jam_mulai && !detail.jam_selesai);
-          setCurrentStep(null);
         } else {
           setAttendanceData(prev => ({
             ...prev,
@@ -170,16 +186,26 @@ const Absensi = () => {
             jam_selesai: null,
           }));
           setIsSelesaiFlow(false);
-          setCurrentStep(null);
         }
+
+        // 🔑 hanya di sini app dinyatakan siap
+        setIsAppReady(true);
+
       } catch (error) {
-        console.error("Error checking attendance:", error);
+        console.error("Check attendance error:", error);
+
+        setApiErrorMessage(error.message);
+        toast.error(error.message || "Gagal memuat data absensi");
+
+        setIsAppReady(false);
         setIsSelesaiFlow(false);
         setCurrentStep(null);
+
       } finally {
         setIsCheckingAttendance(false);
       }
     };
+
     if (attendanceData.userId) checkAttendance();
   }, [apiUrl, attendanceData.userId]);
 
@@ -396,9 +422,9 @@ const Absensi = () => {
                     Memeriksa Kehadiran…
                   </button>
                 ) : !attendanceData.jam_mulai ? (
-                  <button disabled={isLoading} onClick={handleMulaiClick} className={`w-full py-5 rounded-xl font-semibold flex items-center justify-center gap-2 transition shadow-lg ${isSunday ? "bg-gray-400 text-white" : "bg-green-600 text-white hover:bg-green-700"} ${isLoading && "opacity-60 cursor-not-allowed"}`}>
+                  <button disabled={!isAppReady || isLoading || isSunday} onClick={handleMulaiClick} className={` w-full py-5 rounded-xl font-semibold flex items-center justify-center gap-2 transition shadow-lg ${!isAppReady || isSunday ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-green-600 text-white hover:bg-green-700"}`}>
                     <FontAwesomeIcon icon={faCalendarPlus} className="text-2xl" />
-                    {isSunday ? "Absen Masuk Nonaktif (Minggu)" : isLoading ? "Memuat…" : "Absen Masuk"}
+                    {!isAppReady ? "Menunggu Data Absensi…" : isSunday ? "Absen Nonaktif (Minggu)" : "Absen Masuk"}
                   </button>
                 ) : !attendanceData.jam_selesai ? (
                   <button disabled={isLoading} onClick={handleSelesaiClick} className={`w-full py-5 rounded-xl font-semibold flex items-center justify-center gap-2 transition bg-orange-500 text-white hover:bg-orange-600 shadow-lg ${isLoading && "opacity-60 cursor-not-allowed"}`}>
