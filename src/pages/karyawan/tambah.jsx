@@ -14,6 +14,7 @@ const TambahKaryawan = () => {
   const [divisiList, setDivisiList] = useState([]);
   const [shiftList, setShiftList] = useState([]);
   const [perusahaanList, setPerusahaanList] = useState([]);
+  const [vehicleList, setVehicleList] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
   const [currentUser, setCurrentUser] = useState({
     nip: "",
@@ -25,6 +26,7 @@ const TambahKaryawan = () => {
     status_nikah: null,
     jml_anak: 0,
     id_perusahaan: "",
+    id_kendaraan: "",
     id_role: "",
     id_shift: "",
     telp: "",
@@ -47,8 +49,6 @@ const TambahKaryawan = () => {
     loginUser &&
     [1, 4].includes(Number(loginUser.id_perusahaan));
 
-
-
   useEffect(() => {
     const user = getUserFromToken();
     setLoginUser(user);
@@ -57,15 +57,21 @@ const TambahKaryawan = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [divisiRes, shiftRes, perusahaanRes] = await Promise.all([
+        const [divisiRes, shiftRes, perusahaanRes, vehicleRes] = await Promise.all([
           fetchWithJwt(`${apiUrl}/karyawan/divisi`),
           fetchWithJwt(`${apiUrl}/shift`),
           fetchWithJwt(`${apiUrl}/perusahaan`),
+          fetchWithJwt(`${apiUrl}/vehicles`),
         ]);
 
         const divisiData = await divisiRes.json();
         const shiftData = await shiftRes.json();
         const perusahaanData = await perusahaanRes.json();
+        const vehicleData = await vehicleRes.json();
+
+        if (vehicleData.success) {
+          setVehicleList(vehicleData.data);
+        }
 
         setPerusahaanList(perusahaanData.data);
         setDivisiList(divisiData.data);
@@ -283,7 +289,6 @@ const TambahKaryawan = () => {
               <option value={1}>Menikah</option>
               <option value={2}>Bercerai</option>
             </select>
-
           </div>
 
           {[1, 2].includes(currentUser.status_nikah) && (
@@ -292,7 +297,6 @@ const TambahKaryawan = () => {
               <input type="number" name="jml_anak" value={currentUser.jml_anak || 0} onChange={handleChange} min="0" placeholder="Masukkan jumlah anak (0 jika tidak ada)" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
             </div>
           )}
-
 
           <div className="col-span-full flex flex-col mt-4">
             <div className="flex items-center">
@@ -399,7 +403,6 @@ const TambahKaryawan = () => {
             </div>
           )}
 
-
           {/* Select Group Kadiv */}
           {Number.isInteger(currentUser.id_kadiv) && (
             <div className="mb-4">
@@ -440,6 +443,99 @@ const TambahKaryawan = () => {
               </div>
             </div>
           )}
+
+          <div className="col-span-full flex flex-col mt-4">
+            <div className="flex items-center">
+              <h3 className="text-lg font-bold text-green-600">
+                Kelola Kendaraan Karyawan
+              </h3>
+              <div className="flex-grow h-1 bg-green-500 ml-4 mt-1"></div>
+            </div>
+
+            <p className="text-sm text-gray-500 mt-1 ml-0">
+              Pilih dan atur kendaraan karyawan yang digunakan.
+            </p>
+          </div>
+
+          <div className="mb-4">
+            <label className="block mb-1 font-medium text-gray-700">
+              Kendaraan Operasional
+            </label>
+
+            <Select placeholder="Pilih Kendaraan"
+              isClearable
+              classNamePrefix="react-select"
+              options={vehicleList.map(v => ({
+                value: v.id,
+                label: `${v.nama} (${v.tahun})`,
+                meta: v,
+              }))}
+              value={
+                currentUser.id_kendaraan
+                  ? {
+                    value: currentUser.id_kendaraan,
+                    label: (() => {
+                      const v = vehicleList.find(x => x.id === currentUser.id_kendaraan);
+                      return v ? `${v.nama} (${v.tahun})` : "";
+                    })(),
+                  }
+                  : null
+              }
+              onChange={(selected) =>
+                setCurrentUser(prev => ({
+                  ...prev,
+                  id_kendaraan: selected ? selected.value : null,
+                }))
+              }
+            />
+
+            {currentUser.id_kendaraan && (
+              <div className="mt-3 rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+                {(() => {
+                  const v = vehicleList.find(x => x.id === currentUser.id_kendaraan);
+                  if (!v) return null;
+                  return (
+                    <>
+                      <div className="px-4 py-3 border-b bg-gray-50">
+                        <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">
+                          Kendaraan Digunakan
+                        </p>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {v.nama}
+                        </h3>
+                      </div>
+                      <div className="p-4 grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-gray-500 mb-1">Tahun STNK</p>
+                          <p className="font-medium text-gray-900">
+                            {v.tahun}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 mb-1">Jenis BBM</p>
+                          <p className="font-medium text-gray-900">
+                            {v.nama_bb}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 mb-1">Harga BBM</p>
+                          <p className="font-medium text-gray-900">
+                            Rp {v.harga_bb.toLocaleString()}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 mb-1">Konsumsi BBM</p>
+                          <p className="font-medium text-gray-900">
+                            {v.konsumsi_bb} km / liter
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            )}
+          </div>
 
 
           <div className="col-span-full flex flex-col mt-4">
@@ -548,12 +644,12 @@ const TambahKaryawan = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div>
                 <label className="block mb-1 font-medium text-gray-700">Username</label>
-                <input type="text" name="username" value={currentUser.username} onChange={handleChange} placeholder="Masukkan username (opsional)" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                <input type="text" name="username" value={currentUser.username} onChange={handleChange} placeholder="Masukkan username (Wajib)" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
               </div>
               <div>
                 <label className="block mb-1 font-medium text-gray-700">Password</label>
                 <div className="relative">
-                  <input type={showPassword ? "text" : "password"} name="password" value={currentUser.password} onChange={handleChange} placeholder="Masukkan password (opsional)" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 pr-10 outline-none" />
+                  <input type={showPassword ? "text" : "password"} name="password" value={currentUser.password} onChange={handleChange} placeholder="Masukkan password (Wajib)" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 pr-10 outline-none" />
                   <span onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-2.5 cursor-pointer text-gray-500">
                     <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
                   </span>

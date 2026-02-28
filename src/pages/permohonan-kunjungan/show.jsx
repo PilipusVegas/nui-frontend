@@ -133,7 +133,6 @@ const DetailKunjungan = () => {
                         <InfoItem label="Jabatan" value={data.role} />
                         <InfoItem label="Tanggal Kunjungan" value={formatFullDate(data.tanggal)} />
                     </InfoGrid>
-
                     <Divider />
 
                     {/* ================= KENDARAAN ================= */}
@@ -164,7 +163,7 @@ const DetailKunjungan = () => {
 
                     <div className="overflow-x-auto border rounded-lg">
                         <table className="min-w-full text-sm">
-                            <thead className="bg-gray-50 text-gray-700">
+                            <thead className="bg-green-500 text-white">
                                 <tr>
                                     <th className="px-3 py-2 text-left border-b">Total Jarak</th>
                                     <th className="px-3 py-2 text-left border-b">Harga BBM (Pertalite)</th>

@@ -17,7 +17,9 @@ const HomeMobile = () => {
   const isLeader = user?.is_leader === true;
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const [attendanceData, setAttendanceData] = useState([]);
-  const allowedKunjunganRoles = [48, 22];
+  const [tripStatus, setTripStatus] = useState({ status_kendaraan: false, user_lokasi: false, });
+  const [loadingTripStatus, setLoadingTripStatus] = useState(true);
+  const isTripReady = tripStatus.status_kendaraan && tripStatus.user_lokasi;
 
   useEffect(() => {
     const user = getUserFromToken();
@@ -33,6 +35,26 @@ const HomeMobile = () => {
     };
 
     if (idUser) fetchAttendance();
+  }, [apiUrl]);
+
+
+  useEffect(() => {
+    const fetchTripStatus = async () => {
+      try {
+        const res = await fetchWithJwt(`${apiUrl}/trip/user`);
+        if (!res.ok) throw new Error("Gagal memuat status kunjungan");
+        const json = await res.json();
+        setTripStatus({
+          status_kendaraan: json.data?.status_kendaraan === true,
+          user_lokasi: json.data?.user_lokasi === true,
+        });
+      } catch (err) {
+        console.error("Fetch trip status error:", err);
+      } finally {
+        setLoadingTripStatus(false);
+      }
+    };
+    fetchTripStatus();
   }, [apiUrl]);
 
 
@@ -76,12 +98,10 @@ const HomeMobile = () => {
               untuk memastikan seluruh informasi penting dapat diterima
               secara real-time.
             </p>
-
             <p>
               Saat ini notifikasi <strong>dinonaktifkan</strong>
               pada pengaturan browser Anda.
             </p>
-
             <p>
               Silakan aktifkan notifikasi secara manual melalui
               pengaturan browser sebelum melanjutkan penggunaan aplikasi.
@@ -107,12 +127,10 @@ const HomeMobile = () => {
             <p>
               Untuk menggunakan aplikasi ini, notifikasi harus diaktifkan.
             </p>
-
             <p>
               Notifikasi memastikan Anda menerima informasi penting
               secara otomatis dan tepat waktu.
             </p>
-
             <p>
               Tanpa notifikasi aktif, sistem tidak dapat menjamin
               penyampaian informasi terkait pekerjaan Anda.
@@ -128,10 +146,8 @@ const HomeMobile = () => {
 
         if (result.isConfirmed) {
           const newPermission = await Notification.requestPermission();
-
           if (newPermission === "granted") {
             await initPushNotification(user.id_user);
-
             await Swal.fire({
               icon: "success",
               title: "Notifikasi Aktif",
@@ -275,12 +291,12 @@ const HomeMobile = () => {
       <div className="grid grid-cols-4 gap-2 px-3">
         <MainMenuButton icon={faCalendarCheck} label="Absensi" onClick={() => navigate("/absensi")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-emerald-600 hover:scale-105 transition" />
         {user?.is_leader && (
-          <MainMenuButton icon={faPeopleGroup} label="Absensi Tim" onClick={() => navigate("/absensi-tim")}color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-orange-600 hover:scale-105 transition"/>
+          <MainMenuButton icon={faPeopleGroup} label="Absensi Tim" onClick={() => navigate("/absensi-tim")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-orange-600 hover:scale-105 transition" />
         )}
         <MainMenuButton icon={faClockFour} label="Lembur" onClick={() => navigate("/lembur")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-teal-600 hover:scale-105 transition" />
         <MainMenuButton icon={faPenFancy} label="Dinas" onClick={() => navigate("/formulir-dinas-aplikasi")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-blue-600 hover:scale-105 transition" />
         <MainMenuButton icon={faTasks} label="Tugas" onClick={() => navigate("/tugas")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-lime-600 hover:scale-105 transition" />
-        {allowedKunjunganRoles.includes(user?.id_role) && (
+        {!loadingTripStatus && isTripReady && (
           <MainMenuButton icon={faMotorcycle} label="Kunjungan" onClick={() => navigate("/kunjungan")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-indigo-600 hover:scale-105 transition" />
         )}
 

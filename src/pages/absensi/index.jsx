@@ -154,13 +154,28 @@ const Absensi = () => {
           `${apiUrl}/absen/cek/${attendanceData.userId}`
         );
 
-        const data = await response.json();
+        // 🔑 KHUSUS 404 → absensi memang kosong
+        if (response.status === 404) {
+          setAttendanceData(prev => ({
+            ...prev,
+            id_absen: "",
+            jam_mulai: null,
+            jam_selesai: null,
+          }));
 
-        if (!response.ok) {
-          const msg = data?.message || "Server sedang bermasalah";
-          throw new Error(msg);
+          setIsSelesaiFlow(false);
+          setIsAppReady(true); // ⬅️ PENTING
+          return;
         }
 
+        const data = await response.json();
+
+        // 🔴 error sungguhan
+        if (!response.ok) {
+          throw new Error(data?.message || "Server bermasalah");
+        }
+
+        // ✅ data absen ada
         if (data.success && data.data) {
           const detail = data.data;
 
@@ -178,17 +193,8 @@ const Absensi = () => {
           });
 
           setIsSelesaiFlow(!!detail.jam_mulai && !detail.jam_selesai);
-        } else {
-          setAttendanceData(prev => ({
-            ...prev,
-            id_absen: "",
-            jam_mulai: null,
-            jam_selesai: null,
-          }));
-          setIsSelesaiFlow(false);
         }
 
-        // 🔑 hanya di sini app dinyatakan siap
         setIsAppReady(true);
 
       } catch (error) {
@@ -343,21 +349,17 @@ const Absensi = () => {
                         <span>{formatFullDate(item.jam_mulai)}</span>
                         <span className="text-emerald-700">{item.nama_shift || "—"}</span>
                       </div>
-
                       <div className="flex items-start gap-3 rounded-lg border border-emerald-500 bg-emerald-50 p-3">
                         <FontAwesomeIcon icon={faCalendarPlus} className="text-emerald-700 mt-1 p-1 text-3xl" />
-
                         <div className="flex-1">
                           <p className="text-xs font-semibold text-emerald-800">
                             Absen Masuk
                           </p>
-
                           {item.jam_mulai ? (
                             <div className="flex items-center gap-2 mt-1">
                               <span className="text-sm font-bold text-emerald-800">
                                 {formatTime(item.jam_mulai)}
                               </span>
-
                               {item.keterlambatan > 0 && (
                                 <span className="text-[10px] px-2 py-[2px] rounded bg-red-200 text-red-700 font-semibold">
                                   Telat {item.keterlambatan} Menit

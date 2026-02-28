@@ -30,7 +30,11 @@ import {
     faHelmetSafety,
     faGasPump,
     faMapLocationDot,
-    faBicycle
+    faBicycle,
+    faUserTag,
+    faMotorcycle,
+    faCarSide,
+    faUsersGear
 } from "@fortawesome/free-solid-svg-icons";
 
 export const menuConfig = [
@@ -67,6 +71,13 @@ export const menuConfig = [
                         icon: faMoneyBillWave,
                         path: "/tunjangan-karyawan",
                         roles: [1, 4, 6],
+                        perusahaan: [1, 4],
+                    },
+                    {
+                        label: "Kendaraan Karyawan",
+                        icon: faUserGear,
+                        path: "/kendaraan-karyawan",
+                        roles: [1],
                         perusahaan: [1, 4],
                     },
                 ],
@@ -270,6 +281,25 @@ export const menuConfig = [
                     },
                 ],
             },
+            {
+                label: "Kunjungan",
+                icon: faMapLocationDot,
+                roles: [1, 4, 5, 6, 20],
+                submenu: [
+                    {
+                        label: "Permohonan Kunjungan",
+                        icon: faPenFancy,
+                        path: "/permohonan-kunjungan",
+                        roles: [1, 5, 20],
+                    },
+                    {
+                        label: "Riwayat Kunjungan",
+                        icon: faHistory,
+                        path: "/riwayat-permohonan-kunjungan",
+                        roles: [1, 4, 5, 6, 20],
+                    },
+                ],
+            },
         ],
     },
 
@@ -341,39 +371,21 @@ export const menuConfig = [
                 label: "Data Lokasi",
                 icon: faMapMarkerAlt,
                 path: "/data-lokasi",
-                roles: [1],
+                roles: [1, 4, 5, 6, 20],
             },
             {
                 label: "Data Kendaraan",
                 icon: faBicycle,
                 path: "/data-kendaraan",
-                roles: [1, 4, 6],
+                roles: [1, 4, 5, 6, 20],
             },
             {
                 label: "Data Jenis BBM",
                 icon: faGasPump,
                 path: "/jenis-bbm",
-                roles: [1, 4, 6],
+                roles: [1, 5, 20],
             },
-            {
-                label: "Kunjungan",
-                icon: faMapLocationDot,
-                roles: [1, 4, 5, 6, 20],
-                submenu: [
-                    {
-                        label: "Permohonan Kunjungan",
-                        icon: faPenFancy,
-                        path: "/permohonan-kunjungan",
-                        roles: [1, 4, 5, 6, 20],
-                    },
-                    {
-                        label: "Riwayat Kunjungan",
-                        icon: faHistory,
-                        path: "/riwayat-permohonan-kunjungan",
-                        roles: [1, 4, 5, 6, 20],
-                    },
-                ],
-            },
+
         ],
     },
 

@@ -6,6 +6,7 @@ import MobileLayout from "../../layouts/mobileLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt } from "../../utils/jwtHelper";
+import { formatDateTime } from "../../utils/dateUtils";
 
 const DetailAbsen = ({ formData = {} }) => {
   const navigate = useNavigate();
@@ -150,32 +151,48 @@ const DetailAbsen = ({ formData = {} }) => {
       setIsSuccess(true);
 
       Swal.fire({
+        icon: "success",
         title: notificationTitle,
-        text: new Intl.DateTimeFormat("id-ID", {
+        html: `
+    <p class="text-sm text-gray-600 mt-2">
+      Absensi Anda telah <b>berhasil dicatat</b> pada sistem.
+    </p>
+    <p class="text-sm text-gray-600 mt-2">
+      Untuk memastikan data sudah sesuai, silakan cek terlebih dahulu
+      <b>riwayat absensi</b> Anda.
+    </p>
+    <p class="text-xs text-gray-500 mt-3">
+      ${new Intl.DateTimeFormat("id-ID", {
           weekday: "long",
           day: "numeric",
           month: "long",
           year: "numeric",
-          hour: "numeric",
-          minute: "numeric",
-          second: "numeric",
-        }).format(new Date()),
-        icon: "success",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        }).format(new Date())}
+    </p>
+  `,
         showCancelButton: true,
         confirmButtonText: "Lihat Riwayat",
-        cancelButtonText: "Oke Sip!",
+        cancelButtonText: "Nanti Saja",
         reverseButtons: true,
+        allowOutsideClick: false,
         customClass: {
           confirmButton:
-            "bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md font-semibold shadow-sm",
+            "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm",
           cancelButton:
-            "bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md font-semibold shadow-sm ml-2",
+            "bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold ml-2",
           popup: "rounded-2xl shadow-lg p-6",
           title: "text-lg font-bold text-gray-800",
-          htmlContainer: "text-sm text-gray-600 mt-2",
+          htmlContainer: "text-sm text-gray-700",
         },
       }).then((result) => {
-        navigate(result.isConfirmed ? "/riwayat-pengguna" : "/");
+        if (result.isConfirmed) {
+          navigate("/riwayat-pengguna");
+        } else {
+          navigate("/");
+        }
       });
     } catch (error) {
       const message = error.message || "Terjadi kesalahan";

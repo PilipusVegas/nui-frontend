@@ -3,6 +3,7 @@ import MobileLayout from "../../layouts/mobileLayout";
 import { MapRoute, LoadingSpinner } from "../../components";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { getDistanceMeters } from "../../utils/locationUtils";
+import Swal from "sweetalert2";
 import toast from "react-hot-toast";
 import Select from "react-select";
 import KunjunganActionModal from "./KunjunganActionModal";
@@ -27,6 +28,7 @@ export default function Kunjungan() {
     const [photoPreview, setPhotoPreview] = useState(null);
     const [tripInfo, setTripInfo] = useState(null);
     const [showAddLocation, setShowAddLocation] = useState(false);
+    const [prerequisite, setPrerequisite] = useState({ status_kendaraan: null, user_lokasi: null, });
 
     // ================= UTIL =================
     const parseCoord = (str) => {
@@ -74,53 +76,72 @@ export default function Kunjungan() {
         try {
             const res = await fetchWithJwt(`${apiurl}/lokasi`);
             const json = await res.json();
-            const filtered = (json.data || []).filter(
-                (l) => l.kategori === 1 || l.kategori === 2
+            if (!res.ok) {
+                toast.error(json.message);
+                return;
+            }
+            setStores(
+                (json.data || []).filter(l => l.kategori === 1 || l.kategori === 2)
             );
-            setStores(filtered);
-        } catch (err) {
-            toast.error("Gagal memuat data lokasi");
-            setStores([]);
+        } catch {
+            toast.error("Koneksi ke server gagal");
         }
     };
 
     const fetchJadwal = async () => {
-        const user = await getUserFromToken(apiurl);
-        const res = await fetchWithJwt(`${apiurl}/jadwal/cek/${user.id_user}`);
-        const json = await res.json();
-        const jadwal = Array.isArray(json.data) ? json.data[0] : json.data;
-
-        setShiftId(jadwal?.id_shift || null);
-        setLokasiUser(jadwal?.lokasi_user || null);
+        try {
+            const user = await getUserFromToken(apiurl);
+            const res = await fetchWithJwt(`${apiurl}/jadwal/cek/${user.id_user}`);
+            if (!res.ok) {
+                const json = await res.json();
+                toast.error(json.message || "Gagal memuat jadwal");
+                return;
+            }
+            const json = await res.json();
+            const jadwal = Array.isArray(json.data) ? json.data[0] : json.data;
+            setShiftId(jadwal?.id_shift || null);
+            setLokasiUser(jadwal?.lokasi_user || null);
+        } catch (err) {
+            toast.error("Gagal mengambil data jadwal");
+        }
     };
 
     const fetchTrip = async () => {
-        const res = await fetchWithJwt(`${apiurl}/trip/user`);
-        const json = await res.json();
-        if (!json.data?.lokasi) return;
-
-        setTripId(json.data.id_trip);
-
-        setTripInfo({
-            id_trip: json.data.id_trip,
-            tanggal: json.data.tanggal,
-            is_complete: json.data.is_complete,
-            total_jarak: json.data.total_jarak,
-            nominal: json.data.nominal,
-        });
-
-        setHistory(
-            json.data.lokasi.map(l => ({
-                id: l.id_trip_lokasi,
-                kategori: l.kategori,
-                nama: l.nama_lokasi,
-                jam_mulai: l.jam_mulai,
-                jam_selesai: l.jam_selesai,
-                jarak: l.jarak || null,
-                deskripsi: l.deskripsi || null,
-                id_lokasi: l.id_lokasi,
-            }))
-        );
+        try {
+            const res = await fetchWithJwt(`${apiurl}/trip/user`);
+            const json = await res.json();
+            if (!res.ok) {
+                toast.error(json.message);
+                return;
+            }
+            setPrerequisite({
+                status_kendaraan: json.data.status_kendaraan,
+                user_lokasi: json.data.user_lokasi,
+            });
+            if (!json.data?.lokasi) return;
+            setTripId(json.data.id_trip);
+            setTripInfo({
+                id_trip: json.data.id_trip,
+                tanggal: json.data.tanggal,
+                is_complete: json.data.is_complete,
+                total_jarak: json.data.total_jarak,
+                nominal: json.data.nominal,
+            });
+            setHistory(
+                json.data.lokasi.map(l => ({
+                    id: l.id_trip_lokasi,
+                    kategori: l.kategori,
+                    nama: l.nama_lokasi,
+                    jam_mulai: l.jam_mulai,
+                    jam_selesai: l.jam_selesai,
+                    jarak: l.jarak,
+                    deskripsi: l.deskripsi,
+                    id_lokasi: l.id_lokasi,
+                }))
+            );
+        } catch {
+            toast.error("Koneksi ke server gagal");
+        }
     };
 
     // ================= VALIDATION =================
@@ -138,54 +159,55 @@ export default function Kunjungan() {
 
     // ================= ACTION =================
     const startVisit = async () => {
-        if (!shiftId) return toast.error("Tidak ada shift aktif");
-        if (!note || !photo) return toast.error("Foto & keterangan wajib");
-        if (!validateLokasiUser()) return;
-        if (!lokasiUser?.id_lokasi) {
-            toast.error("Lokasi awal tidak valid");
-            return;
+        try {
+            if (!shiftId) return toast.error("Tidak ada shift aktif");
+            if (!note || !photo) return toast.error("Foto & keterangan wajib");
+            if (!validateLokasiUser()) return;
+            const fd = new FormData();
+            fd.append("id_shift", shiftId);
+            fd.append("id_lokasi", lokasiUser.id_lokasi);
+            fd.append("foto", photo);
+            fd.append("deskripsi", note);
+            fd.append("koordinat", `${gps.lat},${gps.lng}`);
+            const res = await fetchWithJwt(`${apiurl}/trip/user`, {
+                method: "POST",
+                body: fd,
+            });
+            const json = await res.json();
+            if (!res.ok) {
+                toast.error(json.message);
+                return;
+            }
+            toast.success(json.message);
+            resetModalState();
+            setModal(null);
+            fetchTrip();
+        } catch {
+            toast.error("Koneksi ke server gagal");
         }
-        const fd = new FormData();
-        fd.append("id_shift", shiftId);
-        fd.append("id_lokasi", lokasiUser.id_lokasi);
-        fd.append("foto", photo);
-        fd.append("deskripsi", note);
-        fd.append("koordinat", `${gps.lat},${gps.lng}`);
-        await fetchWithJwt(`${apiurl}/trip/user`, {
-            method: "POST",
-            body: fd,
-        });
-        toast.success("Kunjungan dimulai");
-        resetModalState();
-        setModal(null);
-        fetchTrip();
     };
 
     const checkIn = async () => {
         if (!selectedStore) return toast.error("Pilih lokasi");
         if (!photo) return toast.error("Foto & keterangan wajib");
-
         const target = parseCoord(selectedStore.koordinat);
         const jarak = Math.round(
             getDistanceMeters(gps.lat, gps.lng, target.lat, target.lng)
         );
         if (jarak > MAX_RADIUS) return toast.error("Anda di luar radius lokasi");
-
         const fd = new FormData();
         fd.append("id_lokasi", selectedStore.id);
         fd.append("jarak", jarak);
         fd.append("foto", photo);
         fd.append("deskripsi", note);
         fd.append("koordinat", `${gps.lat},${gps.lng}`);
-
         await fetchWithJwt(`${apiurl}/trip/user/in/${tripId}`, {
             method: "PUT",
             body: fd
         });
-
         toast.success("Check-in berhasil");
         resetModalState();
-        setShowAddLocation(false); 
+        setShowAddLocation(false);
         setSelectedStore(null);
         setModal(null);
         fetchTrip();
@@ -218,17 +240,14 @@ export default function Kunjungan() {
     const endTrip = async () => {
         if (!photo) return toast.error("Foto wajib diambil");
         if (!note) return toast.error("Keterangan wajib diisi");
-
-        // Ambil lokasi terakhir (checkpoint terakhir)
-        const lastLocation = history[history.length - 1];
-        if (!lastLocation?.id_lokasi) {
-            return toast.error("Lokasi terakhir tidak valid");
+        if (!lokasiUser?.id_lokasi) {
+            return toast.error("Lokasi rumah belum diset oleh admin");
         }
         const fd = new FormData();
-        fd.append("id_lokasi", lastLocation.id_lokasi);
+        fd.append("id_lokasi", lokasiUser.id_lokasi); // ⬅️ FIX UTAMA
         fd.append("foto", photo);
         fd.append("deskripsi", note);
-        fd.append("koordinat", `${gps.lat},${gps.lng}`);
+        fd.append("koordinat", `${gps.lat},${gps.lng}`); // posisi real user
         await fetchWithJwt(
             `${apiurl}/trip/user/end/${tripId}`,
             {
@@ -254,6 +273,55 @@ export default function Kunjungan() {
         setPhotoPreview(null);
     };
 
+    // ================= SWAL =================
+    const validateKunjunganPrerequisite = () => {
+        const kendaraanValid = prerequisite.status_kendaraan === true;
+        const lokasiRumahValid = prerequisite.user_lokasi === true;
+
+        if (!kendaraanValid && !lokasiRumahValid) {
+            Swal.fire({
+                icon: "warning",
+                title: "Data Belum Lengkap",
+                html: `
+                <p style="text-align:left">
+                    Wah, belum ada informasi terkait <b>data kendaraan</b> dan <b>lokasi rumah</b> kamu.
+                    <br/><br/>
+                    Syarat menggunakan fitur <b>Kunjungan</b> adalah seluruh data wajib sudah diinput oleh
+                    <b>Kepala Divisi</b> masing-masing.
+                    <br/><br/>
+                    Silakan hubungi Kepala Divisi untuk melengkapi data tersebut.
+                </p>
+            `,
+                confirmButtonText: "Mengerti",
+            });
+            return false;
+        }
+
+        if (!kendaraanValid) {
+            Swal.fire({
+                icon: "warning",
+                title: "Data Kendaraan Belum Ada",
+                text:
+                    "Data kendaraan kamu belum tersedia. Silakan hubungi Kepala Divisi untuk menambahkan data kendaraan.",
+                confirmButtonText: "Mengerti",
+            });
+            return false;
+        }
+
+        if (!lokasiRumahValid) {
+            Swal.fire({
+                icon: "warning",
+                title: "Lokasi Rumah Belum Diset",
+                text:
+                    "Lokasi rumah kamu belum ditentukan. Silakan hubungi Kepala Divisi untuk melengkapinya.",
+                confirmButtonText: "Mengerti",
+            });
+            return false;
+        }
+
+        return true;
+    };
+
     // ================= EARLY =================
     if (!gps) {
         return (
@@ -262,6 +330,7 @@ export default function Kunjungan() {
             </MobileLayout>
         );
     }
+
 
     // ================= RENDER =================
     return (
@@ -312,7 +381,7 @@ export default function Kunjungan() {
                                 </p>
                             </div>
                         </div>
-                        <button onClick={() => setModal("start")} className="w-full bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-lg font-semibold transition">
+                        <button onClick={() => { if (!validateKunjunganPrerequisite()) return; setModal("start"); }} className="w-full bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-lg font-semibold transition">
                             Mulai Kunjungan
                         </button>
                     </div>
