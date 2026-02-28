@@ -144,10 +144,7 @@ const Timeline = ({
 
           {canAddLocation && (
             <div className="pt-4 border-t border-gray-200">
-              <button
-                onClick={onAddLocation}
-                className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xltext-sm font-semibold transition"
-              >
+              <button onClick={onAddLocation} className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl text-sm font-semibold transition">
                 <FontAwesomeIcon icon={faPlus} />
                 Tambah Lokasi
               </button>

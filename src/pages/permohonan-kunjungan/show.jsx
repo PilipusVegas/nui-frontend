@@ -182,7 +182,7 @@ const DetailKunjungan = () => {
                                         {formatRupiah(data.kendaraan?.harga_bb)}
                                     </td>
                                     <td className="px-3 py-2 border-b">
-                                        {formatRupiah(data.nominal)}
+                                        {formatRupiah(data.base_nominal)}
                                     </td>
                                     <td className="px-3 py-2 border-b">
                                         {formatRupiah(data.nominal_percent) || 0}
