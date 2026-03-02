@@ -29,6 +29,7 @@ export default function Kunjungan() {
     const [tripInfo, setTripInfo] = useState(null);
     const [showAddLocation, setShowAddLocation] = useState(false);
     const [prerequisite, setPrerequisite] = useState({ status_kendaraan: null, user_lokasi: null, });
+    const [jadwalLokasi, setJadwalLokasi] = useState([]);
 
     // ================= UTIL =================
     const parseCoord = (str) => {
@@ -92,16 +93,21 @@ export default function Kunjungan() {
         try {
             const user = await getUserFromToken(apiurl);
             const res = await fetchWithJwt(`${apiurl}/jadwal/cek/${user.id_user}`);
+            const json = await res.json();
+
             if (!res.ok) {
-                const json = await res.json();
                 toast.error(json.message || "Gagal memuat jadwal");
                 return;
             }
-            const json = await res.json();
+
             const jadwal = Array.isArray(json.data) ? json.data[0] : json.data;
+
             setShiftId(jadwal?.id_shift || null);
             setLokasiUser(jadwal?.lokasi_user || null);
-        } catch (err) {
+
+            // ⬅️ INI KUNCI UTAMA
+            setJadwalLokasi(jadwal?.lokasi || []);
+        } catch {
             toast.error("Gagal mengambil data jadwal");
         }
     };
@@ -402,12 +408,13 @@ export default function Kunjungan() {
                                 </p>
                             </div>
 
-                            <Select
-                                placeholder="Pilih lokasi kerja / gerai"
-                                options={stores.map(s => ({
-                                    label: s.nama,
-                                    value: s.id,
-                                    data: s,
+                            <Select placeholder="Pilih lokasi kunjungan sesuai jadwal" options={jadwalLokasi.map(l => ({
+                                    label: l.nama,
+                                    value: l.id,
+                                    data: {
+                                        ...l,
+                                        koordinat: `${l.latitude},${l.longitude}`,
+                                    },
                                 }))}
                                 onChange={o => setSelectedStore(o?.data || null)}
                             />
