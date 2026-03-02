@@ -8,6 +8,7 @@ import {
   faCalendarAlt,
   faArrowRightFromBracket,
   faPlus,
+  faArrowRight
 } from "@fortawesome/free-solid-svg-icons";
 import { formatFullDate, formatTime } from "../../utils/dateUtils";
 
@@ -22,18 +23,9 @@ const getTimelineTitle = (item, index, checkpoints) => {
   if (item.kategori === 1) return "Mulai Kunjungan";
   if (item.kategori === 2) {
     const order = checkpoints.findIndex((c) => c.id === item.id) + 1;
-    const isLastCheckpoint = order === checkpoints.length && item.jam_selesai;
-    if (order === 1) {
-      return "Checkpoint 1 & Absen Masuk";
-    }
-    if (isLastCheckpoint) {
-      return `Checkpoint ${order} & Absen Selesai`;
-    }
     return `Checkpoint ${order}`;
   }
-
   if (item.kategori === 3) return "Kunjungan Berakhir";
-
   return "Aktivitas Kunjungan";
 };
 
@@ -50,6 +42,13 @@ const Timeline = ({
   const checkpoints = history.filter((h) => h.kategori === 2);
   const lastCheckpoint = checkpoints[checkpoints.length - 1];
   const canEndTrip = checkpoints.length > 0 && lastCheckpoint?.jam_selesai && !history.some((h) => h.kategori === 3);
+  const isFirstCheckpoint = (item, checkpoints) =>
+    item.kategori === 2 && checkpoints[0]?.id === item.id;
+
+  const isLastCheckpoint = (item, checkpoints) =>
+    item.kategori === 2 && checkpoints[checkpoints.length - 1]?.id === item.id;
+
+  const isTripEnded = history.some((h) => h.kategori === 3);
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-5 mb-20">
@@ -117,16 +116,30 @@ const Timeline = ({
                     )}
 
                     {h.kategori === 2 && h.jam_mulai && (
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2">
                         <FontAwesomeIcon icon={faClock} className="text-emerald-500" />
                         <span>Check-in {formatTime(h.jam_mulai)}</span>
+
+                        {isFirstCheckpoint(h, checkpoints) && (
+                          <span className="flex items-center gap-1 text-emerald-600 font-semibold">
+                            <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
+                            Absen Masuk
+                          </span>
+                        )}
                       </div>
                     )}
 
                     {h.kategori === 2 && h.jam_selesai && (
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2">
                         <FontAwesomeIcon icon={faClock} className="text-rose-500" />
                         <span>Check-out {formatTime(h.jam_selesai)}</span>
+
+                        {isLastCheckpoint(h, checkpoints) && isTripEnded && (
+                          <span className="flex items-center gap-1 text-rose-600 font-semibold">
+                            <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
+                            Absen Pulang
+                          </span>
+                        )}
                       </div>
                     )}
 

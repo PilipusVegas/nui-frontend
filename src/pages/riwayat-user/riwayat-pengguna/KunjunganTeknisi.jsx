@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faClock, faUserCheck } from "@fortawesome/free-solid-svg-icons";
+import { faChevronDown, faClock, faUserCheck, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../../../utils/jwtHelper";
 import { formatCustomDateTime, formatFullDate } from "../../../utils/dateUtils";
 import { LoadingSpinner, EmptyState, ErrorState, SearchBar } from "../../../components";
@@ -29,6 +29,15 @@ export default function KunjunganTeknisi() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [openIndex, setOpenIndex] = useState(null);
+    const isFirstCheckpoint = (lokasi, index) =>
+        lokasi.kategori === 2 && index === 0;
+
+    const isLastCheckpoint = (lokasi, index, total, isTripEnded) =>
+        lokasi.kategori === 2 && index === total - 1 && isTripEnded;
+
+
+
+
 
     useEffect(() => {
         const load = async () => {
@@ -115,6 +124,8 @@ export default function KunjunganTeknisi() {
                 ) : (
                     filtered.map((item, idx) => {
                         const tanggal = formatFullDate(item.tanggal);
+                        const isTripEnded = item.lokasi?.some(l => l.kategori === 3);
+                        const checkpoints = item.lokasi.filter(l => l.kategori === 2);
 
                         return (
                             <div key={idx} className="rounded-xl border bg-white px-4 py-3 space-y-3">
@@ -130,9 +141,7 @@ export default function KunjunganTeknisi() {
                                         };
 
                                         return (
-                                            <span
-                                                className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${status.className}`}
-                                            >
+                                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${status.className}`}>
                                                 {status.label}
                                             </span>
                                         );
@@ -178,21 +187,17 @@ export default function KunjunganTeknisi() {
                                         {item.lokasi?.map((lok, lidx) => {
                                             const config = kategoriConfig(lok.kategori, lidx);
                                             const isLast = lidx === item.lokasi.length - 1;
+                                            const getCheckpointIndex = (lok) =>
+                                                checkpoints.findIndex(c => c === lok);
 
                                             return (
                                                 <div key={lidx} className="flex gap-4 relative">
-                                                    {/* TIMELINE COLUMN */}
                                                     <div className="relative flex justify-center shrink-0 w-4">
-                                                        {/* BULATAN */}
                                                         <div className={`w-4 h-4 rounded-full ${config.color} ring-4 ring-white z-10`} />
-
-                                                        {/* GARIS KE ITEM BERIKUTNYA */}
                                                         {!isLast && (
                                                             <div className="absolute top-4 bottom-0 w-px bg-gray-300" />
                                                         )}
                                                     </div>
-
-                                                    {/* CONTENT */}
                                                     <div className="flex-1 text-xs text-gray-700 space-y-1 pb-4">
                                                         <p className="font-semibold">
                                                             {config.title}
@@ -202,15 +207,57 @@ export default function KunjunganTeknisi() {
                                                             {lok.nama_lokasi}
                                                         </p>
 
-                                                        <div className="flex gap-4 text-[11px]">
-                                                            <span className="flex items-center gap-1 text-emerald-600">
-                                                                <FontAwesomeIcon icon={faClock} />
-                                                                {formatTime(lok.jam_mulai)}
-                                                            </span>
-                                                            <span className="flex items-center gap-1 text-rose-600">
-                                                                <FontAwesomeIcon icon={faClock} />
-                                                                {formatTime(lok.jam_selesai)}
-                                                            </span>
+                                                        <div className="space-y-1.5 text-[11px]">
+
+                                                            {/* MULAI KUNJUNGAN */}
+                                                            {lok.kategori === 1 && lok.jam_mulai && (
+                                                                <div className="flex items-center gap-2">
+                                                                    <FontAwesomeIcon icon={faClock} className="text-emerald-500" />
+                                                                    <span className="font-medium text-gray-600">Mulai Kunjungan</span>
+                                                                    <span className="text-gray-500">{formatTime(lok.jam_mulai)}</span>
+                                                                </div>
+                                                            )}
+
+                                                            {/* CHECK-IN */}
+                                                            {lok.kategori === 2 && lok.jam_mulai && (
+                                                                <div className="flex items-center gap-2">
+                                                                    <FontAwesomeIcon icon={faClock} className="text-emerald-500" />
+                                                                    <span className="font-medium text-gray-600">Check-in</span>
+                                                                    <span className="text-gray-500">{formatTime(lok.jam_mulai)}</span>
+
+                                                                    {getCheckpointIndex(lok) === 0 && (
+                                                                        <span className="flex items-center gap-1 text-emerald-600 font-semibold ml-2">
+                                                                            <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
+                                                                            Absen Masuk
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            )}
+
+                                                            {/* CHECK-OUT */}
+                                                            {lok.kategori === 2 && lok.jam_selesai && (
+                                                                <div className="flex items-center gap-2">
+                                                                    <FontAwesomeIcon icon={faClock} className="text-rose-500" />
+                                                                    <span className="font-medium text-gray-600">Check-out</span>
+                                                                    <span className="text-gray-500">{formatTime(lok.jam_selesai)}</span>
+
+                                                                    {getCheckpointIndex(lok) === checkpoints.length - 1 && isTripEnded && (
+                                                                        <span className="flex items-center gap-1 text-rose-600 font-semibold ml-2">
+                                                                            <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
+                                                                            Absen Pulang
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            )}
+
+                                                            {/* AKHIRI KUNJUNGAN */}
+                                                            {lok.kategori === 3 && lok.jam_selesai && (
+                                                                <div className="flex items-center gap-2">
+                                                                    <FontAwesomeIcon icon={faClock} className="text-rose-500" />
+                                                                    <span className="font-medium text-gray-600">Kunjungan Berakhir</span>
+                                                                    <span className="text-gray-500">{formatTime(lok.jam_selesai)}</span>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>

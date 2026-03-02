@@ -11,8 +11,7 @@ import Timeline from "./Timeline";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLocationDot, faCamera, faClock } from "@fortawesome/free-solid-svg-icons";
 const MAX_RADIUS = 60;
-const isValidCoord = (c) =>
-    c && typeof c.lat === "number" && typeof c.lng === "number";
+const isValidCoord = (c) => c && typeof c.lat === "number" && typeof c.lng === "number";
 
 export default function Kunjungan() {
     const apiurl = process.env.REACT_APP_API_BASE_URL;
@@ -51,18 +50,6 @@ export default function Kunjungan() {
         return parseCoord(selectedStore.koordinat);
     }, [selectedStore]);
 
-    const distanceToLokasiUser = useMemo(() => {
-        if (!isValidCoord(gps) || !isValidCoord(lokasiUserCoord)) return null;
-
-        return Math.round(
-            getDistanceMeters(
-                gps.lat,
-                gps.lng,
-                lokasiUserCoord.lat,
-                lokasiUserCoord.lng
-            )
-        );
-    }, [gps, lokasiUserCoord]);
 
     // ================= EFFECT =================
     useEffect(() => {
@@ -102,18 +89,13 @@ export default function Kunjungan() {
             const user = await getUserFromToken(apiurl);
             const res = await fetchWithJwt(`${apiurl}/jadwal/cek/${user.id_user}`);
             const json = await res.json();
-
             if (!res.ok) {
                 toast.error(json.message || "Gagal memuat jadwal");
                 return;
             }
-
             const jadwal = Array.isArray(json.data) ? json.data[0] : json.data;
-
             setShiftId(jadwal?.id_shift || null);
             setLokasiUser(jadwal?.lokasi_user || null);
-
-            // ⬅️ INI KUNCI UTAMA
             setJadwalLokasi(jadwal?.lokasi || []);
         } catch {
             toast.error("Gagal mengambil data jadwal");
@@ -151,7 +133,7 @@ export default function Kunjungan() {
                     jarak: l.jarak,
                     deskripsi: l.deskripsi,
                     id_lokasi: l.id_lokasi,
-                    koordinat: `${l.latitude},${l.longitude}`, // ⬅️ FIX UTAMA
+                    koordinat: `${l.latitude},${l.longitude}`,
                 }))
             );
         } catch {
@@ -159,18 +141,6 @@ export default function Kunjungan() {
         }
     };
 
-    // ================= VALIDATION =================
-    const validateLokasiUser = () => {
-        if (!lokasiUserCoord) {
-            toast.error("Lokasi awal belum ditentukan admin");
-            return false;
-        }
-        if (distanceToLokasiUser > MAX_RADIUS) {
-            toast.error("Anda tidak berada di lokasi awal");
-            return false;
-        }
-        return true;
-    };
 
     // ================= ACTION =================
     const startVisit = async () => {
@@ -318,7 +288,6 @@ export default function Kunjungan() {
     const validateKunjunganPrerequisite = () => {
         const kendaraanValid = prerequisite.status_kendaraan === true;
         const lokasiRumahValid = prerequisite.user_lokasi === true;
-
         if (!kendaraanValid && !lokasiRumahValid) {
             Swal.fire({
                 icon: "warning",
@@ -441,7 +410,7 @@ export default function Kunjungan() {
                 {hasTrip &&
                     tripInfo?.is_complete === 0 &&
                     !activeLocation &&
-                    showAddLocation && (   // ⬅️ KUNCI UTAMA
+                    showAddLocation && ( 
                         <div className="space-y-3 rounded-xl border bg-white p-4">
                             <div className="space-y-0.5">
                                 <p className="text-sm font-semibold text-gray-800">
@@ -465,10 +434,7 @@ export default function Kunjungan() {
                             />
 
                             <div className="flex gap-2">
-                                <button
-                                    onClick={() => setShowAddLocation(false)}
-                                    className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg text-sm font-medium"
-                                >
+                                <button onClick={() => { setShowAddLocation(false); setSelectedStore(null);}} className="flex-1 text-white bg-red-500 py-2.5 rounded-lg text-sm font-medium">
                                     Batal
                                 </button>
 
@@ -516,12 +482,12 @@ export default function Kunjungan() {
                 isOpen={!!modal}
                 title={
                     modal === "start"
-                        ? "Mulai Kunjungan & Absen Masuk"
+                        ? "Mulai Kunjungan"
                         : modal === "checkin"
                             ? "Check-In Lokasi"
                             : modal === "checkout"
                                 ? "Check-Out Lokasi"
-                                : "Akhiri Kunjungan & Absen Pulang"
+                                : "Akhiri Kunjungan"
                 }
                 submitLabel="Simpan"
                 onSubmit={

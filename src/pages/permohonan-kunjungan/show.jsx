@@ -267,7 +267,7 @@ const DetailKunjungan = () => {
                                 Detail Timeline Kunjungan
                             </h4>
                             <div className="flex-1 lg:overflow-y-auto scrollbar-green pr-1">
-                                <TimelineLokasi lokasi={data.lokasi} apiUrl={apiUrl} onDeleted={fetchDetail} />
+                                <TimelineLokasi lokasi={data.lokasi} apiUrl={apiUrl} statusTrip={data.status} onDeleted={fetchDetail} />
                             </div>
                         </div>
                     </div>

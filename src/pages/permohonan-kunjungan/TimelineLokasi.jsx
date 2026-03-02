@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import { formatTime } from "../../utils/dateUtils";
-import { faClock, faEye, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faClock, faEye, faTrash, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import toast from "react-hot-toast";
+import Swal from "sweetalert2";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 
 /* ================= KONSTANTA ================= */
@@ -15,17 +16,19 @@ const KATEGORI = {
 };
 
 /* ================= MAIN ================= */
-const TimelineLokasi = ({ lokasi = [], apiUrl, onDeleted }) => {
+const TimelineLokasi = ({ lokasi = [], apiUrl, statusTrip, onDeleted }) => {
     let checkpointCounter = 0;
+    const checkpoints = lokasi.filter(l => l.kategori === 2);
+    const isTripEnded = lokasi.some(l => l.kategori === 3);
+
+    const getCheckpointIndex = (lok) =>
+        checkpoints.findIndex(c => c === lok);
 
     return (
         <div className="relative">
             {lokasi.map((lok, idx) => {
                 if (lok.kategori === 2) checkpointCounter++;
-                const label =
-                    lok.kategori === 2
-                        ? `Checkpoint ${checkpointCounter}`
-                        : (KATEGORI[lok.kategori]?.label ?? "-");
+                const label = lok.kategori === 2 ? `Checkpoint ${checkpointCounter}` : (KATEGORI[lok.kategori]?.label ?? "-");
                 const isLast = idx === lokasi.length - 1;
                 return (
                     <TimelineItem
@@ -35,7 +38,11 @@ const TimelineLokasi = ({ lokasi = [], apiUrl, onDeleted }) => {
                         color={KATEGORI[lok.kategori]?.color}
                         apiUrl={apiUrl}
                         isLast={isLast}
+                        statusTrip={statusTrip}
                         onDeleted={onDeleted}
+                        checkpointIndex={getCheckpointIndex(lok)}
+                        checkpointTotal={checkpoints.length}
+                        isTripEnded={isTripEnded}
                     />
                 );
             })}
@@ -51,7 +58,11 @@ const TimelineItem = ({
     color,
     apiUrl,
     isLast,
+    statusTrip,
     onDeleted,
+    checkpointIndex,
+    checkpointTotal,
+    isTripEnded,
 }) => {
     const [open, setOpen] = useState(false);
     const user = getUserFromToken();
@@ -69,92 +80,132 @@ const TimelineItem = ({
     ].filter(Boolean);
 
     const handleDelete = async () => {
-        if (!window.confirm("Yakin ingin menghapus checkpoint ini?")) return;
+        const result = await Swal.fire({
+            title: "Hapus Checkpoint?",
+            text: "Checkpoint yang dihapus tidak dapat dikembalikan.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Ya, Hapus",
+            cancelButtonText: "Batal",
+            confirmButtonColor: "#dc2626", // merah
+            cancelButtonColor: "#6b7280", // abu-abu
+            reverseButtons: true,
+        });
+
+        if (!result.isConfirmed) return;
 
         try {
             const res = await fetchWithJwt(
                 `${apiUrl}/trip/lokasi/${lok.id_trip_lokasi}`,
                 { method: "DELETE" }
             );
-
             const json = await res.json();
 
             if (!res.ok || !json.success) {
-                toast.error(json.message || "Gagal menghapus checkpoint");
+                Swal.fire({
+                    icon: "error",
+                    title: "Gagal",
+                    text: json.message || "Gagal menghapus checkpoint",
+                });
                 return;
             }
 
-            toast.success("Checkpoint berhasil dihapus");
-            onDeleted?.(); // refresh detail
+            Swal.fire({
+                icon: "success",
+                title: "Berhasil",
+                text: "Checkpoint berhasil dihapus",
+                timer: 2000,
+                showConfirmButton: false,
+            });
+
+            onDeleted?.();
         } catch {
-            toast.error("Terjadi kesalahan saat menghapus lokasi");
+            Swal.fire({
+                icon: "error",
+                title: "Kesalahan",
+                text: "Terjadi kesalahan saat menghapus lokasi",
+            });
         }
     };
 
     return (
         <div className="relative flex gap-4">
-            {/* DOT + LINE */}
             <div className="relative flex justify-center w-8">
-                {/* GARIS (HANYA JIKA BUKAN ITEM TERAKHIR) */}
                 {!isLast && <div className="absolute top-0 bottom-0 w-px bg-gray-300" />}
-
-                {/* DOT */}
                 <div
                     className={`relative z-10 mt-1 w-4 h-4 rounded-full ${color} ring-4 ring-white shadow-md`}
                 />
             </div>
-
-            {/* CONTENT */}
             <div className="flex-1 pb-10">
                 <div className="flex items-center justify-between">
                     <p className="text-xs font-semibold text-gray-800 uppercase tracking-wide">
                         {label}
                     </p>
 
-                    {lok.kategori === 2 && isKadiv && (
-                        <button
-                            onClick={handleDelete}
-                            className="text-xs text-red-600 hover:text-red-700 flex items-center gap-1"
-                        >
-                            <FontAwesomeIcon icon={faTrash} />
+                    {lok.kategori === 2 && isKadiv && statusTrip === 0 && (
+                        <button onClick={handleDelete} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-red-500 rounded-md shadow-sm hover:bg-red-600 active:bg-red-700 transition">
+                            <FontAwesomeIcon icon={faTrash} className="text-xs" />
                             Hapus
                         </button>
                     )}
                 </div>
-
                 <p className="text-md text-gray-700 font-medium mt-0.5">{lok.nama_lokasi}</p>
+                <div className="mt-1 space-y-1.5 text-xs">
 
-                <div className="flex items-center gap-4 text-xs mt-1">
-                    {/* MULAI KUNJUNGAN → JAM MULAI SAJA */}
+                    {/* ================= MULAI KUNJUNGAN ================= */}
                     {lok.kategori === 1 && lok.jam_mulai && (
-                        <div className="flex items-center gap-1 text-green-600">
-                            <FontAwesomeIcon icon={faClock} />
-                            <span>{formatTime(lok.jam_mulai)}</span>
+                        <div className="flex items-center gap-2">
+                            <FontAwesomeIcon icon={faClock} className="text-green-600" />
+                            <span className="font-medium text-gray-700 text-sm">Mulai Kunjungan</span>
+                            <FontAwesomeIcon icon={faArrowRight} className="text-[10px] text-green-600" />
+                            <span className="text-gray-700 text-sm">{formatTime(lok.jam_mulai)}</span>
                         </div>
                     )}
 
-                    {/* CHECKPOINT → BOLEH KEDUANYA */}
+                    {/* ================= CHECK-IN ================= */}
                     {lok.kategori === 2 && lok.jam_mulai && (
-                        <div className="flex items-center gap-1 text-green-600">
-                            <FontAwesomeIcon icon={faClock} />
-                            <span>{formatTime(lok.jam_mulai)}</span>
+                        <div className="flex items-center gap-2">
+                            <FontAwesomeIcon icon={faClock} className="text-green-600" />
+                            <span className="font-medium text-gray-700 text-sm">Check-in</span>
+                            <span className="text-gray-700 text-sm">{formatTime(lok.jam_mulai)}</span>
+
+                            {/* ABSEN MASUK */}
+                            {checkpointIndex === 0 && (
+                                <span className="ml-2 flex items-center gap-1 font-semibold text-green-700">
+                                    <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
+                                    Absen Masuk
+                                </span>
+                            )}
                         </div>
                     )}
 
+                    {/* ================= CHECK-OUT ================= */}
                     {lok.kategori === 2 && lok.jam_selesai && (
-                        <div className="flex items-center gap-1 text-red-600">
-                            <FontAwesomeIcon icon={faClock} />
-                            <span>{formatTime(lok.jam_selesai)}</span>
+                        <div className="flex items-center gap-2">
+                            <FontAwesomeIcon icon={faClock} className="text-red-600" />
+                            <span className="font-medium text-gray-700 text-sm">Check-out</span>
+                            <span className="text-gray-700 text-sm">{formatTime(lok.jam_selesai)}</span>
+
+                            {/* ABSEN PULANG */}
+                            {checkpointIndex === checkpointTotal - 1 && isTripEnded && (
+                                <span className="ml-2 flex items-center gap-1 font-semibold text-red-700">
+                                    <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
+                                    Absen Pulang
+                                </span>
+                            )}
                         </div>
                     )}
 
-                    {/* KUNJUNGAN BERAKHIR → JAM SELESAI SAJA */}
+                    {/* ================= KUNJUNGAN BERAKHIR ================= */}
                     {lok.kategori === 3 && lok.jam_selesai && (
-                        <div className="flex items-center gap-1 text-red-600">
-                            <FontAwesomeIcon icon={faClock} />
-                            <span>{formatTime(lok.jam_selesai)}</span>
+                        <div className="flex items-center gap-2">
+                            <FontAwesomeIcon icon={faClock} className="text-red-600" />
+                            <span className="font-medium text-gray-700 text-sm">Kunjungan Berakhir</span>
+                            <FontAwesomeIcon icon={faArrowRight} className="text-[10px] text-red-600" />
+                            <span className="text-gray-700 text-sm">{formatTime(lok.jam_selesai)}</span>
                         </div>
                     )}
+
                 </div>
 
                 {lok.deskripsi && (
@@ -181,7 +232,6 @@ const TimelineItem = ({
                                 </div>
                             ))}
                         </div>
-
                         <Lightbox open={open} close={() => setOpen(false)} slides={photos} />
                     </>
                 )}

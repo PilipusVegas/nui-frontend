@@ -21,15 +21,11 @@ const KendaraanKaryawan = () => {
 
     const itemsPerPage = 10;
 
-    /* ======================
-     * Helpers
-     * ====================== */
+    /* Helpers */
     const formatRupiah = (value) =>
         `Rp ${Number(value || 0).toLocaleString("id-ID")}`;
 
-    /* ======================
-     * Fetch Data
-     * ====================== */
+    /* Fetch Data */
     useEffect(() => {
         fetchData();
     }, []);
@@ -37,10 +33,17 @@ const KendaraanKaryawan = () => {
     const fetchData = async () => {
         try {
             const res = await fetchWithJwt(`${apiUrl}/vehicles/users`);
+            if (res.status === 404) {
+                setData([]);
+                return;
+            }
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}`);
+            }
             const json = await res.json();
             setData(Array.isArray(json.data) ? json.data : []);
         } catch (err) {
-            console.error(err);
+            console.error("Fetch kendaraan karyawan gagal:", err);
             setData([]);
         }
     };
@@ -82,9 +85,7 @@ const KendaraanKaryawan = () => {
         }
     };
 
-    /* ======================
-     * Filter & Pagination
-     * ====================== */
+    /* Filter & Pagination */
     const filteredData = data.filter((item) =>
         `${item.nama_user} ${item.nip_user} ${item.nama_kendaraan}`
             .toLowerCase()
@@ -101,18 +102,13 @@ const KendaraanKaryawan = () => {
         setCurrentPage(1);
     }, [searchTerm]);
 
-    /* ======================
-     * Render
-     * ====================== */
+    /* Render */
     return (
         <div className="flex flex-col bg-white">
             <SectionHeader title="Kendaraan Karyawan" subtitle="Daftar kendaraan yang digunakan oleh karyawan untuk operasional dan kunjungan."
                 onBack={() => navigate("/home")}
                 actions={
-                    <button
-                        onClick={() => setIsAddOpen(true)}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium"
-                    >
+                    <button onClick={() => setIsAddOpen(true)} className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium">
                         <FontAwesomeIcon icon={faPlus} />
                         Tambah
                     </button>
