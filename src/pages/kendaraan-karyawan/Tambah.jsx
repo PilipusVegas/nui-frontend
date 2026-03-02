@@ -7,11 +7,10 @@ import Select from "react-select";
 const TambahKendaraanKaryawan = ({ isOpen, onClose, apiUrl, onSuccess }) => {
     const [users, setUsers] = useState([]);
     const [vehicles, setVehicles] = useState([]);
-
     const [selectedUser, setSelectedUser] = useState(null);
     const [selectedVehicle, setSelectedVehicle] = useState(null);
-
     const [loading, setLoading] = useState(false);
+    const [loadingMaster, setLoadingMaster] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -22,6 +21,7 @@ const TambahKendaraanKaryawan = ({ isOpen, onClose, apiUrl, onSuccess }) => {
     }, [isOpen]);
 
     const fetchMasterData = async () => {
+        setLoadingMaster(true);
         try {
             const [userRes, vehicleRes] = await Promise.all([
                 fetchWithJwt(`${apiUrl}/profil`),
@@ -32,6 +32,8 @@ const TambahKendaraanKaryawan = ({ isOpen, onClose, apiUrl, onSuccess }) => {
             setVehicles((await vehicleRes.json()).data || []);
         } catch {
             Swal.fire("Error", "Gagal memuat data master", "error");
+        } finally {
+            setLoadingMaster(false);
         }
     };
 
@@ -42,7 +44,7 @@ const TambahKendaraanKaryawan = ({ isOpen, onClose, apiUrl, onSuccess }) => {
         () =>
             users.map((u) => ({
                 value: u.id,
-                label: `${u.nama} (${u.nip})`,
+                label: `${u.nama} (${u.role})`,
             })),
         [users]
     );
@@ -99,7 +101,10 @@ const TambahKendaraanKaryawan = ({ isOpen, onClose, apiUrl, onSuccess }) => {
         <div className="text-sm text-gray-700">
             Kendaraan yang Anda cari tidak ada?
             <div
-                onMouseDown={(e) => e.stopPropagation()}
+                onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }}
                 onClick={() => window.open("/data-kendaraan", "_blank")}
                 className="mt-1 text-green-600 font-medium underline cursor-pointer"
             >
@@ -109,25 +114,13 @@ const TambahKendaraanKaryawan = ({ isOpen, onClose, apiUrl, onSuccess }) => {
     );
 
     return (
-        <Modal
-            isOpen={isOpen}
-            onClose={onClose}
-            title="Tambah Kendaraan Karyawan"
-            note="Pilih karyawan dan kendaraan yang akan ditautkan."
-            size="md"
+        <Modal isOpen={isOpen} onClose={onClose} title="Tambah Kendaraan Karyawan" note="Pilih karyawan dan kendaraan yang akan ditautkan." size="md"
             footer={
                 <>
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 border rounded-lg"
-                    >
+                    <button onClick={onClose} className="px-4 py-2 border rounded-lg">
                         Batal
                     </button>
-                    <button
-                        onClick={handleSubmit}
-                        disabled={loading}
-                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
-                    >
+                    <button onClick={handleSubmit} disabled={loading} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg">
                         Simpan
                     </button>
                 </>
@@ -173,16 +166,20 @@ const TambahKendaraanKaryawan = ({ isOpen, onClose, apiUrl, onSuccess }) => {
                         noOptionsMessage={kendaraanTidakAdaMessage}
                     />
 
-                    {/* EMPTY STATE */}
-                    {vehicleOptions.length === 0 && (
+                    {/* LOADING STATE */}
+                    {loadingMaster && (
+                        <div className="mt-2 text-sm text-gray-500">
+                            Memuat data kendaraan...
+                        </div>
+                    )}
+
+                    {/* EMPTY STATE (hanya setelah loading selesai) */}
+                    {!loadingMaster && vehicleOptions.length === 0 && (
                         <div className="mt-2 text-sm text-red-600">
                             Kendaraan masih kosong.
                             <span className="ml-1">
                                 Silakan tambahkan melalui menu{" "}
-                                <span
-                                    onClick={() => window.open("/data-kendaraan", "_blank")}
-                                    className="underline cursor-pointer font-medium"
-                                >
+                                <span onClick={() => window.open("/data-kendaraan", "_blank")} className="underline cursor-pointer font-medium">
                                     Data Kendaraan
                                 </span>
                                 .

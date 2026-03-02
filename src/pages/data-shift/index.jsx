@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faClock, faToggleOn, faToggleOff } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faClock, faToggleOn, faToggleOff, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { SectionHeader, LoadingSpinner, ErrorState, EmptyState } from "../../components";
@@ -136,6 +136,54 @@ const JadwalShift = () => {
     }
   };
 
+  const handleDeleteShift = async (shift) => {
+    const confirm = await Swal.fire({
+      title: "Hapus Shift?",
+      html: `
+      <div style="text-align:left">
+        <p>
+          Shift <b>${shift.nama}</b> akan <b>dihapus permanen</b>.
+        </p>
+        <p style="margin-top:8px;color:#dc2626">
+          Data ini tidak dapat dikembalikan.
+        </p>
+      </div>
+    `,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ya, Hapus",
+      cancelButtonText: "Batal",
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      reverseButtons: true,
+    });
+
+    if (!confirm.isConfirmed) return;
+
+    try {
+      const res = await fetchWithJwt(`${apiUrl}/shift/${shift.id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error("Gagal menghapus shift");
+
+      await Swal.fire({
+        icon: "success",
+        title: "Shift Dihapus",
+        text: `Shift ${shift.nama} berhasil dihapus.`,
+        confirmButtonColor: "#16a34a",
+      });
+
+      fetchShift();
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Terjadi Kesalahan",
+        text: err.message || "Gagal menghapus shift.",
+      });
+    }
+  };
+
 
   return (
     <div className="w-full mx-auto">
@@ -169,23 +217,30 @@ const JadwalShift = () => {
         {!loading && !error && shiftList.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
             {shiftList.map((shift) => (
-              <div
-                key={shift.id}
-                className="bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden"
-              >
+              <div key={shift.id} className="bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden">
                 <div className="px-5 py-3 bg-gradient-to-r from-green-600 to-green-500 flex items-center justify-between">
-                  <h3 className="text-white font-semibold text-base tracking-wide">{shift.nama}</h3>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleToggleShift(shift);
-                    }}
-                    title={shift.status === 1 ? "Nonaktifkan Shift" : "Aktifkan Shift"}
-                    className={`transition ${shift.status === 1 ? "text-white hover:text-gray-200" : "text-gray-300 hover:text-white"
-                      }`}
-                  >
-                    <FontAwesomeIcon icon={shift.status === 1 ? faToggleOn : faToggleOff} size="2xl" />
-                  </button>
+                  <h3 className="text-white font-semibold text-base tracking-wide">
+                    {shift.nama}
+                  </h3>
+
+                  <div className="flex items-center gap-3">
+                    {/* Toggle */}
+                    <button onClick={(e) => { e.stopPropagation(); handleToggleShift(shift);}} title={shift.status === 1 ? "Nonaktifkan Shift" : "Aktifkan Shift"} className={`transition ${shift.status === 1 ? "text-white hover:text-gray-200" : "text-gray-300 hover:text-white"}`}>
+                      <FontAwesomeIcon icon={shift.status === 1 ? faToggleOn : faToggleOff} size="2xl"/>
+                    </button>
+
+                    {/* Delete (ICON ONLY) */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteShift(shift);
+                      }}
+                      title="Hapus Shift"
+                      className="text-white hover:text-red-500 transition"
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="px-5 py-4 divide-y divide-gray-200">

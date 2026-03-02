@@ -328,7 +328,19 @@ const EditPenjadwalan = () => {
                         </span>
                     </div>
 
-                    <Select placeholder="Tambah lokasi..." value={null} options={lokasiList.filter(l => !form.lokasi.includes(l.id)).map(l => ({ value: l.id, label: l.nama }))}
+                    <Select
+                        placeholder="Tambah lokasi..."
+                        value={null}
+                        options={lokasiList
+                            .filter(l =>
+                                [1, 2].includes(l.kategori) &&     // ← FILTER KATEGORI
+                                !form.lokasi.includes(l.id)
+                            )
+                            .map(l => ({
+                                value: l.id,
+                                label: l.nama
+                            }))
+                        }
                         onChange={handleTambahLokasi}
                         styles={selectStyle}
                         menuPortalTarget={document.body}
@@ -341,7 +353,10 @@ const EditPenjadwalan = () => {
                     {form.lokasi.length > 0 && (
                         <div className="mt-3 flex flex-wrap gap-2">
                             {lokasiList
-                                .filter(l => form.lokasi.includes(l.id))
+                                .filter(l =>
+                                    [1, 2].includes(l.kategori) &&
+                                    form.lokasi.includes(l.id)
+                                )
                                 .map(l => (
                                     <div key={l.id} className="flex items-center gap-1 bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">
                                         <span className="select-none">

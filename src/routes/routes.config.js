@@ -166,9 +166,9 @@ export const routes = [
   { path: "/permohonan-dinas/:id", element: <DetailPermohonanDinas />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
   { path: "/riwayat-surat-dinas", element: <RiwayatPermohonanDinas />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
 
-  { path: "/data-lokasi", element: <DataLokasi />, roles: ["1", "5"], layout: SidebarLayout },
-  { path: "/data-lokasi/tambah", element: <TambahLokasi />, roles: ["1", "5"], layout: SidebarLayout },
-  { path: "/data-lokasi/edit/:id", element: <EditLokasi />, roles: ["1", "5"], layout: SidebarLayout },
+  { path: "/data-lokasi", element: <DataLokasi />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/data-lokasi/tambah", element: <TambahLokasi />, roles:  ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/data-lokasi/edit/:id", element: <EditLokasi />, roles:  ["1", "4", "5", "6", "20"], layout: SidebarLayout },
 
   { path: "/kelola-absensi", element: <KelolaAbsensi />, roles: ["1", "4", "6"] },
   { path: "/kelola-absensi/:id", element: <DetailKelolaAbsensi />, roles: ["1", "4", "6"], layout: SidebarLayout },

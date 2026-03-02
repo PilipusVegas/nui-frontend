@@ -169,7 +169,7 @@ const DetailKunjungan = () => {
                                     <th className="px-3 py-2 text-left border-b">Harga BBM (Pertalite)</th>
                                     <th className="px-3 py-2 text-left border-b">Nominal Dasar</th>
                                     <th className="px-3 py-2 text-left border-b">46%</th>
-                                    <th className="px-3 py-2 text-left border-b">Reimburse</th>
+                                    <th className="px-3 py-2 text-left border-b">Total Nominal</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -267,7 +267,7 @@ const DetailKunjungan = () => {
                                 Detail Timeline Kunjungan
                             </h4>
                             <div className="flex-1 lg:overflow-y-auto scrollbar-green pr-1">
-                                <TimelineLokasi lokasi={data.lokasi} apiUrl={apiUrl} />
+                                <TimelineLokasi lokasi={data.lokasi} apiUrl={apiUrl} onDeleted={fetchDetail} />
                             </div>
                         </div>
                     </div>

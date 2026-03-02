@@ -170,14 +170,22 @@ const TambahLokasi = () => {
   return (
     <>
       <div className="min-h-screen bg-white flex flex-col">
-        <SectionHeader title="Tambah Lokasi" subtitle="Tambah lokasi baru" onBack={handleBack} />
+        <SectionHeader
+          title="Tambah Lokasi"
+          subtitle={
+            kategori === 3
+              ? "Tambah data lokasi rumah karyawan"
+              : "Tambah lokasi baru"
+          }
+          onBack={handleBack}
+        />
 
         {/* FORM */}
         <form onSubmit={handleSubmit} className="flex-grow p-6 w-full mx-auto space-y-6">
           {/* NAMA LOKASI */}
           <div>
             <label className="block mb-1 font-medium text-gray-700">
-              Nama Lokasi
+              {kategori === 3 ? "Tambah Data Lokasi Rumah" : "Nama Lokasi"}
             </label>
 
             {kategori === 3 ? (

@@ -337,12 +337,12 @@ const DetailAbsensi = () => {
                   </th>
                 ))}
 
-                <th className="py-2 px-4 font-semibold text-center cursor-pointer" onClick={() => handleSort("status")}>
+                {/* <th className="py-2 px-4 font-semibold text-center cursor-pointer" onClick={() => handleSort("status")}>
                   <div className="flex items-center justify-center gap-3">
                     Status
                     <FontAwesomeIcon icon={sortColumn === "status" ? sortDirection === "asc" ? faSortUp : faSortDown : faSort} className="text-xs" />
                   </div>
-                </th>
+                </th> */}
 
                 <th className="py-2 px-4 font-semibold text-center last:rounded-tr-lg">
                   Menu
@@ -383,13 +383,13 @@ const DetailAbsensi = () => {
                     <td className={`text-center py-1 px-4 text-xs ${item.keterlambatan && item.keterlambatan !== "00:00" ? "text-red-500 font-semibold" : ""}`}>
                       {item.keterlambatan || "--:--"}
                     </td>
-                    <td className="text-center py-1 px-4">
+                    {/* <td className="text-center py-1 px-4">
                       <span className={`inline-flex y-center items-center font-semibold px-3 py-1 rounded-full text-[10px] tracking-wider ${item.status == 1 ? "bg-green-600 text-white" : item.status == 2 ? "bg-red-600 text-white" : "bg-yellow-500 text-white"}`}>
                         {item.status == 1 ? "Approved" : item.status == 2 ? "Rejected" : "Unapproved"}
                       </span>
-                    </td>
-                    <td className="text-center text-xs py-1 px-4">
-                      <button onClick={() => handleViewClick(item)} className="bg-blue-500 text-white py-1 px-2 rounded hover:bg-blue-600 transition-colors duration-150">
+                    </td> */}
+                    <td className="text-center text-xs py-2 px-4">
+                      <button onClick={() => handleViewClick(item)} className="bg-blue-500 text-white py-2 px-3 rounded hover:bg-blue-600 transition-colors duration-150">
                         <FontAwesomeIcon icon={faEye} className="text-xs mr-1" />
                         Detail
                       </button>

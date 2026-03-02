@@ -280,18 +280,34 @@ const TambahPenjadwalan = () => {
                     </div>
 
                     {/* SELECT KE ATAS */}
-                    <Select placeholder="Tambah lokasi..." value={null} menuPlacement="top" menuPosition="fixed" options={lokasiList
-                            .filter(l => !form.lokasi.includes(l.id))
-                            .map(l => ({ value: l.id, label: l.nama }))}
+                    <Select
+                        placeholder="Tambah lokasi..."
+                        value={null}
+                        options={lokasiList
+                            .filter(
+                                (l) =>
+                                    [1, 2].includes(l.kategori) &&
+                                    !form.lokasi.includes(l.id)
+                            )
+                            .map((l) => ({
+                                value: l.id,
+                                label: l.nama,
+                            }))}
                         onChange={handleTambahLokasi}
                         styles={selectStyle}
+                        menuPlacement="top"
                         menuPortalTarget={document.body}
                     />
 
                     {/* HASIL PILIHAN */}
                     {form.lokasi.length > 0 && (
                         <div className="mt-3 flex flex-wrap gap-2">
-                            {lokasiList.filter(l => form.lokasi.includes(l.id)).map(l => (
+                            {lokasiList
+                                .filter(l =>
+                                    [1, 2].includes(l.kategori) &&
+                                    form.lokasi.includes(l.id)
+                                )
+                                .map(l => (
                                     <span key={l.id} className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-3 py-1.5 rounded-full text-xs">
                                         {l.nama}
 

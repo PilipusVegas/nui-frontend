@@ -106,9 +106,7 @@ const KendaraanKaryawan = () => {
      * ====================== */
     return (
         <div className="flex flex-col bg-white">
-            <SectionHeader
-                title="Kendaraan Karyawan"
-                subtitle="Daftar kendaraan yang digunakan oleh karyawan untuk operasional dan kunjungan."
+            <SectionHeader title="Kendaraan Karyawan" subtitle="Daftar kendaraan yang digunakan oleh karyawan untuk operasional dan kunjungan."
                 onBack={() => navigate("/home")}
                 actions={
                     <button
@@ -133,15 +131,15 @@ const KendaraanKaryawan = () => {
             <div className="hidden md:block rounded-lg shadow overflow-hidden">
                 <table className="w-full text-sm border-collapse">
                     <thead>
-                        <tr className="bg-green-600 text-white">
-                            <th className="px-3 py-2 text-center">No</th>
-                            <th className="px-3 py-2">Karyawan</th>
-                            <th className="px-3 py-2">Kendaraan</th>
-                            <th className="px-3 py-2 text-center">Tahun</th>
-                            <th className="px-3 py-2 text-center">Konsumsi</th>
-                            <th className="px-3 py-2">BBM</th>
-                            <th className="px-3 py-2 text-right">Harga BBM</th>
-                            <th className="px-3 py-2 text-center">Menu</th>
+                        <tr className="bg-green-500 text-white">
+                            <th className="px-3 py-3 text-center">No</th>
+                            <th className="px-3 py-3">Karyawan</th>
+                            <th className="px-3 py-3">Kendaraan</th>
+                            <th className="px-3 py-3 text-center">Tahun</th>
+                            <th className="px-3 py-3 text-center">Konsumsi</th>
+                            <th className="px-3 py-3">BBM</th>
+                            <th className="px-3 py-3 text-right">Harga BBM</th>
+                            <th className="px-3 py-3 text-center">Menu</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -152,17 +150,10 @@ const KendaraanKaryawan = () => {
                                         {startIndex + index + 1}
                                     </td>
                                     <td className="px-3 py-2">
-                                        <div className="font-semibold">
-                                            {item.nama_user}
-                                        </div>
-                                        <div className="text-xs text-gray-500">
-                                            {item.nip_user} · {item.role}
-                                        </div>
-                                        <div className="text-xs text-gray-400">
-                                            {item.perusahaan}
-                                        </div>
+                                        <div className="font-semibold">{item.nama_user}</div>
+                                        <div className="text-xs text-gray-700">{item.role}</div>
                                     </td>
-                                    <td className="px-3 py-2 font-semibold">
+                                    <td className="px-3 py-2 font-semibold text-center">
                                         {item.nama_kendaraan}
                                     </td>
                                     <td className="px-3 py-2 text-center">
@@ -171,7 +162,7 @@ const KendaraanKaryawan = () => {
                                     <td className="px-3 py-2 text-center">
                                         {item.konsumsi_bb} km/l
                                     </td>
-                                    <td className="px-3 py-2">
+                                    <td className="px-3 py-2 text-center">
                                         {item.nama_bb}
                                     </td>
                                     <td className="px-3 py-2 text-right">
@@ -234,7 +225,7 @@ const KendaraanKaryawan = () => {
                             </div>
 
                             <div className="text-sm">
-                                🚗 {item.nama_kendaraan} ({item.tahun_kendaraan})
+                                {item.nama_kendaraan} ({item.tahun_kendaraan})
                             </div>
                             <div className="text-xs text-gray-500">
                                 {item.nama_bb} · {item.konsumsi_bb} km/l
@@ -272,9 +263,19 @@ const KendaraanKaryawan = () => {
                 onPageChange={setCurrentPage}
             />
 
-            <TambahKendaraanKaryawan isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} apiUrl={apiUrl} onSuccess={fetchData}/>
+            <TambahKendaraanKaryawan isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} apiUrl={apiUrl} onSuccess={fetchData} />
 
-            <EditKendaraanKaryawan isOpen={isEditOpen} onClose={() => { setIsEditOpen(false); setSelected(null);}} apiUrl={apiUrl} data={selected} onSuccess={fetchData}/>
+            <EditKendaraanKaryawan
+                isOpen={isEditOpen}
+                onClose={() => {
+                    setIsEditOpen(false);
+                    setSelected(null);
+                }}
+                apiUrl={apiUrl}
+                idUserKendaraan={selected?.id_user_kendaraan} // ✅ FIX
+                onSuccess={fetchData}
+            />
+
         </div>
     );
 };

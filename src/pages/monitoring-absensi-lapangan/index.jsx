@@ -7,7 +7,7 @@ import SectionHeader from "../../components/desktop/SectionHeader";
 import { LoadingSpinner, ErrorState, SearchBar, Pagination, EmptyState, SummaryCard } from "../../components";
 
 const DataAbsensi = () => {
-  const itemsPerPage = 15;
+  const itemsPerPage = 10;
   const navigate = useNavigate();
   const [error, setError] = useState(null);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -76,7 +76,7 @@ const DataAbsensi = () => {
     <div className="flex flex-col justify-start">
       <SectionHeader title="Monitoring Absensi Lapangan" subtitle="Monitoring kehadiran karyawan lapangan secara real-time setiap hari." onBack={() => navigate("/home")}
         actions={
-          <button onClick={() => navigate("/riwayat-absensi-lapangan")}title="Riwayat Persetujuan"
+          <button onClick={() => navigate("/riwayat-absensi-lapangan")} title="Riwayat Persetujuan"
             className=" inline-flex items-center justify-center px-3 py-2 text-blue-700 bg-blue-100 border border-blue-300 rounded-lg hover:bg-blue-200 transition"
           >
             <FontAwesomeIcon icon={faClockRotateLeft} />
@@ -100,12 +100,12 @@ const DataAbsensi = () => {
               <th className="py-3 px-4 font-semibold text-center text-sm">No.</th>
               <th className="py-3 px-4 font-semibold text-center text-sm">Nama Karyawan</th>
               <th className="py-3 px-4 font-semibold text-center text-sm">Total Absen</th>
-              <th className="py-3 px-4 font-semibold text-center text-sm cursor-pointer" onClick={handleSortStatus}>
+              {/* <th className="py-3 px-4 font-semibold text-center text-sm cursor-pointer" onClick={handleSortStatus}>
                 <div className="flex items-center justify-center gap-3">
                   Status
                   <FontAwesomeIcon icon={sortOrder === "asc" ? faSortUp : faSortDown} className="text-xs" />
                 </div>
-              </th>
+              </th> */}
               <th className="py-3 px-4 font-semibold text-center text-sm">Menu</th>
             </tr>
           </thead>
@@ -145,10 +145,10 @@ const DataAbsensi = () => {
                     {absen.role || "Unknown Role"}
                   </div>
                 </td>
-                <td className="text-center px-4 py-0.5 text-sm">
+                <td td className="text-center px-4 py-0.5 text-sm">
                   {absen.total_absen} Hari
                 </td>
-                <td className="text-center font-semibold px-3 py-1 text-xs">
+                {/* <td className="text-center font-semibold px-3 py-1 text-xs">
                   <div className={`inline-flex items-center justify-center gap-2 px-2.5 py-1 rounded-full shadow-sm ${parseInt(absen.unapproved) === 0 ? "bg-green-500 text-white px-1" : "bg-red-500 text-white"}`}>
                     <span className={`w-[15px] h-[15px] flex items-center justify-center text-[9px] font-bold rounded-full bg-white ${parseInt(absen.unapproved) === 0 ? "text-green-600 mr-3" : "text-red-600"}`}>
                       {parseInt(absen.unapproved) === 0 ? (
@@ -161,9 +161,9 @@ const DataAbsensi = () => {
                       {parseInt(absen.unapproved) === 0 ? "Approved" : "Unapproved"}
                     </span>
                   </div>
-                </td>
-                <td className="text-center px-4 py-1">
-                  <button onClick={() => navigate(`/monitoring-absensi/${absen.id_user}`)} className="bg-blue-500 text-white px-3 py-1 text-xs rounded hover:bg-blue-600 transition-colors duration-150">
+                </td> */}
+                <td className="text-center px-4 py-2">
+                  <button onClick={() => navigate(`/monitoring-absensi/${absen.id_user}`)} className="bg-blue-500 text-white px-3 py-2 text-xs rounded hover:bg-blue-600 transition-colors duration-150">
                     <FontAwesomeIcon icon={faEye} className="mr-1" />
                     Detail
                   </button>
@@ -198,7 +198,7 @@ const DataAbsensi = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                {/* <div className="flex items-center gap-2">
                   <div className={`flex items-center justify-center w-8 h-8 rounded-full ${isApproved ? "bg-blue-50 text-blue-600" : "bg-red-50 text-red-500"}`}>
                     <FontAwesomeIcon icon={isApproved ? faCheckCircle : faExclamationTriangle} className="text-sm" />
                   </div>
@@ -213,7 +213,7 @@ const DataAbsensi = () => {
                       </span>
                     )}
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           );

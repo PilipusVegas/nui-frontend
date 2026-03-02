@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser, faIdCard, faChildren, faBuilding, faPhone, faClock, faCarSide, faCheckCircle, faTimesCircle, faUserEdit, faGasPump, faSlidersH, faUtensils, faSuitcaseRolling, faHotel } from "@fortawesome/free-solid-svg-icons";
+import { faUser, faIdCard, faChildren, faBuilding, faPhone, faClock, faCarSide, faCheckCircle, faTimesCircle,faMoneyBillWave, faGaugeHigh, faUserEdit, faGasPump, faSlidersH, faUtensils, faSuitcaseRolling, faHotel } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { LoadingSpinner, EmptyState, ErrorState, SectionHeader, Modal } from "../../components";
 import TunjanganForm from "../tunjangan-karyawan/form";
@@ -19,6 +19,7 @@ const DetailKaryawan = () => {
   const [editTunjanganData, setEditTunjanganData] = useState(null);
   const ALLOWED_PERUSAHAAN_KADIV = [1, 4];
   const canShowKadiv = karyawan && ALLOWED_PERUSAHAAN_KADIV.includes(Number(karyawan.id_perusahaan));
+  const kendaraan = karyawan?.kendaraan
 
   const TunjanganBadge = ({ label, icon, active }) => (
     <div className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-sm transition ${active ? "border-emerald-300 bg-emerald-50 text-emerald-700" : "border-gray-200 bg-gray-50 text-gray-400"}`}>
@@ -198,6 +199,38 @@ const DetailKaryawan = () => {
                 <DataItem icon={faClock} label="Shift Kerja" value={safeText(karyawan.shift)} />
                 {/* <DataItem icon={faCarSide} label="Status Kendaraan" value={statusKendaraan(karyawan.status_kendaraan)} /> */}
               </DataGrid>
+            </DataSection>
+
+            <DataSection title="Informasi Kendaraan & Transportasi">
+              {!kendaraan ? (
+                <EmptyState message="Data kendaraan belum ditambahkan" />
+              ) : (
+                <DataGrid>
+                  <DataItem
+                    icon={faCarSide}
+                    label="Nama Kendaraan"
+                    value={kendaraan.nama_kendaraan}
+                  />
+
+                  <DataItem
+                    icon={faClock}
+                    label="Tahun Kendaraan"
+                    value={kendaraan.tahun_kendaraan}
+                  />
+
+                  <DataItem
+                    icon={faGasPump}
+                    label="Jenis BBM"
+                    value={kendaraan.nama_bb}
+                  />
+
+                  <DataItem
+                    icon={faGaugeHigh}
+                    label="Konsumsi BBM"
+                    value={`${kendaraan.konsumsi_bb} km / liter`}
+                  />
+                </DataGrid>
+              )}
             </DataSection>
           </div>
         )}

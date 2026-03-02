@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { Modal } from "../../components/";
 import { fetchWithJwt } from "../../utils/jwtHelper";
+import { useNavigate } from "react-router-dom";
+import Select from "react-select";
 
 const KATEGORI_KENDARAAN = {
   1: "Motor",
@@ -19,6 +21,13 @@ const EditKendaraan = ({ isOpen, onClose, apiUrl, data, onSuccess }) => {
     konsumsi_bb: "",
     id_bb: "",
   });
+  const navigate = useNavigate();
+
+  const handleAddBBM = () => {
+    onClose();
+    navigate("/jenis-bbm");
+  };
+
 
   useEffect(() => {
     if (data) {
@@ -45,6 +54,11 @@ const EditKendaraan = ({ isOpen, onClose, apiUrl, data, onSuccess }) => {
       setBbmList([]);
     }
   };
+
+  const bbmOptions = bbmList.map((bbm) => ({
+    value: bbm.id,
+    label: bbm.nama,
+  }));
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -110,9 +124,7 @@ const EditKendaraan = ({ isOpen, onClose, apiUrl, data, onSuccess }) => {
         </>
       }
     >
-      {/* Struktur form SAMA dengan Tambah */}
-      {/* agar konsisten */}
-      {/* (disengaja tidak diulang penjelasan) */}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="sm:col-span-2">
           <label className="text-sm font-medium">Nama Kendaraan</label>
@@ -146,12 +158,61 @@ const EditKendaraan = ({ isOpen, onClose, apiUrl, data, onSuccess }) => {
 
         <div>
           <label className="text-sm font-medium">Jenis BBM</label>
-          <select name="id_bb" value={form.id_bb} onChange={handleChange}
-            className="mt-1 w-full border rounded-lg px-3 py-2 text-sm">
-            {bbmList.map((bbm) => (
-              <option key={bbm.id} value={bbm.id}>{bbm.nama}</option>
-            ))}
-          </select>
+
+          <Select
+            options={bbmOptions}
+            value={
+              bbmOptions.find((o) => o.value === Number(form.id_bb)) || null
+            }
+            onChange={(selected) =>
+              setForm((prev) => ({
+                ...prev,
+                id_bb: selected ? selected.value : "",
+              }))
+            }
+            placeholder="Pilih jenis BBM"
+            isClearable
+            className="mt-1 text-sm"
+            classNamePrefix="react-select"
+
+            /* FIX dropdown tenggelam di modal */
+            menuPortalTarget={document.body}
+            styles={{
+              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+            }}
+
+            /* Pesan saat search & data tidak ada */
+            noOptionsMessage={({ inputValue }) =>
+              inputValue ? (
+                <div className="px-2 py-1 text-xs text-gray-600">
+                  <p>Data BBM yang Anda cari tidak ada.</p>
+                  <button
+                    type="button"
+                    onClick={handleAddBBM}
+                    className="mt-1 text-blue-600 font-medium hover:underline"
+                  >
+                    Tambah data BBM
+                  </button>
+                </div>
+              ) : (
+                "Ketik untuk mencari BBM"
+              )
+            }
+          />
+
+          {/* KHUSUS jika BBM kosong dari API */}
+          {bbmList.length === 0 && (
+            <p className="mt-2 text-xs text-gray-500">
+              Data BBM belum tersedia.{" "}
+              <button
+                type="button"
+                onClick={handleAddBBM}
+                className="text-blue-600 font-medium hover:underline"
+              >
+                Tambah data BBM
+              </button>
+            </p>
+          )}
         </div>
       </div>
     </Modal>

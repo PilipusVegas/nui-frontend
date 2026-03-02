@@ -26,7 +26,7 @@ const TambahKaryawan = () => {
     status_nikah: null,
     jml_anak: 0,
     id_perusahaan: "",
-    id_kendaraan: "",
+    // id_kendaraan: "",
     id_role: "",
     id_shift: "",
     telp: "",
@@ -61,17 +61,17 @@ const TambahKaryawan = () => {
           fetchWithJwt(`${apiUrl}/karyawan/divisi`),
           fetchWithJwt(`${apiUrl}/shift`),
           fetchWithJwt(`${apiUrl}/perusahaan`),
-          fetchWithJwt(`${apiUrl}/vehicles`),
+          // fetchWithJwt(`${apiUrl}/vehicles`),
         ]);
 
         const divisiData = await divisiRes.json();
         const shiftData = await shiftRes.json();
         const perusahaanData = await perusahaanRes.json();
-        const vehicleData = await vehicleRes.json();
+        // const vehicleData = await vehicleRes.json();
 
-        if (vehicleData.success) {
-          setVehicleList(vehicleData.data);
-        }
+        // if (vehicleData.success) {
+        //   setVehicleList(vehicleData.data);
+        // }
 
         setPerusahaanList(perusahaanData.data);
         setDivisiList(divisiData.data);
@@ -444,7 +444,7 @@ const TambahKaryawan = () => {
             </div>
           )}
 
-          <div className="col-span-full flex flex-col mt-4">
+          {/* <div className="col-span-full flex flex-col mt-4">
             <div className="flex items-center">
               <h3 className="text-lg font-bold text-green-600">
                 Kelola Kendaraan Karyawan
@@ -535,7 +535,7 @@ const TambahKaryawan = () => {
                 })()}
               </div>
             )}
-          </div>
+          </div> */}
 
 
           <div className="col-span-full flex flex-col mt-4">

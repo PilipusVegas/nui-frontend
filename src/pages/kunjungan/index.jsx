@@ -10,7 +10,9 @@ import KunjunganActionModal from "./KunjunganActionModal";
 import Timeline from "./Timeline";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLocationDot, faCamera, faClock } from "@fortawesome/free-solid-svg-icons";
-const MAX_RADIUS = 600000;
+const MAX_RADIUS = 60;
+const isValidCoord = (c) =>
+    c && typeof c.lat === "number" && typeof c.lng === "number";
 
 export default function Kunjungan() {
     const apiurl = process.env.REACT_APP_API_BASE_URL;
@@ -50,9 +52,15 @@ export default function Kunjungan() {
     }, [selectedStore]);
 
     const distanceToLokasiUser = useMemo(() => {
-        if (!gps || !lokasiUserCoord) return null;
+        if (!isValidCoord(gps) || !isValidCoord(lokasiUserCoord)) return null;
+
         return Math.round(
-            getDistanceMeters(gps.lat, gps.lng, lokasiUserCoord.lat, lokasiUserCoord.lng)
+            getDistanceMeters(
+                gps.lat,
+                gps.lng,
+                lokasiUserCoord.lat,
+                lokasiUserCoord.lng
+            )
         );
     }, [gps, lokasiUserCoord]);
 
@@ -143,6 +151,7 @@ export default function Kunjungan() {
                     jarak: l.jarak,
                     deskripsi: l.deskripsi,
                     id_lokasi: l.id_lokasi,
+                    koordinat: `${l.latitude},${l.longitude}`, // ⬅️ FIX UTAMA
                 }))
             );
         } catch {
@@ -168,7 +177,6 @@ export default function Kunjungan() {
         try {
             if (!shiftId) return toast.error("Tidak ada shift aktif");
             if (!note || !photo) return toast.error("Foto & keterangan wajib");
-            if (!validateLokasiUser()) return;
             const fd = new FormData();
             fd.append("id_shift", shiftId);
             fd.append("id_lokasi", lokasiUser.id_lokasi);
@@ -194,50 +202,77 @@ export default function Kunjungan() {
     };
 
     const checkIn = async () => {
-        if (!selectedStore) return toast.error("Pilih lokasi");
-        if (!photo) return toast.error("Foto & keterangan wajib");
-        const target = parseCoord(selectedStore.koordinat);
-        const jarak = Math.round(
-            getDistanceMeters(gps.lat, gps.lng, target.lat, target.lng)
-        );
-        if (jarak > MAX_RADIUS) return toast.error("Anda di luar radius lokasi");
-        const fd = new FormData();
-        fd.append("id_lokasi", selectedStore.id);
-        fd.append("jarak", jarak);
-        fd.append("foto", photo);
-        fd.append("deskripsi", note);
-        fd.append("koordinat", `${gps.lat},${gps.lng}`);
-        await fetchWithJwt(`${apiurl}/trip/user/in/${tripId}`, {
-            method: "PUT",
-            body: fd
-        });
-        toast.success("Check-in berhasil");
-        resetModalState();
-        setShowAddLocation(false);
-        setSelectedStore(null);
-        setModal(null);
-        fetchTrip();
+        try {
+            if (!selectedStore) return toast.error("Pilih lokasi");
+            if (!photo) return toast.error("Foto & keterangan wajib");
+
+            const target = parseCoord(selectedStore.koordinat);
+            const jarak = Math.round(
+                getDistanceMeters(gps.lat, gps.lng, target.lat, target.lng)
+            );
+
+            if (jarak > MAX_RADIUS)
+                return toast.error("Anda di luar radius lokasi");
+
+            const fd = new FormData();
+            fd.append("id_lokasi", selectedStore.id);
+            fd.append("jarak", jarak);
+            fd.append("foto", photo);
+            fd.append("deskripsi", note);
+            fd.append("koordinat", `${gps.lat},${gps.lng}`);
+
+            const res = await fetchWithJwt(
+                `${apiurl}/trip/user/in/${tripId}`,
+                {
+                    method: "PUT",
+                    body: fd,
+                }
+            );
+
+            const json = await res.json();
+
+            // ✅ HANDLE 409 CONFLICT
+            if (res.status === 409) {
+                toast.error(json.message || "Tidak dapat check-in");
+                return;
+            }
+
+            // ❌ HANDLE ERROR LAIN
+            if (!res.ok) {
+                toast.error(json.message || "Gagal check-in");
+                return;
+            }
+
+            // ✅ SUKSES
+            toast.success(json.message || "Check-in berhasil");
+            resetModalState();
+            setShowAddLocation(false);
+            setSelectedStore(null);
+            setModal(null);
+            fetchTrip();
+
+        } catch (err) {
+            toast.error("Koneksi ke server gagal");
+        }
     };
 
     const checkOut = async () => {
-        if (!activeLocation?.id) {
+        if (!activeLocation?.id)
             return toast.error("Lokasi aktif tidak ditemukan");
-        }
-        if (!photo) {
+        if (!photo)
             return toast.error("Foto & keterangan wajib");
-        }
+        if (!gps?.lat || !gps?.lng)
+            return toast.error("GPS belum siap");
         const fd = new FormData();
         fd.append("foto", photo);
         fd.append("deskripsi", note);
         fd.append("koordinat", `${gps.lat},${gps.lng}`);
+        fd.append("jarak", activeLocation.jarak ?? 0); // fallback aman
         await fetchWithJwt(
             `${apiurl}/trip/user/out/${activeLocation.id}`,
-            {
-                method: "PUT",
-                body: fd,
-            }
+            { method: "PUT", body: fd }
         );
-        toast.success("Check-out lokasi berhasil");
+        toast.success("Check-out berhasil");
         resetModalState();
         setModal(null);
         fetchTrip();
@@ -387,7 +422,17 @@ export default function Kunjungan() {
                                 </p>
                             </div>
                         </div>
-                        <button onClick={() => { if (!validateKunjunganPrerequisite()) return; setModal("start"); }} className="w-full bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-lg font-semibold transition">
+                        <button
+                            onClick={() => {
+                                if (!validateKunjunganPrerequisite()) return;
+                                toast(
+                                    "Mulai & Akhiri kunjungan bisa dilakukan di mana saja. Checkpoint lokasi wajib radius 60 meter.",
+                                    { duration: 4000 }
+                                );
+                                setTimeout(() => setModal("start"), 400);
+                            }}
+                            className="w-full bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-lg font-semibold transition"
+                        >
                             Mulai Kunjungan
                         </button>
                     </div>
@@ -409,13 +454,13 @@ export default function Kunjungan() {
                             </div>
 
                             <Select placeholder="Pilih lokasi kunjungan sesuai jadwal" options={jadwalLokasi.map(l => ({
-                                    label: l.nama,
-                                    value: l.id,
-                                    data: {
-                                        ...l,
-                                        koordinat: `${l.latitude},${l.longitude}`,
-                                    },
-                                }))}
+                                label: l.nama,
+                                value: l.id,
+                                data: {
+                                    ...l,
+                                    koordinat: `${l.latitude},${l.longitude}`,
+                                },
+                            }))}
                                 onChange={o => setSelectedStore(o?.data || null)}
                             />
 
@@ -433,7 +478,12 @@ export default function Kunjungan() {
                                             toast.error("Silakan pilih lokasi terlebih dahulu");
                                             return;
                                         }
-                                        setModal("checkin");
+                                        toast(
+                                            "Pastikan Anda berada maksimal 60 meter dari lokasi sebelum Check-In.",
+                                            { duration: 3500 }
+                                        );
+
+                                        setTimeout(() => setModal("checkin"), 400);
                                     }}
                                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg text-sm font-semibold transition"
                                 >
@@ -444,7 +494,14 @@ export default function Kunjungan() {
                     )}
 
                 {hasTrip && tripInfo && (
-                    <Timeline history={history} tripInfo={tripInfo} activeLocation={activeLocation} onCheckout={() => setModal("checkout")} onEndTrip={() => setModal("end")}
+                    <Timeline history={history} tripInfo={tripInfo} activeLocation={activeLocation} onCheckout={() => setModal("checkout")}
+                        onEndTrip={() => {
+                            toast(
+                                "Akhiri kunjungan dapat dilakukan di lokasi mana saja.",
+                                { duration: 3000 }
+                            );
+                            setTimeout(() => setModal("end"), 400);
+                        }}
                         canAddLocation={
                             tripInfo?.is_complete === 0 &&
                             !activeLocation
@@ -459,12 +516,12 @@ export default function Kunjungan() {
                 isOpen={!!modal}
                 title={
                     modal === "start"
-                        ? "Mulai Kunjungan"
+                        ? "Mulai Kunjungan & Absen Masuk"
                         : modal === "checkin"
                             ? "Check-In Lokasi"
                             : modal === "checkout"
                                 ? "Check-Out Lokasi"
-                                : "Akhiri Kunjungan"
+                                : "Akhiri Kunjungan & Absen Pulang"
                 }
                 submitLabel="Simpan"
                 onSubmit={

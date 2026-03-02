@@ -48,7 +48,8 @@ const KunjunganActionModal = ({ isOpen, title, noteText, submitLabel, onSubmit, 
             {/* INFO PERHATIAN */}
             <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5">
                 <p className="text-[11px] text-red-700 leading-snug">
-                    <span className="font-semibold">Perhatian:</span> Foto harus menampilkan wajah dan lokasi sekitar.
+                    <span className="font-semibold">Perhatian:</span>
+                    Foto wajib menampilkan wajah dan kondisi sekitar sebagai bukti kunjungan.
                 </p>
             </div>
 
@@ -56,13 +57,7 @@ const KunjunganActionModal = ({ isOpen, title, noteText, submitLabel, onSubmit, 
             {!photoPreview ? (
                 <div className="flex flex-col items-center gap-4">
                     <div className="w-full max-w-[220px] aspect-[4/5] rounded-xl overflow-hidden border bg-black shadow-sm">
-                        <Webcam
-                            ref={webcamRef}
-                            screenshotFormat="image/jpeg"
-                            videoConstraints={{ facingMode }}
-                            onUserMedia={() => setCameraReady(true)}
-                            className="w-full h-full object-cover"
-                        />
+                        <Webcam ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode }} onUserMedia={() => setCameraReady(true)} className="w-full h-full object-cover"/>
                     </div>
 
                     <div className="flex gap-2 w-full max-w-[220px]">
@@ -71,7 +66,7 @@ const KunjunganActionModal = ({ isOpen, title, noteText, submitLabel, onSubmit, 
                         </button>
 
                         <button type="button" disabled={!cameraReady} onClick={capturePhoto} className={`flex-1 rounded-lg py-2 text-xs font-semibold text-white transition
-                    ${cameraReady ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"}`}
+                                ${cameraReady ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"}`}
                         >
                             Ambil Foto
                         </button>
@@ -80,11 +75,11 @@ const KunjunganActionModal = ({ isOpen, title, noteText, submitLabel, onSubmit, 
             ) : (
                 <div className="flex flex-col items-center gap-3">
                     <div className="w-full max-w-[220px] aspect-[4/5] rounded-xl overflow-hidden border shadow-sm">
-                        <img src={photoPreview} alt="Preview Foto" className="w-full h-full object-cover"/>
+                        <img src={photoPreview} alt="Preview Foto" className="w-full h-full object-cover" />
                     </div>
 
-                    <button type="button" onClick={() => { setPhotoPreview(null); setPhotoFile(null);}}
-                        className="rounded-full border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 transition"
+                    <button type="button" onClick={() => { setPhotoPreview(null); setPhotoFile(null); }}
+                        className="rounded-lg border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 transition"
                     >
                         Ambil Ulang Foto
                     </button>

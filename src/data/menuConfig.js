@@ -58,7 +58,7 @@ export const menuConfig = [
             {
                 label: "Data Karyawan",
                 icon: faPeopleGroup,
-                roles: [1, 4, 6],
+                roles: [1, 4, 6, 20],
                 submenu: [
                     {
                         label: "Kelola Karyawan",
@@ -77,7 +77,7 @@ export const menuConfig = [
                         label: "Kendaraan Karyawan",
                         icon: faUserGear,
                         path: "/kendaraan-karyawan",
-                        roles: [1],
+                        roles: [1, 4, 6, 20],
                         perusahaan: [1, 4],
                     },
                 ],

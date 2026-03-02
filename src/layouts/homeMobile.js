@@ -290,8 +290,8 @@ const HomeMobile = () => {
       </div>
       <div className="grid grid-cols-4 gap-2 px-3">
         <MainMenuButton icon={faCalendarCheck} label="Absensi" onClick={() => navigate("/absensi")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-emerald-600 hover:scale-105 transition" />
-        {user?.is_leader && (
-          <MainMenuButton icon={faPeopleGroup} label="Absensi Tim" onClick={() => navigate("/absensi-tim")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-orange-600 hover:scale-105 transition" />
+        {user?.is_leader?.status === true && (
+          <MainMenuButton icon={faPeopleGroup} label="Absensi Tim" onClick={() => navigate("/absensi-tim")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-orange-600 hover:scale-105 transition"/>
         )}
         <MainMenuButton icon={faClockFour} label="Lembur" onClick={() => navigate("/lembur")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-teal-600 hover:scale-105 transition" />
         <MainMenuButton icon={faPenFancy} label="Dinas" onClick={() => navigate("/formulir-dinas-aplikasi")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-blue-600 hover:scale-105 transition" />

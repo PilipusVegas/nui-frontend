@@ -12,6 +12,21 @@ const parseCoord = (str) => {
     return { lat, lng };
 };
 
+const offsetCoordinate = (lat, lng, index) => {
+    const meters = 20; // ⬅️ WAJIB ≥ 15–20 meter
+    const angle = index * 60 * (Math.PI / 180);
+
+    const dLat = (meters / 111320) * Math.cos(angle);
+    const dLng =
+        (meters / (111320 * Math.cos(lat * Math.PI / 180))) *
+        Math.sin(angle);
+
+    return {
+        lat: lat + dLat,
+        lng: lng + dLng,
+    };
+};
+
 /*  CUSTOM PIN ICON (NUMBERED) */
 const createPinIcon = (number) =>
     L.divIcon({
@@ -105,35 +120,44 @@ const MapRouteMulti = ({ locations = [], onDistanceCalculated }) => {
     const [orderedPoints, setOrderedPoints] = useState([]);
     const [routes, setRoutes] = useState([]);
     const [totalDistance, setTotalDistance] = useState(0);
+    const GH_BASE_URL = process.env.REACT_APP_GRAPHHOPPER_BASE_URL;
+
 
     useEffect(() => {
         if (!locations.length) return;
         const sorted = [...locations].sort(
             (a, b) => new Date(a.jam_mulai) - new Date(b.jam_mulai)
         );
+        const coordMap = {};
+
         const points = sorted.reduce((acc, l) => {
             const coord =
                 parseCoord(l.koordinat_lokasi) ||
                 parseCoord(l.koordinat_mulai) ||
                 parseCoord(l.koordinat_selesai);
+
             if (!coord) return acc;
-            const last = acc[acc.length - 1];
-            if (
-                last &&
-                last.lat === coord.lat &&
-                last.lng === coord.lng
-            ) {
-                last.isEnd = l.kategori === 3;
-                return acc;
-            }
+
+            const key = `${coord.lat},${coord.lng}`;
+            const index = coordMap[key] ?? 0;
+            coordMap[key] = index + 1;
+
+            const visualCoord =
+                index === 0
+                    ? coord
+                    : offsetCoordinate(coord.lat, coord.lng, index);
+
             acc.push({
-                lat: coord.lat,
-                lng: coord.lng,
+                lat: visualCoord.lat,      // ⬅️ untuk marker & circle
+                lng: visualCoord.lng,
+                originalLat: coord.lat,    // ⬅️ simpan koordinat asli
+                originalLng: coord.lng,
                 nama: l.nama_lokasi,
                 jamMulai: l.jam_mulai,
                 jamSelesai: l.jam_selesai,
                 kategori: l.kategori,
             });
+
             return acc;
         }, []);
 
@@ -151,7 +175,7 @@ const MapRouteMulti = ({ locations = [], onDistanceCalculated }) => {
                 const b = points[i + 1];
 
                 try {
-                    const url = `http://192.168.80.254:8989/route?point=${a.lat},${a.lng}&point=${b.lat},${b.lng}&profile=motorcycle&points_encoded=false`;
+                    const url = `${GH_BASE_URL}/route?point=${a.originalLat},${a.originalLng}&point=${b.originalLat},${b.originalLng}&profile=motorcycle&points_encoded=false`;
                     const res = await fetch(url);
                     const json = await res.json();
 
