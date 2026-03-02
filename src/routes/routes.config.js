@@ -107,6 +107,7 @@ import PermohonanAbsensiTim from "../pages/permohonan-absensi-tim";
 import KelolaAnggotaTim from "../pages/kelola-anggota-tim";
 import DataKendaraan from "../pages/data-kendaraan";
 import DataJenisBbm from "../pages/data-jenis-bbm";
+import KendaraanKaryawan from "../pages/kendaraan-karyawan"
 
 /* ===================== ROUTES CONFIG ===================== */
 export const routes = [
@@ -226,4 +227,5 @@ export const routes = [
 
   { path: "/jenis-bbm", element: <DataJenisBbm />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
   { path: "/data-kendaraan", element: <DataKendaraan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/kendaraan-karyawan", element: <KendaraanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
 ];
