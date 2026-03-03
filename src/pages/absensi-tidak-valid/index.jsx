@@ -195,7 +195,7 @@ const AbsensiTidakValid = () => {
                 id_absen_rejected: action === "reject" ? [id_absen] : [],
             };
 
-            const res = await fetchWithJwt(`${apiUrl}/absen/status/batch`, {
+            const res = await fetchWithJwt(`${apiUrl}/absen/pending`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
