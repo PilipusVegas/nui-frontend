@@ -6,6 +6,7 @@ import { LoadingSpinner, ErrorState, EmptyState, SectionHeader, MapRouteMulti } 
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { formatFullDate } from "../../utils/dateUtils";
 import toast from "react-hot-toast";
+import Swal from "sweetalert2";
 import TimelineLokasi from "./TimelineLokasi";
 
 /* ================= KONSTANTA ================= */
@@ -86,6 +87,28 @@ const DetailKunjungan = () => {
         } catch (err) {
             toast.error("Terjadi kesalahan saat memperbarui status");
         }
+    };
+
+    const handleApprovalWithValidation = async (status) => {
+        // Jika perjalanan belum selesai
+        if (!data.is_complete) {
+            const result = await Swal.fire({
+                title: "Perjalanan Belum Selesai",
+                text: "Perjalanan ini belum berstatus selesai. Apakah Anda yakin ingin melanjutkan?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: status === 1 ? "Ya, Tetap Setujui" : "Ya, Tetap Tolak",
+                cancelButtonText: "Batal",
+                confirmButtonColor: status === 1 ? "#16a34a" : "#dc2626",
+                cancelButtonColor: "#6b7280",
+                reverseButtons: true,
+            });
+
+            if (!result.isConfirmed) return;
+        }
+
+        // Jika sudah selesai ATAU user konfirmasi
+        handleUpdateStatus(status);
     };
 
 
@@ -228,10 +251,10 @@ const DetailKunjungan = () => {
                         <>
                             <Divider />
                             <div className="flex justify-end gap-3 pt-2">
-                                <button onClick={() => handleUpdateStatus(2)} className="px-4 py-2 text-sm rounded-md bg-red-500 text-white font-semibold hover:bg-red-600 transition">
+                                <button onClick={() => handleApprovalWithValidation(2)} className="px-4 py-2 text-sm rounded-md bg-red-500 text-white font-semibold hover:bg-red-600 transition">
                                     Tolak
                                 </button>
-                                <button onClick={() => handleUpdateStatus(1)} className="px-4 py-2 text-sm rounded-md bg-green-500 text-white font-semibold hover:bg-green-600 transition">
+                                <button onClick={() => handleApprovalWithValidation(1)} className="px-4 py-2 text-sm rounded-md bg-green-500 text-white font-semibold hover:bg-green-600 transition">
                                     Setujui
                                 </button>
                             </div>

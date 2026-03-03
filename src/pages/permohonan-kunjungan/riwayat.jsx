@@ -132,6 +132,41 @@ const RiwayatKunjungan = () => {
                 </div>
             )}
 
+            {/* ================= MOBILE ================= */}
+            {!loading && !error && filteredData.length > 0 && (
+                <div className="md:hidden space-y-3">
+                    {filteredData.map((user) => (
+                        <div key={user.id_user} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                            {/* HEADER */}
+                            <div>
+                                <div className="font-semibold text-sm uppercase">
+                                    {user.nama_user}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                    {user.nip_user}
+                                </div>
+                            </div>
+
+                            {/* INFO */}
+                            <div className="mt-2 text-xs text-gray-600">
+                                Total Riwayat:{" "}
+                                <span className="font-semibold">
+                                    {user.riwayat?.length || 0}
+                                </span>
+                            </div>
+
+                            {/* ACTION */}
+                            <div className="mt-3 flex justify-end">
+                                <button onClick={() => setSelectedUser(user)} className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-blue-500 hover:bg-blue-600 text-white rounded-md transition">
+                                    <FontAwesomeIcon icon={faEye} />
+                                    Lihat
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
             {/* MODAL RIWAYAT USER */}
             <Modal isOpen={!!selectedUser} onClose={() => setSelectedUser(null)} title="Riwayat Kunjungan" note={selectedUser && `${selectedUser.nama_user} (${selectedUser.nip_user})`} size="lg">
                 {selectedUser?.riwayat?.length === 0 ? (

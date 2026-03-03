@@ -21,6 +21,18 @@ const TambahKendaraan = ({ isOpen, onClose, apiUrl, onSuccess }) => {
     konsumsi_bb: "",
     id_bb: "",
   });
+
+  useEffect(() => {
+    if (!isOpen) {
+      setForm({
+        nama: "",
+        kategori: 1,
+        tahun: "",
+        konsumsi_bb: "",
+        id_bb: "",
+      });
+    }
+  }, [isOpen]);
   const navigate = useNavigate();
 
   /* Fetch BBM */
@@ -79,10 +91,14 @@ const TambahKendaraan = ({ isOpen, onClose, apiUrl, onSuccess }) => {
         body: JSON.stringify(payload),
       });
 
+      const json = await res.json().catch(() => null);
+
       if (res.ok) {
-        Swal.fire("Berhasil", "Kendaraan berhasil ditambahkan", "success");
+        Swal.fire("Berhasil", json?.message || "Kendaraan berhasil ditambahkan", "success");
+
         onSuccess?.();
         onClose();
+
         setForm({
           nama: "",
           kategori: 1,
@@ -91,32 +107,32 @@ const TambahKendaraan = ({ isOpen, onClose, apiUrl, onSuccess }) => {
           id_bb: "",
         });
       } else {
-        Swal.fire("Gagal", "Gagal menambahkan kendaraan", "error");
+        Swal.fire(
+          "Gagal",
+          json?.message || "Gagal menambahkan kendaraan",
+          "error"
+        );
       }
     } catch (err) {
       console.error(err);
-      Swal.fire("Error", "Terjadi kesalahan sistem", "error");
+      Swal.fire(
+        "Error",
+        err?.message || "Terjadi kesalahan sistem",
+        "error"
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Tambah Kendaraan"
-      note="Data kendaraan digunakan untuk perhitungan konsumsi BBM pada fitur kunjungan."
+    <Modal isOpen={isOpen} onClose={onClose} title="Tambah Kendaraan" note="Data kendaraan digunakan untuk perhitungan konsumsi BBM pada fitur kunjungan."
       footer={
         <>
           <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-lg">
             Batal
           </button>
-          <button
-            onClick={handleSubmit}
-            disabled={isSubmitting || bbmList.length === 0}
-            className="ml-2 px-6 py-2 bg-green-600 text-white rounded-lg disabled:opacity-50"
-          >
+          <button onClick={handleSubmit} disabled={isSubmitting || bbmList.length === 0} className="ml-2 px-6 py-2 bg-green-600 text-white rounded-lg disabled:opacity-50">
             {isSubmitting ? "Menyimpan..." : "Simpan"}
           </button>
         </>
@@ -125,22 +141,12 @@ const TambahKendaraan = ({ isOpen, onClose, apiUrl, onSuccess }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="sm:col-span-2">
           <label className="text-sm font-medium">Nama Kendaraan</label>
-          <input
-            name="nama"
-            value={form.nama}
-            onChange={handleChange}
-            className="mt-1 w-full border rounded-lg px-3 py-2 text-sm"
-          />
+          <input name="nama" value={form.nama} onChange={handleChange} className="mt-1 w-full border rounded-lg px-3 py-2 text-sm" />
         </div>
 
         <div>
           <label className="text-sm font-medium">Kategori</label>
-          <select
-            name="kategori"
-            value={form.kategori}
-            onChange={handleChange}
-            className="mt-1 w-full border rounded-lg px-3 py-2 text-sm"
-          >
+          <select name="kategori" value={form.kategori} onChange={handleChange} className="mt-1 w-full border rounded-lg px-3 py-2 text-sm">
             {Object.entries(KATEGORI_KENDARAAN).map(([k, v]) => (
               <option key={k} value={k}>
                 {v}
@@ -151,13 +157,7 @@ const TambahKendaraan = ({ isOpen, onClose, apiUrl, onSuccess }) => {
 
         <div>
           <label className="text-sm font-medium">Tahun</label>
-          <input
-            type="number"
-            name="tahun"
-            value={form.tahun}
-            onChange={handleChange}
-            className="mt-1 w-full border rounded-lg px-3 py-2 text-sm"
-          />
+          <input type="number" name="tahun" value={form.tahun} onChange={handleChange} className="mt-1 w-full border rounded-lg px-3 py-2 text-sm" />
         </div>
 
         <div>

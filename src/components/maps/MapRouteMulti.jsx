@@ -4,6 +4,7 @@ import L from "leaflet";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCrosshairs } from "@fortawesome/free-solid-svg-icons";
 import { formatTime } from "../../utils/dateUtils";
+import { fetchWithJwt } from "../../utils/jwtHelper";
 
 /* UTIL */
 const parseCoord = (str) => {
@@ -120,7 +121,7 @@ const MapRouteMulti = ({ locations = [], onDistanceCalculated }) => {
     const [orderedPoints, setOrderedPoints] = useState([]);
     const [routes, setRoutes] = useState([]);
     const [totalDistance, setTotalDistance] = useState(0);
-    const GH_BASE_URL = process.env.REACT_APP_GRAPHHOPPER_BASE_URL;
+    const GH_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 
     useEffect(() => {
@@ -175,13 +176,13 @@ const MapRouteMulti = ({ locations = [], onDistanceCalculated }) => {
                 const b = points[i + 1];
 
                 try {
-                    const url = `${GH_BASE_URL}/route?point=${a.originalLat},${a.originalLng}&point=${b.originalLat},${b.originalLng}&profile=motorcycle&points_encoded=false`;
-                    const res = await fetch(url);
+                    const url = `${GH_BASE_URL}/maps/route?point=${a.originalLat},${a.originalLng}&point=${b.originalLat},${b.originalLng}&profile=motorcycle&points_encoded=false`;
+                    const res = await fetchWithJwt(url);
                     const json = await res.json();
+                    const paths = json?.data?.paths;
+                    if (!paths?.length) continue;
 
-                    if (!json?.paths?.length) continue;
-
-                    const path = json.paths[0];
+                    const path = paths[0];
 
                     // ⬅️ AKUMULASI JARAK (METER)
                     distanceSum += Number(path.distance || 0);

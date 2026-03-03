@@ -67,11 +67,11 @@ const Kunjungan = () => {
 
     const renderStatus = (isComplete) =>
         isComplete ? (
-            <span className="px-3 py-1 rounded text-xs font-medium bg-green-100 text-green-700">
+            <span className="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-700 whitespace-nowrap">
                 Perjalanan Selesai
             </span>
         ) : (
-            <span className="px-3 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-700">
+            <span className="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-full bg-amber-100 text-amber-700 whitespace-nowrap">
                 Perjalanan Berjalan
             </span>
         );
@@ -92,66 +92,80 @@ const Kunjungan = () => {
 
             {/* ================= DESKTOP ================= */}
             {!loading && !error && filteredData.length > 0 && (
-                <div className="hidden md:block">
-                    <table className="min-w-full text-sm">
-                        <thead className="bg-green-500 text-white">
-                            <tr>
-                                <th className="px-4 py-3 text-center rounded-tl-lg">No</th>
-                                <th className="px-4 py-3 text-center">NIP</th>
-                                <th className="px-4 py-3 text-left">Nama</th>
-                                <th className="px-4 py-3 text-center">Total Jarak</th>
-                                <th className="px-4 py-3 text-center">Tanggal</th>
-                                <th className="px-4 py-3 text-center">Status</th>
-                                <th className="px-4 py-3 text-center rounded-tr-lg">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredData.map((item, i) => (
-                                <tr key={item.id_kunjungan} className="border-b hover:bg-gray-50">
-                                    <td className="px-4 py-2 text-center">{i + 1}</td>
-                                    <td className="px-4 py-2 text-center">{item.nip}</td>
-                                    <td className="px-4 py-2">
-                                        <div className="font-semibold uppercase">
-                                            {item.nama}
-                                        </div>
-                                        <div className="text-xs text-gray-500">
-                                            {item.role}
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-2 text-center">
-                                        {(item.total_jarak / 1000).toFixed(2)} km
-                                    </td>
-                                    <td className="px-4 py-2 text-center">
-                                        {formatFullDate(item.tanggal)}
-                                    </td>
-                                    <td className="px-4 py-2 text-center">
-                                        {renderStatus(item.is_complete)}
-                                    </td>
-                                    <td className="px-4 py-2 text-center space-x-2">
-                                        <button onClick={() => navigate(`/permohonan-kunjungan/detail/${item.id_kunjungan}`)} className="px-3 py-1.5 text-xs bg-blue-500 text-white rounded">
-                                            <FontAwesomeIcon icon={faEye} /> Detail
-                                        </button>
-
-                                        <button onClick={() => handleDeleteTrip(item.id_kunjungan)} disabled={deletingId === item.id_kunjungan} className="px-3 py-1.5 text-xs bg-red-500 text-white rounded disabled:opacity-50">
-                                            <FontAwesomeIcon icon={faTrash} /> Hapus
-                                        </button>
-                                    </td>
-
+                <div className="hidden lg:block">
+                    <div className="w-full overflow-x-auto rounded-lg border border-gray-200">
+                        <table className="min-w-full table-auto text-sm">
+                            <thead className="bg-green-500 text-white">
+                                <tr>
+                                    <th className="px-4 py-3 text-center rounded-tl-lg whitespace-nowrap">No</th>
+                                    <th className="px-4 py-3 text-center whitespace-nowrap">NIP</th>
+                                    <th className="px-4 py-3 text-left whitespace-nowrap">Nama</th>
+                                    <th className="px-4 py-3 text-center whitespace-nowrap">Tanggal</th>
+                                    <th className="px-4 py-3 text-center whitespace-nowrap">Status</th>
+                                    <th className="px-4 py-3 text-center rounded-tr-lg whitespace-nowrap w-[200px]">
+                                        Aksi
+                                    </th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+
+                            <tbody>
+                                {filteredData.map((item, i) => (
+                                    <tr key={item.id_kunjungan} className="border-b hover:bg-gray-50 transition">
+                                        <td className="px-4 py-2 text-center whitespace-nowrap">
+                                            {i + 1}
+                                        </td>
+                                        <td className="px-4 py-2 text-center whitespace-nowrap">
+                                            {item.nip}
+                                        </td>
+                                        <td className="px-4 py-2">
+                                            <div className="font-semibold uppercase whitespace-nowrap">
+                                                {item.nama}
+                                            </div>
+                                            <div className="text-xs text-gray-500 whitespace-nowrap">
+                                                {item.role}
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-2 text-center whitespace-nowrap">
+                                            {formatFullDate(item.tanggal)}
+                                        </td>
+                                        <td className="px-4 py-2 text-center whitespace-nowrap">
+                                            {renderStatus(item.is_complete)}
+                                        </td>
+                                        {/* AKSI */}
+                                        <td className="px-4 py-2">
+                                            <div className="flex items-center justify-center gap-2 whitespace-nowrap">
+                                                <button onClick={() => navigate(`/permohonan-kunjungan/detail/${item.id_kunjungan}`)}
+                                                    className="inline-flex items-center gap-1 px-3 py-2 text-xs font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-md transition whitespace-nowrap"
+                                                >
+                                                    <FontAwesomeIcon icon={faEye} />
+                                                    Detail
+                                                </button>
+
+                                                <button onClick={() => handleDeleteTrip(item.id_kunjungan)} disabled={deletingId === item.id_kunjungan} className="inline-flex items-center gap-1 px-3 py-2 text-xs font-medium bg-red-500 hover:bg-red-600 text-white rounded-md transition disabled:opacity-50 whitespace-nowrap">
+                                                    <FontAwesomeIcon icon={faTrash} />
+                                                    Hapus
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
 
             {/* ================= MOBILE ================= */}
             {!loading && !error && filteredData.length > 0 && (
-                <div className="md:hidden space-y-3">
-                    {filteredData.map(item => (
-                        <div key={item.id_kunjungan} className="border rounded-xl p-4 bg-white shadow-sm">
+                <div className="lg:hidden space-y-3">
+                    {filteredData.map((item) => (
+                        <div key={item.id_kunjungan} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                            {/* HEADER */}
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <div className="font-semibold">{item.nama}</div>
+                                    <div className="font-semibold text-sm">
+                                        {item.nama}
+                                    </div>
                                     <div className="text-xs text-gray-500">
                                         {item.nip} • {item.role}
                                     </div>
@@ -159,19 +173,28 @@ const Kunjungan = () => {
                                 {renderStatus(item.is_complete)}
                             </div>
 
-                            <div className="mt-2 text-sm space-y-1">
+                            {/* CONTENT */}
+                            <div className="mt-2 text-xs text-gray-600 space-y-1">
                                 <div>
-                                    <b>Tanggal:</b> {formatFullDate(item.tanggal)}
-                                </div>
-                                <div>
-                                    <b>Jarak:</b>{" "}
-                                    {(item.total_jarak / 1000).toFixed(2)} km
+                                    <span className="font-medium">Tanggal:</span>{" "}
+                                    {formatFullDate(item.tanggal)}
                                 </div>
                             </div>
 
-                            <div className="mt-3">
-                                <button onClick={() => navigate(`/permohonan-kunjungan/detail/${item.id_kunjungan}`)} className="w-full py-2 text-xs bg-blue-500 text-white rounded">
-                                    <FontAwesomeIcon icon={faEye} /> Detail
+                            {/* ACTION - kanan bawah */}
+                            <div className="mt-3 flex justify-end gap-2">
+                                <button onClick={() => navigate( `/permohonan-kunjungan/detail/${item.id_kunjungan}`)}
+                                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-md transition"
+                                >
+                                    <FontAwesomeIcon icon={faEye} />
+                                    Detail
+                                </button>
+
+                                <button onClick={() => handleDeleteTrip(item.id_kunjungan)} disabled={deletingId === item.id_kunjungan}
+                                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-red-500 hover:bg-red-600 text-white rounded-md transition disabled:opacity-50"
+                                >
+                                    <FontAwesomeIcon icon={faTrash} />
+                                    Hapus
                                 </button>
                             </div>
                         </div>

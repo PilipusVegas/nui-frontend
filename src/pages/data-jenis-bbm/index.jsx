@@ -209,30 +209,46 @@ const DataJenisBBM = () => {
                 </table>
             </div>
 
-            {/* MOBILE LIST (BUTTON STYLE) */}
-            <div className="md:hidden space-y-2">
+            {/* MOBILE LIST */}
+            <div className="md:hidden space-y-3">
                 {currentItems.length > 0 ? (
                     currentItems.map((item) => (
-                        <div key={item.id} className="flex items-center justify-between px-4 py-3 bg-white border border-gray-200 rounded-lg shadow-sm active:bg-gray-100 transition">
-                            {/* LEFT INFO */}
-                            <div className="flex flex-col min-w-0">
-                                <span className="text-sm font-semibold text-gray-800 truncate">
+                        <div
+                            key={item.id}
+                            className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm"
+                        >
+                            {/* INFO */}
+                            <div>
+                                <div className="text-sm font-semibold text-gray-800">
                                     {item.nama || "-"}
-                                </span>
-                                <span className="text-xs text-gray-500">
-                                    {getKategoriLabel(item.kategori)} ·{" "}
-                                    {formatRupiah(item.harga ?? item.harga_pl)} / {getSatuanLabel(item.satuan)}
-                                </span>
+                                </div>
+
+                                <div className="text-xs text-gray-500 mt-1">
+                                    {getKategoriLabel(item.kategori)} •{" "}
+                                    {formatRupiah(item.harga ?? item.harga_pl)} /{" "}
+                                    {getSatuanLabel(item.satuan)}
+                                </div>
                             </div>
 
-                            {/* ACTIONS */}
-                            <div className="flex items-center gap-2 ml-3">
-                                <button onClick={() => { setSelectedBBM(item); setIsEditOpen(true); }} className="p-1 px-2 rounded-md bg-yellow-500 text-white hover:bg-yellow-600 transition" title="Edit">
+                            {/* ACTION BUTTONS */}
+                            <div className="mt-3 flex justify-end gap-2">
+                                <button
+                                    onClick={() => {
+                                        setSelectedBBM(item);
+                                        setIsEditOpen(true);
+                                    }}
+                                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-yellow-500 hover:bg-yellow-600 text-white rounded-md transition"
+                                >
                                     <FontAwesomeIcon icon={faEdit} />
+                                    Edit
                                 </button>
 
-                                <button onClick={() => handleDelete(item.id)} className="p-1 px-2 rounded-md bg-red-500 text-white hover:bg-red-600 transition" title="Hapus">
+                                <button
+                                    onClick={() => handleDelete(item.id)}
+                                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-red-500 hover:bg-red-600 text-white rounded-md transition"
+                                >
                                     <FontAwesomeIcon icon={faTrash} />
+                                    Hapus
                                 </button>
                             </div>
                         </div>

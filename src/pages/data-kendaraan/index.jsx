@@ -18,22 +18,16 @@ const KATEGORI_KENDARAAN = {
 const DataKendaraan = () => {
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const navigate = useNavigate();
-
     const [searchTerm, setSearchTerm] = useState("");
     const [vehicleData, setVehicleData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-
-    // Modal state
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isShowOpen, setIsShowOpen] = useState(false);
     const [selectedVehicle, setSelectedVehicle] = useState(null);
-
     const itemsPerPage = 10;
 
-    /* ======================
-     * Helpers
-     * ====================== */
+    /* Helpers */
     const formatRupiah = (value) => {
         const number = Number(value);
         if (isNaN(number)) return "-";
@@ -116,15 +110,9 @@ const DataKendaraan = () => {
      * ====================== */
     return (
         <div className="flex flex-col bg-white">
-            <SectionHeader
-                title="Data Kendaraan"
-                subtitle="Data kendaraan digunakan untuk perhitungan konsumsi BBM dan fitur kunjungan."
-                onBack={() => navigate("/home")}
+            <SectionHeader title="Data Kendaraan" subtitle="Data kendaraan digunakan untuk perhitungan konsumsi BBM dan fitur kunjungan." onBack={() => navigate("/home")}
                 actions={
-                    <button
-                        onClick={() => setIsAddOpen(true)}
-                        className="inline-flex items-center gap-2 px-3 py-2 text-sm sm:px-4 sm:py-2.5 sm:text-base bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition active:scale-95"
-                    >
+                    <button onClick={() => setIsAddOpen(true)} className="inline-flex items-center gap-2 px-3 py-2 text-sm sm:px-4 sm:py-2.5 sm:text-base bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition active:scale-95">
                         <FontAwesomeIcon icon={faPlus} />
                         <span>Tambah</span>
                     </button>
@@ -134,17 +122,8 @@ const DataKendaraan = () => {
             {/* SEARCH */}
             <div className="mb-4">
                 <div className="relative">
-                    <FontAwesomeIcon
-                        icon={faSearch}
-                        className="absolute left-3 top-3 text-gray-400"
-                    />
-                    <input
-                        type="text"
-                        placeholder="Cari Kendaraan..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm"
-                    />
+                    <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-3 text-gray-400" />
+                    <input type="text" placeholder="Cari Kendaraan..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm" />
                 </div>
             </div>
 
@@ -198,13 +177,13 @@ const DataKendaraan = () => {
                                                     setIsShowOpen(true);
                                                 }}
                                                 className="
-                flex items-center gap-1.5
-                px-3 py-2
-                rounded-md
-                bg-blue-600 text-white
-                hover:bg-blue-700
-                transition
-            "
+                                                    flex items-center gap-1.5
+                                                    px-3 py-2
+                                                    rounded-md
+                                                    bg-blue-600 text-white
+                                                    hover:bg-blue-700
+                                                    transition
+                                                "
                                             >
                                                 <FontAwesomeIcon icon={faEye} className="text-[11px]" />
                                                 <span>Detail</span>
@@ -217,30 +196,20 @@ const DataKendaraan = () => {
                                                     setIsEditOpen(true);
                                                 }}
                                                 className="
-                flex items-center gap-1.5
-                px-3 py-2
-                rounded-md
-                bg-yellow-500 text-white
-                hover:bg-yellow-600
-                transition
-            "
+                                                    flex items-center gap-1.5
+                                                    px-3 py-2
+                                                    rounded-md
+                                                    bg-yellow-500 text-white
+                                                    hover:bg-yellow-600
+                                                    transition
+                                                "
                                             >
                                                 <FontAwesomeIcon icon={faEdit} className="text-[11px]" />
                                                 <span>Edit</span>
                                             </button>
 
                                             {/* Hapus */}
-                                            <button
-                                                onClick={() => handleDelete(item.id)}
-                                                className="
-                flex items-center gap-1.5
-                px-3 py-2
-                rounded-md
-                bg-red-600 text-white
-                hover:bg-red-700
-                transition
-            "
-                                            >
+                                            <button onClick={() => handleDelete(item.id)} className="flex items-center gap-1.5 px-3 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition">
                                                 <FontAwesomeIcon icon={faTrash} className="text-[11px]" />
                                                 <span>Hapus</span>
                                             </button>
@@ -260,31 +229,37 @@ const DataKendaraan = () => {
             </div>
 
             {/* ================= MOBILE LIST ================= */}
-            <div className="md:hidden space-y-2">
+            <div className="md:hidden space-y-3">
                 {currentItems.length > 0 ? (
                     currentItems.map((item) => (
-                        <div key={item.id} className="flex items-center justify-between px-4 py-3 bg-white border rounded-lg shadow-sm">
-                            <div className="flex flex-col min-w-0">
-                                <span className="text-sm font-semibold truncate">
+                        <div
+                            key={item.id}
+                            className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm"
+                        >
+                            {/* HEADER */}
+                            <div>
+                                <div className="text-sm font-semibold truncate">
                                     {item.nama}
-                                </span>
-                                <span className="text-xs text-gray-500">
-                                    {getKategoriLabel(item.kategori)} · {item.tahun}
-                                </span>
-                                <span className="text-xs text-gray-500">
-                                    {item.nama_bb} · {item.konsumsi_bb} km/l
-                                </span>
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                    {getKategoriLabel(item.kategori)} • {item.tahun}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                    {item.nama_bb} • {item.konsumsi_bb} km/l
+                                </div>
                             </div>
 
-                            <div className="flex items-center gap-2 ml-3">
+                            {/* ACTION BUTTONS */}
+                            <div className="mt-3 flex justify-end gap-2">
                                 <button
                                     onClick={() => {
                                         setSelectedVehicle(item);
                                         setIsShowOpen(true);
                                     }}
-                                    className="p-2 bg-blue-500 text-white rounded"
+                                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-md transition"
                                 >
                                     <FontAwesomeIcon icon={faEye} />
+                                    Detail
                                 </button>
 
                                 <button
@@ -292,16 +267,18 @@ const DataKendaraan = () => {
                                         setSelectedVehicle(item);
                                         setIsEditOpen(true);
                                     }}
-                                    className="p-2 bg-yellow-500 text-white rounded"
+                                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-yellow-500 hover:bg-yellow-600 text-white rounded-md transition"
                                 >
                                     <FontAwesomeIcon icon={faEdit} />
+                                    Edit
                                 </button>
 
                                 <button
                                     onClick={() => handleDelete(item.id)}
-                                    className="p-2 bg-red-500 text-white rounded"
+                                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-red-500 hover:bg-red-600 text-white rounded-md transition"
                                 >
                                     <FontAwesomeIcon icon={faTrash} />
+                                    Hapus
                                 </button>
                             </div>
                         </div>
@@ -313,12 +290,7 @@ const DataKendaraan = () => {
                 )}
             </div>
 
-            <Pagination
-                currentPage={currentPage}
-                totalItems={filteredData.length}
-                itemsPerPage={itemsPerPage}
-                onPageChange={setCurrentPage}
-            />
+            <Pagination currentPage={currentPage} totalItems={filteredData.length} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} />
 
             {/* ================= MODALS ================= */}
             <TambahKendaraan isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} apiUrl={apiUrl} onSuccess={fetchVehicleData} />

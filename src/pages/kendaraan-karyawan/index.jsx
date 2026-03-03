@@ -190,10 +190,7 @@ const KendaraanKaryawan = () => {
                             ))
                         ) : (
                             <tr>
-                                <td
-                                    colSpan={8}
-                                    className="text-center py-6 text-gray-500"
-                                >
+                                <td colSpan={8} className="text-center py-6 text-gray-500">
                                     Tidak ada data
                                 </td>
                             </tr>
@@ -203,46 +200,53 @@ const KendaraanKaryawan = () => {
             </div>
 
             {/* ================= MOBILE ================= */}
-            <div className="md:hidden space-y-2">
+            <div className="md:hidden space-y-3">
                 {currentItems.length ? (
                     currentItems.map((item) => (
                         <div
                             key={`${item.id_user}-${item.id_kendaraan}`}
-                            className="p-4 border rounded-lg shadow-sm bg-white"
+                            className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm"
                         >
-                            <div className="font-semibold">
-                                {item.nama_user}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                                {item.nip_user} · {item.role}
-                            </div>
-                            <div className="text-xs text-gray-400 mb-2">
-                                {item.perusahaan}
+                            {/* HEADER USER */}
+                            <div className="mb-2">
+                                <div className="font-semibold text-sm">
+                                    {item.nama_user}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                    {item.nip_user} • {item.role}
+                                </div>
+                                <div className="text-xs text-gray-400">
+                                    {item.perusahaan}
+                                </div>
                             </div>
 
-                            <div className="text-sm">
+                            {/* DATA KENDARAAN */}
+                            <div className="text-sm font-medium">
                                 {item.nama_kendaraan} ({item.tahun_kendaraan})
                             </div>
                             <div className="text-xs text-gray-500">
-                                {item.nama_bb} · {item.konsumsi_bb} km/l
+                                {item.nama_bb} • {item.konsumsi_bb} km/l
                             </div>
 
-                            <button
-                                onClick={() => {
-                                    setSelected(item);
-                                    setIsEditOpen(true);
-                                }}
-                                className="mt-3 w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-md"
-                            >
-                                Edit Kendaraan
-                            </button>
+                            {/* ACTION BUTTON */}
+                            <div className="mt-3 flex justify-end gap-2">
+                                <button
+                                    onClick={() => {
+                                        setSelected(item);
+                                        setIsEditOpen(true);
+                                    }}
+                                    className="inline-flex items-center px-3 py-1.5 text-xs font-medium bg-yellow-500 hover:bg-yellow-600 text-white rounded-md transition"
+                                >
+                                    Edit
+                                </button>
 
-                            <button
-                                onClick={() => handleDelete(item)}
-                                className="mt-2 w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-md"
-                            >
-                                Hapus Kendaraan
-                            </button>
+                                <button
+                                    onClick={() => handleDelete(item)}
+                                    className="inline-flex items-center px-3 py-1.5 text-xs font-medium bg-red-600 hover:bg-red-700 text-white rounded-md transition"
+                                >
+                                    Hapus
+                                </button>
+                            </div>
                         </div>
                     ))
                 ) : (
@@ -252,12 +256,7 @@ const KendaraanKaryawan = () => {
                 )}
             </div>
 
-            <Pagination
-                currentPage={currentPage}
-                totalItems={filteredData.length}
-                itemsPerPage={itemsPerPage}
-                onPageChange={setCurrentPage}
-            />
+            <Pagination currentPage={currentPage} totalItems={filteredData.length} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} />
 
             <TambahKendaraanKaryawan isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} apiUrl={apiUrl} onSuccess={fetchData} />
 
