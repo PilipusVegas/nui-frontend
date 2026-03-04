@@ -65,54 +65,42 @@ const officeIcon = L.divIcon({
   iconAnchor: [18, 18], // pusat geometris
 });
 
-const MapControls = ({ user, destination }) => {
+const MapControls = ({ user, destination, onRefreshLocation }) => {
   const map = useMap();
 
-  const goUser = () => {
+  const refreshLocation = () => {
+    // minta parent refresh GPS
+    onRefreshLocation?.();
+
     if (!user) return;
+
+    // fokus ke user
     map.flyTo([user.lat, user.lng], 17, { duration: 0.6 });
+
+    // jika ada tujuan tampilkan keduanya
+    if (destination) {
+      const bounds = L.latLngBounds(
+        [user.lat, user.lng],
+        [destination.lat, destination.lng]
+      );
+
+      setTimeout(() => {
+        map.fitBounds(bounds, { padding: [40, 40] });
+      }, 300);
+    }
   };
 
-  const goOffice = () => {
-    if (!destination) return;
-    map.flyTo([destination.lat, destination.lng], 17, { duration: 0.6 });
-  };
 
-  const goBoth = () => {
-    if (!user || !destination) return;
 
-    const bounds = L.latLngBounds([user.lat, user.lng], [destination.lat, destination.lng]);
-    map.fitBounds(bounds, { padding: [40, 40] });
-  };
+  if (!user) return null;
 
   return (
-    <div className="absolute top-2 right-2 z-[9999] flex flex-col gap-2 pointer-events-auto">
-      {user && (
-        <button
-          onClick={goUser}
-          className="bg-blue-600 text-white p-2.5 px-3.5 rounded-full shadow"
-        >
-          <FontAwesomeIcon icon={faLocationDot} />
-        </button>
-      )}
-
-      {destination && (
-        <button
-          onClick={goOffice}
-          className="bg-red-600 text-white p-2.5 px-3.5 rounded-full shadow"
-        >
-          <FontAwesomeIcon icon={faBuilding} />
-        </button>
-      )}
-
-      {user && destination && (
-        <button
-          onClick={goBoth}
-          className="bg-gray-800 text-white p-2.5 px-3.5 rounded-full shadow"
-        >
-          <FontAwesomeIcon icon={faCrosshairs} />
-        </button>
-      )}
+    <div className="absolute top-2 right-2 z-[9999] pointer-events-auto">
+      <button onClick={refreshLocation}
+        className="bg-white text-sm text-blue-600 p-2 px-3 rounded-full shadow-lg border hover:bg-gray-100 transition"
+      >
+        <FontAwesomeIcon icon={faCrosshairs} />
+      </button>
     </div>
   );
 };
@@ -134,6 +122,25 @@ const MapRoute = ({ user, destination, onDistance }) => {
   const [pos, setPos] = useState(null);
   const [routeCoords, setRouteCoords] = useState([]);
   const GH_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
+  const refreshGps = () => {
+    navigator.geolocation.getCurrentPosition(
+      (p) => {
+        setPos({
+          lat: p.coords.latitude,
+          lng: p.coords.longitude,
+        });
+      },
+      (err) => {
+        console.error("GPS gagal:", err);
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 5000,
+      }
+    );
+  };
 
   useEffect(() => {
     if (user?.lat && user?.lng) {
@@ -187,7 +194,7 @@ const MapRoute = ({ user, destination, onDistance }) => {
         style={{ height: "160px", borderRadius: "10px" }}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        {user && <MapControls user={user} destination={destination} />}
+        {user && <MapControls user={user} destination={destination} onRefreshLocation={refreshGps} />}
         <AutoFitBounds user={user} destination={destination} />
         <Marker position={[pos.lat, pos.lng]} icon={userIcon} />
         {destination && (

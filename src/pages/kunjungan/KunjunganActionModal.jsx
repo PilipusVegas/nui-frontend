@@ -46,10 +46,10 @@ const KunjunganActionModal = ({ isOpen, title, noteText, submitLabel, onSubmit, 
         >
 
             {/* INFO PERHATIAN */}
-            <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5">
-                <p className="text-[11px] text-red-700 leading-snug">
-                    <span className="font-semibold">Perhatian:</span>
-                    Foto wajib menampilkan wajah dan kondisi sekitar sebagai bukti kunjungan.
+            <div className="mb-5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5">
+                <p className="text-[12px] text-blue-700 leading-snug tracking-wide">
+                    <span className="font-semibold">Perhatian: </span>
+                    Wajah dan lokasi harus terlihat jelas di foto
                 </p>
             </div>
 

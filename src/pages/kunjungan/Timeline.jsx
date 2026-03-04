@@ -1,15 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faRoute,
-  faCircleCheck,
-  faClock,
-  faCalendarAlt,
-  faArrowRightFromBracket,
-  faPlus,
-  faArrowRight
-} from "@fortawesome/free-solid-svg-icons";
+import { faCircleCheck, faClock, faCalendarAlt, faArrowRightFromBracket, faPlus, faArrowRight} from "@fortawesome/free-solid-svg-icons";
 import { formatFullDate, formatTime } from "../../utils/dateUtils";
 
 const getDotStyleByKategori = (kategori) => {
@@ -30,25 +22,16 @@ const getTimelineTitle = (item, index, checkpoints) => {
 };
 
 // ================= COMPONENT =================
-const Timeline = ({
-  history,
-  tripInfo,
-  activeLocation,
-  onCheckout,
-  onEndTrip,
-  canAddLocation,
-  onAddLocation,
-}) => {
+const Timeline = ({ history, tripInfo, activeLocation, onCheckout, onEndTrip, canAddLocation, onAddLocation, showAddLocation}) => {
   const checkpoints = history.filter((h) => h.kategori === 2);
   const lastCheckpoint = checkpoints[checkpoints.length - 1];
   const canEndTrip = checkpoints.length > 0 && lastCheckpoint?.jam_selesai && !history.some((h) => h.kategori === 3);
   const isFirstCheckpoint = (item, checkpoints) =>
     item.kategori === 2 && checkpoints[0]?.id === item.id;
-
   const isLastCheckpoint = (item, checkpoints) =>
     item.kategori === 2 && checkpoints[checkpoints.length - 1]?.id === item.id;
-
   const isTripEnded = history.some((h) => h.kategori === 3);
+  const tripCompleted = tripInfo?.is_complete === 1;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-5 mb-20">
@@ -70,10 +53,7 @@ const Timeline = ({
           </div>
 
           {/* Action */}
-          <button
-            onClick={onCheckout}
-            className="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white py-2.5 rounded-lg text-sm font-semibold transition"
-          >
+          <button onClick={onCheckout} className="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white py-2.5 rounded-lg text-sm font-semibold transition">
             <FontAwesomeIcon icon={faArrowRightFromBracket} />
             Check-Out Lokasi
           </button>
@@ -119,7 +99,6 @@ const Timeline = ({
                       <div className="flex items-center gap-2">
                         <FontAwesomeIcon icon={faClock} className="text-emerald-500" />
                         <span>Check-in {formatTime(h.jam_mulai)}</span>
-
                         {isFirstCheckpoint(h, checkpoints) && (
                           <span className="flex items-center gap-1 text-emerald-600 font-semibold">
                             <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
@@ -133,7 +112,6 @@ const Timeline = ({
                       <div className="flex items-center gap-2">
                         <FontAwesomeIcon icon={faClock} className="text-rose-500" />
                         <span>Check-out {formatTime(h.jam_selesai)}</span>
-
                         {isLastCheckpoint(h, checkpoints) && isTripEnded && (
                           <span className="flex items-center gap-1 text-rose-600 font-semibold">
                             <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
@@ -155,7 +133,7 @@ const Timeline = ({
             );
           })}
 
-          {canAddLocation && (
+          {canAddLocation && !showAddLocation && (
             <div className="pt-4 border-t border-gray-200">
               <button onClick={onAddLocation} className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl text-sm font-semibold transition">
                 <FontAwesomeIcon icon={faPlus} />
@@ -163,7 +141,8 @@ const Timeline = ({
               </button>
             </div>
           )}
-          {canEndTrip && (
+
+          {canEndTrip && !showAddLocation && (
             <div className="pt-4 border-t border-gray-200">
               <button onClick={onEndTrip} className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl text-sm font-semibold transition">
                 <FontAwesomeIcon icon={faCircleCheck} />
