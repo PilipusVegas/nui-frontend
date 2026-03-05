@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import "yet-another-react-lightbox/styles.css";
 import Lightbox from "yet-another-react-lightbox";
 import React, { useState, useEffect } from "react";
-import { fetchWithJwt } from "../../utils/jwtHelper";
+import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { formatFullDate, formatTime } from "../../utils/dateUtils";
 import { SectionHeader, SearchBar, Modal, EmptyState, LoadingSpinner, ErrorState } from "../../components";
@@ -25,6 +25,8 @@ const AbsensiTidakValid = () => {
     const [processingId, setProcessingId] = useState(null);
     const absenRefs = React.useRef({});
     const successApproveMessage = "Absensi berhasil disetujui. Terima kasih sudah melakukan verifikasi";
+    const currentUser = getUserFromToken();
+    const canApprove = currentUser?.id_role === 4 || currentUser?.id_role === 6;
 
     const getAbnormalReason = (absen) => {
         const reasons = [];
@@ -415,26 +417,34 @@ const AbsensiTidakValid = () => {
                                                         </div>
                                                         <div className="flex items-center gap-5 sm:gap-6">
                                                             <label className="flex items-center gap-2 text-green-600 font-semibold" onClick={(e) => e.stopPropagation()}>
-                                                                <input type="checkbox" checked={a.status === 1} disabled={processingId === a.id} onChange={() =>
-                                                                    submitSingleDecision({
-                                                                        id_absen: a.id,
-                                                                        action: "approve",
-                                                                        user,
-                                                                        absen: a,
-                                                                    })
-                                                                }
-                                                                    className="w-5 h-5 accent-green-600" />
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={a.status === 1}
+                                                                    disabled={!canApprove || processingId === a.id}
+                                                                    onChange={() =>
+                                                                        submitSingleDecision({
+                                                                            id_absen: a.id,
+                                                                            action: "approve",
+                                                                            user,
+                                                                            absen: a,
+                                                                        })
+                                                                    }
+                                                                    className="w-5 h-5 accent-green-600"
+                                                                />
                                                                 Setujui
                                                             </label>
 
                                                             <label className="flex items-center gap-2 text-red-600 font-semibold" onClick={(e) => e.stopPropagation()}>
-                                                                <input type="checkbox" checked={a.status === 2} disabled={processingId === a.id}
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={a.status === 2}
+                                                                    disabled={!canApprove || processingId === a.id}
                                                                     onChange={() =>
                                                                         submitSingleDecision({
                                                                             id_absen: a.id,
                                                                             action: "reject",
                                                                             user,
-                                                                            absen: a, // ⬅️ WAJIB
+                                                                            absen: a,
                                                                         })
                                                                     }
                                                                     className="w-5 h-5 accent-red-600"
