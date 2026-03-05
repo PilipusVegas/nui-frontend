@@ -7,7 +7,8 @@ const KunjunganActionModal = ({ isOpen, title, noteText, submitLabel, onSubmit, 
     const [cameraReady, setCameraReady] = useState(false);
     const [facingMode, setFacingMode] = useState("environment");
     const [isSubmitted, setIsSubmitted] = useState(false);
-    const isValid = note?.trim() && photoPreview;
+    const [isCheckedDisclaimer, setIsCheckedDisclaimer] = useState(false);
+    const isValid = note?.trim() && photoPreview && isCheckedDisclaimer;
 
     const handleSubmit = () => {
         setIsSubmitted(true);
@@ -20,6 +21,7 @@ const KunjunganActionModal = ({ isOpen, title, noteText, submitLabel, onSubmit, 
             setCameraReady(false);
             setFacingMode("environment");
             setIsSubmitted(false);
+            setIsCheckedDisclaimer(false);
         }
     }, [isOpen]);
 
@@ -57,7 +59,7 @@ const KunjunganActionModal = ({ isOpen, title, noteText, submitLabel, onSubmit, 
             {!photoPreview ? (
                 <div className="flex flex-col items-center gap-4">
                     <div className="w-full max-w-[220px] aspect-[4/5] rounded-xl overflow-hidden border bg-black shadow-sm">
-                        <Webcam ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode }} onUserMedia={() => setCameraReady(true)} className="w-full h-full object-cover"/>
+                        <Webcam ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode }} onUserMedia={() => setCameraReady(true)} className="w-full h-full object-cover" />
                     </div>
 
                     <div className="flex gap-2 w-full max-w-[220px]">
@@ -85,6 +87,30 @@ const KunjunganActionModal = ({ isOpen, title, noteText, submitLabel, onSubmit, 
                     </button>
                 </div>
             )}
+
+            {/* DISCLAIMER */}
+            <div className="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
+                <label className="flex items-start gap-2 cursor-pointer">
+                    <input type="checkbox" checked={isCheckedDisclaimer} onChange={(e) => setIsCheckedDisclaimer(e.target.checked)} className="mt-1 accent-green-600" />
+
+                    <span className="text-[12px] text-yellow-800 leading-snug">
+                        Saya memahami bahwa konfirmasi kehadiran pertama akan tercatat
+                        sebagai absensi masuk dan konfirmasi selesai paling akhir akan
+                        tercatat sebagai absensi pulang.
+
+                        Setiap kunjungan wajib diakhiri dengan konfirmasi selesai atau
+                        menekan tombol Akhiri Kunjungan. Jika saya lupa melakukannya,
+                        kunjungan dapat dianggap tidak valid sehingga absensi dan
+                        pembayaran tidak diproses.
+                    </span>
+                </label>
+
+                {isSubmitted && !isCheckedDisclaimer && (
+                    <p className="text-[11px] text-red-500 mt-1">
+                        Anda wajib menyetujui pernyataan ini
+                    </p>
+                )}
+            </div>
 
 
             <div className="mt-3 space-y-1">

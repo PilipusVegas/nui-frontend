@@ -142,14 +142,6 @@ const Timeline = ({ history, tripInfo, activeLocation, onCheckout, onEndTrip, ca
             </div>
           )}
 
-          {canEndTrip && !showAddLocation && (
-            <div className="pt-4 border-t border-gray-200">
-              <button onClick={onEndTrip} className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl text-sm font-semibold transition">
-                <FontAwesomeIcon icon={faCircleCheck} />
-                Akhiri Kunjungan
-              </button>
-            </div>
-          )}
         </div>
       )}
     </div>

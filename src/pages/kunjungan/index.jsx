@@ -278,44 +278,16 @@ export default function Kunjungan() {
             fetchTrip();
             // ✅ jika lokasi terakhir → langsung arahkan ke akhiri kunjungan
             if (isEnd === 1) {
-                setTimeout(() => {
-                    Swal.fire({
-                        icon: "info",
-                        title: "Langkah Terakhir",
-                        text: "Silakan akhiri kunjungan untuk menyimpan absensi pulang.",
-                        confirmButtonText: "Mengerti",
-                    }).then(() => {
-                        setModal("end");
-                    });
-                }, 400);
+                Swal.fire({
+                    icon: "success",
+                    title: "Kunjungan Selesai",
+                    text: "Checkout terakhir telah dicatat sebagai absen pulang.",
+                    confirmButtonText: "OK"
+                });
             }
         } catch (err) {
             toast.error("Koneksi ke server gagal");
         }
-    };
-
-    const endTrip = async () => {
-        if (!photo) return toast.error("Foto wajib diambil");
-        if (!note) return toast.error("Keterangan wajib diisi");
-        if (!lokasiUser?.id_lokasi) {
-            return toast.error("Lokasi rumah belum diset oleh admin");
-        }
-        const fd = new FormData();
-        fd.append("id_lokasi", lokasiUser.id_lokasi); // ⬅️ FIX UTAMA
-        fd.append("foto", photo);
-        fd.append("deskripsi", note);
-        fd.append("koordinat", `${gps.lat},${gps.lng}`); // posisi real user
-        await fetchWithJwt(
-            `${apiurl}/trip/user/end/${tripId}`,
-            {
-                method: "PUT",
-                body: fd,
-            }
-        );
-        toast.success("Kunjungan berhasil diakhiri");
-        resetModalState();
-        setModal(null);
-        fetchTrip();
     };
 
     const hasTrip = history.length > 0;
@@ -423,16 +395,7 @@ export default function Kunjungan() {
                                 <FontAwesomeIcon icon={faClock} className="mt-1 text-green-600" />
                                 <p className="leading-normal">
                                     <b>Check-in pertama</b> akan dicatat sebagai <b>absen masuk</b>, dan
-                                    <b> check-out paling terakhir</b> akan dicatat sebagai <b>absen pulang</b>.
-                                </p>
-                            </div>
-
-                            <div className="flex items-start gap-2">
-                                <FontAwesomeIcon icon={faClock} className="mt-1 text-green-600" />
-                                <p className="leading-normal">
-                                    Data absensi baru akan tercatat setelah Anda menekan
-                                    <b> Akhiri Kunjungan</b>. Jika belum diakhiri, maka data kunjungan
-                                    dan absensi belum masuk ke rekap.
+                                    <b> check-out pada lokasi terakhir</b> akan dicatat sebagai <b>absen pulang</b>.
                                 </p>
                             </div>
 
@@ -447,8 +410,8 @@ export default function Kunjungan() {
                             <div className="flex items-start gap-2">
                                 <FontAwesomeIcon icon={faClock} className="mt-1 text-red-500" />
                                 <p className="leading-normal">
-                                    Timeline Kunjungan akan <b>reset setiap 24 jam</b>. Jika kunjungan belum
-                                    diakhiri sebelum reset, maka data kunjungan dan absensi
+                                    Timeline kunjungan akan <b>reset setiap 24 jam</b>. Jika kunjungan belum
+                                    selesai sebelum reset, maka data kunjungan dan absensi
                                     <b> tidak akan tercatat</b>.
                                 </p>
                             </div>
@@ -462,13 +425,21 @@ export default function Kunjungan() {
                                 </p>
                             </div>
 
+                            <div className="flex items-start gap-2">
+                                <FontAwesomeIcon icon={faClock} className="mt-1 text-green-600" />
+                                <p className="leading-normal">
+                                    Saat melakukan <b>check-out</b>, Anda akan diminta menentukan apakah
+                                    lokasi tersebut adalah <b>lokasi terakhir</b>. Jika iya, maka kunjungan
+                                    akan langsung dianggap selesai.
+                                </p>
+                            </div>
                         </div>
 
                         <button
                             onClick={() => {
                                 if (!validateKunjunganPrerequisite()) return;
                                 toast(
-                                    "Mulai & Akhiri kunjungan bisa dilakukan di mana saja. Check-in lokasi wajib radius 60 meter.",
+                                    "Mulai bisa dilakukan di mana saja. Check-in lokasi wajib radius 60 meter.",
                                     { duration: 4000 }
                                 );
                                 setTimeout(() => setModal("start"), 400);
@@ -578,29 +549,10 @@ export default function Kunjungan() {
 
             <KunjunganActionModal
                 isOpen={!!modal}
-                title={
-                    modal === "start"
-                        ? "Mulai Kunjungan"
-                        : modal === "checkin"
-                            ? "Check-In Lokasi"
-                            : modal === "checkout"
-                                ? "Check-Out Lokasi"
-                                : "Akhiri Kunjungan"
-                }
+                title={modal === "start" ? "Berangkat Kunjungan" : modal === "checkin" ? "Mulai Kunjungan" : "Selesai Kunjungan"}
                 submitLabel="Simpan"
-                onSubmit={
-                    modal === "start"
-                        ? startVisit
-                        : modal === "checkin"
-                            ? checkIn
-                            : modal === "checkout"
-                                ? checkOut
-                                : endTrip
-                }
-                onClose={() => {
-                    resetModalState();
-                    setModal(null);
-                }}
+                onSubmit={modal === "start" ? startVisit : modal === "checkin" ? checkIn : checkOut}
+                onClose={() => { resetModalState(); setModal(null); }}
                 note={note}
                 setNote={setNote}
                 photoPreview={photoPreview}

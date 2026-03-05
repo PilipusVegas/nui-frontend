@@ -63,11 +63,8 @@ const AbsensiTidakValid = () => {
     };
 
     const renderTunjanganBadges = (tunjangan) => {
-
         if (!tunjangan) return null;
-
         const badges = [];
-
         if (tunjangan.transport) {
             badges.push(
                 <span key="transport" className="flex items-center gap-1 px-2 py-[2px] rounded-md border text-[11px] font-semibold bg-orange-100 text-orange-700 border-orange-200">
