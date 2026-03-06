@@ -8,7 +8,9 @@ const KunjunganActionModal = ({ isOpen, title, noteText, submitLabel, onSubmit, 
     const [facingMode, setFacingMode] = useState("environment");
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isCheckedDisclaimer, setIsCheckedDisclaimer] = useState(false);
-    const isValid = note?.trim() && photoPreview && isCheckedDisclaimer;
+    const isNoteRequired = Boolean(noteText);
+    const isValid = photoPreview && isCheckedDisclaimer && (!isNoteRequired || note?.trim());
+    const noteRef = useRef(null);
 
     const handleSubmit = () => {
         setIsSubmitted(true);
@@ -38,6 +40,21 @@ const KunjunganActionModal = ({ isOpen, title, noteText, submitLabel, onSubmit, 
         setCameraReady(false);
     };
 
+    const handleDisclaimerChange = (e) => {
+        const checked = e.target.checked;
+        setIsCheckedDisclaimer(checked);
+
+        // jika dicentang dan ada input tugas
+        if (checked && noteText) {
+            setTimeout(() => {
+                noteRef.current?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center"
+                });
+            }, 150);
+        }
+    };
+
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={title} note={noteText}
             footer={
@@ -47,19 +64,16 @@ const KunjunganActionModal = ({ isOpen, title, noteText, submitLabel, onSubmit, 
             }
         >
 
-            {/* INFO PERHATIAN */}
-            <div className="mb-5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5">
-                <p className="text-[12px] text-blue-700 leading-snug tracking-wide">
-                    <span className="font-semibold">Perhatian: </span>
-                    Wajah dan lokasi harus terlihat jelas di foto
-                </p>
-            </div>
-
             {/* CAMERA / PREVIEW */}
             {!photoPreview ? (
                 <div className="flex flex-col items-center gap-4">
-                    <div className="w-full max-w-[220px] aspect-[4/5] rounded-xl overflow-hidden border bg-black shadow-sm">
+                    <div className="relative w-full max-w-[220px] aspect-[4/5] rounded-xl overflow-hidden border bg-black shadow-sm">
                         <Webcam ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode }} onUserMedia={() => setCameraReady(true)} className="w-full h-full object-cover" />
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-3">
+                            <p className="text-[10px] text-white text-center leading-snug">
+                                Pastikan Wajah dan lokasi harus terlihat jelas
+                            </p>
+                        </div>
                     </div>
 
                     <div className="flex gap-2 w-full max-w-[220px]">
@@ -67,8 +81,9 @@ const KunjunganActionModal = ({ isOpen, title, noteText, submitLabel, onSubmit, 
                             Putar Kamera
                         </button>
 
-                        <button type="button" disabled={!cameraReady} onClick={capturePhoto} className={`flex-1 rounded-lg py-2 text-xs font-semibold text-white transition
-                                ${cameraReady ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"}`}
+                        <button type="button" disabled={!cameraReady} onClick={capturePhoto}
+                            className={`flex-1 rounded-lg py-2 text-xs font-semibold text-white transition
+                            ${cameraReady ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"}`}
                         >
                             Ambil Foto
                         </button>
@@ -76,10 +91,14 @@ const KunjunganActionModal = ({ isOpen, title, noteText, submitLabel, onSubmit, 
                 </div>
             ) : (
                 <div className="flex flex-col items-center gap-3">
-                    <div className="w-full max-w-[220px] aspect-[4/5] rounded-xl overflow-hidden border shadow-sm">
+                    <div className="relative w-full max-w-[220px] aspect-[4/5] rounded-xl overflow-hidden border shadow-sm">
                         <img src={photoPreview} alt="Preview Foto" className="w-full h-full object-cover" />
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-3">
+                            <p className="text-[10px] text-white text-center leading-snug">
+                                Pastikan Wajah dan lokasi harus terlihat jelas
+                            </p>
+                        </div>
                     </div>
-
                     <button type="button" onClick={() => { setPhotoPreview(null); setPhotoFile(null); }}
                         className="rounded-lg border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 transition"
                     >
@@ -91,20 +110,15 @@ const KunjunganActionModal = ({ isOpen, title, noteText, submitLabel, onSubmit, 
             {/* DISCLAIMER */}
             <div className="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
                 <label className="flex items-start gap-2 cursor-pointer">
-                    <input type="checkbox" checked={isCheckedDisclaimer} onChange={(e) => setIsCheckedDisclaimer(e.target.checked)} className="mt-1 accent-green-600" />
-
-                    <span className="text-[12px] text-yellow-800 leading-snug">
-                        Saya memahami bahwa konfirmasi kehadiran pertama akan tercatat
-                        sebagai absensi masuk dan konfirmasi selesai paling akhir akan
-                        tercatat sebagai absensi pulang.
-
-                        Setiap kunjungan wajib diakhiri dengan konfirmasi selesai atau
-                        menekan tombol Akhiri Kunjungan. Jika saya lupa melakukannya,
-                        kunjungan dapat dianggap tidak valid sehingga absensi dan
-                        pembayaran tidak diproses.
+                    <input type="checkbox" checked={isCheckedDisclaimer} onChange={handleDisclaimerChange} className="mt-1 accent-green-600"/>
+                    <span className="text-[9px] text-yellow-800 leading-snug text-justify">
+                        Saya memahami bahwa <b>Mulai Kunjungan</b> pertama
+                        akan tercatat sebagai <b>absensi masuk</b>, dan <b>Selesai Kunjungan </b>
+                        terakhir akan tercatat sebagai <b>absensi pulang</b>. Setiap kunjungan
+                        wajib diselesaikan. Jika tidak, kunjungan dapat dianggap tidak valid
+                        sehingga absensi dan pembayaran tidak diproses.
                     </span>
                 </label>
-
                 {isSubmitted && !isCheckedDisclaimer && (
                     <p className="text-[11px] text-red-500 mt-1">
                         Anda wajib menyetujui pernyataan ini
@@ -112,22 +126,23 @@ const KunjunganActionModal = ({ isOpen, title, noteText, submitLabel, onSubmit, 
                 )}
             </div>
 
-
-            <div className="mt-3 space-y-1">
-                <label className="text-xs font-medium text-gray-700">
-                    Keterangan <span className="text-red-500">*</span>
-                </label>
-                <textarea rows={2} value={note} className={`w-full border rounded-lg p-2 text-sm resize-none focus:ring-1
-                    ${isSubmitted && !note ? "border-red-400 focus:ring-red-400" : "focus:ring-green-500 focus:border-green-500"}`}
-                    placeholder="Wajib diisi, contoh: Tiba di lokasi, kondisi aman"
-                    onChange={(e) => setNote(e.target.value)}
-                />
-                {isSubmitted && !note && (
-                    <p className="text-[11px] text-red-500">
-                        Keterangan wajib diisi
-                    </p>
-                )}
-            </div>
+            {noteText && (
+                <div ref={noteRef} className="mt-3 space-y-1">
+                    <label className="text-xs font-medium text-gray-700">
+                        Tugas Kunjungan <span className="text-red-500">*</span>
+                    </label>
+                    <textarea rows={2} value={note} className={`w-full border rounded-lg p-2 text-sm resize-none focus:ring-1
+                        ${isSubmitted && !note ? "border-red-400 focus:ring-red-400" : "focus:ring-green-500 focus:border-green-500"}`}
+                        placeholder="Wajib diisi, isilah dengan lengkap sesuai tugas kunjungan"
+                        onChange={(e) => setNote(e.target.value)}
+                    />
+                    {isSubmitted && !note && (
+                        <p className="text-[11px] text-red-500">
+                            Keterangan wajib diisi
+                        </p>
+                    )}
+                </div>
+            )}
         </Modal>
     );
 };

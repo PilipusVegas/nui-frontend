@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleCheck, faClock, faCalendarAlt, faArrowRightFromBracket, faPlus, faArrowRight} from "@fortawesome/free-solid-svg-icons";
+import { faClock, faCalendarAlt, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { formatFullDate, formatTime } from "../../utils/dateUtils";
 
 const getDotStyleByKategori = (kategori) => {
@@ -12,17 +12,17 @@ const getDotStyleByKategori = (kategori) => {
 };
 
 const getTimelineTitle = (item, index, checkpoints) => {
-  if (item.kategori === 1) return "Mulai Kunjungan";
+  if (item.kategori === 1) return "Berangkat Kunjungan";
   if (item.kategori === 2) {
     const order = checkpoints.findIndex((c) => c.id === item.id) + 1;
-    return `Checkpoint ${order}`;
+    return `Lokasi Kunjungan ${order}`;
   }
   if (item.kategori === 3) return "Kunjungan Berakhir";
   return "Aktivitas Kunjungan";
 };
 
 // ================= COMPONENT =================
-const Timeline = ({ history, tripInfo, activeLocation, onCheckout, onEndTrip, canAddLocation, onAddLocation, showAddLocation}) => {
+const Timeline = ({ history, tripInfo, onEndTrip }) => {
   const checkpoints = history.filter((h) => h.kategori === 2);
   const lastCheckpoint = checkpoints[checkpoints.length - 1];
   const canEndTrip = checkpoints.length > 0 && lastCheckpoint?.jam_selesai && !history.some((h) => h.kategori === 3);
@@ -35,30 +35,6 @@ const Timeline = ({ history, tripInfo, activeLocation, onCheckout, onEndTrip, ca
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-5 mb-20">
-      {activeLocation && (
-        <div className="space-y-3 border-b border-gray-200 pb-4">
-          <div className="flex gap-3">
-            {/* Accent */}
-            <div className="w-1 rounded-full bg-blue-500"></div>
-            <div className="flex-1 space-y-1.5">
-              <p className="text-xs text-gray-500">Lokasi kunjungan saat ini</p>
-              <p className="text-base font-semibold text-gray-900 leading-snug">
-                {activeLocation.nama}
-              </p>
-              <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                <FontAwesomeIcon icon={faClock} className="text-green-500" />
-                <span>Mulai {formatTime(activeLocation.jam_mulai)}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Action */}
-          <button onClick={onCheckout} className="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white py-2.5 rounded-lg text-sm font-semibold transition">
-            <FontAwesomeIcon icon={faArrowRightFromBracket} />
-            Check-Out Lokasi
-          </button>
-        </div>
-      )}
 
       {/* ===== TIMELINE ===== */}
       {history.length === 0 ? (
@@ -91,14 +67,14 @@ const Timeline = ({ history, tripInfo, activeLocation, onCheckout, onEndTrip, ca
                     {h.kategori === 1 && h.jam_mulai && (
                       <div className="flex items-center gap-1.5">
                         <FontAwesomeIcon icon={faClock} className="text-emerald-500" />
-                        <span>Mulai Kunjungan {formatTime(h.jam_mulai)}</span>
+                        <span>Berangkat Kunjungan {formatTime(h.jam_mulai)}</span>
                       </div>
                     )}
 
                     {h.kategori === 2 && h.jam_mulai && (
                       <div className="flex items-center gap-2">
                         <FontAwesomeIcon icon={faClock} className="text-emerald-500" />
-                        <span>Check-in {formatTime(h.jam_mulai)}</span>
+                        <span>Mulai Kunjungan {formatTime(h.jam_mulai)}</span>
                         {isFirstCheckpoint(h, checkpoints) && (
                           <span className="flex items-center gap-1 text-emerald-600 font-semibold">
                             <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
@@ -111,7 +87,7 @@ const Timeline = ({ history, tripInfo, activeLocation, onCheckout, onEndTrip, ca
                     {h.kategori === 2 && h.jam_selesai && (
                       <div className="flex items-center gap-2">
                         <FontAwesomeIcon icon={faClock} className="text-rose-500" />
-                        <span>Check-out {formatTime(h.jam_selesai)}</span>
+                        <span>Selesai Kunjungan {formatTime(h.jam_selesai)}</span>
                         {isLastCheckpoint(h, checkpoints) && isTripEnded && (
                           <span className="flex items-center gap-1 text-rose-600 font-semibold">
                             <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
@@ -133,15 +109,13 @@ const Timeline = ({ history, tripInfo, activeLocation, onCheckout, onEndTrip, ca
             );
           })}
 
-          {canAddLocation && !showAddLocation && (
-            <div className="pt-4 border-t border-gray-200">
-              <button onClick={onAddLocation} className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl text-sm font-semibold transition">
-                <FontAwesomeIcon icon={faPlus} />
-                Tambah Lokasi
+          {canEndTrip && !tripCompleted && (
+            <div className="pt-3">
+              <button onClick={onEndTrip} className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl text-sm font-semibold transition">
+                Akhiri Kunjungan
               </button>
             </div>
           )}
-
         </div>
       )}
     </div>

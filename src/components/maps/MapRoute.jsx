@@ -2,10 +2,20 @@ import { MapContainer, TileLayer, Marker, Polyline, useMap, Circle } from "react
 import L from "leaflet";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faLocationDot, faBuilding, faCrosshairs } from "@fortawesome/free-solid-svg-icons";
+import { faLocationDot, faBuilding, faCrosshairs, faStore } from "@fortawesome/free-solid-svg-icons";
 import ReactDOMServer from "react-dom/server";
 import { getDistanceMeters } from "../../utils/locationUtils";
 import { fetchWithJwt } from "../../utils/jwtHelper";
+
+
+const getSmartZoom = (distance) => {
+  if (distance < 100) return 20;
+  if (distance < 500) return 19;
+  if (distance < 1000) return 18;
+  if (distance < 3000) return 17;
+  if (distance < 5000) return 16;
+  return 15;
+};
 
 // === ICONS ===
 const userIcon = L.divIcon({
@@ -34,10 +44,7 @@ const userIcon = L.divIcon({
       ></span>
 
       {/* Icon */}
-      <FontAwesomeIcon
-        icon={faLocationDot}
-        style={{ color: "#2563eb", fontSize: "24px", zIndex: 2 }}
-      />
+      <FontAwesomeIcon icon={faLocationDot} style={{ color: "#2563eb", fontSize: "24px", zIndex: 2 }} />
     </div>,
   ),
   className: "",
@@ -54,51 +61,65 @@ const officeIcon = L.divIcon({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        color: "#dc2626", // warna ikon
       }}
     >
-      <FontAwesomeIcon icon={faBuilding} style={{ fontSize: "24px" }} />
-    </div>,
+      <FontAwesomeIcon
+        icon={faStore}
+        style={{
+          color: "#f59e0b",
+          fontSize: "22px",
+        }}
+      />
+    </div>
   ),
   className: "",
   iconSize: [36, 36],
-  iconAnchor: [18, 18], // pusat geometris
+  iconAnchor: [18, 18],
 });
 
 const MapControls = ({ user, destination, onRefreshLocation }) => {
   const map = useMap();
 
   const refreshLocation = () => {
-    // minta parent refresh GPS
     onRefreshLocation?.();
 
     if (!user) return;
 
-    // fokus ke user
-    map.flyTo([user.lat, user.lng], 17, { duration: 0.6 });
-
-    // jika ada tujuan tampilkan keduanya
-    if (destination) {
-      const bounds = L.latLngBounds(
-        [user.lat, user.lng],
-        [destination.lat, destination.lng]
-      );
-
-      setTimeout(() => {
-        map.fitBounds(bounds, { padding: [40, 40] });
-      }, 300);
+    if (!destination) {
+      map.flyTo([user.lat, user.lng], 17, {
+        duration: 0.6,
+      });
+      return;
     }
-  };
 
+    const distance = getDistanceMeters(
+      user.lat,
+      user.lng,
+      destination.lat,
+      destination.lng
+    );
+
+    const smartZoom = getSmartZoom(distance);
+
+    const bounds = L.latLngBounds(
+      [user.lat, user.lng],
+      [destination.lat, destination.lng]
+    );
+
+    map.fitBounds(bounds, {
+      padding: [70, 70],
+      maxZoom: smartZoom,
+      animate: true,
+      duration: 0.7,
+    });
+  };
 
 
   if (!user) return null;
 
   return (
     <div className="absolute top-2 right-2 z-[9999] pointer-events-auto">
-      <button onClick={refreshLocation}
-        className="bg-white text-sm text-blue-600 p-2 px-3 rounded-full shadow-lg border hover:bg-gray-100 transition"
-      >
+      <button onClick={refreshLocation} className="bg-white text-sm text-blue-600 p-2 px-3 rounded-full shadow-lg border hover:bg-gray-100 transition">
         <FontAwesomeIcon icon={faCrosshairs} />
       </button>
     </div>
@@ -109,16 +130,52 @@ const AutoFitBounds = ({ user, destination }) => {
   const map = useMap();
 
   useEffect(() => {
-    if (user && destination) {
-      const bounds = L.latLngBounds([user.lat, user.lng], [destination.lat, destination.lng]);
-      map.fitBounds(bounds, { padding: [40, 40] });
+    if (!user) return;
+
+    if (!destination) {
+      map.setView([user.lat, user.lng], 18);
+      return;
     }
+
+    const distance = getDistanceMeters(
+      user.lat,
+      user.lng,
+      destination.lat,
+      destination.lng
+    );
+
+    // jika sangat dekat
+    if (distance < 200) {
+      const midLat = (user.lat + destination.lat) / 2;
+      const midLng = (user.lng + destination.lng) / 2;
+
+      map.setView([midLat, midLng], 19, {
+        animate: true,
+        duration: 0.8,
+      });
+
+      return;
+    }
+
+    const bounds = L.latLngBounds(
+      [user.lat, user.lng],
+      [destination.lat, destination.lng]
+    );
+
+    map.fitBounds(bounds, {
+      padding: [20, 20],
+      maxZoom: 18,
+      animate: true,
+      duration: 0.8,
+    });
+
   }, [user, destination]);
 
   return null;
 };
 
-const MapRoute = ({ user, destination, onDistance }) => {
+
+const MapRoute = ({ user, locations = [], destination, onDistance }) => {
   const [pos, setPos] = useState(null);
   const [routeCoords, setRouteCoords] = useState([]);
   const GH_BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -148,47 +205,38 @@ const MapRoute = ({ user, destination, onDistance }) => {
     }
   }, [user]);
 
+
   useEffect(() => {
     if (!user || !destination) return;
-
     const fetchRoute = async () => {
       try {
         const url = `${GH_BASE_URL}/maps/route?point=${user.lat},${user.lng}&point=${destination.lat},${destination.lng}&profile=motorcycle&calc_points=true&points_encoded=false`;
         const res = await fetchWithJwt(url);
         const json = await res.json();
-
         if (!json?.data?.paths?.length) {
           console.error("Route kosong:", json);
           return;
         }
-
         const coords = json.data.paths[0].points.coordinates.map(([lng, lat]) => [lat, lng]);
-
         setRouteCoords(coords);
-
         const distance = json.data.paths[0].distance;
         onDistance?.(Math.round(distance));
       } catch (err) {
         console.error("Route error:", err);
       }
     };
-
     fetchRoute();
   }, [user, destination]);
 
   if (!pos) return null;
 
-  const isInside =
-    user && destination
-      ? getDistanceMeters(user.lat, user.lng, destination.lat, destination.lng) <= 60
-      : false;
+  const isInside = user && destination ? getDistanceMeters(user.lat, user.lng, destination.lat, destination.lng) <= 60 : false;
 
   return (
     <div className="relative w-full">
       <MapContainer
         zoomControl={false}
         className="z-10"
-        center={[pos.lat, pos.lng]}
         zoom={16}
         attributionControl={false}
         style={{ height: "160px", borderRadius: "10px" }}
@@ -197,20 +245,45 @@ const MapRoute = ({ user, destination, onDistance }) => {
         {user && <MapControls user={user} destination={destination} onRefreshLocation={refreshGps} />}
         <AutoFitBounds user={user} destination={destination} />
         <Marker position={[pos.lat, pos.lng]} icon={userIcon} />
+
+        {/* tampilkan semua lokasi jadwal */}
+        {locations.map((loc) => {
+          const coord = loc.koordinat.split(",").map(Number);
+          const distance = getDistanceMeters(
+            pos.lat,
+            pos.lng,
+            coord[0],
+            coord[1]
+          );
+          const isInside = distance <= 60;
+          return (
+            <div key={loc.id}>
+              <Marker position={[coord[0], coord[1]]} icon={officeIcon} />
+              <Circle center={[coord[0], coord[1]]} radius={60}
+                pathOptions={{
+                  color: isInside ? "#16a34a" : "#f59e0b",
+                  fillColor: isInside ? "#16a34a" : "#f59e0b",
+                  fillOpacity: 0.12,
+                  weight: 2,
+                }}
+              />
+            </div>
+          );
+        })}
+
+        {/* jika ada lokasi yang dipilih */}
         {destination && (
           <>
-            <Marker position={[destination.lat, destination.lng]} icon={officeIcon} />
             <Circle
               center={[destination.lat, destination.lng]}
               radius={60}
               pathOptions={{
-                color: isInside ? "#16a34a" : "#dc2626",
-                fillColor: isInside ? "#16a34a" : "#dc2626",
-                fillOpacity: 0.15,
+                color: isInside ? "#16a34a" : "#ef4444",
+                fillColor: isInside ? "#16a34a" : "#ef4444",
+                fillOpacity: 0.2,
                 weight: 2,
               }}
             />
-
             {routeCoords.length > 0 && (
               <Polyline positions={routeCoords} pathOptions={{ weight: 4 }} />
             )}

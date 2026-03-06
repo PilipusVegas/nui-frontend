@@ -175,6 +175,12 @@ const DataKaryawan = () => {
         if (!value || value <= 0) missing.push(requiredFields[key]);
         return;
       }
+      if (key === "status_nikah") {
+        if (value === null || value === undefined) {
+          missing.push(requiredFields[key]);
+        }
+        return;
+      }
       if (typeof value === "string") {
         if (!value.trim() || value.trim() === "-") missing.push(requiredFields[key]);
         return;

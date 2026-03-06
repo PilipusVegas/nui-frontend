@@ -45,6 +45,9 @@ const DetailKunjungan = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [totalJarakMap, setTotalJarakMap] = useState(null);
+    const isDistanceReady =
+        Number(totalJarakMap ?? data?.total_jarak ?? 0) > 0 ||
+        (data?.lokasi?.length ?? 0) <= 1;
 
     const fetchDetail = async () => {
         try {
@@ -90,7 +93,11 @@ const DetailKunjungan = () => {
     };
 
     const handleApprovalWithValidation = async (status) => {
-        // Jika perjalanan belum selesai
+        const jarak = Number(totalJarakMap ?? data.total_jarak ?? 0);
+        if (jarak === 0 && data.lokasi?.length > 1) {
+            toast.error("Perhitungan jarak perjalanan masih diproses. Mohon tunggu beberapa saat.");
+            return;
+        }
         if (!data.is_complete) {
             const result = await Swal.fire({
                 title: "Perjalanan Belum Selesai",
@@ -103,11 +110,8 @@ const DetailKunjungan = () => {
                 cancelButtonColor: "#6b7280",
                 reverseButtons: true,
             });
-
             if (!result.isConfirmed) return;
         }
-
-        // Jika sudah selesai ATAU user konfirmasi
         handleUpdateStatus(status);
     };
 
@@ -251,10 +255,21 @@ const DetailKunjungan = () => {
                         <>
                             <Divider />
                             <div className="flex justify-end gap-3 pt-2">
-                                <button onClick={() => handleApprovalWithValidation(2)} className="px-4 py-2 text-sm rounded-md bg-red-500 text-white font-semibold hover:bg-red-600 transition">
+                                <button
+                                    disabled={!isDistanceReady}
+                                    onClick={() => handleApprovalWithValidation(2)}
+                                    className={`px-4 py-2 text-sm rounded-md font-semibold transition
+                                    ${!isDistanceReady ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-red-500 text-white hover:bg-red-600"}`}
+                                >
                                     Tolak
                                 </button>
-                                <button onClick={() => handleApprovalWithValidation(1)} className="px-4 py-2 text-sm rounded-md bg-green-500 text-white font-semibold hover:bg-green-600 transition">
+
+                                <button
+                                    disabled={!isDistanceReady}
+                                    onClick={() => handleApprovalWithValidation(1)}
+                                    className={`px-4 py-2 text-sm rounded-md font-semibold transition
+                                    ${!isDistanceReady ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-green-500 text-white hover:bg-green-600"}`}
+                                >
                                     Setujui
                                 </button>
                             </div>

@@ -6,6 +6,7 @@ import { SectionHeader, LoadingSpinner, ErrorState, EmptyState, SearchBar } from
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import toast from "react-hot-toast";
 import { formatFullDate } from "../../utils/dateUtils";
+import Swal from "sweetalert2";
 
 
 const Kunjungan = () => {
@@ -36,21 +37,50 @@ const Kunjungan = () => {
     }, []);
 
     const handleDeleteTrip = async (id_trip) => {
-        const confirm = window.confirm("Yakin ingin menghapus data kunjungan ini?");
-        if (!confirm) return;
+
+        const result = await Swal.fire({
+            title: "Hapus Kunjungan?",
+            text: "Data kunjungan yang dihapus tidak dapat dikembalikan.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Ya, Hapus",
+            cancelButtonText: "Batal",
+            confirmButtonColor: "#dc2626",
+            cancelButtonColor: "#6b7280",
+            reverseButtons: true,
+        });
+
+        if (!result.isConfirmed) return;
 
         try {
             setDeletingId(id_trip);
+
             const res = await fetchWithJwt(`${apiUrl}/trip/${id_trip}`, {
                 method: "DELETE",
             });
+
             if (!res.ok) {
                 throw new Error("Gagal menghapus data");
             }
-            toast.success("Data kunjungan berhasil dihapus");
+
+            await Swal.fire({
+                icon: "success",
+                title: "Berhasil",
+                text: "Data kunjungan berhasil dihapus",
+                timer: 1500,
+                showConfirmButton: false,
+            });
+
             fetchTrip();
+
         } catch (err) {
-            toast.error("Gagal menghapus data kunjungan");
+
+            Swal.fire({
+                icon: "error",
+                title: "Gagal",
+                text: "Gagal menghapus data kunjungan",
+            });
+
         } finally {
             setDeletingId(null);
         }
@@ -103,7 +133,7 @@ const Kunjungan = () => {
                                     <th className="px-4 py-3 text-center whitespace-nowrap">Tanggal</th>
                                     <th className="px-4 py-3 text-center whitespace-nowrap">Status</th>
                                     <th className="px-4 py-3 text-center rounded-tr-lg whitespace-nowrap w-[200px]">
-                                        Aksi
+                                        Menu
                                     </th>
                                 </tr>
                             </thead>
@@ -141,9 +171,11 @@ const Kunjungan = () => {
                                                     Detail
                                                 </button>
 
-                                                <button onClick={() => handleDeleteTrip(item.id_kunjungan)} disabled={deletingId === item.id_kunjungan} className="inline-flex items-center gap-1 px-3 py-2 text-xs font-medium bg-red-500 hover:bg-red-600 text-white rounded-md transition disabled:opacity-50 whitespace-nowrap">
+                                                <button onClick={() => handleDeleteTrip(item.id_kunjungan)} disabled={deletingId === item.id_kunjungan}
+                                                    className="inline-flex items-center gap-1 px-3 py-2 text-xs font-medium bg-red-500 hover:bg-red-600 text-white rounded-md transition disabled:opacity-50"
+                                                >
                                                     <FontAwesomeIcon icon={faTrash} />
-                                                    Hapus
+                                                    {deletingId === item.id_kunjungan ? "Menghapus..." : "Hapus"}
                                                 </button>
                                             </div>
                                         </td>
@@ -183,18 +215,16 @@ const Kunjungan = () => {
 
                             {/* ACTION - kanan bawah */}
                             <div className="mt-3 flex justify-end gap-2">
-                                <button onClick={() => navigate( `/permohonan-kunjungan/detail/${item.id_kunjungan}`)}
+                                <button onClick={() => navigate(`/permohonan-kunjungan/detail/${item.id_kunjungan}`)}
                                     className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-md transition"
                                 >
                                     <FontAwesomeIcon icon={faEye} />
                                     Detail
                                 </button>
 
-                                <button onClick={() => handleDeleteTrip(item.id_kunjungan)} disabled={deletingId === item.id_kunjungan}
-                                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-red-500 hover:bg-red-600 text-white rounded-md transition disabled:opacity-50"
-                                >
+                                <button onClick={() => handleDeleteTrip(item.id_kunjungan)} disabled={deletingId === item.id_kunjungan} className="inline-flex items-center gap-1 px-3 py-2 text-xs font-medium bg-red-500 hover:bg-red-600 text-white rounded-md transition disabled:opacity-50">
                                     <FontAwesomeIcon icon={faTrash} />
-                                    Hapus
+                                    {deletingId === item.id_kunjungan ? "Menghapus..." : "Hapus"}
                                 </button>
                             </div>
                         </div>
