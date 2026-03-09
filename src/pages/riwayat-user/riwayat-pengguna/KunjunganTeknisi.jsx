@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faClock, faUserCheck, faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { faChevronDown, faClock, faUserCheck, faArrowRight, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../../../utils/jwtHelper";
 import { formatCustomDateTime, formatFullDate } from "../../../utils/dateUtils";
 import { LoadingSpinner, EmptyState, ErrorState, SearchBar } from "../../../components";
@@ -29,15 +29,6 @@ export default function KunjunganTeknisi() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [openIndex, setOpenIndex] = useState(null);
-    const isFirstCheckpoint = (lokasi, index) =>
-        lokasi.kategori === 2 && index === 0;
-
-    const isLastCheckpoint = (lokasi, index, total, isTripEnded) =>
-        lokasi.kategori === 2 && index === total - 1 && isTripEnded;
-
-
-
-
 
     useEffect(() => {
         const load = async () => {
@@ -48,7 +39,6 @@ export default function KunjunganTeknisi() {
                 const sorted = (json.data || []).sort(
                     (a, b) => new Date(b.tanggal) - new Date(a.tanggal)
                 );
-
                 setData(sorted);
             } catch (e) {
                 setError(e.message);
@@ -89,12 +79,12 @@ export default function KunjunganTeknisi() {
         if (kategori === 1)
             return {
                 color: "bg-emerald-500",
-                title: "Mulai Kunjungan"
+                title: "Berangkat Kunjungan"
             };
         if (kategori === 2)
             return {
                 color: "bg-blue-500",
-                title: `Checkpoint ${index}`
+                title: `Lokasi Kunjungan ${index}`
             };
         return {
             color: "bg-rose-500",
@@ -208,7 +198,6 @@ export default function KunjunganTeknisi() {
                                                         </p>
 
                                                         <div className="space-y-1.5 text-[11px]">
-
                                                             {/* MULAI KUNJUNGAN */}
                                                             {lok.kategori === 1 && lok.jam_mulai && (
                                                                 <div className="flex items-center gap-2">
@@ -222,12 +211,11 @@ export default function KunjunganTeknisi() {
                                                             {lok.kategori === 2 && lok.jam_mulai && (
                                                                 <div className="flex items-center gap-2">
                                                                     <FontAwesomeIcon icon={faClock} className="text-emerald-500" />
-                                                                    <span className="font-medium text-gray-600">Check-in</span>
+                                                                    <span className="font-medium text-gray-600">Mulai Kunjungan</span>
                                                                     <span className="text-gray-500">{formatTime(lok.jam_mulai)}</span>
-
                                                                     {getCheckpointIndex(lok) === 0 && (
                                                                         <span className="flex items-center gap-1 text-emerald-600 font-semibold ml-2">
-                                                                            <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
+                                                                            <FontAwesomeIcon icon={faArrowLeft} className="text-[10px]" />
                                                                             Absen Masuk
                                                                         </span>
                                                                     )}
@@ -238,12 +226,11 @@ export default function KunjunganTeknisi() {
                                                             {lok.kategori === 2 && lok.jam_selesai && (
                                                                 <div className="flex items-center gap-2">
                                                                     <FontAwesomeIcon icon={faClock} className="text-rose-500" />
-                                                                    <span className="font-medium text-gray-600">Check-out</span>
+                                                                    <span className="font-medium text-gray-600">Selesai Kunjungan</span>
                                                                     <span className="text-gray-500">{formatTime(lok.jam_selesai)}</span>
-
                                                                     {getCheckpointIndex(lok) === checkpoints.length - 1 && isTripEnded && (
                                                                         <span className="flex items-center gap-1 text-rose-600 font-semibold ml-2">
-                                                                            <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
+                                                                            <FontAwesomeIcon icon={faArrowLeft} className="text-[10px]" />
                                                                             Absen Pulang
                                                                         </span>
                                                                     )}

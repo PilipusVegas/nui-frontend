@@ -182,11 +182,26 @@ const DetailKunjungan = () => {
                         <InfoItem label="Total Jarak (Map)" value={formatMeter(totalJarakMap ?? data.total_jarak)} highlight />
                         <InfoItem label="Jumlah Lokasi" value={`${data.lokasi?.length || 0} titik`} />
                         <InfoItem label="Status Perjalanan" value={data.is_complete ? "Selesai" : "Belum Selesai"} />
+                        <InfoItem label="Shift Kerja" value={`${data.shift}`} />
                     </InfoGrid>
                     <Divider />
 
                     {/* ================= TUNJANGAN ================= */}
                     <SectionTitle title="Ringkasan Tunjangan" />
+                    {data?.dinas?.status && (
+                        <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div className="text-sm text-blue-900">
+                                <p className="font-semibold text-blue-800 mb-1">
+                                    Karyawan Sedang Menjalankan Dinas
+                                </p>
+                                <p> Pada tanggal ini karyawan sedang menjalankan <b>tugas dinas resmi</b>. Oleh karena itu, <b>tunjangan perjalanan dan klaim BBM tidak berlaku</b>. Karyawan hanya menerima <b>tunjangan dinas</b> sesuai permohonan dinas yang telah disetujui.
+                                </p>
+                            </div>
+                            <button onClick={() => navigate(`/permohonan-dinas/${data.dinas.id}`)} className="px-3 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 whitespace-nowrap">
+                                Lihat Detail Dinas
+                            </button>
+                        </div>
+                    )}
 
                     <div className="overflow-x-auto border rounded-lg">
                         <table className="min-w-full text-sm">
@@ -237,7 +252,7 @@ const DetailKunjungan = () => {
                             <li>
                                 Jarak tempuh dihitung pulang–pergi (PP). <br />
                                 Contoh: dari rumah ke gerai A → kantor → gerai B tetap dihitung.
-                                Namun, apabila aktivitas hanya di kantor saja, maka jarak akan tetap 0
+                                Namun, apabila aktivitas hanya di kantor saja, maka total nominal akan tetap 0
                                 meskipun kunjungan disetujui atau ditolak.
                             </li>
                             <li>
@@ -255,18 +270,13 @@ const DetailKunjungan = () => {
                         <>
                             <Divider />
                             <div className="flex justify-end gap-3 pt-2">
-                                <button
-                                    disabled={!isDistanceReady}
-                                    onClick={() => handleApprovalWithValidation(2)}
-                                    className={`px-4 py-2 text-sm rounded-md font-semibold transition
+                                <button disabled={!isDistanceReady} onClick={() => handleApprovalWithValidation(2)} className={`px-4 py-2 text-sm rounded-md font-semibold transition
                                     ${!isDistanceReady ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-red-500 text-white hover:bg-red-600"}`}
                                 >
                                     Tolak
                                 </button>
 
-                                <button
-                                    disabled={!isDistanceReady}
-                                    onClick={() => handleApprovalWithValidation(1)}
+                                <button disabled={!isDistanceReady} onClick={() => handleApprovalWithValidation(1)}
                                     className={`px-4 py-2 text-sm rounded-md font-semibold transition
                                     ${!isDistanceReady ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-green-500 text-white hover:bg-green-600"}`}
                                 >

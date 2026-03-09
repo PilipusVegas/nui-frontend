@@ -2,7 +2,20 @@ import { useRef, useState, useEffect } from "react";
 import Webcam from "react-webcam";
 import { Modal } from "../../components";
 
-const KunjunganActionModal = ({ isOpen, title, noteText, submitLabel, onSubmit, onClose, setNote, photoPreview, note, setPhotoPreview, setPhotoFile, }) => {
+const KunjunganActionModal = ({
+    isOpen,
+    title,
+    noteText,
+    submitLabel,
+    onSubmit,
+    onClose,
+    setNote,
+    photoPreview,
+    note,
+    setPhotoPreview,
+    setPhotoFile,
+    isSubmitting
+}) => {
     const webcamRef = useRef(null);
     const [cameraReady, setCameraReady] = useState(false);
     const [facingMode, setFacingMode] = useState("environment");
@@ -13,6 +26,7 @@ const KunjunganActionModal = ({ isOpen, title, noteText, submitLabel, onSubmit, 
     const noteRef = useRef(null);
 
     const handleSubmit = () => {
+        if (isSubmitting) return;
         setIsSubmitted(true);
         if (!isValid) return;
         onSubmit();
@@ -58,8 +72,14 @@ const KunjunganActionModal = ({ isOpen, title, noteText, submitLabel, onSubmit, 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={title} note={noteText}
             footer={
-                <button onClick={handleSubmit} className={`w-full py-2.5 rounded-lg font-semibold transition ${isValid ? "bg-green-600 hover:bg-green-700 text-white" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}>
-                    {submitLabel}
+                <button onClick={handleSubmit} disabled={!isValid || isSubmitting}
+                    className={`w-full py-2.5 rounded-lg font-semibold transition flex items-center justify-center gap-2
+                    ${isValid && !isSubmitting ? "bg-green-600 hover:bg-green-700 text-white" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}
+                >
+                    {isSubmitting && (
+                        <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                    )}
+                    {isSubmitting ? "Memproses..." : submitLabel}
                 </button>
             }
         >
@@ -110,7 +130,7 @@ const KunjunganActionModal = ({ isOpen, title, noteText, submitLabel, onSubmit, 
             {/* DISCLAIMER */}
             <div className="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
                 <label className="flex items-start gap-2 cursor-pointer">
-                    <input type="checkbox" checked={isCheckedDisclaimer} onChange={handleDisclaimerChange} className="mt-1 accent-green-600"/>
+                    <input type="checkbox" checked={isCheckedDisclaimer} onChange={handleDisclaimerChange} className="mt-1 accent-green-600" />
                     <span className="text-[9px] text-yellow-800 leading-snug text-justify">
                         Saya memahami bahwa <b>Mulai Kunjungan</b> pertama
                         akan tercatat sebagai <b>absensi masuk</b>, dan <b>Selesai Kunjungan </b>

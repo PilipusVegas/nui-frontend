@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye } from "@fortawesome/free-solid-svg-icons";
+import { faA, faArrowRight, faEye } from "@fortawesome/free-solid-svg-icons";
 import { SectionHeader, LoadingSpinner, ErrorState, EmptyState, SearchBar, Modal } from "../../components";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { formatFullDate } from "../../utils/dateUtils";
@@ -172,87 +172,128 @@ const RiwayatKunjungan = () => {
                 {selectedUser?.riwayat?.length === 0 ? (
                     <EmptyState message="Riwayat kunjungan kosong" />
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full text-sm border border-gray-200 border-collapse">
-                            <thead className="bg-gray-100 text-gray-700">
-                                <tr>
-                                    <th className="px-4 py-3 text-center font-semibold rounded-tl-lg">
-                                        Tanggal
-                                    </th>
-                                    <th className="px-4 py-3 text-center font-semibold">
+                    <>
+                        <div className="border border-gray-200 rounded-lg bg-white mb-4">
+                            {/* HEADER */}
+                            <div className="px-4 py-3 border-b border-gray-100 flex flex-col">
+                                <span className="text-sm font-semibold text-gray-800">
+                                    Ringkasan Kunjungan
+                                </span>
+                                <span className="text-xs text-gray-600">
+                                    Periode {formatFullDate(startDate)} - {formatFullDate(endDate)}
+                                </span>
+                            </div>
+                            {/* SUMMARY */}
+                            <div className="px-4 py-3 grid grid-cols-2 md:grid-cols-4 gap-y-4 text-sm">
+                                <div>
+                                    <div className="text-xs text-gray-600">
+                                        Disetujui
+                                    </div>
+                                    <div className="font-semibold text-gray-900">
+                                        {selectedUser?.total_approved ?? 0}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div className="text-xs text-gray-600">
+                                        Ditolak
+                                    </div>
+                                    <div className="font-semibold text-gray-900">
+                                        {selectedUser?.total_rejected ?? 0}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div className="text-xs text-gray-600">
                                         Total Jarak
-                                    </th>
-                                    <th className="px-4 py-3 text-center font-semibold">
-                                        Nominal
-                                    </th>
-                                    <th className="px-4 py-3 text-center font-semibold">
-                                        Status
-                                    </th>
-                                    <th className="px-4 py-3 text-center font-semibold">
-                                        Diproses Oleh
-                                    </th>
-                                    <th className="px-4 py-3 text-center font-semibold rounded-tr-lg">
-                                        Menu
-                                    </th>
-                                </tr>
-                            </thead>
+                                    </div>
+                                    <div className="font-semibold text-gray-900">
+                                        {((selectedUser?.sum_distance ?? 0) / 1000).toFixed(2)} km
+                                    </div>
+                                </div>
+                                <div>
+                                    <div className="text-xs text-gray-600">
+                                        Total Nominal
+                                    </div>
+                                    <div className="font-semibold text-gray-900">
+                                        Rp {(selectedUser?.sum_nominal ?? 0).toLocaleString("id-ID")}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                            <tbody>
-                                {selectedUser?.riwayat?.map((r) => {
-                                    const status = statusMap[r.status];
 
-                                    return (
-                                        <tr key={r.id_trip} className="border-t hover:bg-gray-50 transition">
-                                            <td className="px-4 py-3 text-center whitespace-nowrap">
-                                                {formatFullDate(r.tanggal)}
-                                            </td>
 
-                                            <td className="px-4 py-3 text-center whitespace-nowrap">
-                                                {(r.total_jarak / 1000).toFixed(2)} km
-                                            </td>
+                        <div className="max-h-[420px] overflow-y-auto pr-1 space-y-3">
+                            {selectedUser?.riwayat?.map((r) => {
+                                const status = statusMap[r.status];
+                                return (
+                                    <div key={r.id_trip} className="group border border-gray-200 rounded-xl p-4 bg-white hover:border-gray-300 hover:shadow-sm transition">
 
-                                            <td className="px-4 py-3 text-center whitespace-nowrap">
-                                                Rp {r.nominal?.toLocaleString("id-ID")}
-                                            </td>
+                                        {/* HEADER */}
+                                        <div className="flex items-start justify-between">
+                                            <div>
+                                                <div className="text-sm font-semibold text-gray-800">
+                                                    {formatFullDate(r.tanggal)}
+                                                </div>
+                                                <div className="text-xs text-gray-500 mt-1">
+                                                    Diproses oleh {r.approved_by || "-"}
+                                                </div>
+                                            </div>
 
-                                            <td className="px-4 py-3 text-center">
-                                                {status ? (
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${status.className}`}>
-                                                        {status.label}
-                                                    </span>
-                                                ) : (
-                                                    "-"
-                                                )}
-                                            </td>
+                                            {status && (
+                                                <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${status.className}`}>
+                                                    {status.label}
+                                                </span>
+                                            )}
+                                        </div>
 
-                                            <td className="px-4 py-3 text-center text-xs text-gray-600">
-                                                {r.approved_by || "-"}
-                                            </td>
 
-                                            <td className="px-4 py-3 text-center">
-                                                <button
-                                                    onClick={() => {
-                                                        setSelectedUser(null);
-                                                        navigate(`/permohonan-kunjungan/detail/${r.id_trip}`);
-                                                    }}
-                                                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-blue-500 text-white rounded hover:bg-blue-600"
-                                                >
-                                                    <FontAwesomeIcon icon={faEye} />
-                                                    Detail
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+                                        {/* INFO */}
+                                        <div className="grid grid-cols-2 gap-6 mt-4 text-sm">
+                                            <div>
+                                                <div className="text-xs text-gray-400 mb-1">
+                                                    Total Jarak
+                                                </div>
+                                                <div className="font-semibold text-gray-800">
+                                                    {(r.total_jarak / 1000).toFixed(2)} km
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-xs text-gray-400 mb-1">
+                                                    Nominal
+                                                </div>
+                                                <div className="font-semibold text-gray-800">
+                                                    Rp {r.nominal?.toLocaleString("id-ID")}
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                        {/* META */}
+                                        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+                                            <div className="text-xs text-gray-400">
+                                                Disetujui pada {r.approved_at ? formatFullDate(r.approved_at) : "-"}
+                                            </div>
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedUser(null);
+                                                    navigate(`/permohonan-kunjungan/detail/${r.id_trip}`);
+                                                }}
+                                                className="group inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 transition"
+                                            >
+                                                Lihat selengkapnya
+                                                <FontAwesomeIcon
+                                                    icon={faArrowRight}
+                                                    className="text-xs opacity-70 group-hover:opacity-100 transition"
+                                                />
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </>
                 )}
             </Modal>
-
-
-
-
 
         </div>
     );

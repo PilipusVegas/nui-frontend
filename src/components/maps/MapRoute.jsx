@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Polyline, useMap, Circle } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Polyline, useMap, Circle, Tooltip } from "react-leaflet";
 import L from "leaflet";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -258,7 +258,13 @@ const MapRoute = ({ user, locations = [], destination, onDistance }) => {
           const isInside = distance <= 60;
           return (
             <div key={loc.id}>
-              <Marker position={[coord[0], coord[1]]} icon={officeIcon} />
+              <Marker position={[coord[0], coord[1]]} icon={officeIcon}>
+                <Tooltip permanent direction="top" offset={[0, -14]} opacity={1} className="map-label">
+                  <div className="map-label-text">
+                    {loc.nama}
+                  </div>
+                </Tooltip>
+              </Marker>
               <Circle center={[coord[0], coord[1]]} radius={60}
                 pathOptions={{
                   color: isInside ? "#16a34a" : "#f59e0b",

@@ -4,14 +4,13 @@ import "yet-another-react-lightbox/styles.css";
 import { formatTime } from "../../utils/dateUtils";
 import { faClock, faEye, faTrash, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 
 /* ================= KONSTANTA ================= */
 const KATEGORI = {
-    1: { label: "Mulai Kunjungan", color: "bg-green-500" },
-    2: { label: "Checkpoint", color: "bg-blue-500" },
+    1: { label: "Berangkat Kunjungan", color: "bg-green-500" },
+    2: { label: "Lokasi Kunjungan", color: "bg-blue-500" },
     3: { label: "Kunjungan Berakhir", color: "bg-red-500" },
 };
 
@@ -28,7 +27,7 @@ const TimelineLokasi = ({ lokasi = [], apiUrl, statusTrip, onDeleted }) => {
         <div className="relative">
             {lokasi.map((lok, idx) => {
                 if (lok.kategori === 2) checkpointCounter++;
-                const label = lok.kategori === 2 ? `Checkpoint ${checkpointCounter}` : (KATEGORI[lok.kategori]?.label ?? "-");
+                const label = lok.kategori === 2 ? `Lokasi Kunjungan ${checkpointCounter}` : (KATEGORI[lok.kategori]?.label ?? "-");
                 const isLast = idx === lokasi.length - 1;
                 return (
                     <TimelineItem
@@ -52,18 +51,7 @@ const TimelineLokasi = ({ lokasi = [], apiUrl, statusTrip, onDeleted }) => {
 
 
 /* ================= ITEM ================= */
-const TimelineItem = ({
-    lok,
-    label,
-    color,
-    apiUrl,
-    isLast,
-    statusTrip,
-    onDeleted,
-    checkpointIndex,
-    checkpointTotal,
-    isTripEnded,
-}) => {
+const TimelineItem = ({ lok, label, color, apiUrl, isLast, statusTrip, onDeleted, checkpointIndex, checkpointTotal, isTripEnded,}) => {
     const [open, setOpen] = useState(false);
     const user = getUserFromToken();
     const isKadiv = user?.is_kadiv?.status === true;
@@ -156,7 +144,7 @@ const TimelineItem = ({
                     {lok.kategori === 1 && lok.jam_mulai && (
                         <div className="flex items-center gap-2">
                             <FontAwesomeIcon icon={faClock} className="text-green-600" />
-                            <span className="font-medium text-gray-700 text-sm">Mulai Kunjungan</span>
+                            <span className="font-medium text-gray-700 text-sm">Berangkat Kunjungan</span>
                             <FontAwesomeIcon icon={faArrowRight} className="text-[10px] text-green-600" />
                             <span className="text-gray-700 text-sm">{formatTime(lok.jam_mulai)}</span>
                         </div>
@@ -166,7 +154,7 @@ const TimelineItem = ({
                     {lok.kategori === 2 && lok.jam_mulai && (
                         <div className="flex items-center gap-2">
                             <FontAwesomeIcon icon={faClock} className="text-green-600" />
-                            <span className="font-medium text-gray-700 text-sm">Check-in</span>
+                            <span className="font-medium text-gray-700 text-sm">Mulai Kunjungan</span>
                             <span className="text-gray-700 text-sm">{formatTime(lok.jam_mulai)}</span>
 
                             {/* ABSEN MASUK */}
@@ -183,7 +171,7 @@ const TimelineItem = ({
                     {lok.kategori === 2 && lok.jam_selesai && (
                         <div className="flex items-center gap-2">
                             <FontAwesomeIcon icon={faClock} className="text-red-600" />
-                            <span className="font-medium text-gray-700 text-sm">Check-out</span>
+                            <span className="font-medium text-gray-700 text-sm">Selesai Kunjungan</span>
                             <span className="text-gray-700 text-sm">{formatTime(lok.jam_selesai)}</span>
 
                             {/* ABSEN PULANG */}
@@ -205,7 +193,6 @@ const TimelineItem = ({
                             <span className="text-gray-700 text-sm">{formatTime(lok.jam_selesai)}</span>
                         </div>
                     )}
-
                 </div>
 
                 {lok.deskripsi && (

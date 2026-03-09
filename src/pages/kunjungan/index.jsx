@@ -3,6 +3,7 @@ import MobileLayout from "../../layouts/mobileLayout";
 import { MapRoute, LoadingSpinner } from "../../components";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { getDistanceMeters } from "../../utils/locationUtils";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
 import KunjunganActionModal from "./KunjunganActionModal";
@@ -13,6 +14,7 @@ const MAX_RADIUS = 60;
 
 export default function Kunjungan() {
     const apiurl = process.env.REACT_APP_API_BASE_URL;
+    const navigate = useNavigate();
     // ================= STATE UTAMA =================
     const [gps, setGps] = useState(null);
     const [shiftId, setShiftId] = useState(null);
@@ -26,6 +28,7 @@ export default function Kunjungan() {
     const [tripInfo, setTripInfo] = useState(null);
     const [prerequisite, setPrerequisite] = useState({ status_kendaraan: null, user_lokasi: null });
     const [jadwalLokasi, setJadwalLokasi] = useState([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // ================= UTIL =================
     const parseCoord = (str) => {
@@ -130,16 +133,17 @@ export default function Kunjungan() {
         }
     };
 
+
     // ================= ACTION =================
     const startVisit = async () => {
+        if (isSubmitting) return;
+        setIsSubmitting(true);
         try {
             if (!shiftId) return toast.error("Tidak ada shift aktif");
             if (!photo) return toast.error("Foto wajib diambil");
             const fd = new FormData();
             fd.append("id_shift", shiftId);
             fd.append("foto", photo);
-            fd.append("deskripsi", note);
-            fd.append("koordinat", `${gps.lat},${gps.lng}`);
             const res = await fetchWithJwt(`${apiurl}/trip/user`, {
                 method: "POST",
                 body: fd,
@@ -155,10 +159,15 @@ export default function Kunjungan() {
             fetchTrip();
         } catch {
             toast.error("Koneksi ke server gagal");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
+
     const checkIn = async () => {
+        if (isSubmitting) return;
+        setIsSubmitting(true);
         try {
             if (!tripId) {
                 toast.error("Silakan berangkat kunjungan terlebih dahulu.");
@@ -181,7 +190,8 @@ export default function Kunjungan() {
                 getDistanceMeters(gps.lat, gps.lng, target.lat, target.lng)
             );
             if (jarak > MAX_RADIUS) {
-                return toast.error("Anda di luar radius lokasi");
+                toast.error("Anda di luar radius lokasi");
+                return;
             }
             const fd = new FormData();
             fd.append("id_lokasi", nearbyLocation.id);
@@ -207,27 +217,34 @@ export default function Kunjungan() {
             fetchTrip();
         } catch (err) {
             toast.error("Koneksi ke server gagal");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
 
     const checkOut = async () => {
-        if (!activeLocation?.id) {
-            return toast.error("Lokasi aktif tidak ditemukan");
-        }
-        if (!photo) {
-            return toast.error("Foto & keterangan wajib");
-        }
-        if (!gps?.lat || !gps?.lng) {
-            return toast.error("GPS belum siap");
-        }
+        if (isSubmitting) return;
+        setIsSubmitting(true);
         try {
-            // ================= CARI KOORDINAT LOKASI =================
+            if (!activeLocation?.id) {
+                toast.error("Lokasi aktif tidak ditemukan");
+                return;
+            }
+            if (!photo) {
+                toast.error("Foto & keterangan wajib");
+                return;
+            }
+            if (!gps?.lat || !gps?.lng) {
+                toast.error("GPS belum siap");
+                return;
+            }
             const lokasiJadwal = jadwalLokasi.find(
                 (l) => l.id === activeLocation.id_lokasi
             );
             if (!lokasiJadwal) {
-                return toast.error("Koordinat lokasi jadwal tidak ditemukan");
+                toast.error("Koordinat lokasi jadwal tidak ditemukan");
+                return;
             }
             const jarak = Math.round(
                 getDistanceMeters(
@@ -237,11 +254,10 @@ export default function Kunjungan() {
                     lokasiJadwal.longitude
                 )
             );
-            // ================= VALIDASI RADIUS =================
             if (jarak > MAX_RADIUS) {
-                return toast.error("Anda berada di luar radius lokasi kunjungan");
+                toast.error("Anda berada di luar radius lokasi kunjungan anda.");
+                return;
             }
-            // ================= REQUEST =================
             const fd = new FormData();
             fd.append("foto", photo);
             fd.append("koordinat", `${gps.lat},${gps.lng}`);
@@ -264,36 +280,51 @@ export default function Kunjungan() {
         } catch (err) {
             console.error(err);
             toast.error("Koneksi ke server gagal");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
+
     const endTrip = async () => {
+        if (isSubmitting) return;
+        const confirm = await Swal.fire({
+            icon: "warning",
+            title: "Akhiri Kunjungan Hari Ini?",
+            text: "Trip akan dianggap selesai dan absensi pulang akan dicatat.",
+            showCancelButton: true,
+            confirmButtonText: "Akhiri Trip",
+            cancelButtonText: "Batal",
+            confirmButtonColor: "#ef4444",
+        });
+        if (!confirm.isConfirmed) return;
+        setIsSubmitting(true);
         try {
-            const confirm = await Swal.fire({
-                icon: "warning",
-                title: "Akhiri Kunjungan Hari Ini?",
-                text: "Trip akan dianggap selesai dan absensi pulang akan dicatat.",
-                showCancelButton: true,
-                confirmButtonText: "Akhiri Trip",
-                cancelButtonText: "Batal",
-                confirmButtonColor: "#ef4444",
+            const res = await fetchWithJwt(`${apiurl}/trip/user/end/${tripId}`, {
+                method: "PUT"
             });
-            if (!confirm.isConfirmed) return;
-            const res = await fetchWithJwt(
-                `${apiurl}/trip/user/end/${tripId}`,
-                {
-                    method: "PUT"
-                }
-            );
             if (!res.ok) {
                 toast.error("Gagal mengakhiri trip");
                 return;
             }
-            toast.success("Trip berhasil diselesaikan");
+            const result = await Swal.fire({
+                icon: "success",
+                title: "Kunjungan Selesai",
+                text: "Perjalanan hari ini berhasil disimpan.",
+                showCancelButton: true,
+                confirmButtonText: "Lihat Riwayat",
+                cancelButtonText: "Tutup",
+                confirmButtonColor: "#16a34a"
+            });
+            if (result.isConfirmed) {
+                navigate("/riwayat-pengguna");
+            }
             fetchTrip();
         } catch (err) {
             console.error(err);
             toast.error("Koneksi ke server gagal");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -312,12 +343,11 @@ export default function Kunjungan() {
     }, [history]);
 
     const showVisitGuide = useMemo(() => {
-        if (!hasTrip) return false;          // BELUM mulai kunjungan → jangan tampil
-        if (activeLocation) return false;    // sedang kunjungan → ada tombol selesai
-        if (nearbyLocation) return false;    // sudah di radius → ada tombol mulai
-        return true;                         // sisanya tampilkan petunjuk
+        if (!hasTrip) return false;
+        if (activeLocation) return false;
+        if (nearbyLocation) return false;
+        return true;
     }, [hasTrip, activeLocation, nearbyLocation]);
-
 
     const isTripToday = useMemo(() => {
         if (!tripInfo?.tanggal) return false;
@@ -397,30 +427,39 @@ export default function Kunjungan() {
                             Digunakan untuk memastikan Anda berada di lokasi yang sesuai
                         </p>
                     </div>
-                    <MapRoute user={gps} locations={jadwalLokasi.map((l) => ({ id: l.id, koordinat: `${l.latitude},${l.longitude}`, }))} />
+                    <MapRoute user={gps} locations={jadwalLokasi.map((l) => ({ id: l.id, nama: l.nama, koordinat: `${l.latitude},${l.longitude}`, }))} />
+
                     {showVisitGuide && (
-                        <div className="mt-3 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-3">
-                            <div className="flex items-start gap-3">
-                                <div className="flex-1">
-                                    <p className="text-xs font-semibold text-indigo-900">
-                                        Petunjuk Kunjungan
-                                    </p>
-                                    <p className="text-[10px] text-indigo-800 leading-snug mt-0.5">
-                                        Untuk melakukan kunjungan, Anda harus berada dalam radius
-                                        <b> {MAX_RADIUS} meter</b> dari lokasi yang terdaftar pada jadwal.
-                                    </p>
-                                    <p className="text-[10px] text-indigo-800 leading-snug mt-0.5">
-                                        Setelah berada dalam radius lokasi:
-                                    </p>
-                                    <ul className="text-[10px] text-indigo-800 mt-0.5 space-y-0.5 list-disc pl-4">
-                                        <li>Jika kunjungan belum dimulai, tombol <b>Mulai Kunjungan</b> akan muncul.</li>
-                                        <li>Jika kunjungan sedang berlangsung, tombol <b>Selesai Kunjungan</b> akan tersedia.</li>
-                                    </ul>
-                                    <p className="text-[10px] text-indigo-700 mt-0.5">
-                                        Pastikan GPS aktif dan posisi Anda sudah berada di area lokasi.
-                                    </p>
-                                </div>
-                            </div>
+                        <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2">
+                            <p className="text-xs font-semibold text-blue-600 mb-2">
+                                Cara Menggunakan Peta Kunjungan
+                            </p>
+                            <ul className="text-[10px] text-blue-600 mt-1 space-y-1 list-disc pl-4 leading-snug">
+                                <li>
+                                    <b>Ikon di peta</b> menunjukkan lokasi kunjungan yang sudah
+                                    dijadwalkan oleh <b>Kepala Divisi</b>.
+                                </li>
+                                <li>
+                                    Setiap titik memiliki <b>nama lokasi</b> agar Anda tahu tempat
+                                    yang harus dikunjungi.
+                                </li>
+                                <li>
+                                    Semua lokasi di peta berasal dari <b>jadwal kunjungan yang sudah
+                                        ditentukan</b>, sehingga Anda tidak perlu memilih lokasi sendiri.
+                                </li>
+                                <li>
+                                    Di sekitar setiap lokasi terdapat <b>radius 60 meter</b>.
+                                    Anda harus berada di dalam area ini untuk memulai kunjungan.
+                                </li>
+                                <li>
+                                    Jika sudah berada di dalam radius, tombol <b>Mulai Kunjungan</b>
+                                    akan muncul. Setelah selesai, tekan <b>Selesai Kunjungan</b>
+                                    di lokasi yang sama.
+                                </li>
+                            </ul>
+                            <p className="text-[10px] text-blue-600 mt-2">
+                                Pastikan <b>GPS aktif</b> agar sistem dapat mendeteksi posisi Anda dengan benar.
+                            </p>
                         </div>
                     )}
 
@@ -445,7 +484,7 @@ export default function Kunjungan() {
                         </div>
                     )}
 
-                    {hasTrip && nearbyLocation && !activeLocation && tripInfo?.is_complete === 0 && (
+                    {hasTrip && nearbyLocation && !activeLocation && tripInfo?.is_complete === 0 && nearbyLocation.id !== lastVisitedLocationId && (
                         <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50/70 p-4 backdrop-blur-sm shadow-sm">
                             <div className="flex items-start gap-3">
                                 <div className="flex-1">
@@ -460,60 +499,78 @@ export default function Kunjungan() {
                                     </p>
                                 </div>
                             </div>
-                            <button onClick={() => setModal("checkin")} className="mt-4 w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold shadow-md hover:scale-[1.02] active:scale-[0.98] transition animate-pulse">
+                            <button disabled={isSubmitting} onClick={() => setModal("checkin")} className="mt-4 w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold shadow-md hover:scale-[1.02] active:scale-[0.98] transition animate-pulse">
                                 Mulai Kunjungan
                             </button>
                         </div>
                     )}
+
+                    {hasTrip &&
+                        nearbyLocation &&
+                        !activeLocation &&
+                        nearbyLocation.id === lastVisitedLocationId && (
+                            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-center mt-3">
+                                <div className="flex justify-center mb-1">
+                                    <div className="flex items-center justify-center w-7 h-7 rounded-full bg-amber-100 text-amber-600">
+                                        <FontAwesomeIcon icon={faLocationDot} className="text-sm" />
+                                    </div>
+                                </div>
+                                <p className="text-sm font-semibold text-amber-700">
+                                    Kunjungan di lokasi ini sudah selesai
+                                </p>
+                                <p className="text-[11px] text-gray-600 mt-1 leading-snug">
+                                    Untuk melanjutkan kunjungan, silakan menuju
+                                    <span className="font-semibold"> lokasi kunjungan lainnya</span>.
+                                </p>
+                            </div>
+                        )}
                 </div>
 
                 {!hasTrip && (
                     <div className="bg-white rounded-xl border px-4 py-4 space-y-4">
                         <div className="space-y-1">
                             <p className="text-base font-semibold text-gray-800">Penjelasan Fitur Kunjungan</p>
-                            <p className="text-sm text-gray-600 leading-snug">
+                            <p className="text-xs text-gray-600 leading-snug">
                                 Digunakan untuk mencatat perjalanan kerja sekaligus absensi.
                             </p>
                         </div>
 
                         {/* ALUR UTAMA */}
-                        <div className="space-y-3 text-xs text-gray-700 max-h-44 overflow-y-auto scrollbar-green pr-1 tracking-wide">
+                        <div className="space-y-3 text-[11px] text-justify text-gray-700 max-h-44 overflow-y-auto scrollbar-green pr-1 tracking-wide">
                             <div className="flex items-start gap-2">
                                 <FontAwesomeIcon icon={faClock} className="mt-1 text-green-600" />
                                 <p className="leading-normal">
-                                    <b>Check-in pertama</b> akan dicatat sebagai <b>absen masuk</b>, dan
-                                    <b> check-out pada lokasi terakhir</b> akan dicatat sebagai <b>absen pulang</b>.
+                                    Tekan <b>Berangkat Kunjungan</b> untuk memulai perjalanan kerja.
+                                    Setelah itu Anda dapat melakukan kunjungan ke lokasi yang ada di jadwal.
                                 </p>
                             </div>
                             <div className="flex items-start gap-2">
                                 <FontAwesomeIcon icon={faLocationDot} className="mt-1 text-green-600" />
                                 <p className="leading-normal">
-                                    Sistem menghitung <b>jarak perjalanan kerja</b> berdasarkan rute yang ditempuh
-                                    untuk menentukan <b>tunjangan transport secara otomatis</b>.
-                                </p>
-                            </div>
-                            <div className="flex items-start gap-2">
-                                <FontAwesomeIcon icon={faClock} className="mt-1 text-red-500" />
-                                <p className="leading-normal">
-                                    Timeline kunjungan akan <b>reset setiap 24 jam</b>. Jika kunjungan belum selesai
-                                    sebelum reset, maka data kunjungan dan absensi
-                                    <b> tidak akan tercatat</b>.
+                                    Saat berada dalam radius <b>60 meter</b> dari lokasi, lakukan
+                                    <b> Mulai Kunjungan</b> untuk mencatat kedatangan.
+                                    <b> Mulai Kunjungan pertama</b> akan tercatat sebagai <b>absen masuk</b>.
                                 </p>
                             </div>
                             <div className="flex items-start gap-2">
                                 <FontAwesomeIcon icon={faCamera} className="mt-1 text-green-600" />
                                 <p className="leading-normal">
-                                    Jika sudah melakukan <b>check-in</b> di suatu lokasi maka Anda
-                                    <b> wajib melakukan check-out</b>. Jika lupa checkout dan sudah berpindah lokasi,
-                                    Anda harus kembali ke lokasi sebelumnya.
+                                    Setelah tugas selesai, tekan <b>Selesai Kunjungan</b>.
+                                    Setiap kunjungan yang dimulai <b>wajib diselesaikan</b> sebelum pindah ke lokasi lain.
                                 </p>
                             </div>
                             <div className="flex items-start gap-2">
                                 <FontAwesomeIcon icon={faClock} className="mt-1 text-green-600" />
                                 <p className="leading-normal">
-                                    Saat melakukan <b>check-out</b>, Anda akan diminta menentukan apakah lokasi
-                                    tersebut adalah <b>lokasi terakhir</b>. Jika iya, maka kunjungan akan langsung
-                                    dianggap selesai.
+                                    Jika semua lokasi sudah selesai, tekan <b>Akhiri Kunjungan</b>.
+                                    <b> Selesai Kunjungan terakhir</b> akan tercatat sebagai <b>absen pulang</b>.
+                                </p>
+                            </div>
+                            <div className="flex items-start gap-2">
+                                <FontAwesomeIcon icon={faClock} className="mt-1 text-red-500" />
+                                <p className="leading-normal">
+                                    Timeline kunjungan <b>reset setiap 24 jam</b>.
+                                    Jika perjalanan tidak diakhiri sebelum reset, data kunjungan dapat <b>tidak tercatat</b>.
                                 </p>
                             </div>
                         </div>
@@ -557,11 +614,7 @@ export default function Kunjungan() {
             <KunjunganActionModal
                 isOpen={!!modal}
                 title={modal === "start" ? "Berangkat Kunjungan" : modal === "checkin" ? "Konfirmasi Mulai Kunjungan" : "Konfirmasi Selesai Kunjungan"}
-                noteText={
-                    modal === "checkin"
-                        ? "Tuliskan tujuan kunjungan."
-                        : null
-                }
+                noteText={modal === "checkin" ? "Tuliskan tujuan kunjungan." : null}
                 submitLabel="Simpan"
                 onSubmit={modal === "start" ? startVisit : modal === "checkin" ? checkIn : checkOut}
                 onClose={() => { resetModalState(); setModal(null); }}
@@ -570,6 +623,7 @@ export default function Kunjungan() {
                 photoPreview={photoPreview}
                 setPhotoPreview={setPhotoPreview}
                 setPhotoFile={setPhoto}
+                isSubmitting={isSubmitting}
             />
         </MobileLayout>
     );
