@@ -54,7 +54,6 @@ export default function Kunjungan() {
         return null;
     }, [gps, jadwalLokasi]);
 
-
     // ================= EFFECT =================
     useEffect(() => {
         const id = navigator.geolocation.watchPosition(
@@ -126,13 +125,12 @@ export default function Kunjungan() {
                     id_lokasi: l.id_lokasi,
                     lat: l.latitude ? Number(l.latitude) : null,
                     lng: l.longitude ? Number(l.longitude) : null,
-                }))
+                })),
             );
         } catch {
             toast.error("Koneksi ke server gagal");
         }
     };
-
 
     // ================= ACTION =================
     const startVisit = async () => {
@@ -164,7 +162,6 @@ export default function Kunjungan() {
         }
     };
 
-
     const checkIn = async () => {
         if (isSubmitting) return;
         setIsSubmitting(true);
@@ -178,7 +175,9 @@ export default function Kunjungan() {
                 return;
             }
             if (nearbyLocation.id === lastVisitedLocationId) {
-                toast.error("Anda baru saja mengunjungi lokasi ini. Silakan kunjungi lokasi lain terlebih dahulu.");
+                toast.error(
+                    "Anda baru saja mengunjungi lokasi ini. Silakan kunjungi lokasi lain terlebih dahulu.",
+                );
                 return;
             }
             if (!photo) {
@@ -186,9 +185,7 @@ export default function Kunjungan() {
                 return;
             }
             const target = parseCoord(`${nearbyLocation.latitude},${nearbyLocation.longitude}`);
-            const jarak = Math.round(
-                getDistanceMeters(gps.lat, gps.lng, target.lat, target.lng)
-            );
+            const jarak = Math.round(getDistanceMeters(gps.lat, gps.lng, target.lat, target.lng));
             if (jarak > MAX_RADIUS) {
                 toast.error("Anda di luar radius lokasi");
                 return;
@@ -222,7 +219,6 @@ export default function Kunjungan() {
         }
     };
 
-
     const checkOut = async () => {
         if (isSubmitting) return;
         setIsSubmitting(true);
@@ -239,20 +235,13 @@ export default function Kunjungan() {
                 toast.error("GPS belum siap");
                 return;
             }
-            const lokasiJadwal = jadwalLokasi.find(
-                (l) => l.id === activeLocation.id_lokasi
-            );
+            const lokasiJadwal = jadwalLokasi.find((l) => l.id === activeLocation.id_lokasi);
             if (!lokasiJadwal) {
                 toast.error("Koordinat lokasi jadwal tidak ditemukan");
                 return;
             }
             const jarak = Math.round(
-                getDistanceMeters(
-                    gps.lat,
-                    gps.lng,
-                    lokasiJadwal.latitude,
-                    lokasiJadwal.longitude
-                )
+                getDistanceMeters(gps.lat, gps.lng, lokasiJadwal.latitude, lokasiJadwal.longitude),
             );
             if (jarak > MAX_RADIUS) {
                 toast.error("Anda berada di luar radius lokasi kunjungan anda.");
@@ -261,13 +250,10 @@ export default function Kunjungan() {
             const fd = new FormData();
             fd.append("foto", photo);
             fd.append("koordinat", `${gps.lat},${gps.lng}`);
-            const res = await fetchWithJwt(
-                `${apiurl}/trip/user/out/${activeLocation.id}`,
-                {
-                    method: "PUT",
-                    body: fd,
-                }
-            );
+            const res = await fetchWithJwt(`${apiurl}/trip/user/out/${activeLocation.id}`, {
+                method: "PUT",
+                body: fd,
+            });
             const json = await res.json();
             if (!res.ok) {
                 toast.error(json.message || "Checkout gagal");
@@ -285,7 +271,6 @@ export default function Kunjungan() {
         }
     };
 
-
     const endTrip = async () => {
         if (isSubmitting) return;
         const confirm = await Swal.fire({
@@ -293,15 +278,15 @@ export default function Kunjungan() {
             title: "Akhiri Kunjungan Hari Ini?",
             text: "Trip akan dianggap selesai dan absensi pulang akan dicatat.",
             showCancelButton: true,
-            confirmButtonText: "Akhiri Trip",
-            cancelButtonText: "Batal",
+            confirmButtonText: "Akhiri Kunjungan",
+            cancelButtonText: "Batalkan",
             confirmButtonColor: "#ef4444",
         });
         if (!confirm.isConfirmed) return;
         setIsSubmitting(true);
         try {
             const res = await fetchWithJwt(`${apiurl}/trip/user/end/${tripId}`, {
-                method: "PUT"
+                method: "PUT",
             });
             if (!res.ok) {
                 toast.error("Gagal mengakhiri trip");
@@ -314,7 +299,7 @@ export default function Kunjungan() {
                 showCancelButton: true,
                 confirmButtonText: "Lihat Riwayat",
                 cancelButtonText: "Tutup",
-                confirmButtonColor: "#16a34a"
+                confirmButtonColor: "#16a34a",
             });
             if (result.isConfirmed) {
                 navigate("/riwayat-pengguna");
@@ -328,7 +313,6 @@ export default function Kunjungan() {
         }
     };
 
-
     const hasTrip = history.length > 0;
     const activeLocation = useMemo(() => {
         return history.find((h) => h.jam_selesai === null) || null;
@@ -336,9 +320,7 @@ export default function Kunjungan() {
 
     const lastVisitedLocationId = useMemo(() => {
         if (!history.length) return null;
-        const last = [...history]
-            .filter((h) => h.jam_selesai !== null)
-            .slice(-1)[0];
+        const last = [...history].filter((h) => h.jam_selesai !== null).slice(-1)[0];
         return last?.id_lokasi ?? null;
     }, [history]);
 
@@ -427,37 +409,29 @@ export default function Kunjungan() {
                             Digunakan untuk memastikan Anda berada di lokasi yang sesuai
                         </p>
                     </div>
-                    <MapRoute user={gps} locations={jadwalLokasi.map((l) => ({ id: l.id, nama: l.nama, koordinat: `${l.latitude},${l.longitude}`, }))} />
+                    <MapRoute
+                        user={gps}
+                        locations={jadwalLokasi.map((l) => ({
+                            id: l.id,
+                            nama: l.nama,
+                            koordinat: `${l.latitude},${l.longitude}`,
+                        }))}
+                    />
 
                     {showVisitGuide && (
                         <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2">
                             <p className="text-xs font-semibold text-blue-600 mb-2">
                                 Cara Menggunakan Peta Kunjungan
                             </p>
-                            <ul className="text-[10px] text-blue-600 mt-1 space-y-1 list-disc pl-4 leading-snug">
-                                <li>
-                                    <b>Ikon di peta</b> menunjukkan lokasi kunjungan yang sudah
-                                    dijadwalkan oleh <b>Kepala Divisi</b>.
-                                </li>
-                                <li>
-                                    Setiap titik memiliki <b>nama lokasi</b> agar Anda tahu tempat
-                                    yang harus dikunjungi.
-                                </li>
-                                <li>
-                                    Semua lokasi di peta berasal dari <b>jadwal kunjungan yang sudah
-                                        ditentukan</b>, sehingga Anda tidak perlu memilih lokasi sendiri.
-                                </li>
-                                <li>
-                                    Di sekitar setiap lokasi terdapat <b>radius 60 meter</b>.
-                                    Anda harus berada di dalam area ini untuk memulai kunjungan.
-                                </li>
-                                <li>
-                                    Jika sudah berada di dalam radius, tombol <b>Mulai Kunjungan</b>
-                                    akan muncul. Setelah selesai, tekan <b>Selesai Kunjungan</b>
-                                    di lokasi yang sama.
-                                </li>
+                            <ul className="text-[11px] text-blue-600 space-y-1 list-disc pl-4 leading-snug">
+                                <li>Ikon <b>toko berwarna orange</b> di peta menunjukkan <b>lokasi kunjungan yang sudah dijadwalkan oleh Kepala Divisi</b>.</li>
+                                <li>Datangi lokasi tersebut untuk melakukan kunjungan sesuai jadwal yang telah ditentukan.</li>
+                                <li>Jika posisi Anda sudah berada di sekitar lokasi (±60 meter), tombol <b>Mulai Kunjungan</b> akan muncul.</li>
+                                <li>Tekan <b>Mulai Kunjungan</b> saat tiba di lokasi.</li>
+                                <li>Setelah pekerjaan selesai, tekan <b>Selesai Kunjungan</b> di lokasi yang sama.</li>
                             </ul>
-                            <p className="text-[10px] text-blue-600 mt-2">
+
+                            <p className="text-[11px] text-blue-600 mt-2">
                                 Pastikan <b>GPS aktif</b> agar sistem dapat mendeteksi posisi Anda dengan benar.
                             </p>
                         </div>
@@ -470,40 +444,47 @@ export default function Kunjungan() {
                                     <FontAwesomeIcon icon={faLocationDot} />
                                 </div>
                                 <div className="flex-1">
-                                    <p className="text-xs text-gray-500">
-                                        Lokasi kunjungan saat ini
-                                    </p>
+                                    <p className="text-xs text-gray-500">Lokasi kunjungan saat ini</p>
                                     <p className="text-sm font-semibold text-gray-900 leading-snug">
                                         {activeLocation.nama}
                                     </p>
                                 </div>
                             </div>
-                            <button onClick={() => setModal("checkout")} className="mt-3 w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-lg text-sm font-semibold transition">
+                            <button
+                                onClick={() => setModal("checkout")}
+                                className="mt-3 w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-lg text-sm font-semibold transition"
+                            >
                                 Selesai Kunjungan
                             </button>
                         </div>
                     )}
 
-                    {hasTrip && nearbyLocation && !activeLocation && tripInfo?.is_complete === 0 && nearbyLocation.id !== lastVisitedLocationId && (
-                        <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50/70 p-4 backdrop-blur-sm shadow-sm">
-                            <div className="flex items-start gap-3">
-                                <div className="flex-1">
-                                    <p className="text-xs text-blue-700">
-                                        Anda berada di area lokasi kunjungan
-                                    </p>
-                                    <p className="text-md font-semibold text-blue-900 leading-snug">
-                                        {nearbyLocation.nama}
-                                    </p>
-                                    <p className="text-xs text-blue-700 mt-1">
-                                        Silakan mulai kunjungan untuk mencatat kedatangan Anda.
-                                    </p>
+                    {hasTrip &&
+                        nearbyLocation &&
+                        !activeLocation &&
+                        tripInfo?.is_complete === 0 &&
+                        nearbyLocation.id !== lastVisitedLocationId && (
+                            <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50/70 p-4 backdrop-blur-sm shadow-sm">
+                                <div className="flex items-start gap-3">
+                                    <div className="flex-1">
+                                        <p className="text-xs text-blue-700">Anda berada di area lokasi kunjungan</p>
+                                        <p className="text-md font-semibold text-blue-900 leading-snug">
+                                            {nearbyLocation.nama}
+                                        </p>
+                                        <p className="text-xs text-blue-700 mt-1">
+                                            Silakan mulai kunjungan untuk mencatat kedatangan Anda.
+                                        </p>
+                                    </div>
                                 </div>
+                                <button
+                                    disabled={isSubmitting}
+                                    onClick={() => setModal("checkin")}
+                                    className="mt-4 w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold shadow-md hover:scale-[1.02] active:scale-[0.98] transition animate-pulse"
+                                >
+                                    Mulai Kunjungan
+                                </button>
                             </div>
-                            <button disabled={isSubmitting} onClick={() => setModal("checkin")} className="mt-4 w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold shadow-md hover:scale-[1.02] active:scale-[0.98] transition animate-pulse">
-                                Mulai Kunjungan
-                            </button>
-                        </div>
-                    )}
+                        )}
 
                     {hasTrip &&
                         nearbyLocation &&
@@ -540,8 +521,8 @@ export default function Kunjungan() {
                             <div className="flex items-start gap-2">
                                 <FontAwesomeIcon icon={faClock} className="mt-1 text-green-600" />
                                 <p className="leading-normal">
-                                    Tekan <b>Berangkat Kunjungan</b> untuk memulai perjalanan kerja.
-                                    Setelah itu Anda dapat melakukan kunjungan ke lokasi yang ada di jadwal.
+                                    Tekan <b>Berangkat Kunjungan</b> untuk memulai perjalanan kerja. Setelah itu Anda
+                                    dapat melakukan kunjungan ke lokasi yang ada di jadwal.
                                 </p>
                             </div>
                             <div className="flex items-start gap-2">
@@ -555,8 +536,8 @@ export default function Kunjungan() {
                             <div className="flex items-start gap-2">
                                 <FontAwesomeIcon icon={faCamera} className="mt-1 text-green-600" />
                                 <p className="leading-normal">
-                                    Setelah tugas selesai, tekan <b>Selesai Kunjungan</b>.
-                                    Setiap kunjungan yang dimulai <b>wajib diselesaikan</b> sebelum pindah ke lokasi lain.
+                                    Setelah tugas selesai, tekan <b>Selesai Kunjungan</b>. Setiap kunjungan yang
+                                    dimulai <b>wajib diselesaikan</b> sebelum pindah ke lokasi lain.
                                 </p>
                             </div>
                             <div className="flex items-start gap-2">
@@ -569,8 +550,8 @@ export default function Kunjungan() {
                             <div className="flex items-start gap-2">
                                 <FontAwesomeIcon icon={faClock} className="mt-1 text-red-500" />
                                 <p className="leading-normal">
-                                    Timeline kunjungan <b>reset setiap 24 jam</b>.
-                                    Jika perjalanan tidak diakhiri sebelum reset, data kunjungan dapat <b>tidak tercatat</b>.
+                                    Timeline kunjungan <b>reset setiap 24 jam</b>. Jika perjalanan tidak diakhiri
+                                    sebelum reset, data kunjungan dapat <b>tidak tercatat</b>.
                                 </p>
                             </div>
                         </div>
@@ -613,11 +594,20 @@ export default function Kunjungan() {
 
             <KunjunganActionModal
                 isOpen={!!modal}
-                title={modal === "start" ? "Berangkat Kunjungan" : modal === "checkin" ? "Konfirmasi Mulai Kunjungan" : "Konfirmasi Selesai Kunjungan"}
+                title={
+                    modal === "start"
+                        ? "Berangkat Kunjungan"
+                        : modal === "checkin"
+                            ? "Konfirmasi Mulai Kunjungan"
+                            : "Konfirmasi Selesai Kunjungan"
+                }
                 noteText={modal === "checkin" ? "Tuliskan tujuan kunjungan." : null}
                 submitLabel="Simpan"
                 onSubmit={modal === "start" ? startVisit : modal === "checkin" ? checkIn : checkOut}
-                onClose={() => { resetModalState(); setModal(null); }}
+                onClose={() => {
+                    resetModalState();
+                    setModal(null);
+                }}
                 note={note}
                 setNote={setNote}
                 photoPreview={photoPreview}
