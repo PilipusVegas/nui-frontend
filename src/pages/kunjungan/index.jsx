@@ -132,9 +132,7 @@ export default function Kunjungan() {
             setTripInfo({
                 id_trip: json.data.id_trip,
                 tanggal: json.data.tanggal,
-                is_complete: json.data.is_complete,
-                total_jarak: json.data.total_jarak,
-                nominal: json.data.nominal,
+                created_at: json.data.created_at,
             });
             setHistory(
                 json.data.lokasi.map((l) => ({
@@ -294,51 +292,9 @@ export default function Kunjungan() {
         }
     };
 
-    const endTrip = async () => {
-        if (isSubmitting) return;
-        const confirm = await Swal.fire({
-            icon: "warning",
-            title: "Yakin Ingin Akhiri Kunjungan?",
-            text: "Perjalanan anda akan dianggap selesai dan absensi pulang dari selesai kunjungan terakhir akan dicatat.",
-            showCancelButton: true,
-            confirmButtonText: "Akhiri Kunjungan",
-            cancelButtonText: "Batalkan",
-            confirmButtonColor: "#ef4444",
-        });
-        if (!confirm.isConfirmed) return;
-        setIsSubmitting(true);
-        try {
-            const res = await fetchWithJwt(`${apiurl}/trip/user/end/${tripId}`, {
-                method: "PUT",
-            });
-            if (!res.ok) {
-                toast.error("Gagal mengakhiri trip");
-                return;
-            }
-            const result = await Swal.fire({
-                icon: "success",
-                title: "Kunjungan Selesai",
-                text: "Perjalanan hari ini berhasil disimpan.",
-                showCancelButton: true,
-                confirmButtonText: "Lihat Riwayat",
-                cancelButtonText: "Tutup",
-                confirmButtonColor: "#16a34a",
-            });
-            if (result.isConfirmed) {
-                navigate("/riwayat-pengguna");
-            }
-            fetchTrip();
-        } catch (err) {
-            console.error(err);
-            toast.error("Koneksi ke server gagal");
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
     const hasTrip = history.length > 0;
     const activeLocation = useMemo(() => {
-        return history.find((h) => h.jam_selesai === null) || null;
+        return history.find((h) => h.kategori === 2 && h.jam_selesai === null) || null;
     }, [history]);
 
     const lastVisitedLocationId = useMemo(() => {
@@ -497,7 +453,6 @@ export default function Kunjungan() {
                     {hasTrip &&
                         nearbyLocation &&
                         !activeLocation &&
-                        tripInfo?.is_complete === 0 &&
                         nearbyLocation.id !== lastVisitedLocationId && (
                             <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50/70 p-4 backdrop-blur-sm shadow-sm">
                                 <div className="flex items-start gap-3">
@@ -528,17 +483,18 @@ export default function Kunjungan() {
                                     </div>
                                 </div>
                                 <p className="text-sm font-semibold text-amber-700">
-                                    Lokasi ini sudah Anda kunjungi
+                                    Lokasi ini baru saja Anda kunjungi
                                 </p>
                                 <p className="text-[11px] text-gray-600 mt-1 leading-snug">
-                                    Lanjut ke lokasi lain dulu. Nanti Anda bisa mulai kunjungan di sini lagi.
+                                    Satu lokasi tidak dapat dikunjungi secara berurutan. Silakan kunjungi lokasi lain terlebih dahulu.
+                                    Tombol <b>Mulai Kunjungan</b> akan muncul otomatis jika Anda berada dalam radius <b>60 meter</b> dari lokasi yang dijadwalkan.
                                 </p>
                             </div>
                         )}
                 </div>
 
                 {hasTrip && tripInfo && (
-                    <Timeline history={history} tripInfo={tripInfo} onEndTrip={endTrip} />
+                    <Timeline history={history} tripInfo={tripInfo} />
                 )}
 
                 {!hasTrip && (
@@ -549,43 +505,44 @@ export default function Kunjungan() {
                                 Digunakan untuk mencatat perjalanan kerja sekaligus absensi.
                             </p>
                         </div>
-
-                        {/* ALUR UTAMA */}
                         <div className="space-y-3 text-[11px] text-justify text-gray-700 max-h-44 overflow-y-auto scrollbar-green pr-1 tracking-wide">
                             <div className="flex items-start gap-2">
                                 <FontAwesomeIcon icon={faClock} className="mt-1 text-green-600" />
                                 <p className="leading-normal">
-                                    Tekan <b>Berangkat Kunjungan</b> untuk memulai perjalanan kerja. Setelah itu Anda
-                                    dapat melakukan kunjungan ke lokasi yang ada di jadwal.
+                                    Tekan <b>Berangkat Kunjungan</b> untuk memulai perjalanan kerja.
+                                    Setelah perjalanan dimulai, Anda dapat melakukan kunjungan ke lokasi yang telah dijadwalkan.
                                 </p>
                             </div>
                             <div className="flex items-start gap-2">
                                 <FontAwesomeIcon icon={faLocationDot} className="mt-1 text-green-600" />
                                 <p className="leading-normal">
-                                    Saat berada dalam radius <b>60 meter</b> dari lokasi, lakukan
-                                    <b> Mulai Kunjungan</b> untuk mencatat kedatangan.
-                                    <b> Mulai Kunjungan pertama</b> akan tercatat sebagai <b>absen masuk</b>.
+                                    Saat berada dalam radius <b>60 meter</b> dari lokasi kunjungan, tekan
+                                    <b> Mulai Kunjungan</b> untuk mencatat kedatangan Anda.
+                                    <b> Mulai Kunjungan pertama</b> akan tercatat sebagai <b>absensi masuk</b>.
                                 </p>
                             </div>
                             <div className="flex items-start gap-2">
                                 <FontAwesomeIcon icon={faCamera} className="mt-1 text-green-600" />
                                 <p className="leading-normal">
-                                    Setelah tugas selesai, tekan <b>Selesai Kunjungan</b>. Setiap kunjungan yang
-                                    dimulai <b>wajib diselesaikan</b> sebelum pindah ke lokasi lain.
+                                    Setelah pekerjaan di lokasi selesai, tekan <b>Selesai Kunjungan</b>.
+                                    Setelah satu lokasi selesai dikunjungi, Anda dapat langsung melanjutkan
+                                    ke lokasi kunjungan berikutnya jika masih ada jadwal yang tersedia.
                                 </p>
                             </div>
                             <div className="flex items-start gap-2">
                                 <FontAwesomeIcon icon={faTriangleExclamation} className="mt-1 text-amber-500" />
                                 <p className="leading-normal">
-                                    Timeline kunjungan otomatis reset setiap <b>18 jam</b>.
-                                    Jadi jangan lupa tekan <b>Akhiri Kunjungan</b> setelah semua kunjungan selesai.
+                                    Saat ini tidak ada lagi fitur <b>Akhiri Kunjungan</b>.
+                                    Sistem akan mencatat <b>Selesai Kunjungan terakhir</b> sebagai
+                                    <b> absensi pulang</b>.
                                 </p>
                             </div>
                             <div className="flex items-start gap-2">
                                 <FontAwesomeIcon icon={faTriangleExclamation} className="mt-1 text-red-500" />
                                 <p className="leading-normal">
-                                    Setelah semua kunjungan selesai, jangan lupa tekan <b>Akhiri Kunjungan</b>.
-                                    Jika tidak diakhiri, perjalanan akan tetap berjalan dan tidak tercatat sebagai selesai.
+                                    Timeline kunjungan akan otomatis <b>reset setiap 22 jam sejak waktu berangkat</b>.
+                                    Pastikan Anda melakukan <b>Selesai Kunjungan</b> terakhir saat benar-benar
+                                    telah selesai bekerja dan <b>tidak lebih awal dari jadwal pulang shift</b>.
                                 </p>
                             </div>
                         </div>

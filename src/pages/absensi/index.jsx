@@ -1,4 +1,3 @@
-import Swal from "sweetalert2";
 import { useState, useEffect } from "react";
 import MobileLayout from "../../layouts/mobileLayout";
 import AbsenMulai from "./AbsenMulai";
@@ -20,70 +19,11 @@ const Absensi = () => {
   const [currentStep, setCurrentStep] = useState(null);
   const [isSelesaiFlow, setIsSelesaiFlow] = useState(false);
   const [permissionReady, setPermissionReady] = useState(false);
-  const [attendanceHistory, setAttendanceHistory] = useState([]);
   const [isCheckingAttendance, setIsCheckingAttendance] = useState(true);
   const [attendanceData, setAttendanceData] = useState({ userId: "", username: "", id_absen: "" });
   const [isAppReady, setIsAppReady] = useState(false);
+  const [attendanceToday, setAttendanceToday] = useState(null);
   const [apiErrorMessage, setApiErrorMessage] = useState("");
-
-
-  useEffect(() => {
-    const STORAGE_KEY = "absensi_warning_last_shown";
-    const WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
-    const lastShown = localStorage.getItem(STORAGE_KEY);
-    const now = Date.now();
-    if (!lastShown || now - Number(lastShown) > WEEK_IN_MS) {
-      Swal.fire({
-        icon: "warning",
-        title: "PERHATIAN!",
-        html: `
-        <div style="text-align:left; font-size:12px; line-height:1.5;">
-      <p><strong>ABSENSI HANYA BOLEH DILAKUKAN DI LOKASI KERJA.</strong></p>
-      <p>
-        Anda <strong>WAJIB</strong> berada dalam radius <strong>maksimal 60 meter</strong> 
-        dari titik lokasi kerja.  
-        Absensi dari rumah, jalan, warung, atau lokasi lain akan 
-        <strong>DITOLAK OTOMATIS</strong>.
-      </p>
-      <p>
-        Tidak ada alasan:  
-        <strong>Takut telat ≠ boleh absen dari rumah.</strong>
-      </p>
-      <p>
-        <strong>Absensi Masuk dan Absensi Pulang WAJIB</strong> dilakukan.  
-        Jika Absensi Pulang tidak dilakukan, kehadiran 
-        <strong>dianggap tidak sah</strong>.
-      </p>
-      <p>
-        Absensi harus dilakukan secara 
-        <strong>jujur, disiplin, dan sesuai lokasi kerja</strong>.  
-        Pelanggaran dapat menyebabkan:
-      </p>
-      <ul style="padding-left:16px; margin-top:4px;">
-        <li><strong>Pembatalan absensi</strong></li>
-        <li><strong>Sanksi</strong></li>
-        <li><strong>Potongan kehadiran</strong></li>
-      </ul>
-      <p>
-        Jika Anda <strong>belum memiliki jadwal kerja</strong>,  
-        maka <strong>tidak dapat melakukan absensi</strong>.  
-        Segera hubungi <strong>Kepala Divisi</strong> untuk input jadwal.
-      </p>
-      <p>
-        Jika masih ada kendala, silakan hubungi 
-        <strong>Tim HRD</strong> atau <strong>Kepala Divisi</strong>.
-      </p>
-      <p><strong>Terima kasih.</strong></p>
-    </div>
-      `,
-        confirmButtonText: "Saya Mengerti",
-        confirmButtonColor: "#dc2626",
-        allowOutsideClick: false,
-      }).then(() => {
-        localStorage.setItem(STORAGE_KEY, now.toString());
-      });
-    }
-  }, []);
 
 
   useEffect(() => {
@@ -113,18 +53,6 @@ const Absensi = () => {
     if (currentIndex >= 0 && currentIndex < steps.length - 1) setCurrentStep(steps[currentIndex + 1]);
   };
 
-  const fetchAttendanceHistory = async () => {
-    try {
-      const response = await fetchWithJwt(`${apiUrl}/absen/riwayat/user/${attendanceData.userId}`);
-      const data = await response.json();
-      if (response.ok) {
-        const last24Hours = data.data.filter((item) => new Date() - new Date(item.jam_mulai) <= 24 * 60 * 60 * 1000);
-        setAttendanceHistory(last24Hours.slice(0, 1) || []);
-      }
-    } catch (error) {
-      console.error("Error fetching attendance history:", error);
-    }
-  };
 
   useEffect(() => {
     const storedUserId = user?.id_user;
@@ -137,10 +65,6 @@ const Absensi = () => {
       }));
     }
   }, []);
-
-  useEffect(() => {
-    if (attendanceData.userId) fetchAttendanceHistory();
-  }, [attendanceData.userId]);
 
 
   useEffect(() => {
@@ -175,10 +99,9 @@ const Absensi = () => {
           throw new Error(data?.message || "Server bermasalah");
         }
 
-        // ✅ data absen ada
         if (data.success && data.data) {
           const detail = data.data;
-
+          setAttendanceToday(detail);
           setAttendanceData({
             userId: String(detail.id_user),
             username: detail.nama || "",
@@ -240,11 +163,7 @@ const Absensi = () => {
       setPermissionReady(true);
       toast.success("Kamera dan lokasi siap digunakan");
     } else {
-      Swal.fire({
-        icon: "error",
-        title: "Izin Dibutuhkan",
-        text: "Mohon izinkan akses kamera dan lokasi untuk melanjutkan absensi.",
-      });
+      toast.error("Mohon izinkan akses kamera dan lokasi untuk melanjutkan absensi.");
     }
   };
 
@@ -256,11 +175,7 @@ const Absensi = () => {
       const ok = await checkCameraAndLocation();
       if (!ok) {
         setIsLoading(false);
-        Swal.fire({
-          icon: "error",
-          title: "Izin Dibutuhkan",
-          text: "Mohon izinkan kamera dan lokasi.",
-        });
+        toast.error("Mohon izinkan kamera dan lokasi.");
         return;
       }
       setPermissionReady(true);
@@ -278,11 +193,7 @@ const Absensi = () => {
       const ok = await checkCameraAndLocation();
       if (!ok) {
         setIsLoading(false);
-        Swal.fire({
-          icon: "error",
-          title: "Izin Dibutuhkan",
-          text: "Mohon izinkan kamera dan lokasi.",
-        });
+        toast.error("Mohon izinkan kamera dan lokasi.");
         return;
       }
       setPermissionReady(true);
@@ -342,77 +253,57 @@ const Absensi = () => {
                   </button>
                 </div>
 
-                {attendanceHistory.length ? (
-                  attendanceHistory.map((item) => (
-                    <div key={item.id_absen} className="rounded-xl border border-gray-200 bg-white p-4 space-y-3 shadow-sm">
-                      <div className="flex items-center justify-between text-xs font-semibold text-gray-700">
-                        <span>{formatFullDate(item.jam_mulai)}</span>
-                        <span className="text-emerald-700">{item.nama_shift || "—"}</span>
-                      </div>
-                      <div className="flex items-start gap-3 rounded-lg border border-emerald-500 bg-emerald-50 p-3">
-                        <FontAwesomeIcon icon={faCalendarPlus} className="text-emerald-700 mt-1 p-1 text-3xl" />
-                        <div className="flex-1">
-                          <p className="text-xs font-semibold text-emerald-800">
-                            Absen Masuk
-                          </p>
-                          {item.jam_mulai ? (
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-sm font-bold text-emerald-800">
-                                {formatTime(item.jam_mulai)}
-                              </span>
-                              {item.keterlambatan > 0 && (
-                                <span className="text-[10px] px-2 py-[2px] rounded bg-red-200 text-red-700 font-semibold">
-                                  Telat {item.keterlambatan} Menit
-                                </span>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-sm text-gray-500 mt-1 block">
-                              Belum absen masuk
-                            </span>
-                          )}
-
-                          <p className="text-[11px] text-gray-600 mt-1">
-                            <FontAwesomeIcon icon={faLocationDot} className="text-[10px] text-green-800" />{" "}
-                            <span className="font-medium text-gray-700">
-                              {item.lokasi_absen_mulai || "N/A"}
-                            </span>
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-3 rounded-lg border border-orange-500 bg-orange-50 p-3">
-                        <FontAwesomeIcon icon={faSignOutAlt} className="text-orange-700 rotate-180 mt-1 p-1 text-3xl" />
-                        <div className="flex-1">
-                          <p className="text-xs font-semibold text-orange-800">
-                            Absen Pulang
-                          </p>
-
-                          {item.jam_selesai ? (
-                            <span className="text-sm font-bold text-orange-800 block mt-1">
-                              {formatTime(item.jam_selesai)}
-                            </span>
-                          ) : (
-                            <span className="text-sm text-gray-500 block mt-1">
-                              Belum absen pulang
-                            </span>
-                          )}
-
-                          <p className="text-[11px] text-gray-600 mt-1">
-                            <FontAwesomeIcon icon={faLocationDot} className="text-[10px] text-orange-800" />{" "}
-                            <span className="font-medium text-gray-700">
-                              {item.lokasi_absen_selesai ||
-                                (item.jam_selesai ? "Belum tersedia" : "—")}
-                            </span>
-                          </p>
-                        </div>
+                {attendanceToday ? (
+                  <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-3 shadow-sm">
+                    <div className="flex items-center justify-between text-xs font-semibold text-gray-700">
+                      <span>{formatFullDate(attendanceToday.tanggal_absen)}</span>
+                      <span className="text-emerald-700">{attendanceToday.shift || "—"}</span>
+                    </div>
+                    <div className="flex items-start gap-3 rounded-lg border border-emerald-500 bg-emerald-50 p-3">
+                      <FontAwesomeIcon icon={faCalendarPlus} className="text-emerald-700 mt-1 p-1 text-3xl" />
+                      <div className="flex-1">
+                        <p className="text-xs font-semibold text-emerald-800">
+                          Absen Masuk
+                        </p>
+                        {attendanceToday.jam_mulai ? (
+                          <span className="text-sm font-bold text-emerald-800 block mt-1">
+                            {formatTime(attendanceToday.jam_mulai)}
+                          </span>
+                        ) : (
+                          <span className="text-sm text-gray-500 mt-1 block">
+                            Belum absen masuk
+                          </span>
+                        )}
+                        <p className="text-[11px] text-gray-600 mt-1">
+                          <FontAwesomeIcon icon={faLocationDot} className="text-[10px] text-green-800" />{" "}
+                          <span className="font-medium text-gray-700">
+                            {attendanceToday.lokasi || "N/A"}
+                          </span>
+                        </p>
                       </div>
                     </div>
-                  ))
+                    <div className="flex items-start gap-3 rounded-lg border border-orange-500 bg-orange-50 p-3">
+                      <FontAwesomeIcon icon={faSignOutAlt} className="text-orange-700 rotate-180 mt-1 p-1 text-3xl" />
+                      <div className="flex-1">
+                        <p className="text-xs font-semibold text-orange-800">
+                          Absen Pulang
+                        </p>
+                        {attendanceToday.jam_selesai ? (
+                          <span className="text-sm font-bold text-orange-800 block mt-1">
+                            {formatTime(attendanceToday.jam_selesai)}
+                          </span>
+                        ) : (
+                          <span className="text-sm text-gray-500 block mt-1">
+                            Belum absen pulang
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 ) : (
                   <div className="py-10 text-center text-gray-400">
                     <FontAwesomeIcon icon={faClock} className="text-2xl mb-2" />
-                    <p className="text-sm">Belum ada riwayat absensi</p>
+                    <p className="text-sm">Belum ada absensi hari ini</p>
                   </div>
                 )}
               </section>

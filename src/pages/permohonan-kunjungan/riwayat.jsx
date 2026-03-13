@@ -90,21 +90,15 @@ const RiwayatKunjungan = () => {
                     <table className="table-auto w-full border-collapse text-sm">
                         <thead className="bg-green-500 text-white">
                             <tr>
-                                <th className="px-4 py-3 text-center rounded-tl-lg">
-                                    No
-                                </th>
-                                <th className="px-4 py-3 text-center">
-                                    NIP
-                                </th>
-                                <th className="px-4 py-3 text-left">
-                                    Nama Karyawan
-                                </th>
-                                <th className="px-4 py-3 text-center">
-                                    Total Riwayat
-                                </th>
-                                <th className="px-4 py-3 text-center rounded-tr-lg">
-                                    Aksi
-                                </th>
+                                <th className="px-4 py-3 text-center rounded-tl-lg">No</th>
+                                <th className="px-4 py-3 text-center">NIP</th>
+                                <th className="px-4 py-3 text-left">Nama Karyawan</th>
+                                <th className="px-4 py-3 text-center">Total Riwayat</th>
+                                <th className="px-4 py-3 text-center">Disetujui</th>
+                                <th className="px-4 py-3 text-center">Ditolak</th>
+                                <th className="px-4 py-3 text-center">Total Jarak</th>
+                                <th className="px-4 py-3 text-center">Total Nominal</th>
+                                <th className="px-4 py-3 text-center rounded-tr-lg">Menu</th>
                             </tr>
                         </thead>
 
@@ -112,12 +106,26 @@ const RiwayatKunjungan = () => {
                             {filteredData.map((user, i) => (
                                 <tr key={user.id_user} className="border-b hover:bg-gray-50">
                                     <td className="px-4 py-2 text-center">{i + 1}</td>
-                                    <td className="px-4 py-2 text-center">{user.nip_user}</td>
+                                    <td className="px-4 py-2 text-center">
+                                        {user.nip_user}
+                                    </td>
                                     <td className="px-4 py-2 font-semibold uppercase">
                                         {user.nama_user}
                                     </td>
                                     <td className="px-4 py-2 text-center">
                                         {user.riwayat?.length || 0}
+                                    </td>
+                                    <td className="px-4 py-2 text-center text-green-600 font-semibold">
+                                        {user.total_approved ?? 0}
+                                    </td>
+                                    <td className="px-4 py-2 text-center text-red-600 font-semibold">
+                                        {user.total_rejected ?? 0}
+                                    </td>
+                                    <td className="px-4 py-2 text-center">
+                                        {((user.sum_distance ?? 0) / 1000).toFixed(2)} km
+                                    </td>
+                                    <td className="px-4 py-2 text-center font-semibold text-gray-700">
+                                        Rp {(user.sum_nominal ?? 0).toLocaleString("id-ID")}
                                     </td>
                                     <td className="px-4 py-2 text-center">
                                         <button onClick={() => setSelectedUser(user)} className="flex items-center gap-1 px-3 py-2 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 mx-auto">
@@ -148,11 +156,37 @@ const RiwayatKunjungan = () => {
                             </div>
 
                             {/* INFO */}
-                            <div className="mt-2 text-xs text-gray-600">
-                                Total Riwayat:{" "}
-                                <span className="font-semibold">
-                                    {user.riwayat?.length || 0}
-                                </span>
+                            <div className="mt-3 grid grid-cols-2 gap-y-2 text-xs text-gray-600">
+                                <div>
+                                    Riwayat :
+                                    <span className="font-semibold ml-1">
+                                        {user.riwayat?.length || 0}
+                                    </span>
+                                </div>
+                                <div>
+                                    Disetujui :
+                                    <span className="font-semibold text-green-600 ml-1">
+                                        {user.total_approved ?? 0}
+                                    </span>
+                                </div>
+                                <div>
+                                    Ditolak :
+                                    <span className="font-semibold text-red-600 ml-1">
+                                        {user.total_rejected ?? 0}
+                                    </span>
+                                </div>
+                                <div>
+                                    Jarak :
+                                    <span className="font-semibold ml-1">
+                                        {((user.sum_distance ?? 0) / 1000).toFixed(2)} km
+                                    </span>
+                                </div>
+                                <div className="col-span-2">
+                                    Nominal :
+                                    <span className="font-semibold ml-1">
+                                        Rp {(user.sum_nominal ?? 0).toLocaleString("id-ID")}
+                                    </span>
+                                </div>
                             </div>
 
                             {/* ACTION */}
@@ -221,7 +255,6 @@ const RiwayatKunjungan = () => {
                         </div>
 
 
-
                         <div className="max-h-[420px] overflow-y-auto pr-1 space-y-3">
                             {selectedUser?.riwayat?.map((r) => {
                                 const status = statusMap[r.status];
@@ -246,7 +279,6 @@ const RiwayatKunjungan = () => {
                                             )}
                                         </div>
 
-
                                         {/* INFO */}
                                         <div className="grid grid-cols-2 gap-6 mt-4 text-sm">
                                             <div>
@@ -267,24 +299,14 @@ const RiwayatKunjungan = () => {
                                             </div>
                                         </div>
 
-
                                         {/* META */}
                                         <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
                                             <div className="text-xs text-gray-400">
                                                 Disetujui pada {r.approved_at ? formatFullDate(r.approved_at) : "-"}
                                             </div>
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedUser(null);
-                                                    navigate(`/permohonan-kunjungan/detail/${r.id_trip}`);
-                                                }}
-                                                className="group inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 transition"
-                                            >
+                                            <button onClick={() => { setSelectedUser(null); navigate(`/permohonan-kunjungan/detail/${r.id_trip}`);}} className="group inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 transition">
                                                 Lihat selengkapnya
-                                                <FontAwesomeIcon
-                                                    icon={faArrowRight}
-                                                    className="text-xs opacity-70 group-hover:opacity-100 transition"
-                                                />
+                                                <FontAwesomeIcon icon={faArrowRight} className="text-xs opacity-70 group-hover:opacity-100 transition"/>
                                             </button>
                                         </div>
                                     </div>

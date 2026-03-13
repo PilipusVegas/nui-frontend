@@ -5,23 +5,22 @@ import { formatTime } from "../../utils/dateUtils";
 import { faClock, faEye, faTrash, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Swal from "sweetalert2";
+import toast from "react-hot-toast";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 
 /* ================= KONSTANTA ================= */
 const KATEGORI = {
     1: { label: "Berangkat Kunjungan", color: "bg-green-500" },
     2: { label: "Lokasi Kunjungan", color: "bg-blue-500" },
-    3: { label: "Kunjungan Berakhir", color: "bg-red-500" },
 };
 
 /* ================= MAIN ================= */
 const TimelineLokasi = ({ lokasi = [], apiUrl, statusTrip, onDeleted }) => {
     let checkpointCounter = 0;
     const checkpoints = lokasi.filter(l => l.kategori === 2);
-    const isTripEnded = lokasi.some(l => l.kategori === 3);
 
     const getCheckpointIndex = (lok) =>
-        checkpoints.findIndex(c => c === lok);
+        checkpoints.indexOf(lok);
 
     return (
         <div className="relative">
@@ -30,19 +29,7 @@ const TimelineLokasi = ({ lokasi = [], apiUrl, statusTrip, onDeleted }) => {
                 const label = lok.kategori === 2 ? `Lokasi Kunjungan ${checkpointCounter}` : (KATEGORI[lok.kategori]?.label ?? "-");
                 const isLast = idx === lokasi.length - 1;
                 return (
-                    <TimelineItem
-                        key={idx}
-                        lok={lok}
-                        label={label}
-                        color={KATEGORI[lok.kategori]?.color}
-                        apiUrl={apiUrl}
-                        isLast={isLast}
-                        statusTrip={statusTrip}
-                        onDeleted={onDeleted}
-                        checkpointIndex={getCheckpointIndex(lok)}
-                        checkpointTotal={checkpoints.length}
-                        isTripEnded={isTripEnded}
-                    />
+                    <TimelineItem key={idx} lok={lok} label={label} color={KATEGORI[lok.kategori]?.color} apiUrl={apiUrl} isLast={isLast} statusTrip={statusTrip} onDeleted={onDeleted} checkpointIndex={getCheckpointIndex(lok)} checkpointTotal={checkpoints.length} />
                 );
             })}
         </div>
@@ -51,9 +38,10 @@ const TimelineLokasi = ({ lokasi = [], apiUrl, statusTrip, onDeleted }) => {
 
 
 /* ================= ITEM ================= */
-const TimelineItem = ({ lok, label, color, apiUrl, isLast, statusTrip, onDeleted, checkpointIndex, checkpointTotal, isTripEnded,}) => {
+const TimelineItem = ({ lok, label, color, apiUrl, isLast, statusTrip, onDeleted, checkpointIndex, checkpointTotal, isTripEnded, }) => {
     const [open, setOpen] = useState(false);
     const user = getUserFromToken();
+    const [loadingCheckout, setLoadingCheckout] = useState(false);
     const isKadiv = user?.is_kadiv?.status === true;
     const photos = [
         lok.photo_mulai && {
@@ -64,8 +52,65 @@ const TimelineItem = ({ lok, label, color, apiUrl, isLast, statusTrip, onDeleted
             src: `${apiUrl}/uploads/img/kunjungan/${lok.photo_selesai}`,
             label: "Selesai",
         },
-
     ].filter(Boolean);
+
+
+    const handleForceCheckout = async () => {
+        if (loadingCheckout) return;
+        const confirm = await Swal.fire({
+            icon: "warning",
+            title: `Bantu Check-out dari "${lok.nama_lokasi}"?`,
+            html: `
+            <div style="text-align:left;font-size:14px;line-height:1.5">
+                Anda akan <b>membantu melakukan check-out secara manual</b>.
+                <br/><br/>
+                <ul style="padding-left:18px">
+                    <li>Jam check-out akan diisi <b>sesuai waktu saat ini</b> oleh sistem.</li>
+                    <li>Check-out ini <b>tidak dilakukan oleh karyawan</b>, melainkan dibantu oleh Kepala Divisi.</li>
+                </ul>
+                <br/>
+                <b>Perhatian:</b><br/>
+                Di perusahaan ini, karyawan yang <b>lupa melakukan check-out</b> dapat dikenakan 
+                <b>potongan gaji 1 hari</b> karena dianggap tidak melakukan absensi pulang.
+                <br/><br/>
+                Jika kunjungan hanya memiliki <b>1 lokasi</b>, tindakan ini berarti Anda 
+                <b>membantu mencatat absensi pulang secara manual</b>.
+                <br/><br/>
+                <b>Pastikan keputusan anda secara matang.</b>
+            </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: "Ya, Bantu Check-out",
+            cancelButtonText: "Batalkan",
+            confirmButtonColor: "#f97316",
+            cancelButtonColor: "#6b7280",
+            reverseButtons: true
+        });
+        if (!confirm.isConfirmed) return;
+        setLoadingCheckout(true);
+        const toastId = toast.loading("Memproses check-out...");
+        try {
+            const res = await fetchWithJwt(
+                `${apiUrl}/trip/checkout/${lok.id_trip_lokasi}`,
+                { method: "PUT" }
+            );
+            const json = await res.json();
+            if (!res.ok || !json.success) {
+                toast.dismiss(toastId);
+                toast.error(json.message || "Gagal melakukan check-out");
+                return;
+            }
+            toast.dismiss(toastId);
+            toast.success("Check-out berhasil dibantu");
+            onDeleted?.();
+        } catch {
+            toast.dismiss(toastId);
+            toast.error("Terjadi kesalahan saat melakukan check-out");
+        } finally {
+            setLoadingCheckout(false);
+        }
+    };
+
 
     const handleDelete = async () => {
         const result = await Swal.fire({
@@ -75,46 +120,28 @@ const TimelineItem = ({ lok, label, color, apiUrl, isLast, statusTrip, onDeleted
             showCancelButton: true,
             confirmButtonText: "Ya, Hapus",
             cancelButtonText: "Batal",
-            confirmButtonColor: "#dc2626", // merah
-            cancelButtonColor: "#6b7280", // abu-abu
+            confirmButtonColor: "#dc2626",
+            cancelButtonColor: "#6b7280",
             reverseButtons: true,
         });
-
         if (!result.isConfirmed) return;
-
         try {
             const res = await fetchWithJwt(
                 `${apiUrl}/trip/lokasi/${lok.id_trip_lokasi}`,
                 { method: "DELETE" }
             );
             const json = await res.json();
-
             if (!res.ok || !json.success) {
-                Swal.fire({
-                    icon: "error",
-                    title: "Gagal",
-                    text: json.message || "Gagal menghapus checkpoint",
-                });
+                toast.error(json.message || "Gagal menghapus checkpoint");
                 return;
             }
-
-            Swal.fire({
-                icon: "success",
-                title: "Berhasil",
-                text: "Checkpoint berhasil dihapus",
-                timer: 2000,
-                showConfirmButton: false,
-            });
-
+            toast.success("Checkpoint berhasil dihapus");
             onDeleted?.();
         } catch {
-            Swal.fire({
-                icon: "error",
-                title: "Kesalahan",
-                text: "Terjadi kesalahan saat menghapus lokasi",
-            });
+            toast.error("Terjadi kesalahan saat menghapus lokasi");
         }
     };
+
 
     return (
         <div className="relative flex gap-4">
@@ -173,9 +200,8 @@ const TimelineItem = ({ lok, label, color, apiUrl, isLast, statusTrip, onDeleted
                             <FontAwesomeIcon icon={faClock} className="text-red-600" />
                             <span className="font-medium text-gray-700 text-sm">Selesai Kunjungan</span>
                             <span className="text-gray-700 text-sm">{formatTime(lok.jam_selesai)}</span>
-
                             {/* ABSEN PULANG */}
-                            {checkpointIndex === checkpointTotal - 1 && isTripEnded && (
+                            {checkpointIndex === checkpointTotal - 1 && lok.jam_selesai && (
                                 <span className="ml-2 flex items-center gap-1 font-semibold text-red-700">
                                     <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
                                     Absen Pulang
@@ -184,15 +210,6 @@ const TimelineItem = ({ lok, label, color, apiUrl, isLast, statusTrip, onDeleted
                         </div>
                     )}
 
-                    {/* ================= KUNJUNGAN BERAKHIR ================= */}
-                    {lok.kategori === 3 && lok.jam_selesai && (
-                        <div className="flex items-center gap-2">
-                            <FontAwesomeIcon icon={faClock} className="text-red-600" />
-                            <span className="font-medium text-gray-700 text-sm">Kunjungan Berakhir</span>
-                            <FontAwesomeIcon icon={faArrowRight} className="text-[10px] text-red-600" />
-                            <span className="text-gray-700 text-sm">{formatTime(lok.jam_selesai)}</span>
-                        </div>
-                    )}
                 </div>
 
                 {lok.deskripsi && (
@@ -222,6 +239,22 @@ const TimelineItem = ({ lok, label, color, apiUrl, isLast, statusTrip, onDeleted
                         <Lightbox open={open} close={() => setOpen(false)} slides={photos} />
                     </>
                 )}
+
+                {/* ================= BANTU CHECKOUT ================= */}
+                {lok.kategori === 2 &&
+                    lok.jam_mulai &&
+                    !lok.jam_selesai &&
+                    checkpointIndex === checkpointTotal - 1 &&
+                    statusTrip === 0 && isKadiv && (
+                        <div className="mt-3">
+                            <button onClick={handleForceCheckout} disabled={loadingCheckout || statusTrip !== 0}
+                                className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-orange-500 rounded-md shadow-sm hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <FontAwesomeIcon icon={faClock} />
+                                Bantu Check-out dari lokasi ini
+                            </button>
+                        </div>
+                    )}
             </div>
         </div>
     );

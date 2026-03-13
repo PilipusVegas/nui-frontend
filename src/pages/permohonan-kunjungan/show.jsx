@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import { LoadingSpinner, ErrorState, EmptyState, SectionHeader, MapRouteMulti } from "../../components";
 import { fetchWithJwt } from "../../utils/jwtHelper";
@@ -114,6 +113,44 @@ const DetailKunjungan = () => {
         }
         handleUpdateStatus(status);
     };
+
+    const routeLocations = React.useMemo(() => {
+        if (!data?.lokasi?.length) return [];
+
+        const rumah = data.rumah
+            ? {
+                nama_lokasi: data.rumah.nama_lokasi,
+                koordinat_lokasi: data.rumah.koordinat_lokasi,
+                jam_mulai: data.lokasi[0]?.jam_mulai,
+                jam_selesai: data.lokasi[0]?.jam_mulai,
+                kategori: 1,
+            }
+            : null;
+
+        const visitedLocations = data.lokasi.filter(
+            (l) => l.kategori === 2 && l.jam_mulai
+        );
+
+        if (!visitedLocations.length) return [];
+
+        const result = [];
+
+        // rumah start
+        if (rumah) result.push(rumah);
+
+        // hanya lokasi kunjungan
+        result.push(...visitedLocations);
+
+        // rumah end
+        if (rumah) {
+            result.push({
+                ...rumah,
+                jam_mulai: visitedLocations[visitedLocations.length - 1].jam_selesai,
+            });
+        }
+
+        return result;
+    }, [data]);
 
 
     useEffect(() => {
@@ -306,7 +343,7 @@ const DetailKunjungan = () => {
                                     Peta Rute Perjalanan
                                 </h4>
                                 <div className="flex-1 rounded-lg overflow-hidden border">
-                                    <MapRouteMulti locations={data.lokasi} onDistanceCalculated={(meter) => setTotalJarakMap(meter)} />
+                                    <MapRouteMulti locations={routeLocations} onDistanceCalculated={(meter) => setTotalJarakMap(meter)} />
                                 </div>
                             </div>
                         )}

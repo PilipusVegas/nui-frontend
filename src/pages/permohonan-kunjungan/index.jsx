@@ -37,7 +37,6 @@ const Kunjungan = () => {
     }, []);
 
     const handleDeleteTrip = async (id_trip) => {
-
         const result = await Swal.fire({
             title: "Hapus Kunjungan?",
             text: "Data kunjungan yang dihapus tidak dapat dikembalikan.",
@@ -49,20 +48,15 @@ const Kunjungan = () => {
             cancelButtonColor: "#6b7280",
             reverseButtons: true,
         });
-
         if (!result.isConfirmed) return;
-
         try {
             setDeletingId(id_trip);
-
             const res = await fetchWithJwt(`${apiUrl}/trip/${id_trip}`, {
                 method: "DELETE",
             });
-
             if (!res.ok) {
                 throw new Error("Gagal menghapus data");
             }
-
             await Swal.fire({
                 icon: "success",
                 title: "Berhasil",
@@ -70,17 +64,13 @@ const Kunjungan = () => {
                 timer: 1500,
                 showConfirmButton: false,
             });
-
             fetchTrip();
-
         } catch (err) {
-
             Swal.fire({
                 icon: "error",
                 title: "Gagal",
                 text: "Gagal menghapus data kunjungan",
             });
-
         } finally {
             setDeletingId(null);
         }
@@ -131,10 +121,8 @@ const Kunjungan = () => {
                                     <th className="px-4 py-3 text-center whitespace-nowrap">NIP</th>
                                     <th className="px-4 py-3 text-left whitespace-nowrap">Nama</th>
                                     <th className="px-4 py-3 text-center whitespace-nowrap">Tanggal</th>
-                                    <th className="px-4 py-3 text-center whitespace-nowrap">Status</th>
-                                    <th className="px-4 py-3 text-center rounded-tr-lg whitespace-nowrap w-[200px]">
-                                        Menu
-                                    </th>
+                                    <th className="px-4 py-3 text-center whitespace-nowrap">Total Kunjungan</th>
+                                    <th className="px-4 py-3 text-center rounded-tr-lg whitespace-nowrap w-[200px]">Menu</th>
                                 </tr>
                             </thead>
 
@@ -159,7 +147,9 @@ const Kunjungan = () => {
                                             {formatFullDate(item.tanggal)}
                                         </td>
                                         <td className="px-4 py-2 text-center whitespace-nowrap">
-                                            {renderStatus(item.is_complete)}
+                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold bg-blue-50 text-blue-700 rounded-md">
+                                                {item.total_kunjungan} Kunjungan
+                                            </span>
                                         </td>
                                         {/* AKSI */}
                                         <td className="px-4 py-2">
@@ -202,7 +192,6 @@ const Kunjungan = () => {
                                         {item.nip} • {item.role}
                                     </div>
                                 </div>
-                                {renderStatus(item.is_complete)}
                             </div>
 
                             {/* CONTENT */}
@@ -210,6 +199,10 @@ const Kunjungan = () => {
                                 <div>
                                     <span className="font-medium">Tanggal:</span>{" "}
                                     {formatFullDate(item.tanggal)}
+                                </div>
+                                <div>
+                                    <span className="font-medium">Total Kunjungan:</span>{" "}
+                                    {item.total_kunjungan}
                                 </div>
                             </div>
 

@@ -1,13 +1,12 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClock, faCalendarAlt, faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { faClock, faCalendarAlt, faArrowRight, faInfo, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { formatFullDate, formatTime } from "../../utils/dateUtils";
 
+
 const getDotStyleByKategori = (kategori) => {
-  if (kategori === 1) return "bg-green-500 ring-green-200"; // Mulai
-  if (kategori === 2) return "bg-blue-500 ring-blue-200"; // Checkpoint
-  if (kategori === 3) return "bg-red-500 ring-red-200"; // Akhir
+  if (kategori === 1) return "bg-green-500 ring-green-200";
+  if (kategori === 2) return "bg-blue-500 ring-blue-200";
   return "bg-gray-400 ring-gray-200";
 };
 
@@ -17,25 +16,43 @@ const getTimelineTitle = (item, index, checkpoints) => {
     const order = checkpoints.findIndex((c) => c.id === item.id) + 1;
     return `Lokasi Kunjungan ${order}`;
   }
-  if (item.kategori === 3) return "Kunjungan Berakhir";
   return "Aktivitas Kunjungan";
 };
 
 // ================= COMPONENT =================
 const Timeline = ({ history, tripInfo, onEndTrip }) => {
   const checkpoints = history.filter((h) => h.kategori === 2);
-  const lastCheckpoint = checkpoints[checkpoints.length - 1];
-  const canEndTrip = checkpoints.length > 0 && lastCheckpoint?.jam_selesai && !history.some((h) => h.kategori === 3);
   const isFirstCheckpoint = (item, checkpoints) =>
     item.kategori === 2 && checkpoints[0]?.id === item.id;
   const isLastCheckpoint = (item, checkpoints) =>
     item.kategori === 2 && checkpoints[checkpoints.length - 1]?.id === item.id;
-  const isTripEnded = history.some((h) => h.kategori === 3);
-  const tripCompleted = tripInfo?.is_complete === 1;
+  const [remaining, setRemaining] = useState("");
+
+  const getRemainingTime = (endTime) => {
+    const now = new Date().getTime();
+    const diff = endTime - now;
+    if (diff <= 0) return "Akan segera direset";
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}j ${minutes}m`;
+  };
+
+  useEffect(() => {
+    if (!tripInfo?.created_at) return;
+    const start = new Date(tripInfo.created_at).getTime();
+    const resetTime = start + 22 * 60 * 60 * 1000;
+    const update = () => {
+      setRemaining(getRemainingTime(resetTime));
+    };
+    update(); // jalankan sekali langsung
+    const timer = setInterval(update, 30000); // update tiap 30 detik
+    return () => clearInterval(timer);
+  }, [tripInfo]);
+
+
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-5 mb-20">
-
       {/* ===== TIMELINE ===== */}
       {history.length === 0 ? (
         <p className="text-xs text-gray-400 text-center py-6">
@@ -88,7 +105,7 @@ const Timeline = ({ history, tripInfo, onEndTrip }) => {
                       <div className="flex items-center gap-2">
                         <FontAwesomeIcon icon={faClock} className="text-rose-500" />
                         <span>Selesai Kunjungan {formatTime(h.jam_selesai)}</span>
-                        {isLastCheckpoint(h, checkpoints) && isTripEnded && (
+                        {isLastCheckpoint(h, checkpoints) && (
                           <span className="flex items-center gap-1 text-rose-600 font-semibold">
                             <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
                             Absen Pulang
@@ -96,26 +113,27 @@ const Timeline = ({ history, tripInfo, onEndTrip }) => {
                         )}
                       </div>
                     )}
-
-                    {h.kategori === 3 && h.jam_selesai && (
-                      <div className="flex items-center gap-1.5">
-                        <FontAwesomeIcon icon={faClock} className="text-rose-500" />
-                        <span>Kunjungan Berakhir {formatTime(h.jam_selesai)}</span>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
             );
           })}
-
-          {canEndTrip && !tripCompleted && (
-            <div className="pt-3">
-              <button onClick={onEndTrip} className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl text-sm font-semibold transition">
-                Akhiri Kunjungan
-              </button>
+          <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-justify">
+            <div className="flex items-center gap-2 text-amber-700">
+              <FontAwesomeIcon icon={faInfoCircle} classname="text-sm" />
+              <span className="text-xs font-semibold">
+                Informasi Penting
+              </span>
             </div>
-          )}
+            <p className="text-[11px] text-gray-700 mt-1 leading-snug">
+              Kunjungan ini akan otomatis direset dalam <b>{remaining}</b>.
+              Tombol <b>Akhiri Kunjungan</b> sudah tidak tersedia.
+            </p>
+            <p className="text-[11px] text-gray-700 mt-1 leading-snug">
+              Absen pulang diambil dari <b>Selesai Kunjungan</b> terakhir.
+              Pastikan Anda menyelesaikan kunjungan sesuai jadwal shift kerja Anda.
+            </p>
+          </div>
         </div>
       )}
     </div>
