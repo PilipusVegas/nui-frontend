@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
-import { formatTime } from "../../utils/dateUtils";
+import { formatTime, formatForDB } from "../../utils/dateUtils";
 import { faClock, faEye, faTrash, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
+import { Modal } from "../../components";
+
 
 /* ================= KONSTANTA ================= */
 const KATEGORI = {
@@ -38,10 +40,12 @@ const TimelineLokasi = ({ lokasi = [], apiUrl, statusTrip, onDeleted }) => {
 
 
 /* ================= ITEM ================= */
-const TimelineItem = ({ lok, label, color, apiUrl, isLast, statusTrip, onDeleted, checkpointIndex, checkpointTotal, isTripEnded, }) => {
+const TimelineItem = ({ lok, label, color, apiUrl, isLast, statusTrip, onDeleted, checkpointIndex, checkpointTotal, }) => {
     const [open, setOpen] = useState(false);
     const user = getUserFromToken();
     const [loadingCheckout, setLoadingCheckout] = useState(false);
+    const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+    const [checkoutTime, setCheckoutTime] = useState("");
     const isKadiv = user?.is_kadiv?.status === true;
     const photos = [
         lok.photo_mulai && {
@@ -55,44 +59,27 @@ const TimelineItem = ({ lok, label, color, apiUrl, isLast, statusTrip, onDeleted
     ].filter(Boolean);
 
 
-    const handleForceCheckout = async () => {
-        if (loadingCheckout) return;
-        const confirm = await Swal.fire({
-            icon: "warning",
-            title: `Bantu Check-out dari "${lok.nama_lokasi}"?`,
-            html: `
-            <div style="text-align:left;font-size:14px;line-height:1.5">
-                Anda akan <b>membantu melakukan check-out secara manual</b>.
-                <br/><br/>
-                <ul style="padding-left:18px">
-                    <li>Jam check-out akan diisi <b>sesuai waktu saat ini</b> oleh sistem.</li>
-                    <li>Check-out ini <b>tidak dilakukan oleh karyawan</b>, melainkan dibantu oleh Kepala Divisi.</li>
-                </ul>
-                <br/>
-                <b>Perhatian:</b><br/>
-                Di perusahaan ini, karyawan yang <b>lupa melakukan check-out</b> dapat dikenakan 
-                <b>potongan gaji 1 hari</b> karena dianggap tidak melakukan absensi pulang.
-                <br/><br/>
-                Jika kunjungan hanya memiliki <b>1 lokasi</b>, tindakan ini berarti Anda 
-                <b>membantu mencatat absensi pulang secara manual</b>.
-                <br/><br/>
-                <b>Pastikan keputusan anda secara matang.</b>
-            </div>
-            `,
-            showCancelButton: true,
-            confirmButtonText: "Ya, Bantu Check-out",
-            cancelButtonText: "Batalkan",
-            confirmButtonColor: "#f97316",
-            cancelButtonColor: "#6b7280",
-            reverseButtons: true
-        });
-        if (!confirm.isConfirmed) return;
+    const handleSubmitCheckout = async () => {
+        if (!checkoutTime) {
+            toast.error("Silakan pilih tanggal dan jam check-out");
+            return;
+        }
+        // format waktu untuk database
+        const waktu = formatForDB(checkoutTime);
         setLoadingCheckout(true);
         const toastId = toast.loading("Memproses check-out...");
         try {
             const res = await fetchWithJwt(
                 `${apiUrl}/trip/checkout/${lok.id_trip_lokasi}`,
-                { method: "PUT" }
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        waktu: waktu
+                    }),
+                }
             );
             const json = await res.json();
             if (!res.ok || !json.success) {
@@ -102,8 +89,10 @@ const TimelineItem = ({ lok, label, color, apiUrl, isLast, statusTrip, onDeleted
             }
             toast.dismiss(toastId);
             toast.success("Check-out berhasil dibantu");
+            setShowCheckoutModal(false);
+            setCheckoutTime("");
             onDeleted?.();
-        } catch {
+        } catch (error) {
             toast.dismiss(toastId);
             toast.error("Terjadi kesalahan saat melakukan check-out");
         } finally {
@@ -247,15 +236,39 @@ const TimelineItem = ({ lok, label, color, apiUrl, isLast, statusTrip, onDeleted
                     checkpointIndex === checkpointTotal - 1 &&
                     statusTrip === 0 && isKadiv && (
                         <div className="mt-3">
-                            <button onClick={handleForceCheckout} disabled={loadingCheckout || statusTrip !== 0}
-                                className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-orange-500 rounded-md shadow-sm hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
+                            <button onClick={() => setShowCheckoutModal(true)} disabled={loadingCheckout || statusTrip !== 0} className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-orange-500 rounded-md shadow-sm hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed">
                                 <FontAwesomeIcon icon={faClock} />
                                 Bantu Check-out dari lokasi ini
                             </button>
                         </div>
                     )}
             </div>
+
+            <Modal isOpen={showCheckoutModal} onClose={() => setShowCheckoutModal(false)} title="Bantu Check-out Karyawan" note="Masukkan tanggal dan jam selesai kunjungan."
+                size="sm"
+                footer={
+                    <div className="flex gap-2">
+                        <button onClick={() => setShowCheckoutModal(false)} className="px-4 py-2 text-sm bg-gray-300 rounded-md hover:bg-gray-300">
+                            Batal
+                        </button>
+                        <button onClick={handleSubmitCheckout} className="px-4 py-2 text-sm text-white bg-orange-500 rounded-md hover:bg-orange-600">
+                            Simpan Check-out
+                        </button>
+                    </div>
+                }
+            >
+                <div className="space-y-3">
+                    <label className="text-sm font-medium text-gray-700">
+                        Tanggal & Jam Check-out
+                    </label>
+
+                    <input type="datetime-local" value={checkoutTime} onChange={(e) => setCheckoutTime(e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+
+                    <p className="text-xs text-gray-500">
+                        Pastikan waktu yang dimasukkan sesuai dengan kondisi sebenarnya di lapangan.
+                    </p>
+                </div>
+            </Modal>
         </div>
     );
 };

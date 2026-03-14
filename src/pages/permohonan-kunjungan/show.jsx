@@ -116,7 +116,6 @@ const DetailKunjungan = () => {
 
     const routeLocations = React.useMemo(() => {
         if (!data?.lokasi?.length) return [];
-
         const rumah = data.rumah
             ? {
                 nama_lokasi: data.rumah.nama_lokasi,
@@ -126,21 +125,15 @@ const DetailKunjungan = () => {
                 kategori: 1,
             }
             : null;
-
         const visitedLocations = data.lokasi.filter(
             (l) => l.kategori === 2 && l.jam_mulai
         );
-
         if (!visitedLocations.length) return [];
-
         const result = [];
-
         // rumah start
         if (rumah) result.push(rumah);
-
         // hanya lokasi kunjungan
         result.push(...visitedLocations);
-
         // rumah end
         if (rumah) {
             result.push({
@@ -148,7 +141,6 @@ const DetailKunjungan = () => {
                 jam_mulai: visitedLocations[visitedLocations.length - 1].jam_selesai,
             });
         }
-
         return result;
     }, [data]);
 
@@ -342,7 +334,7 @@ const DetailKunjungan = () => {
                                 <h4 className="text-md font-bold tracking-wide text-gray-700 mb-3">
                                     Peta Rute Perjalanan
                                 </h4>
-                                <div className="flex-1 rounded-lg overflow-hidden border">
+                                <div className="flex-1 rounded-lg overflow-hidden border z-10">
                                     <MapRouteMulti locations={routeLocations} onDistanceCalculated={(meter) => setTotalJarakMap(meter)} />
                                 </div>
                             </div>

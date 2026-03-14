@@ -182,7 +182,7 @@ export const menuConfig = [
                         label: "Absensi Tidak Valid",
                         icon: faTimesCircle,
                         path: "/absensi-tidak-valid",
-                        roles: [1, 4, 5, 6],
+                        roles: [1, 4, 5, 6, 20],
                         perusahaan: [1, 4],
                     },
                     {
