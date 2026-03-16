@@ -248,11 +248,17 @@ const TimelineItem = ({ lok, label, color, apiUrl, isLast, statusTrip, onDeleted
                 size="sm"
                 footer={
                     <div className="flex gap-2">
-                        <button onClick={() => setShowCheckoutModal(false)} className="px-4 py-2 text-sm bg-gray-300 rounded-md hover:bg-gray-300">
+                        <button onClick={() => setShowCheckoutModal(false)} disabled={loadingCheckout} className="px-4 py-2 text-sm bg-gray-300 rounded-md hover:bg-gray-400 disabled:opacity-50">
                             Batal
                         </button>
-                        <button onClick={handleSubmitCheckout} className="px-4 py-2 text-sm text-white bg-orange-500 rounded-md hover:bg-orange-600">
-                            Simpan Check-out
+                        <button onClick={handleSubmitCheckout} disabled={loadingCheckout}
+                            className={`px-4 py-2 text-sm text-white bg-orange-500 rounded-md flex items-center gap-2
+                            ${loadingCheckout ? "opacity-60 cursor-not-allowed" : "hover:bg-orange-600"}`}
+                        >
+                            {loadingCheckout && (
+                                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                            )}
+                            {loadingCheckout ? "Memproses..." : "Simpan Check-out"}
                         </button>
                     </div>
                 }

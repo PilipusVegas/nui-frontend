@@ -35,6 +35,7 @@ const formatRupiah = (v) => {
 };
 
 
+
 /* ================= MAIN COMPONENT ================= */
 const DetailKunjungan = () => {
     const { id } = useParams();
@@ -51,6 +52,7 @@ const DetailKunjungan = () => {
     const fetchDetail = async () => {
         try {
             setLoading(true);
+            setTotalJarakMap(null); // reset jarak
             const res = await fetchWithJwt(`${apiUrl}/trip/${id}`);
             const json = await res.json();
             if (!json.success || !json.data) {
@@ -64,6 +66,10 @@ const DetailKunjungan = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        setTotalJarakMap(null);
+    }, [data]);
 
     const handleUpdateStatus = async (status) => {
         try {
@@ -91,16 +97,48 @@ const DetailKunjungan = () => {
         }
     };
 
+    const isSedangBerangkat = () => {
+        if (!data?.lokasi?.length) return false;
+        const lokasiKategori2 = data.lokasi.filter(l => l.kategori === 2);
+        return lokasiKategori2.length === 0;
+    };
+
+    const isBelumCheckout = () => {
+        if (!data?.lokasi?.length) return false;
+        const lokasiKategori2 = data.lokasi.filter(l => l.kategori === 2);
+        return lokasiKategori2.some(l => !l.jam_selesai);
+    };
+
     const handleApprovalWithValidation = async (status) => {
         const jarak = Number(totalJarakMap ?? data.total_jarak ?? 0);
+
         if (jarak === 0 && data.lokasi?.length > 1) {
             toast.error("Perhitungan jarak perjalanan masih diproses. Mohon tunggu beberapa saat.");
             return;
         }
-        if (!data.is_complete) {
+
+        // Kondisi 1: Baru berangkat
+        if (isSedangBerangkat()) {
             const result = await Swal.fire({
-                title: "Perjalanan Belum Selesai",
-                text: "Perjalanan ini belum berstatus selesai. Apakah Anda yakin ingin melanjutkan?",
+                title: "Karyawan Baru Berangkat",
+                text: "Karyawan baru memulai perjalanan dan belum melakukan kunjungan. Apakah Anda yakin ingin melanjutkan?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: status === 1 ? "Ya, Tetap Setujui" : "Ya, Tetap Tolak",
+                cancelButtonText: "Batal",
+                confirmButtonColor: status === 1 ? "#16a34a" : "#dc2626",
+                cancelButtonColor: "#6b7280",
+                reverseButtons: true,
+            });
+
+            if (!result.isConfirmed) return;
+        }
+
+        // Kondisi 2: Ada kunjungan tapi belum checkout
+        if (isBelumCheckout()) {
+            const result = await Swal.fire({
+                title: "Kunjungan Belum Checkout",
+                text: "Masih ada lokasi kunjungan yang belum melakukan checkout. Apakah Anda yakin ingin melanjutkan?",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonText: status === 1 ? "Ya, Tetap Setujui" : "Ya, Tetap Tolak",
@@ -138,12 +176,25 @@ const DetailKunjungan = () => {
         if (rumah) {
             result.push({
                 ...rumah,
-                jam_mulai: visitedLocations[visitedLocations.length - 1].jam_selesai,
+                jam_mulai: visitedLocations[visitedLocations.length - 1]?.jam_selesai ?? visitedLocations[visitedLocations.length - 1]?.jam_mulai
             });
         }
         return result;
     }, [data]);
 
+
+    const getStatusPerjalanan = () => {
+        if (!data?.lokasi?.length) return "Belum Berangkat";
+        const lokasiKategori2 = data.lokasi.filter(l => l.kategori === 2);
+        if (lokasiKategori2.length === 0) {
+            return "Sedang Berangkat";
+        }
+        const masihCheckin = lokasiKategori2.some(l => !l.jam_selesai);
+        if (masihCheckin) {
+            return "Sedang Check-in";
+        }
+        return "Selesai";
+    };
 
     useEffect(() => {
         fetchDetail();
@@ -172,8 +223,8 @@ const DetailKunjungan = () => {
                     </div>
 
                     <span className={`inline-flex items-center px-3 py-1 text-xs font-semibold uppercase tracking-wide rounded-full
-                        ${STATUS_APPROVAL_MAP[data.status]?.className}
-                    `}
+                            ${STATUS_APPROVAL_MAP[data.status]?.className}
+                        `}
                     >
                         {STATUS_APPROVAL_MAP[data.status]?.label}
                     </span>
@@ -210,7 +261,7 @@ const DetailKunjungan = () => {
                     <InfoGrid>
                         <InfoItem label="Total Jarak (Map)" value={formatMeter(totalJarakMap ?? data.total_jarak)} highlight />
                         <InfoItem label="Jumlah Lokasi" value={`${data.lokasi?.length || 0} titik`} />
-                        <InfoItem label="Status Perjalanan" value={data.is_complete ? "Selesai" : "Belum Selesai"} />
+                        <InfoItem label="Status Perjalanan" value={getStatusPerjalanan()} />
                         <InfoItem label="Shift Kerja" value={`${data.shift}`} />
                     </InfoGrid>
                     <Divider />
@@ -300,14 +351,14 @@ const DetailKunjungan = () => {
                             <Divider />
                             <div className="flex justify-end gap-3 pt-2">
                                 <button disabled={!isDistanceReady} onClick={() => handleApprovalWithValidation(2)} className={`px-4 py-2 text-sm rounded-md font-semibold transition
-                                    ${!isDistanceReady ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-red-500 text-white hover:bg-red-600"}`}
+                                        ${!isDistanceReady ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-red-500 text-white hover:bg-red-600"}`}
                                 >
                                     Tolak
                                 </button>
 
                                 <button disabled={!isDistanceReady} onClick={() => handleApprovalWithValidation(1)}
                                     className={`px-4 py-2 text-sm rounded-md font-semibold transition
-                                    ${!isDistanceReady ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-green-500 text-white hover:bg-green-600"}`}
+                                        ${!isDistanceReady ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-green-500 text-white hover:bg-green-600"}`}
                                 >
                                     Setujui
                                 </button>

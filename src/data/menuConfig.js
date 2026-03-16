@@ -287,6 +287,12 @@ export const menuConfig = [
                 roles: [1, 4, 5, 6, 20],
                 submenu: [
                     {
+                        label: "List Bantuan Checkout",
+                        icon: faPenFancy,
+                        path: "/list-bantuan-checkout",
+                        roles: [1, 4, 6],
+                    },
+                    {
                         label: "Permohonan Kunjungan",
                         icon: faPenFancy,
                         path: "/permohonan-kunjungan",

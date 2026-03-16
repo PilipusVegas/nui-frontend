@@ -99,6 +99,7 @@ import TambahPenjadwalanKaryawan from "../pages/penjadwalan-karyawan/tambah";
 import EditPenjadwalanKaryawan from "../pages/penjadwalan-karyawan/edit";
 import DetailPenjadwalanKaryawan from "../pages/penjadwalan-karyawan/show";
 import TambahPenjadwalan from "../pages/penjadwalan-karyawan/TambahJadwal";
+import ListBantuanCheckout from "../pages/bantuan-checkout";
 import PermohonanKunjungan from "../pages/permohonan-kunjungan";
 import RiwayatKunjungan from "../pages/permohonan-kunjungan/riwayat";
 import DetailKunjungan from "../pages/permohonan-kunjungan/show";
@@ -141,6 +142,7 @@ export const routes = [
   { path: "/formulir-dinas-aplikasi", element: <FormulirDinasAplikasi />, roles: [] },
 
   /* ===== KUNJUNGAN ===== */
+  { path: "/list-bantuan-checkout", element: <ListBantuanCheckout />, roles: [], layout: SidebarLayout },
   { path: "/permohonan-kunjungan", element: <PermohonanKunjungan />, roles: [], layout: SidebarLayout },
   { path: "/permohonan-kunjungan/detail/:id", element: <DetailKunjungan />, roles: [], layout: SidebarLayout },
   { path: "/riwayat-permohonan-kunjungan", element: <RiwayatKunjungan />, roles: [], layout: SidebarLayout },

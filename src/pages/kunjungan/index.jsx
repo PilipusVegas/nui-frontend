@@ -90,6 +90,7 @@ export default function Kunjungan() {
         fetchTrip();
     }, []);
 
+
     // ================= FETCH =================
     const fetchJadwal = async () => {
         try {
@@ -380,7 +381,7 @@ export default function Kunjungan() {
     if (!gps) {
         return (
             <MobileLayout title="Kunjungan">
-                <LoadingSpinner message="Mengambil lokasi GPS..." />
+                <LoadingSpinner message="Mengambil lokasi GPS..."/>
             </MobileLayout>
         );
     }
@@ -450,10 +451,7 @@ export default function Kunjungan() {
                         </div>
                     )}
 
-                    {hasTrip &&
-                        nearbyLocation &&
-                        !activeLocation &&
-                        nearbyLocation.id !== lastVisitedLocationId && (
+                    {hasTrip && nearbyLocation && !activeLocation && nearbyLocation.id !== lastVisitedLocationId && (
                             <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50/70 p-4 backdrop-blur-sm shadow-sm">
                                 <div className="flex items-start gap-3">
                                     <div className="flex-1">
