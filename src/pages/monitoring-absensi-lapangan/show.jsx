@@ -235,9 +235,7 @@ const DetailAbsensi = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: 2 }),
       });
-
       if (!response.ok) throw new Error("Gagal menolak absensi");
-
       toast.success("Absensi berhasil ditolak dan tidak masuk ke penggajian.", {
         duration: 5000,
       });
