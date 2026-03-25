@@ -55,22 +55,18 @@ const MutasiMember = ({ open, onClose, member, apiUrl, onSuccess }) => {
         (t) => t.id !== member.id_kadiv_group
     );
 
-
     const handleSubmit = async () => {
         if (!targetKadiv || !targetTeam) {
             return toast.error("Kadiv dan Tim tujuan wajib dipilih");
         }
-
         try {
             setLoading(true);
-
             const payload = {
                 id_user: member.id_user,
                 id_kadiv: Number(targetKadiv),
                 id_kadiv_group: Number(targetTeam),
                 level: Number(targetLevel),
             };
-
             const res = await fetchWithJwt(
                 `${apiUrl}/profil/kadiv-access/member/${member.id}`,
                 {
@@ -79,9 +75,7 @@ const MutasiMember = ({ open, onClose, member, apiUrl, onSuccess }) => {
                     body: JSON.stringify(payload),
                 }
             );
-
             const json = await res.json();
-
             if (json.success) {
                 toast.success("Anggota berhasil dimutasi");
                 onSuccess?.();

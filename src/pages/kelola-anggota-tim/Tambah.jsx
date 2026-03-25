@@ -8,7 +8,6 @@ const Tambah = ({ onSuccess, onCancel }) => {
     const [nama, setNama] = useState("");
     const [loading, setLoading] = useState(false);
     
-
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -19,10 +18,8 @@ const Tambah = ({ onSuccess, onCancel }) => {
 
         try {
             setLoading(true);
-
             const user = getUserFromToken();
             const idKadiv = user?.is_kadiv?.id;
-
             if (!idKadiv) {
                 throw new Error("ID Kadiv tidak ditemukan");
             }

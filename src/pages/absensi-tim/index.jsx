@@ -23,33 +23,29 @@ const showDailyInfoSwal = async () => {
     title: "Informasi Absensi Tim",
     html: `
     <div style="text-align:left;font-size:14px;line-height:1.6">
-        <p>Menu <strong>Absensi Tim</strong> digunakan <strong>KHUSUS</strong>
-        apabila terdapat <strong>anggota tim</strong> yang tidak dapat melakukan
-        absensi mandiri karena kendala teknis pada perangkat pribadi.
-        </p>
-        <ul style="padding-left:18px;margin-top:6px">
-            <li>Handphone pribadi rusak atau hilang</li>
-            <li>Fungsi GPS tidak berjalan dengan baik</li>
-            <li>Kamera perangkat tidak dapat digunakan</li>
-        </ul>
-        <p style="margin-top:10px">
-            <strong>Perhatian:</strong><br/>
-            Absensi <strong>SPV TETAP WAJIB</strong> dilakukan melalui
-            <strong>menu Absen</strong> seperti biasa.
-        </p>
-        <p style="margin-top:6px">
-            Melalui menu ini, <strong>SPV melakukan absensi ATAS NAMA anggota tim</strong>
-            yang mengalami kendala, <strong>bukan untuk absensi SPV sendiri</strong>.
-        </p>
-        <p style="margin-top:6px">
-            Pengambilan <strong>foto WAJIB dilakukan bersama SPV</strong> dan
-            anggota tim yang mengalami kendala sebagai bentuk validasi kehadiran.
-        </p>
-        <p style="margin-top:10px;font-size:12px;color:#92400e">
-        Catatan: Seluruh data absensi tim akan tercatat dalam sistem dan
-        <strong>diverifikasi oleh Kepala Divisi masing-masing</strong>
-        sesuai ketentuan yang berlaku.
-        </p>
+      <p>
+        Menu <strong>Absensi Tim</strong> digunakan <strong>khusus</strong> untuk:
+      </p>
+      <ul style="padding-left:18px;margin-top:6px">
+        <li>Anggota tim yang mengalami kendala teknis (HP, GPS, kamera)</li>
+        <li>Pekerja lepas (freelance)</li>
+      </ul>
+      <p style="margin-top:10px">
+        <strong>Ketentuan Penggunaan:</strong>
+      </p>
+      <ul style="padding-left:18px;margin-top:6px">
+        <li>Wajib koordinasi dengan <strong>Kepala Divisi</strong> sebelum penggunaan</li>
+        <li>Tim harus didaftarkan terlebih dahulu oleh Kepala Divisi</li>
+        <li>Absensi dilakukan oleh <strong>SPV atas nama anggota tim</strong></li>
+        <li><strong>Bukan untuk absensi SPV sendiri</strong></li>
+      </ul>
+      <p style="margin-top:10px">
+        <strong>Validasi:</strong><br/>
+        Wajib foto bersama antara SPV dan anggota tim terkait.
+      </p>
+      <p style="margin-top:10px;font-size:12px;color:#92400e">
+        Catatan: Data absensi akan diverifikasi oleh Kepala Divisi.
+      </p>
     </div>
     `,
     icon: "info",
@@ -57,6 +53,7 @@ const showDailyInfoSwal = async () => {
     confirmButtonColor: "#16a34a",
     allowOutsideClick: false,
   });
+
   localStorage.setItem("absen_tim_info", todayKey);
 };
 
@@ -77,9 +74,10 @@ export default function AbsenTim() {
   const [fotoPreview, setFotoPreview] = useState(null);
   const [userPos, setUserPos] = useState(null);
   const [isWithinRadius, setIsWithinRadius] = useState(false);
-  const isFaceRecognitionAbsen = (m) => m.absen?.kategori_absen === 2;
-  const [facingMode, setFacingMode] = useState("environment"); // default belakang
+  const [facingMode, setFacingMode] = useState("environment");
   const [isSwitching, setIsSwitching] = useState(false);
+  const [isCameraActive, setIsCameraActive] = useState(true);
+  const streamRef = useRef(null);
 
   /* ================= INIT ================= */
   useEffect(() => {
@@ -151,6 +149,20 @@ export default function AbsenTim() {
     }
   };
 
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        stopCamera();
+        setIsCameraActive(false);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, []);
+
   const fetchMembers = async () => {
     try {
       const res = await fetchWithJwt(`${apiUrl}/absen/tim/member`);
@@ -177,28 +189,33 @@ export default function AbsenTim() {
       .then((blob) => {
         const file = new File([blob], "absen-tim.jpg", { type: "image/jpeg" });
         const previewUrl = URL.createObjectURL(file);
+
         setFoto(file);
         setFotoPreview(previewUrl);
-        setCameraReady(false);
-        stopCamera();
+
+        stopCamera(); // 1. stop stream
+        setCameraReady(false); // 2. reset state
+        setIsCameraActive(true); // 3. UNMOUNT (INI KUNCI)
       });
   };
 
   const stopCamera = () => {
-    const video = webcamRef.current?.video;
-    const stream = video?.srcObject;
-
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => {
+        track.stop();
+      });
+      streamRef.current = null;
     }
   };
 
   const switchCamera = () => {
     if (isSwitching) return;
+
     setIsSwitching(true);
     stopCamera();
+
     setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
-    setCameraReady(false);
+
     setTimeout(() => {
       setIsSwitching(false);
     }, 500);
@@ -278,7 +295,7 @@ export default function AbsenTim() {
       confirmButtonText: "Ya, Kirim Absensi",
       cancelButtonText: "Periksa Kembali",
       confirmButtonColor: "#16a34a",
-      cancelButtonColor: "#9ca3af",
+      cancelButtonColor: "#dc2626",
       allowOutsideClick: false,
     });
 
@@ -399,10 +416,9 @@ export default function AbsenTim() {
                   type="button"
                   onClick={() => {
                     if (fotoPreview) URL.revokeObjectURL(fotoPreview);
-                    stopCamera();
                     setFoto(null);
                     setFotoPreview(null);
-                    setCameraReady(false);
+                    setIsCameraActive(true); // ⬅️ nyalakan lagi
                   }}
                   className="p-1.5 px-3 rounded-md bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 active:scale-95 transition"
                   title="Ambil ulang foto"
@@ -413,7 +429,7 @@ export default function AbsenTim() {
               )}
             </div>
 
-            {!foto ? (
+            {!foto && isCameraActive ? (
               <div className="rounded-lg border bg-gray-50 overflow-hidden">
                 <div className="relative w-full" style={{ paddingTop: "75%" }}>
                   {!cameraReady && (
@@ -431,18 +447,20 @@ export default function AbsenTim() {
                     <FontAwesomeIcon icon={faCameraRotate} />
                   </button>
 
-                  <Webcam
-                    ref={webcamRef}
-                    screenshotFormat="image/jpeg"
-                    videoConstraints={{ facingMode }}
-                    className={`absolute inset-0 w-full h-full object-cover ${
-                      cameraReady ? "block" : "hidden"
-                    }`}
-                    onUserMedia={() => setCameraReady(true)}
-                    onUserMediaError={() =>
-                      toast.error("Kamera tidak dapat diakses")
-                    }
-                  />
+                  {isCameraActive ? (
+                    <Webcam
+                      ref={webcamRef}
+                      screenshotFormat="image/jpeg"
+                      videoConstraints={{ facingMode }}
+                      className={`absolute inset-0 w-full h-full object-cover ${
+                        cameraReady ? "block" : "hidden"
+                      }`}
+                      onUserMedia={(stream) => {
+                        streamRef.current = stream;
+                        setCameraReady(true);
+                      }}
+                    />
+                  ) : null}
                 </div>
 
                 {cameraReady && (
@@ -521,7 +539,7 @@ export default function AbsenTim() {
 
           {/* ===== ANGGOTA ===== */}
           <div className="space-y-2">
-            <p className="text-sm font-medium">Anggota Terkendala</p>
+            <p className="text-sm font-medium">Anggota Anda</p>
             <p className="text-xs text-gray-500">
               Pilih anggota yang tidak bisa absen mandiri
             </p>
@@ -529,7 +547,7 @@ export default function AbsenTim() {
             {members.length === 0 ? (
               <p className="text-xs text-yellow-600">Belum ada anggota tim</p>
             ) : (
-              <div className="max-h-40 overflow-y-auto space-y-2">
+              <div className="max-h-56 overflow-y-auto space-y-2">
                 {members.map((m) => {
                   const isFaceAbsen = m.absen?.kategori_absen === 2;
                   const isCompleted = !!m.absen?.jam_selesai;

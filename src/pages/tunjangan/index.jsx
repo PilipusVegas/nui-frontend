@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef  } from "react";
 import { getDefaultPeriodWeek } from "../../utils/getDefaultPeriod";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import EditNominalTunjangan from "./editNominalTunjangan";
@@ -14,6 +14,10 @@ import {
   faMoneyBillWave,
   faSpinner,
   faRotateRight,
+  faGasPump,
+  faUtensils,
+  faHotel,
+  faBriefcase,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   LoadingSpinner,
@@ -26,11 +30,19 @@ import {
 import { formatLongDate } from "../../utils/dateUtils";
 import toast from "react-hot-toast";
 
+// 🔥 TAMBAHAN MAPPING ID (BARU)
+const TUNJANGAN_ID_MAP = {
+  bensin: [1], // TKP
+  makan: [2], // TUM
+  penginapan: [3], // TSM
+  dinas: [4, 5, 6], // TDP
+};
+
 const TUNJANGAN_CONFIG = [
-  { label: "TKP", key: "bensin", match: "kendaraan" },
-  { label: "TUM", key: "makan", match: "makan" },
-  { label: "TSM", key: "penginapan", match: "penginapan" },
-  { label: "TDP", key: "dinas", match: "dinas" },
+  { label: "TKP", key: "bensin", icon: faGasPump, color: "text-orange-500" },
+  { label: "TUM", key: "makan", icon: faUtensils, color: "text-green-500" },
+  { label: "TSM", key: "penginapan", icon: faHotel, color: "text-indigo-500" },
+  { label: "TDP", key: "dinas", icon: faBriefcase, color: "text-blue-500" },
 ];
 
 const DataRekapTunjangan = () => {
@@ -52,6 +64,8 @@ const DataRekapTunjangan = () => {
   const [showEditNominal, setShowEditNominal] = useState(false);
   const [draftStartDate, setDraftStartDate] = useState("");
   const [draftEndDate, setDraftEndDate] = useState("");
+  const leftRowsRef = useRef([]);
+  const rightRowsRef = useRef([]);
 
   useEffect(() => {
     const { start, end } = getDefaultPeriodWeek();
@@ -182,6 +196,22 @@ const DataRekapTunjangan = () => {
     }
   };
 
+useEffect(() => {
+  const sync = () => {
+    leftRowsRef.current.forEach((leftRow, i) => {
+      const rightRow = rightRowsRef.current[i];
+      if (leftRow && rightRow) {
+        rightRow.style.height = "auto";
+        const height = leftRow.offsetHeight;
+        rightRow.style.height = `${height}px`;
+      }
+    });
+  };
+
+  // delay biar DOM settle
+  setTimeout(sync, 0);
+}, [dataTunjangan, tanggalArray]);
+
   return (
     <div className="min-h-screen flex flex-col justify-start p-5">
       <SectionHeader title="Rekap Tunjangan Karyawan" subtitle="Menampilkan Rekap Tunjangan Perminggu Secara Otomatis dan Sistematis." onBack={() => Navigate("/")}
@@ -198,7 +228,7 @@ const DataRekapTunjangan = () => {
               className={`flex items-center gap-2 h-9 px-3 text-sm font-medium rounded-md shadow-md transition-all duration-200
             ${loading ? "bg-purple-400 cursor-not-allowed text-white" : "bg-gradient-to-r from-purple-500 to-fuchsia-600 hover:from-purple-600 hover:to-fuchsia-700 text-white"}`}
             >
-              <FontAwesomeIcon icon={loading ? faSpinner : faRotateRight} spin={loading}    />
+              <FontAwesomeIcon icon={loading ? faSpinner : faRotateRight} spin={loading}/>
               <span className="hidden sm:inline">
                 {loading ? "Sinkron..." : "Sinkron"}
               </span>
@@ -255,7 +285,13 @@ const DataRekapTunjangan = () => {
       <div className="w-full flex flex-row flex-wrap items-center justify-between gap-4 mb-4">
         <SearchBar placeholder="Cari Karyawan..." className="flex-1 min-w-[200px]" onSearch={(val) => setSearchName(val)}/>
         <div className="flex items-center gap-1">
-          <input type="date" className="border-2 border-gray-300 rounded-md px-2 py-2 text-sm" value={draftStartDate} onChange={(e) => setDraftStartDate(e.target.value)} onBlur={commitDateRange}/>
+          <input
+            type="date"
+            className="border-2 border-gray-300 rounded-md px-2 py-2 text-sm"
+            value={draftStartDate}
+            onChange={(e) => setDraftStartDate(e.target.value)}
+            onBlur={commitDateRange}
+          />
           <span className="mx-1 text-gray-600">s/d</span>
           <input type="date" className="border-2 border-gray-300 rounded-md px-2 py-2 text-sm" value={draftEndDate} onChange={(e) => setDraftEndDate(e.target.value)} onBlur={commitDateRange}/>
         </div>
@@ -301,30 +337,48 @@ const DataRekapTunjangan = () => {
                 </thead>
                 <tbody>
                   {filteredTunjanganData.map((item, idx) => (
-                    <tr key={idx} className={`${idx % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-green-50 transition-colors`}>
+                    <tr key={idx} ref={(el) => (leftRowsRef.current[idx] = el)} className={`${idx % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-green-50 transition-colors`}>
                       {/* NIP */}
                       <td className="border px-3 py-2 text-center text-gray-700">
                         {item.nip}
                       </td>
+                      <td className="border px-4 py-2 font-semibold text-gray-800 uppercase text-left text-xs h-[48px] align-middle">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs">
+                            {item.nama_user}
+                          </span>
 
-                      {/* NAMA */}
-                      <td className="border px-4 py-2 font-semibold text-gray-800 uppercase text-left text-xs">
-                        {item.nama_user}
+                          {/* ICON STATUS TUNJANGAN */}
+                          <div className="flex gap-1 text-[10px]">
+                            {TUNJANGAN_CONFIG.map((t) => {
+                              const isActive = Boolean(
+                                item.user_tunjangan?.[t.key],
+                              );
+
+                              return (
+                                <FontAwesomeIcon key={t.key} icon={t.icon} title={t.label} className={`transition ${
+                                    isActive ? t.color : "text-gray-300"
+                                  }`}
+                                />
+                              );
+                            })}
+                          </div>
+                        </div>
                       </td>
 
                       {/* TUNJANGAN */}
                       {TUNJANGAN_CONFIG.map((t) => {
-                        const isActive = item.user_tunjangan?.[t.key];
+                        const totalCount = tanggalArray.reduce((acc, tgl) => {
+                          const tunjanganHari = item.tunjangan?.[tgl] || [];
+                          const found = tunjanganHari.filter((x) =>
+                            TUNJANGAN_ID_MAP[t.key].includes(x.id),
+                          );
+                          return acc + found.length;
+                        }, 0);
 
                         return (
-                          <td key={t.key} className="border px-3 py-2 text-center">
-                            {isActive ? (
-                              <span className="text-green-600 font-semibold">
-                                ✔
-                              </span>
-                            ) : (
-                              <span className="text-gray-400">-</span>
-                            )}
+                          <td className="border px-3 py-2 text-center font-semibold h-[48px] text-gray-800">
+                            {totalCount > 0 ? totalCount : "-"}
                           </td>
                         );
                       })}
@@ -351,7 +405,7 @@ const DataRekapTunjangan = () => {
                   <thead>
                     <tr>
                       {tanggalArray.map((tgl) => (
-                        <th key={tgl} colSpan={4} className="sticky top-0 z-20 bg-green-500 text-white border px-3 py-2 font-medium text-center">
+                        <th key={tgl} colSpan={4} className="sticky top-0 z-20 bg-green-500 text-white border px-3 py-2.5 font-medium text-center">
                           {formatLongDate(tgl)}
                         </th>
                       ))}
@@ -359,7 +413,7 @@ const DataRekapTunjangan = () => {
                     <tr>
                       {tanggalArray.map((tgl) =>
                         TUNJANGAN_CONFIG.map((t) => t.label).map((label) => (
-                          <th key={`${tgl}-${label}`} className="sticky top-[38px] z-20 bg-green-500 text-white border px-3 py-2 font-normal text-center">
+                          <th key={`${tgl}-${label}`} className="sticky top-[38px] z-20 bg-green-500 text-white border px-3 py-2 text-xs font-semibold text-center">
                             {label}
                           </th>
                         )),
@@ -369,13 +423,13 @@ const DataRekapTunjangan = () => {
 
                   <tbody>
                     {filteredTunjanganData.map((item, rowIdx) => (
-                      <tr key={rowIdx}>
+                      <tr ref={(el) => (rightRowsRef.current[rowIdx] = el)} key={rowIdx}>
                         {tanggalArray.map((tgl) => {
                           const tunjanganHari = item.tunjangan?.[tgl] || [];
                           return TUNJANGAN_CONFIG.map((t) => {
                             const isActive = item.user_tunjangan?.[t.key];
                             const data = tunjanganHari.find((x) =>
-                              x.tunjangan.toLowerCase().includes(t.match),
+                              TUNJANGAN_ID_MAP[t.key].includes(x.id),
                             );
                             return (
                               <td
@@ -458,7 +512,12 @@ const DataRekapTunjangan = () => {
       )}
 
       {showInfoModal && (
-        <Modal isOpen={showInfoModal} title="Informasi Halaman Rekap Tunjangan" note="Panduan lengkap untuk memahami aturan dan perolehan tunjangan karyawan." onClose={() => setShowInfoModal(false)}>
+        <Modal
+          isOpen={showInfoModal}
+          title="Informasi Halaman Rekap Tunjangan"
+          note="Panduan lengkap untuk memahami aturan dan perolehan tunjangan karyawan."
+          onClose={() => setShowInfoModal(false)}
+        >
           <div className="grid grid-cols-1 gap-4 text-sm text-gray-700 leading-relaxed">
             <div>
               <span className="font-bold text-green-700">
@@ -570,11 +629,19 @@ const DataRekapTunjangan = () => {
       )}
       {!loading && !error && dataTunjangan.length === 0 && (
         <div className="flex flex-col items-center justify-center py-8 text-gray-600">
-          <EmptyState icon={faFolderOpen} title="Data Tunjangan Kosong" description="Data Tunjangan Pada Minggu Ini Kosong." subtitle="Silakan pilih rentang tanggal lain."/>
+          <EmptyState
+            icon={faFolderOpen}
+            title="Data Tunjangan Kosong"
+            description="Data Tunjangan Pada Minggu Ini Kosong."
+            subtitle="Silakan pilih rentang tanggal lain."
+          />
         </div>
       )}
 
-      <EditNominalTunjangan isOpen={showEditNominal} onClose={() => setShowEditNominal(false)}/>
+      <EditNominalTunjangan
+        isOpen={showEditNominal}
+        onClose={() => setShowEditNominal(false)}
+      />
     </div>
   );
 };
