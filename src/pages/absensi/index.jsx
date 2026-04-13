@@ -277,7 +277,7 @@ const Absensi = () => {
                         <p className="text-[11px] text-gray-600 mt-1">
                           <FontAwesomeIcon icon={faLocationDot} className="text-[10px] text-green-800" />{" "}
                           <span className="font-medium text-gray-700">
-                            {attendanceToday.lokasi || "N/A"}
+                            {attendanceToday.lokasi_mulai || "N/A"}
                           </span>
                         </p>
                       </div>
@@ -297,6 +297,12 @@ const Absensi = () => {
                             Belum absen pulang
                           </span>
                         )}
+                        <p className="text-[11px] text-gray-600 mt-1">
+                          <FontAwesomeIcon icon={faLocationDot} className="text-[10px] text-green-800" />{" "}
+                          <span className="font-medium text-gray-700">
+                            {attendanceToday.lokasi_selesai || "N/A"}
+                          </span>
+                        </p>
                       </div>
                     </div>
                   </div>

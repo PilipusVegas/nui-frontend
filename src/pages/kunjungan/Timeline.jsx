@@ -40,7 +40,7 @@ const Timeline = ({ history, tripInfo, onEndTrip }) => {
   useEffect(() => {
     if (!tripInfo?.created_at) return;
     const start = new Date(tripInfo.created_at).getTime();
-    const resetTime = start + 22 * 60 * 60 * 1000;
+    const resetTime = start + 20 * 60 * 60 * 1000;
     const update = () => {
       setRemaining(getRemainingTime(resetTime));
     };

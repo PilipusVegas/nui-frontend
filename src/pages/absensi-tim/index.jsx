@@ -439,11 +439,7 @@ export default function AbsenTim() {
                   )}
 
                   {/* BUTTON SWITCH CAMERA */}
-                  <button
-                    type="button"
-                    onClick={switchCamera}
-                    className="absolute top-2 right-2 z-10 bg-black/60 text-white p-2 px-3 rounded-full"
-                  >
+                  <button type="button" onClick={switchCamera} className="absolute top-2 right-2 z-10 bg-black/60 text-white p-2 px-3 rounded-full">
                     <FontAwesomeIcon icon={faCameraRotate} />
                   </button>
 
@@ -464,22 +460,13 @@ export default function AbsenTim() {
                 </div>
 
                 {cameraReady && (
-                  <button
-                    type="button"
-                    onClick={capturePhoto}
-                    className="w-full py-2 bg-green-600 text-white text-sm font-medium"
-                  >
+                  <button type="button" onClick={capturePhoto} className="w-full py-2 bg-green-600 text-white text-sm font-medium">
                     Ambil Foto
                   </button>
                 )}
               </div>
             ) : (
-              <img
-                src={fotoPreview}
-                alt="Preview"
-                className="w-full rounded-lg border object-cover"
-                style={{ aspectRatio: "4 / 3" }}
-              />
+              <img src={fotoPreview} alt="Preview" className="w-full rounded-lg border object-cover" style={{ aspectRatio: "4 / 3" }}/>
             )}
           </div>
 
@@ -520,9 +507,7 @@ export default function AbsenTim() {
             />
 
             {userPos && selectedLokasi && (
-              <p
-                className={`text-xs font-medium ${isWithinRadius ? "text-green-600" : "text-red-600"}`}
-              >
+              <p className={`text-xs font-medium ${isWithinRadius ? "text-green-600" : "text-red-600"}`}>
                 Jarak:{" "}
                 {Math.round(
                   getDistanceMeters(
@@ -539,7 +524,7 @@ export default function AbsenTim() {
 
           {/* ===== ANGGOTA ===== */}
           <div className="space-y-2">
-            <p className="text-sm font-medium">Anggota Anda</p>
+            <p className="text-sm font-medium">Anggota Anda</p> 
             <p className="text-xs text-gray-500">
               Pilih anggota yang tidak bisa absen mandiri
             </p>
@@ -555,11 +540,9 @@ export default function AbsenTim() {
                   const status = getAbsenStatus(m.absen);
 
                   return (
-                    <label
-                      key={m.id_user}
+                    <label key={m.id_user}
                       className={`flex items-center justify-between gap-3 p-2 rounded-lg border text-sm cursor-pointer
-                                                ${isDisabled ? "bg-gray-100 text-gray-400" : "hover:bg-gray-50"}
-                                            `}
+                      ${isDisabled ? "bg-gray-100 text-gray-400" : "hover:bg-gray-50"}`}
                       onClick={() => {
                         if (isFaceAbsen) {
                           toast.error(

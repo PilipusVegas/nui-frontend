@@ -26,7 +26,7 @@ const HomeMobile = () => {
       try {
         const response = await fetchWithJwt(`${apiUrl}/absen/cek/${idUser}`);
         if (response.status === 404) {
-          setAttendanceData(null);
+          setAttendanceData(null); 
           return;
         }
         const json = await response.json();
@@ -284,7 +284,7 @@ const HomeMobile = () => {
                           : "-"}
                       </div>
 
-                      {attendanceData.lokasi && (
+                      {attendanceData.lokasi_mulai && (
                         <div className="flex items-center justify-center gap-1 mt-1 text-[8px] text-gray-700 font-medium text-center px-2">
                           <FontAwesomeIcon
                             icon={faMapMarkerAlt}
@@ -293,9 +293,9 @@ const HomeMobile = () => {
 
                           <span
                             className="truncate max-w-[90px] text-left"
-                            title={attendanceData.lokasi}
+                            title={attendanceData.lokasi_mulai}
                           >
-                            {attendanceData.lokasi}
+                            {attendanceData.lokasi_mulai}
                           </span>
                         </div>
                       )}
@@ -318,7 +318,7 @@ const HomeMobile = () => {
                           : "-"}
                       </div>
 
-                      {attendanceData.jam_selesai && attendanceData.lokasi && (
+                      {attendanceData.jam_selesai && attendanceData.lokasi_selesai && (
                         <div className="flex items-center justify-center gap-1 mt-1 text-[8px] text-gray-700 font-medium text-center px-2">
                           <FontAwesomeIcon
                             icon={faMapMarkerAlt}
@@ -327,9 +327,9 @@ const HomeMobile = () => {
 
                           <span
                             className="truncate max-w-[90px] text-left"
-                            title={attendanceData.lokasi}
+                            title={attendanceData.lokasi_selesai}
                           >
-                            {attendanceData.lokasi}
+                            {attendanceData.lokasi_selesai}
                           </span>
                         </div>
                       )}
@@ -349,9 +349,9 @@ const HomeMobile = () => {
         <span className="text-sm font-semibold pl-3 pb-3">Menu Utama</span>
       </div>
       <div className="grid grid-cols-4 gap-2 px-3">
-        {!loadingTripStatus && !isTripReady && (
+        {/* {!loadingTripStatus && !isTripReady && ( */}
           <MainMenuButton icon={faCalendarCheck} label="Absensi" onClick={() => navigate("/absensi")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-emerald-600 hover:scale-105 transition"/>
-        )}
+        {/* )} */}
         {user?.is_leader?.status === true && (
           <MainMenuButton icon={faPeopleGroup} label="Absensi Tim" onClick={() => navigate("/absensi-tim")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-orange-600 hover:scale-105 transition" />
         )}
