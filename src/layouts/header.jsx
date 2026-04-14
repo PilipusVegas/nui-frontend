@@ -53,18 +53,12 @@ const Header = ({ user, toggleSidebar, isSidebarOpen }) => {
             <span className="text-xs opacity-80">{user.role}</span>
           </div>
 
-          <button
-            onClick={() => setIsProfileOpen((p) => !p)}
-            className="w-9 h-9 rounded-full border border-white/40 flex items-center justify-center"
-          >
+          <button onClick={() => setIsProfileOpen((p) => !p)} className="w-9 h-9 rounded-full border border-white/40 flex items-center justify-center">
             <FontAwesomeIcon icon={faUser} />
           </button>
 
           {isProfileOpen && (
-            <div
-              ref={profileMenuRef}
-              className="absolute right-0 top-12 w-48 bg-white text-gray-800 rounded-xl shadow-xl"
-            >
+            <div ref={profileMenuRef} className="absolute right-0 top-12 w-48 bg-white text-gray-800 rounded-xl shadow-xl">
               <button
                 onClick={handleLogout}
                 className="w-full px-4 py-3 text-left text-red-600 hover:bg-red-50"

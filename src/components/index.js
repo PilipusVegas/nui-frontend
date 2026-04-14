@@ -13,7 +13,7 @@ export { default as DataView } from "./common/DataView.jsx";
 
 
 //ui
-export {default as Button} from "./ui/button.jsx";
+export {default as Button} from "./ui/Button.jsx";
 
 // export { default as Modal } from "./desktop/Modal";
 export { default as SectionHeader } from "./desktop/SectionHeader";
