@@ -1,274 +1,235 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faEdit, faTrash, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
+
 import { fetchWithJwt } from "../../utils/jwtHelper";
-import { SectionHeader, Pagination } from "../../components/";
+import { SectionHeader, DataView, Button, Badge } from "../../components/";
+
 import TambahBBM from "./Tambah";
 import EditBBM from "./Edit";
 
-// Mapping kategori
+/* =========================
+   CONSTANT MAPPING
+========================= */
 const KATEGORI_LABEL = {
-    1: "Bensin",
-    2: "Listrik",
+  1: "Bensin",
+  2: "Listrik",
 };
 
-// Mapping satuan (defensive: number | string | null)
 const SATUAN_LABEL = {
-    1: "Liter",
-    2: "kWh",
-    liter: "Liter",
-    kwh: "kWh",
-    KWH: "kWh",
+  1: "Liter",
+  2: "kWh",
+  liter: "Liter",
+  kwh: "kWh",
+  KWH: "kWh",
 };
+
+/* =========================
+   COMPONENT
+========================= */
 const DataJenisBBM = () => {
-    const apiUrl = process.env.REACT_APP_API_BASE_URL;
-    const navigate = useNavigate();
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  const navigate = useNavigate();
 
-    const [searchTerm, setSearchTerm] = useState("");
-    const [fuelData, setFuelData] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [isAddOpen, setIsAddOpen] = useState(false);
-    const [isEditOpen, setIsEditOpen] = useState(false);
-    const [selectedBBM, setSelectedBBM] = useState(null);
+  const [fuelData, setFuelData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-    const itemsPerPage = 10;
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [selectedBBM, setSelectedBBM] = useState(null);
 
-    /* Helpers */
-    const formatRupiah = (value) => {
-        const number = Number(value);
-        if (isNaN(number)) return "-";
-        return `Rp ${number.toLocaleString("id-ID")}`;
-    };
+  /* =========================
+     HELPERS
+  ========================= */
+  const formatRupiah = (value) => {
+    const number = Number(value);
+    if (isNaN(number)) return "-";
+    return `Rp ${number.toLocaleString("id-ID")}`;
+  };
 
-    const getKategoriLabel = (value) =>
-        KATEGORI_LABEL[value] ?? "-";
+  const getKategoriLabel = (value) => KATEGORI_LABEL[value] ?? "-";
 
-    const getSatuanLabel = (value) =>
-        SATUAN_LABEL[value] ?? "-";
+  const getSatuanLabel = (value) => SATUAN_LABEL[value] ?? "-";
 
+  /* =========================
+     FETCH DATA
+  ========================= */
+  const fetchFuelData = async () => {
+    setIsLoading(true);
+    setError(null);
 
-    /* Fetch Data */
-    useEffect(() => {
+    try {
+      const response = await fetchWithJwt(`${apiUrl}/fuels`);
+      const result = await response.json();
+
+      setFuelData(Array.isArray(result.data) ? result.data : []);
+    } catch (err) {
+      console.error(err);
+      setError("Gagal mengambil data");
+      setFuelData([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFuelData();
+  }, []);
+
+  /* =========================
+     DELETE
+  ========================= */
+  const handleDelete = async (id) => {
+    const confirm = await Swal.fire({
+      title: "Hapus Data BBM?",
+      text: "Data ini akan dihapus secara permanen.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Hapus",
+      cancelButtonText: "Batal",
+    });
+
+    if (!confirm.isConfirmed) return;
+
+    try {
+      const response = await fetchWithJwt(`${apiUrl}/fuels/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        Swal.fire("Berhasil", "Data BBM berhasil dihapus", "success");
         fetchFuelData();
-    }, []);
+      } else {
+        Swal.fire("Gagal", "Gagal menghapus data BBM", "error");
+      }
+    } catch (error) {
+      Swal.fire("Error", "Terjadi kesalahan sistem", "error");
+    }
+  };
 
-    const fetchFuelData = async () => {
-        try {
-            const response = await fetchWithJwt(`${apiUrl}/fuels`);
-            const result = await response.json();
-            setFuelData(Array.isArray(result.data) ? result.data : []);
-        } catch (error) {
-            console.error("Error fetching fuel data:", error);
-            setFuelData([]);
+  /* =========================
+     COLUMNS (CORE LOGIC)
+  ========================= */
+  const columns = useMemo(
+    () => [
+      {
+        label: "Nama BBM",
+        key: "nama",
+        cellClassName: "font-semibold uppercase",
+      },
+      {
+        label: "Kategori",
+        align: "text-center",
+        render: (row) => (
+          <Badge variant="info" size="sm">
+            {getKategoriLabel(row.kategori)}
+          </Badge>
+        ),
+      },
+      {
+        label: "Harga / Satuan",
+        align: "text-right",
+        render: (row) => (
+          <div className="font-medium">
+            {formatRupiah(row.harga ?? row.harga_pl)}
+            <span className="text-slate-500">
+              {" "}
+              / {getSatuanLabel(row.satuan)}
+            </span>
+          </div>
+        ),
+      },
+      {
+        label: "Menu",
+        align: "text-center",
+        isAction: true,
+        render: (row) => (
+          <div className="flex justify-center gap-2">
+            <Button
+              size="sm"
+              variant="warning"
+              icon={faEdit}
+              onClick={() => {
+                setSelectedBBM(row);
+                setIsEditOpen(true);
+              }}
+            >
+              Edit
+            </Button>
+
+            <Button
+              size="sm"
+              variant="danger"
+              icon={faTrash}
+              onClick={() => handleDelete(row.id)}
+            >
+              Hapus
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [],
+  );
+
+  /* =========================
+     RENDER
+  ========================= */
+  return (
+    <div className="flex flex-col bg-white">
+      <SectionHeader
+        title="Data Jenis BBM"
+        subtitle="Digunakan sebagai referensi perhitungan operasional dan kunjungan."
+        onBack={() => navigate("/home")}
+        actions={
+          <Button icon={faPlus} onClick={() => setIsAddOpen(true)}>
+            Tambah
+          </Button>
         }
-    };
+      />
 
-    /* Delete */
-    const handleDelete = async (id) => {
-        const confirm = await Swal.fire({
-            title: "Hapus Data BBM?",
-            text: "Data ini akan dihapus secara permanen.",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Hapus",
-            cancelButtonText: "Batal",
-        });
+      <DataView
+        data={fuelData}
+        columns={columns}
+        /* SEARCH */
+        searchable
+        searchKeys={["nama"]}
+        searchPlaceholder="Cari jenis BBM..."
+        /* PAGINATION */
+        itemsPerPage={10}
+        /* STATE */
+        isLoading={isLoading}
+        error={error}
+        onRetry={fetchFuelData}
+        /* EMPTY */
+        emptyTitle="Belum ada data BBM"
+        emptyMessage="Silakan tambahkan data BBM terlebih dahulu."
+        emptyActionText="Tambah Data"
+        onEmptyAction={() => setIsAddOpen(true)}
+      />
 
-        if (!confirm.isConfirmed) return;
+      {/* MODAL */}
+      <TambahBBM
+        isOpen={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+        apiUrl={apiUrl}
+        onSuccess={fetchFuelData}
+      />
 
-        try {
-            const response = await fetchWithJwt(`${apiUrl}/fuels/${id}`, {
-                method: "DELETE",
-            });
-
-            if (response.ok) {
-                Swal.fire("Berhasil", "Data BBM berhasil dihapus", "success");
-                fetchFuelData();
-            } else {
-                Swal.fire("Gagal", "Gagal menghapus data BBM", "error");
-            }
-        } catch (error) {
-            console.error(error);
-            Swal.fire("Error", "Terjadi kesalahan sistem", "error");
-        }
-    };
-
-    /* Filter & Pagination */
-    const filteredData = fuelData.filter((item) =>
-        item?.nama?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const currentItems = filteredData.slice(
-        startIndex,
-        startIndex + itemsPerPage
-    );
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [searchTerm]);
-
-    return (
-        <div className="flex flex-col bg-white">
-            <SectionHeader title="Data Jenis BBM" subtitle="Halaman ini digunakan untuk perhitungan fitur kunjungan dan kebutuhan operasional." onBack={() => navigate("/home")}
-                actions={
-                    <button onClick={() => setIsAddOpen(true)} className="inline-flex items-center gap-2 px-3 py-2 text-sm sm:px-4 sm:py-2.5 sm:text-base bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition active:scale-95">
-                        <FontAwesomeIcon icon={faPlus} />
-                        <span>Tambah</span>
-                    </button>
-                }
-            />
-
-            {/* SEARCH */}
-            <div className="mb-4">
-                <div className="relative">
-                    <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-3 text-gray-400" />
-                    <input type="text" placeholder="Cari Jenis BBM..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm" />
-                </div>
-            </div>
-
-            {/* TABLE DESKTOP */}
-            <div className="rounded-lg shadow-md overflow-hidden hidden md:block">
-                <table className="table-auto w-full border-collapse text-sm">
-                    <thead>
-                        <tr className="bg-green-500 text-white">
-                            <th className="px-4 py-2 border-b text-sm font-semibold text-center">
-                                No
-                            </th>
-                            <th className="px-4 py-2 border-b text-sm font-semibold">
-                                Nama BBM
-                            </th>
-                            <th className="px-4 py-2 border-b text-sm font-semibold text-center">
-                                Kategori
-                            </th>
-                            <th className="px-4 py-2 border-b text-sm font-semibold text-right">
-                                Harga / Satuan
-                            </th>
-                            <th className="px-4 py-2 border-b text-sm font-semibold text-center">
-                                Menu
-                            </th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        {currentItems.length > 0 ? (
-                            currentItems.map((item, index) => (
-                                <tr key={item.id} className="hover:bg-gray-200 transition-colors duration-150">
-                                    <td className="px-4 py-2 border-b text-xs text-center">
-                                        {startIndex + index + 1}
-                                    </td>
-
-                                    <td className="px-4 py-2 border-b text-xs font-semibold uppercase">
-                                        {item.nama || "-"}
-                                    </td>
-
-                                    {/* KATEGORI (LABEL, BUKAN ANGKA) */}
-                                    <td className="px-4 py-2 border-b text-xs text-center">
-                                        {getKategoriLabel(item.kategori)}
-                                    </td>
-
-                                    {/* HARGA + SATUAN */}
-                                    <td className="px-4 py-2 border-b text-xs text-right font-medium">
-                                        {formatRupiah(item.harga ?? item.harga_pl)}
-                                        <span className="text-gray-500">
-                                            {" "} / {getSatuanLabel(item.satuan)}
-                                        </span>
-                                    </td>
-
-                                    <td className="px-4 py-2 border-b text-xs text-center">
-                                        <div className="flex items-center justify-center gap-2">
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedBBM(item);
-                                                    setIsEditOpen(true);
-                                                }}
-                                                className="flex items-center gap-1 text-xs bg-yellow-500 text-white px-3 py-2 rounded hover:bg-yellow-600 transition"
-                                            >
-                                                <FontAwesomeIcon icon={faEdit} />
-                                                <span>Edit</span>
-                                            </button>
-
-                                            <button onClick={() => handleDelete(item.id)} className="flex items-center gap-1 text-xs bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition">
-                                                <FontAwesomeIcon icon={faTrash} />
-                                                <span>Hapus</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan={5} className="text-center py-4 text-gray-500">
-                                    Tidak ada data ditemukan
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* MOBILE LIST */}
-            <div className="md:hidden space-y-3">
-                {currentItems.length > 0 ? (
-                    currentItems.map((item) => (
-                        <div
-                            key={item.id}
-                            className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm"
-                        >
-                            {/* INFO */}
-                            <div>
-                                <div className="text-sm font-semibold text-gray-800">
-                                    {item.nama || "-"}
-                                </div>
-
-                                <div className="text-xs text-gray-500 mt-1">
-                                    {getKategoriLabel(item.kategori)} •{" "}
-                                    {formatRupiah(item.harga ?? item.harga_pl)} /{" "}
-                                    {getSatuanLabel(item.satuan)}
-                                </div>
-                            </div>
-
-                            {/* ACTION BUTTONS */}
-                            <div className="mt-3 flex justify-end gap-2">
-                                <button
-                                    onClick={() => {
-                                        setSelectedBBM(item);
-                                        setIsEditOpen(true);
-                                    }}
-                                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-yellow-500 hover:bg-yellow-600 text-white rounded-md transition"
-                                >
-                                    <FontAwesomeIcon icon={faEdit} />
-                                    Edit
-                                </button>
-
-                                <button
-                                    onClick={() => handleDelete(item.id)}
-                                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-red-500 hover:bg-red-600 text-white rounded-md transition"
-                                >
-                                    <FontAwesomeIcon icon={faTrash} />
-                                    Hapus
-                                </button>
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <div className="text-center py-6 text-gray-500 text-sm">
-                        Tidak ada data ditemukan
-                    </div>
-                )}
-            </div>
-
-            <Pagination currentPage={currentPage} totalItems={filteredData.length} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} />
-
-            {/* MODAL TAMBAH */}
-            <TambahBBM isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} apiUrl={apiUrl} onSuccess={fetchFuelData} />
-            <EditBBM isOpen={isEditOpen} onClose={() => { setIsEditOpen(false); setSelectedBBM(null); }} apiUrl={apiUrl} data={selectedBBM}
-                onSuccess={fetchFuelData}
-            />
-        </div>
-    );
+      <EditBBM
+        isOpen={isEditOpen}
+        onClose={() => {
+          setIsEditOpen(false);
+          setSelectedBBM(null);
+        }}
+        apiUrl={apiUrl}
+        data={selectedBBM}
+        onSuccess={fetchFuelData}
+      />
+    </div>
+  );
 };
 
 export default DataJenisBBM;

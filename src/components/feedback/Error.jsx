@@ -11,7 +11,7 @@ import { faCircleExclamation, faRotateRight } from "@fortawesome/free-solid-svg-
  *  - onRetry   : func   -> Callback untuk mencoba fetch ulang (wajib bila ingin tombol tampil)
  *  - retryText : string -> Label tombol (default: "Coba Lagi")
  */
-export default function ErrorState({
+export default function Error({
   message = "Terjadi Kesalahan",
   detail = "Sistem tidak dapat memproses permintaan saat ini. Silakan periksa koneksi Anda atau coba beberapa saat lagi.",
   onRetry,

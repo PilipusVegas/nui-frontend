@@ -1,6 +1,6 @@
 import React from "react";
 
-const LoadingSpinner = ({ message = "Mohon tunggu, data sedang diproses..." }) => {
+const Loading = ({ message = "Mohon tunggu, data sedang diproses..." }) => {
     return (
         <div className="flex flex-col items-center justify-center py-10">
             <div className="relative w-14 h-14">
@@ -18,4 +18,4 @@ const LoadingSpinner = ({ message = "Mohon tunggu, data sedang diproses..." }) =
     );
 };
 
-export default LoadingSpinner;
+export default Loading;

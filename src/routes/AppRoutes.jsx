@@ -1,32 +1,45 @@
+import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { routes } from "./routes.config";
 import PrivateRoute from "./PrivateRoute";
 import { getUserFromToken } from "../utils/jwtHelper";
+import RouteLayout from "./../layouts/RouteLayout";
 
 const AppRoutes = () => {
-    return (
-        <Routes>
-            {routes.map(({ path, element, roles, layout: Layout }) => {
-                const Page = Layout ? <Layout>{element}</Layout> : element;
+  return (
+    <Routes>
+      {routes.map(
+        ({ path, element, roles, layout = "none", mobileTitle = "" }) => {
+          const LayoutWrapper = (
+            <RouteLayout layout={layout} mobileTitle={mobileTitle} />
+          );
 
-                return (
-                    <Route key={path} path={path} element={
-                        roles ? (
-                            <PrivateRoute allowedRoles={roles}>
-                                {Page}
-                            </PrivateRoute>
-                        ) : (
-                            Page
-                        )
-                    }
-                    />
-                );
-            })}
+          const PageElement = roles ? (
+            <PrivateRoute allowedRoles={roles}>{element}</PrivateRoute>
+          ) : (
+            element
+          );
 
-            <Route path="*" element={ getUserFromToken() ? <Navigate to="/home" replace /> : <Navigate to="/login" replace />}/>
+          return (
+            <Route key={path} element={LayoutWrapper}>
+              <Route path={path} element={PageElement} />
+            </Route>
+          );
+        },
+      )}
 
-        </Routes>
-    );
+      <Route
+        path="*"
+        element={
+          getUserFromToken() ? (
+            <Navigate to="/home" replace />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+    </Routes>
+  );
 };
 
 export default AppRoutes;

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import MobileLayout from "../../layouts/mobileLayout";
+import MobileLayout from "../../layouts/mobile/mobileLayout";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { LoadingSpinner } from "../../components";

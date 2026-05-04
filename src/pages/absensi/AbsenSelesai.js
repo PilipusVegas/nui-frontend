@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import Webcam from "react-webcam";
 import Select from "react-select";
-import MobileLayout from "../../layouts/mobileLayout";
+// import MobileLayout from "../../layouts/mobile/mobileLayout";
 import Swal from "sweetalert2";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight, faLocationDot, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
@@ -311,7 +311,7 @@ const AbsenSelesai = ({ handleNextStepData }) => {
 
 
   return (
-    <MobileLayout title="Absen Selesai" className="bg-gray-100">
+    // <MobileLayout title="Absen Selesai" className="bg-gray-100">
       <div className="flex justify-center">
         <form onSubmit={handleSubmit} className="w-full max-w-lg pb-28 space-y-6">
           <section className="bg-white rounded-xl border shadow-sm p-4 space-y-3">
@@ -451,7 +451,7 @@ const AbsenSelesai = ({ handleNextStepData }) => {
           )}
         </form>
       </div>
-    </MobileLayout>
+    // </MobileLayout>
   );
 
 };

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchWithJwt } from "../../utils/jwtHelper";
-import MobileLayout from "../../layouts/mobileLayout";
+import MobileLayout from "../../layouts/mobile/mobileLayout";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
 

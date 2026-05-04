@@ -2,7 +2,7 @@ import Swal from "sweetalert2";
 import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import MobileLayout from "../../layouts/mobileLayout";
+// import MobileLayout from "../../layouts/mobile/mobileLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt } from "../../utils/jwtHelper";
@@ -219,8 +219,9 @@ const DetailAbsen = ({ formData = {} }) => {
   }, [fotoMulai, fotoSelesai]);
 
   return (
-    <MobileLayout title="Review Detail Absensi" className="min-h-screen bg-gray-50">
-      <form onSubmit={handleSubmit} className="flex flex-col justify-between min-h-screen max-w-2xl mx-auto">
+    // <MobileLayout title="Review Detail Absensi" className="min-h-screen bg-gray-50">
+    <div>
+        <form onSubmit={handleSubmit} className="flex flex-col justify-between min-h-screen max-w-2xl mx-auto">
         <div className="flex flex-col gap-10 pb-24">
           {/* Absen Mulai */}
           {fotoMulai && (
@@ -302,7 +303,8 @@ const DetailAbsen = ({ formData = {} }) => {
           </button>
         </div>
       </form>
-    </MobileLayout>
+    </div>
+    
   );
 };
 

@@ -325,10 +325,7 @@ const HomeMobile = () => {
                             className="text-green-600 text-[10px] shrink-0"
                           />
 
-                          <span
-                            className="truncate max-w-[90px] text-left"
-                            title={attendanceData.lokasi_selesai}
-                          >
+                          <span className="truncate max-w-[90px] text-left" title={attendanceData.lokasi_selesai}>
                             {attendanceData.lokasi_selesai}
                           </span>
                         </div>
@@ -349,9 +346,7 @@ const HomeMobile = () => {
         <span className="text-sm font-semibold pl-3 pb-3">Menu Utama</span>
       </div>
       <div className="grid grid-cols-4 gap-2 px-3">
-        {/* {!loadingTripStatus && !isTripReady && ( */}
           <MainMenuButton icon={faCalendarCheck} label="Absensi" onClick={() => navigate("/absensi")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-emerald-600 hover:scale-105 transition"/>
-        {/* )} */}
         {user?.is_leader?.status === true && (
           <MainMenuButton icon={faPeopleGroup} label="Absensi Tim" onClick={() => navigate("/absensi-tim")} color="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-200 text-xl text-orange-600 hover:scale-105 transition" />
         )}

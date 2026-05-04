@@ -8,6 +8,7 @@ import { cardConfig } from "../data/menuConfig";
 import { formatFullDate } from "../utils/dateUtils";
 import Swal from "sweetalert2";
 import { initPushNotification } from "../utils/pushNotification";
+import { weatherCodeToDetail } from "../utils/weather";
 
 
 const HomeDesktop = () => {
@@ -169,23 +170,6 @@ const HomeDesktop = () => {
   }, [user?.id_user]);
 
 
-  // Mapping kode cuaca → deskripsi + ikon + warna
-  const weatherCodeToDetail = (code) => {
-    const map = {
-      0: { desc: "Cerah", icon: faSun, accent: "text-yellow-400" },
-      1: { desc: "Cerah Berawan", icon: faCloudSun, accent: "text-yellow-500" },
-      2: { desc: "Berawan", icon: faCloud, accent: "text-gray-400" },
-      3: { desc: "Mendung", icon: faSmog, accent: "text-gray-500" },
-      61: { desc: "Hujan Ringan", icon: faCloudRain, accent: "text-blue-400" },
-      63: { desc: "Hujan Sedang", icon: faCloudRain, accent: "text-blue-500" },
-      65: { desc: "Hujan Lebat", icon: faCloudShowersHeavy, accent: "text-blue-600" },
-      80: { desc: "Hujan Lokal", icon: faCloudRain, accent: "text-blue-400" },
-      95: { desc: "Badai Petir", icon: faBolt, accent: "text-yellow-300" },
-    };
-    return map[code] || { desc: "Berawan", icon: faCloud, accent: "text-gray-400" };
-  };
-
-
   const filteredCards =
     roleId && perusahaanId
       ? cardConfig.filter(
@@ -194,7 +178,6 @@ const HomeDesktop = () => {
           (!card.perusahaan || card.perusahaan.includes(perusahaanId))
       )
       : [];
-
 
   return (
     <div className="flex">
@@ -205,7 +188,7 @@ const HomeDesktop = () => {
             <div className="absolute -top-24 -left-16 w-72 h-72 bg-white/10 rounded-full blur-3xl" />
             <div className="absolute bottom-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
             <div className="absolute top-5 right-5">
-              <span className="inline-block bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full text-sm font-semibold shadow-md border border-white/10">
+              <span className="inline-block bg-black/20 backdrop-blur-md px-4 py-1.5 rounded-full text-sm font-semibold shadow-md border border-white/10">
                 {user?.role || "-"}
               </span>
             </div>

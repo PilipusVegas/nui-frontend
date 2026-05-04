@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FooterMainBar, LoadingSpinner, EmptyState, ErrorState } from "../../components";
-import MobileLayout from "../../layouts/mobileLayout";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { formatLongDate } from "../../utils/dateUtils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -205,7 +204,7 @@ const Tugas = () => {
 
 
     return (
-        <MobileLayout title="Daftar Tugas">
+        <div>
             <div className="sticky top-0 z-20 bg-white border-b border-gray-200">
                 <div className="flex justify-between px-3 py-1.5">
 
@@ -310,9 +309,7 @@ const Tugas = () => {
                     sortedTasks.map((t, i) => <TaskCard key={i} t={t} />)
                 )}
             </div>
-
-            <FooterMainBar />
-        </MobileLayout>
+   </div>
     );
 };
 

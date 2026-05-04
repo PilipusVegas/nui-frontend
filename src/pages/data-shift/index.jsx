@@ -1,30 +1,90 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faClock, faToggleOn, faToggleOff, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faClock, faToggleOn, faToggleOff, faTrash, faSun, faCloudSun, faMoon} from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import { fetchWithJwt } from "../../utils/jwtHelper";
-import { SectionHeader, LoadingSpinner, ErrorState, EmptyState } from "../../components";
+import { SectionHeader, LoadingSpinner, ErrorState, EmptyState, Button,} from "../../components";
 import Swal from "sweetalert2";
-import { getUserFromToken } from "../../utils/jwtHelper";
+
+const parseTimeToMinutes = (time) => {
+  if (!time || typeof time !== "string") return null;
+
+  const parts = time.split(":").map((v) => Number(v));
+  if (parts.length < 2 || parts.some((n) => Number.isNaN(n))) return null;
+
+  const [hour, minute] = parts;
+  return hour * 60 + minute;
+};
+
+const getShiftPeriod = (time) => {
+  const minutes = parseTimeToMinutes(time);
+
+  if (minutes === null) {
+    return {
+      label: "Shift",
+      icon: faClock,
+      badgeClass: "bg-slate-100 text-slate-700 border-slate-200",
+      panelClass: "from-slate-50 to-white",
+    };
+  }
+
+  const pagiStart = 5 * 60; // 05:00
+  const siangStart = 11 * 60; // 11:00
+  const malamStart = 15 * 60; // 15:00
+
+  if (minutes >= pagiStart && minutes < siangStart) {
+    return {
+      label: "Pagi",
+      icon: faSun,
+      badgeClass: "bg-amber-100 text-amber-700 border-amber-200",
+      panelClass: "from-amber-200 to-white",
+    };
+  }
+
+  if (minutes >= siangStart && minutes < malamStart) {
+    return {
+      label: "Siang",
+      icon: faCloudSun,
+      badgeClass: "bg-sky-100 text-sky-700 border-sky-200",
+      panelClass: "from-sky-200 to-white",
+    };
+  }
+
+  return {
+    label: "Malam",
+    icon: faMoon,
+    badgeClass: "bg-indigo-100 text-indigo-700 border-indigo-200",
+    panelClass: "from-indigo-200 to-white",
+  };
+};
+
+const getFirstShiftTime = (detail = []) => {
+  if (!Array.isArray(detail) || detail.length === 0) return null;
+  return detail[0]?.jam_masuk ?? null;
+};
 
 const JadwalShift = () => {
   const [shiftList, setShiftList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const navigate = useNavigate();
 
   const fetchShift = async () => {
     setLoading(true);
     setError(null);
+
     try {
       const res = await fetchWithJwt(`${apiUrl}/shift/all`);
       if (!res.ok) throw new Error("Gagal mengambil data shift");
+
       const data = await res.json();
 
       const normalized = (data.data ?? []).map((item) => ({
         ...item,
         status: item.is_active,
+        detail: Array.isArray(item.detail) ? item.detail : [],
       }));
 
       setShiftList(normalized);
@@ -42,25 +102,28 @@ const JadwalShift = () => {
   const handleToggleShift = async (shift) => {
     const isActive = shift.status === 1;
 
-    // Konfirmasi awal sebelum aksi
     const confirm = await Swal.fire({
       title: isActive ? "Nonaktifkan Shift?" : "Aktifkan Shift?",
       html: `
-      <div style="text-align:left">
-        <p>
-          Anda akan <b>${isActive ? "menonaktifkan" : "mengaktifkan kembali"}</b>
-          <b>${shift.nama}</b>.
-        </p>
-        <p style="margin-top:8px">
-          ${isActive
-          ? "Shift ini tidak akan digunakan sementara pada penjadwalan karyawan."
-          : "Shift ini akan kembali tersedia dan dapat digunakan pada penjadwalan karyawan."}
-        </p>
-      </div>
-    `,
+        <div style="text-align:left">
+          <p>
+            Anda akan <b>${isActive ? "menonaktifkan" : "mengaktifkan kembali"}</b>
+            <b> ${shift.nama}</b>.
+          </p>
+          <p style="margin-top:8px">
+            ${
+              isActive
+                ? "Shift ini tidak akan digunakan sementara pada penjadwalan karyawan."
+                : "Shift ini akan kembali tersedia dan dapat digunakan pada penjadwalan karyawan."
+            }
+          </p>
+        </div>
+      `,
       icon: "question",
       showCancelButton: true,
-      confirmButtonText: isActive ? "Ya, Nonaktifkan Shift" : "Ya, Aktifkan Shift",
+      confirmButtonText: isActive
+        ? "Ya, Nonaktifkan Shift"
+        : "Ya, Aktifkan Shift",
       cancelButtonText: "Batal",
       confirmButtonColor: isActive ? "#dc2626" : "#16a34a",
       cancelButtonColor: "#6b7280",
@@ -70,7 +133,6 @@ const JadwalShift = () => {
     if (!confirm.isConfirmed) return;
 
     try {
-      // Request ke backend (sesuai kontrak backend: status)
       const res = await fetchWithJwt(`${apiUrl}/shift/${shift.id}`, {
         method: "PUT",
         headers: {
@@ -83,49 +145,29 @@ const JadwalShift = () => {
 
       if (!res.ok) throw new Error("Gagal mengubah status shift");
 
-      // Pesan sukses yang informatif
-      if (isActive) {
-        await Swal.fire({
-          icon: "success",
-          title: "Shift Berhasil Dinonaktifkan",
-          html: `
+      await Swal.fire({
+        icon: "success",
+        title: isActive
+          ? "Shift Berhasil Dinonaktifkan"
+          : "Shift Berhasil Diaktifkan",
+        html: `
           <div style="text-align:left">
             <p>
-              <b>${shift.nama}</b> berhasil <b>dinonaktifkan</b> dan
-              <b>tidak akan muncul</b> pada menu penjadwalan karyawan.
-            </p>
-            <p style="margin-top:10px">
-              <b>Tindak lanjut:</b><br/>
-              Mohon informasikan kepada <b>Kepala Divisi masing-masing</b>
-              agar segera melakukan penyesuaian jadwal kerja karyawan
-              yang sebelumnya menggunakan shift ini.
-            </p>
-          </div>
-        `,
-          confirmButtonText: "Mengerti",
-          confirmButtonColor: "#16a34a",
-        });
-      } else {
-        await Swal.fire({
-          icon: "success",
-          title: "Shift Berhasil Diaktifkan",
-          html: `
-          <div style="text-align:left">
-            <p>
-              Shift <b>${shift.nama}</b> berhasil <b>diaktifkan kembali</b>.
+              <b>${shift.nama}</b> berhasil <b>${isActive ? "dinonaktifkan" : "diaktifkan kembali"}</b>.
             </p>
             <p style="margin-top:8px">
-              Shift ini sekarang <b>tersedia dan dapat digunakan</b>
-              di seluruh menu penjadwalan karyawan.
+              ${
+                isActive
+                  ? "Shift ini tidak lagi muncul di menu penjadwalan karyawan."
+                  : "Shift ini sekarang sudah tersedia kembali untuk digunakan."
+              }
             </p>
           </div>
         `,
-          confirmButtonText: "OK",
-          confirmButtonColor: "#16a34a",
-        });
-      }
+        confirmButtonText: "Mengerti",
+        confirmButtonColor: "#16a34a",
+      });
 
-      // Refresh data
       fetchShift();
     } catch (err) {
       Swal.fire({
@@ -140,15 +182,15 @@ const JadwalShift = () => {
     const confirm = await Swal.fire({
       title: "Hapus Shift?",
       html: `
-      <div style="text-align:left">
-        <p>
-          Shift <b>${shift.nama}</b> akan <b>dihapus permanen</b>.
-        </p>
-        <p style="margin-top:8px;color:#dc2626">
-          Data ini tidak dapat dikembalikan.
-        </p>
-      </div>
-    `,
+        <div style="text-align:left">
+          <p>
+            Shift <b>${shift.nama}</b> akan <b>dihapus permanen</b>.
+          </p>
+          <p style="margin-top:8px;color:#dc2626">
+            Data ini tidak dapat dikembalikan.
+          </p>
+        </div>
+      `,
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Ya, Hapus",
@@ -184,26 +226,34 @@ const JadwalShift = () => {
     }
   };
 
-
   return (
-    <div className="w-full mx-auto">
-      <SectionHeader title="Data Shift" subtitle="Daftar Data Jadwal Shift Karyawan." onBack={() => navigate(-1)}
+    <div>
+      <SectionHeader
+        title="Data Shift"
+        subtitle="Daftar jadwal shift karyawan yang tersusun rapi dan mudah dipantau."
+        onBack={() => navigate(-1)}
         actions={
-          <button
+          <Button
+            variant="primary"
+            icon={faPlus}
             onClick={() => navigate("/shift/tambah")}
-            className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition"
           >
-            <FontAwesomeIcon icon={faPlus} />
-            <span>Tambah</span>
-          </button>
+            Tambah Shift
+          </Button>
         }
       />
 
       <div className="mt-6">
         {loading && <LoadingSpinner message="Memuat data shift..." />}
+
         {!loading && error && (
-          <ErrorState message="Gagal Memuat Shift" detail={error} onRetry={fetchShift} />
+          <ErrorState
+            message="Gagal Memuat Shift"
+            detail={error}
+            onRetry={fetchShift}
+          />
         )}
+
         {!loading && !error && shiftList.length === 0 && (
           <EmptyState
             title="Belum Ada Shift"
@@ -215,46 +265,129 @@ const JadwalShift = () => {
         )}
 
         {!loading && !error && shiftList.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
-            {shiftList.map((shift) => (
-              <div key={shift.id} className="bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden">
-                <div className="px-5 py-3 bg-gradient-to-r from-green-600 to-green-500 flex items-center justify-between">
-                  <h3 className="text-white font-semibold text-base tracking-wide">
-                    {shift.nama}
-                  </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3 gap-5 items-stretch">
+            {shiftList.map((shift) => {
+              const firstTime = getFirstShiftTime(shift.detail);
+              const period = getShiftPeriod(firstTime);
+              const isActive = shift.status === 1;
 
-                  <div className="flex items-center gap-3">
-                    {/* Toggle */}
-                    <button onClick={(e) => { e.stopPropagation(); handleToggleShift(shift);}} title={shift.status === 1 ? "Nonaktifkan Shift" : "Aktifkan Shift"} className={`transition ${shift.status === 1 ? "text-white hover:text-gray-200" : "text-gray-300 hover:text-white"}`}>
-                      <FontAwesomeIcon icon={shift.status === 1 ? faToggleOn : faToggleOff} size="2xl"/>
-                    </button>
+              return (
+                <div
+                  key={shift.id}
+                  className={`group flex h-full min-h-[320px] flex-col overflow-hidden rounded-2xl border bg-white shadow-sm shadow-gray-400 transition-all hover:-translate-y-0.5 hover:shadow-lg ${
+                    isActive ? "border-emerald-100" : "border-slate-200 opacity-95"
+                  }`}
+                >
+                  <div className={`relative overflow-hidden bg-gradient-to-r ${period.panelClass} border-b border-slate-100 px-4 sm:px-5 py-3`}>
+                    <div className="flex items-start justify-between gap-2">
+                      {/* LEFT BADGES */}
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${period.badgeClass}`}>
+                          <FontAwesomeIcon icon={period.icon} />
+                          {period.label}
+                        </span>
 
-                    {/* Delete (ICON ONLY) */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteShift(shift);
-                      }}
-                      title="Hapus Shift"
-                      className="text-white hover:text-red-500 transition"
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                            isActive
+                              ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
+                              : "bg-slate-100 text-slate-600 border border-slate-200"
+                          }`}
+                        >
+                          {isActive ? "Aktif" : "Nonaktif"}
+                        </span>
+                      </div>
+
+                      {/* RIGHT ACTIONS (ALWAYS TOP - FIXED) */}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleShift(shift);
+                          }}
+                          className={`inline-flex h-9 w-9 items-center justify-center rounded-full transition active:scale-90 ${
+                            isActive ? "text-emerald-600 hover:bg-emerald-50" : "text-slate-400 hover:bg-slate-100"
+                          }`}
+                        >
+                          <FontAwesomeIcon icon={isActive ? faToggleOn : faToggleOff} size="lg"/>
+                        </button>
+
+                        <button onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteShift(shift);
+                          }}
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-full text-red-500 hover:bg-red-50 hover:text-red-600 transition active:scale-90"
+                        >
+                          <FontAwesomeIcon icon={faTrash} size="md" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* TITLE ROW */}
+                    <div>
+                      <h3
+                        className="text-md sm:text-lg font-bold leading-snug break-words"
+                        style={{
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                        title={shift.nama}
+                      >
+                        {shift.nama}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 px-5">
+                    {shift.detail.length > 0 ? (
+                      <div className="divide-y divide-slate-200">
+                        {shift.detail.map((d, idx) => {
+                          const rowPeriod = getShiftPeriod(d.jam_masuk);
+
+                          return (
+                            <div key={idx} className="flex justify-between sm:flex-row sm:items-center sm:justify-between py-2.5 gap-2">
+                              {/* LEFT SIDE */}
+                              <div className="min-w-0">
+                                <p className="text-sm font-semibold text-slate-800">
+                                  {d.hari}
+                                </p>
+                                <p className="text-xs text-slate-500">
+                                  Jadwal kerja harian
+                                </p>
+                              </div>
+
+                              {/* RIGHT SIDE */}
+                              <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                                <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold ${rowPeriod.badgeClass}`}>
+                                  <FontAwesomeIcon icon={rowPeriod.icon} />
+                                  {rowPeriod.label}
+                                </span> 
+                                <span className="rounded-full px-3 py-1 text-xs font-semibold text-slate-700 border border-slate-200">
+                                  {d.jam_masuk} - {d.jam_pulang}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-[120px] items-center justify-center px-4 text-center">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-700">
+                            Detail shift belum tersedia
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            Tambahkan jadwal hari dan jam untuk shift ini.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-
-                <div className="px-5 py-4 divide-y divide-gray-200">
-                  {shift.detail.map((d, idx) => (
-                    <div key={idx} className="flex justify-between items-center py-2 text-sm text-gray-700">
-                      <span className="font-semibold text-gray-800 tracking-wide">{d.hari}</span>
-                      <span className="text-gray-600">
-                        {d.jam_masuk} – {d.jam_pulang}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

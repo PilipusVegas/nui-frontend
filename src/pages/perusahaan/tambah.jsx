@@ -5,6 +5,7 @@ import { faArrowLeft, faArrowRight, faSave, faTimes, faTrash } from "@fortawesom
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import Select from "react-select";
 import swal from "sweetalert2";
+import { SectionHeader } from "../../components";
 
 const TambahPerusahaan = () => {
   const [nama, setNama] = useState("");
@@ -136,14 +137,10 @@ const TambahPerusahaan = () => {
   /* ================= RENDER ================= */
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <div className="w-full flex items-center pb-4 bg-white shadow-sm border-b">
-        <button onClick={handleBack} className="bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded-full mr-2">
-          <FontAwesomeIcon icon={faArrowLeft} />
-        </button>
-        <h1 className="text-2xl font-bold text-gray-800">
-          Tambah Perusahaan
-        </h1>
-      </div>
+
+
+      <SectionHeader title="Tambah Perusahaan" subtitle="Tambah data perusahaan" onBack={() => navigate("/perusahaan")}/>
+
 
       <form onSubmit={handleSubmit} className="flex-grow pt-5 sm:p-4 w-full mx-auto space-y-6">
         <div>

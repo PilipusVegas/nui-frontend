@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell } from "@fortawesome/free-solid-svg-icons";
-import MobileLayout from "../../layouts/mobileLayout";
+import MobileLayout from "../../layouts/mobile/mobileLayout";
 import NotificationDetail from "./notificationDetail";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { FooterMainBar } from "../../components";

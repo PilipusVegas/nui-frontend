@@ -7,6 +7,7 @@ import {
   EmptyState,
   SectionHeader,
   MapRouteMulti,
+  DetailCard,
 } from "../../components";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { formatFullDate } from "../../utils/dateUtils";

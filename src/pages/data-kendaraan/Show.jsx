@@ -1,6 +1,6 @@
 // src/pages/data-kendaraan/Show.jsx
 import React from "react";
-import { Modal } from "../../components/";
+import { Modal, Button } from "../../components/";
 
 const KATEGORI_KENDARAAN = {
   1: "Motor",
@@ -16,9 +16,9 @@ const ShowKendaraan = ({ isOpen, onClose, data }) => {
       onClose={onClose}
       title="Detail Kendaraan"
       footer={
-        <button onClick={onClose} className="px-6 py-2 bg-gray-200 rounded-lg">
+        <Button size="sm" variant="secondary" onClick={onClose}>
           Tutup
-        </button>
+        </Button>
       }
     >
       <div className="space-y-3 text-sm">

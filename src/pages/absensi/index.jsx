@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import MobileLayout from "../../layouts/mobileLayout";
+// import MobileLayout from "../../layouts/mobile/mobileLayout";
 import AbsenMulai from "./AbsenMulai";
 import AbsenSelesai from "./AbsenSelesai";
 import DetailAbsen from "./DetailAbsen";
@@ -219,7 +219,7 @@ const Absensi = () => {
         return <DetailAbsen formData={attendanceData} />;
       default:
         return (
-          <MobileLayout title="Absensi Online">
+          // <MobileLayout title="Absensi Online">
             <div className="w-full bg-white rounded-2xl p-5 px-1 pt-2 space-y-6">
               <section className="space-y-2">
                 <h2 className="text-sm font-bold text-gray-800 flex items-center gap-2">
@@ -256,7 +256,7 @@ const Absensi = () => {
                 {attendanceToday ? (
                   <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-3 shadow-sm">
                     <div className="flex items-center justify-between text-xs font-semibold text-gray-700">
-                      <span>{formatFullDate(attendanceToday.tanggal_absen)}</span>
+                      <span>{formatFullDate(attendanceToday.jam_mulai)}</span>
                       <span className="text-emerald-700">{attendanceToday.shift || "—"}</span>
                     </div>
                     <div className="flex items-start gap-3 rounded-lg border border-emerald-500 bg-emerald-50 p-3">
@@ -338,7 +338,7 @@ const Absensi = () => {
                 )}
               </section>
             </div>
-          </MobileLayout>
+          // </MobileLayout>
         );
     }
   };

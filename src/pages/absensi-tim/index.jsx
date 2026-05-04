@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import Select from "react-select";
 import Webcam from "react-webcam";
 import React, { useEffect, useRef, useState } from "react";
-import MobileLayout from "../../layouts/mobileLayout";
+// import MobileLayout from "../../layouts/mobile/mobileLayout";
 import { LoadingSpinner } from "../../components";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import MapRadius from "../../components/maps/MapRadius";
@@ -383,7 +383,7 @@ export default function AbsenTim() {
 
   /* ================= RENDER ================= */
   return (
-    <MobileLayout title="Absensi Tim">
+    // <MobileLayout title="Absensi Tim">
       <div className="pb-24">
         <div className="bg-white rounded-xl shadow-sm border p-4 space-y-5">
           {/* ===== INFO SINGKAT ===== */}
@@ -591,25 +591,15 @@ export default function AbsenTim() {
           {/* ===== ALASAN ===== */}
           <div>
             <label className="text-sm font-medium">Keterangan</label>
-            <textarea
-              rows={3}
-              className="w-full mt-1 px-3 py-2 text-sm border rounded-lg"
-              value={deskripsi}
-              onChange={(e) => setDeskripsi(e.target.value)}
-              placeholder="Jelaskan kendala secara singkat dan jelas"
-            />
+            <textarea rows={3} className="w-full mt-1 px-3 py-2 text-sm border rounded-lg" value={deskripsi} onChange={(e) => setDeskripsi(e.target.value)} placeholder="Jelaskan kendala secara singkat dan jelas"/>
           </div>
 
           {/* ===== SUBMIT ===== */}
-          <button
-            disabled={loading}
-            onClick={handleSubmit}
-            className={`w-full py-3 rounded-lg text-white font-semibold ${loading ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"}`}
-          >
+          <button disabled={loading} onClick={handleSubmit} className={`w-full py-3 rounded-lg text-white font-semibold ${loading ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"}`}>
             {loading ? "Mengirim..." : "Kirim Absensi Tim"}
           </button>
         </div>
       </div>
-    </MobileLayout>
+    // </MobileLayout>
   );
 }

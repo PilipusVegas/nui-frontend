@@ -1,4 +1,4 @@
-import SidebarLayout from "../layouts/SidebarLayout";
+import DekstopLayout from "../layouts/dekstop/DekstopLayout";
 import { getUserFromToken } from "../utils/jwtHelper";
 import { Navigate } from "react-router-dom";
 import HomeDesktop from "../layouts/homeDesktop";
@@ -15,9 +15,9 @@ const HomeRedirect = () => {
   const desktopRoles = [1, 4, 5, 6, 18, 20, 27, 28];
 
   return desktopRoles.includes(user.id_role) ? (
-    <SidebarLayout>
+    <DekstopLayout>
       <HomeDesktop />
-    </SidebarLayout>
+    </DekstopLayout>
   ) : (
     <HomeMobile />
   );

@@ -1,7 +1,7 @@
 // src/pages/data-kendaraan/Edit.jsx
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import { Modal } from "../../components/";
+import { Modal, Button } from "../../components/";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
@@ -60,10 +60,21 @@ const EditKendaraan = ({ isOpen, onClose, apiUrl, data, onSuccess }) => {
     label: bbm.nama,
   }));
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((p) => ({ ...p, [name]: value }));
-  };
+const handleChange = (e) => {
+  const { name, value } = e.target;
+  let newValue = value;
+  if (name === "konsumsi_bb") {
+    // kosong masih boleh supaya user bisa delete input
+    if (value === "") {
+      newValue = "";
+    } else {
+      const num = Number(value);
+      newValue = Math.max(1, num);
+    }
+  }
+
+  setForm((p) => ({ ...p, [name]: newValue }));
+};
 
   const handleSubmit = async () => {
     if (!form.nama || !form.tahun || !form.konsumsi_bb || !form.id_bb) {
@@ -114,13 +125,13 @@ const EditKendaraan = ({ isOpen, onClose, apiUrl, data, onSuccess }) => {
       note="Perubahan data kendaraan akan mempengaruhi perhitungan konsumsi BBM."
       footer={
         <>
-          <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-lg">
-            Batal
-          </button>
-          <button onClick={handleSubmit} disabled={isSubmitting}
-            className="ml-2 px-6 py-2 bg-green-600 text-white rounded-lg">
-            {isSubmitting ? "Menyimpan..." : "Simpan Perubahan"}
-          </button>
+          <Button size="sm" variant="secondary" onClick={onClose}>
+            Tutup
+          </Button>
+          <Button size="sm" variant="primary" onClick={handleSubmit}
+            loading={isSubmitting}>
+            Simpan
+          </Button>
         </>
       }
     >
@@ -151,7 +162,7 @@ const EditKendaraan = ({ isOpen, onClose, apiUrl, data, onSuccess }) => {
 
         <div>
           <label className="text-sm font-medium">Konsumsi BBM (km/l)</label>
-          <input type="number" name="konsumsi_bb" value={form.konsumsi_bb}
+          <input type="number" name="konsumsi_bb" min={1} value={form.konsumsi_bb}
             onChange={handleChange}
             className="mt-1 w-full border rounded-lg px-3 py-2 text-sm" />
         </div>

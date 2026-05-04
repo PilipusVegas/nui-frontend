@@ -4,15 +4,12 @@ import toast from "react-hot-toast";
 import { Modal } from "../../components";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
-import MobileLayout from "../../layouts/mobileLayout";
 import { formatFullDate } from "../../utils/dateUtils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 
-/* =======================
-   CONSTANT
-======================= */
+/* CONSTANT */
 const hours = Array.from({ length: 24 }, (_, i) =>
   `${i.toString().padStart(2, "0")}:00`
 );
@@ -22,16 +19,12 @@ const hourOptions = hours.map((h) => ({
   label: h,
 }));
 
-/* =======================
-   COMPONENT
-======================= */
+/* COMPONENT */
 export default function Lembur() {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const navigate = useNavigate();
 
-  /* =======================
-     STATE
-  ======================= */
+  /* STATE */
   const [user, setUser] = useState(null);
   const [infoOpen, setInfoOpen] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -47,20 +40,15 @@ export default function Lembur() {
     keterangan: "",
   });
 
-  /* =======================
-     INIT USER (ONCE)
-  ======================= */
+  /* INIT USER (ONCE) */
   useEffect(() => {
     const u = getUserFromToken();
     if (u) setUser(u);
   }, []);
 
-  /* =======================
-     FETCH JADWAL USER
-  ======================= */
+  /* FETCH JADWAL USER */
   useEffect(() => {
     if (!user?.id_user) return;
-
     setForm((p) => ({
       ...p,
       id_user: user.id_user,
@@ -74,12 +62,10 @@ export default function Lembur() {
     try {
       const res = await fetchWithJwt(`${apiUrl}/jadwal/cek/${idUser}`);
       const data = await res.json();
-
       if (!res.ok) {
         toast.error(data?.message || "Gagal memuat jadwal.");
         return;
       }
-
       setLokasiList(data.data?.lokasi || []);
     } catch {
       toast.error("Gagal memuat jadwal user.");
@@ -100,27 +86,21 @@ export default function Lembur() {
       toast.error("Lengkapi seluruh data lembur.");
       return false;
     }
-
     if (form.jam_mulai === form.jam_selesai) {
       toast.error("Jam mulai dan jam selesai tidak boleh sama.");
       return false;
     }
-
     const isLokasiValid = lokasiList.some(
       (l) => l.id === form.lokasi?.value
     );
-
     if (!isLokasiValid) {
       toast.error("Lokasi lembur tidak sesuai dengan jadwal Anda.");
       return false;
     }
-
     return true;
   };
 
-  /* =======================
-     CONFIRMATION
-  ======================= */
+  /* CONFIRMATION */
   const confirmSubmit = async () => {
     return Swal.fire({
       title: "Konfirmasi Pengajuan",
@@ -143,16 +123,12 @@ export default function Lembur() {
     });
   };
 
-  /* =======================
-     SUBMIT
-  ======================= */
+  /* SUBMIT */
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-
     const confirm = await confirmSubmit();
     if (!confirm.isConfirmed) return;
-
     setSubmitLoading(true);
     try {
       const res = await fetchWithJwt(`${apiUrl}/lembur/simpan`, {
@@ -167,14 +143,11 @@ export default function Lembur() {
           deskripsi: form.keterangan,
         }),
       });
-
       const data = await res.json().catch(() => ({}));
-
       if (!res.ok) {
         toast.error(data?.message || "Gagal mengirim pengajuan.");
         return;
       }
-
       toast.success(data?.message || "Pengajuan lembur berhasil.");
       navigate("/riwayat-pengguna");
     } catch {
@@ -184,12 +157,9 @@ export default function Lembur() {
     }
   };
 
-  /* =======================
-     RENDER
-  ======================= */
+  /* RENDER */
   return (
     <>
-      <MobileLayout title="Lembur">
         <form onSubmit={handleSubmit} className="pb-24 space-y-5">
           <div className="bg-white rounded-xl shadow border p-4 space-y-4">
 
@@ -281,7 +251,6 @@ export default function Lembur() {
             </button>
           </div>
         </form>
-      </MobileLayout>
 
       <Modal isOpen={infoOpen} onClose={() => setInfoOpen(false)} title="Ketentuan Pengajuan Lembur" note="Baca dengan teliti sebelum mengajukan lembur" size="md">
         <div className="space-y-4 text-sm leading-relaxed text-gray-800">
@@ -365,7 +334,6 @@ export default function Lembur() {
           </div>
         </div>
       </Modal>
-
     </>
   );
 }

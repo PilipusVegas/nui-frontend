@@ -12,7 +12,7 @@ import { faFolderOpen } from "@fortawesome/free-solid-svg-icons";
  *  - actionText  : string -> Label tombol opsional
  *  - onAction    : func   -> Callback tombol
  */
-export default function EmptyState({
+export default function Empty({
   title = "Data Kosong",
   description = "Belum ada informasi yang bisa ditampilkan saat ini.",
   icon = faFolderOpen,

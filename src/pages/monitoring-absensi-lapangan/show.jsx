@@ -466,7 +466,7 @@ const DetailAbsensi = () => {
                   </div>
                 </div>
 
-                {/* Footer: Tombol Aksi */}
+                {/* Footer: Tombol Menu */}
                 <div className="bg-gray-50 px-4 py-2 flex justify-end">
                   <button onClick={() => handleViewClick(item)} className="bg-blue-600 hover:bg-blue-700 text-white text-[12px] px-3 py-1.5 rounded-lg font-medium transition-all duration-200">
                     <FontAwesomeIcon icon={faEye} className="mr-1.5" />

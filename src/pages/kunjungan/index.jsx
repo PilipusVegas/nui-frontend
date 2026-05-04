@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState, useRef } from "react";
-import MobileLayout from "../../layouts/mobileLayout";
 import { MapRoute, LoadingSpinner } from "../../components";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { getDistanceMeters } from "../../utils/locationUtils";
@@ -380,15 +379,13 @@ export default function Kunjungan() {
     // ================= EARLY =================
     if (!gps) {
         return (
-            <MobileLayout title="Kunjungan">
                 <LoadingSpinner message="Mengambil lokasi GPS..."/>
-            </MobileLayout>
         );
     }
 
     // ================= RENDER =================
     return (
-        <MobileLayout title="Kunjungan">
+        <div>
             <div className="space-y-4 pb-32 scrollbar-none">
                 <div className="bg-white rounded-xl border p-3">
                     <div className="mb-2 flex items-start justify-between">
@@ -584,6 +581,6 @@ export default function Kunjungan() {
                 setPhotoFile={setPhoto}
                 isSubmitting={isSubmitting}
             />
-        </MobileLayout>
+        </div>
     );
 }

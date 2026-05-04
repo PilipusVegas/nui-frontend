@@ -4,8 +4,23 @@ import { exportRekapPresensi } from "./exportExcel";
 import { getDefaultPeriod } from "../../utils/getDefaultPeriod";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
-import { faFolderOpen, faFileDownload, faExpand, faRefresh, faCircleInfo } from "@fortawesome/free-solid-svg-icons";
-import { LoadingSpinner, SectionHeader, EmptyState, ErrorState, SearchBar, Modal } from "../../components/";
+import {
+  faFolderOpen,
+  faFileDownload,
+  faExpand,
+  faRefresh,
+  faCircleInfo,
+} from "@fortawesome/free-solid-svg-icons";
+import {
+  LoadingSpinner,
+  SectionHeader,
+  EmptyState,
+  ErrorState,
+  SearchBar,
+  Modal,
+  Button,
+  DateRangeField,
+} from "../../components/";
 import { formatLongDate } from "../../utils/dateUtils";
 import AttendanceRemarkModal from "../kelola-absensi/AttendanceRemarkModal";
 
@@ -19,7 +34,6 @@ const REMARK_MAP = {
 };
 
 const REMARK_FULLSPAN = [4, 5];
-
 
 const DataRekapAbsensi = () => {
   const Navigate = useNavigate();
@@ -46,7 +60,6 @@ const DataRekapAbsensi = () => {
     att?.remark_status !== 0;
   const isFullSpanRemark = (att) =>
     REMARK_FULLSPAN.includes(att?.remark_status);
-
 
   const sortData = (data) => {
     return [...data].sort((a, b) => {
@@ -104,13 +117,18 @@ const DataRekapAbsensi = () => {
 
   const filteredAbsenData = sortData(
     dataAbsen
-      .map(item => ({ ...item, nama: typeof item.nama === "string" ? item.nama : "-" }))
-      .filter(item => item.nama.toLowerCase().includes(searchName.toLowerCase()))
+      .map((item) => ({
+        ...item,
+        nama: typeof item.nama === "string" ? item.nama : "-",
+      }))
+      .filter((item) =>
+        item.nama.toLowerCase().includes(searchName.toLowerCase()),
+      ),
   );
 
   const toggleSort = (key) => {
     if (sortKey === key) {
-      setSortOrder(prev => (prev === "asc" ? "desc" : "asc"));
+      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
       setSortKey(key);
       setSortOrder("asc");
@@ -137,7 +155,9 @@ const DataRekapAbsensi = () => {
     const isSunday = day === 0;
     return {
       isSunday,
-      dayName: ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][day],
+      dayName: ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][
+        day
+      ],
       bg: isSunday ? "bg-red-600" : "bg-green-500",
       border: isSunday ? "border-red-800" : "border-green-600",
     };
@@ -175,43 +195,67 @@ const DataRekapAbsensi = () => {
 
   return (
     <div className="min-h-screen flex flex-col justify-start p-5">
-      <SectionHeader title="Kelola Presensi Karyawan" subtitle="Monitoring Presensi Karyawan secara real-time, akurat & simpel." onBack={() => Navigate("/")}
+      <SectionHeader
+        title="Kelola Presensi Karyawan"
+        subtitle="Monitoring Presensi Karyawan secara real-time, akurat & simpel."
+        onBack={() => Navigate("/")}
         actions={
           <div className="flex items-center gap-2">
             {canDownloadHRD && (
-              <button onClick={() => exportRekapPresensi({ filteredAbsenData, startDate, endDate, tanggalArray })} className={`flex items-center gap-2 h-10 px-4 font-semibold rounded-md shadow transition ${filteredAbsenData.length === 0 || loading ? "bg-gray-400 text-white cursor-not-allowed" : "bg-green-600 hover:bg-green-700 text-white"}`}>
-                <FontAwesomeIcon icon={faFileDownload} />
-                <span className="hidden sm:inline">Unduh Excel</span>
-              </button>
+              <Button
+                variant="primary"
+                size="lg"
+                icon={faFileDownload}
+                onClick={() =>
+                  exportRekapPresensi({
+                    filteredAbsenData,
+                    startDate,
+                    endDate,
+                    tanggalArray,
+                  })
+                }
+                disabled={filteredAbsenData.length === 0 || loading}
+              >
+                Rekap
+              </Button>
             )}
 
-            <button onClick={handleFullView} className="flex items-center gap-2 h-10 px-4 font-semibold rounded-md shadow bg-gray-500 hover:bg-gray-600 text-white transition">
-              <FontAwesomeIcon icon={faExpand} />
-              <span className="hidden sm:inline">Layar Penuh</span>
-            </button>
+            <Button
+              variant="fullscreen"
+              size="lg"
+              icon={faExpand}
+              onClick={handleFullView}
+            >
+              Layar Penuh
+            </Button>
 
-            <button onClick={fetchAbsenData} disabled={loading} className={`flex items-center gap-2 h-10 px-4 font-semibold rounded-md shadow transition ${loading ? "bg-sky-400 text-white cursor-not-allowed" : "bg-sky-500 hover:bg-sky-600 text-white"}`}>
-              <FontAwesomeIcon icon={faRefresh} />
-              <span className="hidden sm:inline">
+            <Button
+              variant="info"
+              size="lg"
+              icon={faRefresh}
+              onClick={fetchAbsenData}
+              loading={loading}
+            >
+              
                 {loading ? "Memperbarui..." : "Perbarui"}
-              </span>
-            </button>
+              
+            </Button>
 
-            <button onClick={() => setShowInfoModal(true)} className="flex items-center gap-2 h-10 px-4 font-semibold rounded-md shadow bg-blue-500 hover:bg-blue-600 text-white transition">
-              <FontAwesomeIcon icon={faCircleInfo} />
-              <span className="hidden sm:inline">Informasi</span>
-            </button>
+            <Button
+              variant="detail"
+              size="lg"
+              icon={faCircleInfo}
+              onClick={() => setShowInfoModal(true)}
+            >
+              info
+            </Button>
           </div>
         }
       />
 
-      <div className="w-full flex flex-row flex-wrap items-center justify-between gap-4 mb-4">
-        <SearchBar placeholder="Cari Karyawan..." className="flex-1 min-w-[200px]" onSearch={(val) => setSearchName(val)} />
-        <div className="flex items-center gap-1">
-          <input type="date" className="border-2 border-gray-300 rounded-md px-2 py-2.5 text-sm" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-          <span className="mx-1 text-gray-600">s/d</span>
-          <input type="date" className="border-2 border-gray-300 rounded-md px-2 py-2.5 text-sm" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-        </div>
+      <div className="w-full flex flex-row flex-wrap items-center justify-end gap-4 sm:gap-2 my-4">
+        <SearchBar placeholder="Cari Karyawan..." className="flex-1 min-w-[200px]" onSearch={(val) => setSearchName(val)}/>
+        <DateRangeField startDate={startDate} endDate={endDate} onChangeStart={setStartDate} onChangeEnd={setEndDate}/>
       </div>
 
       {/* Data Table */}
@@ -219,14 +263,23 @@ const DataRekapAbsensi = () => {
         <div className="w-full overflow-x-auto rounded-lg shadow-md border border-gray-300 bg-white">
           <div className="min-w-full max-w-[30vw]">
             <div className="flex w-full">
-              <div className="flex flex-col border-r bg-white shrink-0" style={{ borderRight: "1px solid #ccc" }}>
+              <div
+                className="flex flex-col border-r bg-white shrink-0"
+                style={{ borderRight: "1px solid #ccc" }}
+              >
                 <table className="border-collapse w-full">
                   <thead>
                     <tr>
-                      <th colSpan={2} className="sticky top-0 z-10 bg-green-500 text-white border border-green-600 px-3 py-2.5 text-[14px] text-center min-w-[150px]">
+                      <th
+                        colSpan={2}
+                        className="sticky top-0 z-10 bg-green-500 text-white border border-green-600 px-3 py-2.5 text-[14px] text-center min-w-[150px]"
+                      >
                         PEGAWAI
                       </th>
-                      <th colSpan={4} className="sticky top-0 z-10 bg-green-500 text-white border border-green-600 px-3 py-2.5 text-[14px] text-center min-w-[80px]">
+                      <th
+                        colSpan={4}
+                        className="sticky top-0 z-10 bg-green-500 text-white border border-green-600 px-3 py-2.5 text-[14px] text-center min-w-[80px]"
+                      >
                         JUMLAH
                       </th>
                     </tr>
@@ -237,16 +290,28 @@ const DataRekapAbsensi = () => {
                       <th className="sticky top-[32px] z-10 bg-green-500 text-white border border-green-600 px-3 py-0.5 text-[11.5px] text-center min-w-[150px]">
                         NAMA KARYAWAN
                       </th>
-                      <th onClick={() => toggleSort("kehadiran")} className="sticky top-[32px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-0.5 text-[11.5px] text-center min-w-[60px]">
+                      <th
+                        onClick={() => toggleSort("kehadiran")}
+                        className="sticky top-[32px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-0.5 text-[11.5px] text-center min-w-[60px]"
+                      >
                         HADIR
                       </th>
-                      <th onClick={() => toggleSort("alpha")} className="sticky top-[32px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-0.5 text-[11.5px] text-center min-w-[60px]">
+                      <th
+                        onClick={() => toggleSort("alpha")}
+                        className="sticky top-[32px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-0.5 text-[11.5px] text-center min-w-[60px]"
+                      >
                         ALPHA
                       </th>
-                      <th onClick={() => toggleSort("late")} className="sticky top-[32px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-0.5 text-[11.5px] text-center min-w-[60px]">
+                      <th
+                        onClick={() => toggleSort("late")}
+                        className="sticky top-[32px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-0.5 text-[11.5px] text-center min-w-[60px]"
+                      >
                         TERLAMBAT
                       </th>
-                      <th onClick={() => toggleSort("overtime")} className="sticky top-[32px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-0.5 text-[11.5px] text-center min-w-[60px]">
+                      <th
+                        onClick={() => toggleSort("overtime")}
+                        className="sticky top-[32px] z-10 bg-green-500 text-white border border-green-600 px-1.5 py-0.5 text-[11.5px] text-center min-w-[60px]"
+                      >
                         LEMBUR
                       </th>
                     </tr>
@@ -256,17 +321,46 @@ const DataRekapAbsensi = () => {
                     {filteredAbsenData.map((item, idx) => {
                       const isLate = item.total_late > 1;
                       return (
-                        <tr key={idx} onMouseEnter={() => setHoveredRow(idx)}
+                        <tr
+                          key={idx}
+                          onMouseEnter={() => setHoveredRow(idx)}
                           onMouseLeave={() => setHoveredRow(null)}
-                          className={hoveredRow === idx ? "bg-gray-200 transition-none" : "transition-none"}>
-                          <td className="border border-gray-300 px-3 py-1 text-center text-xs break-words tracking-wider">{item.nip || "-"}</td>
-                          <td onClick={() => { const url = `/kelola-absensi/${item.id_user}?startDate=${startDate}&endDate=${endDate}`; window.open(url, '_blank', 'noopener,noreferrer'); }} className="border border-gray-300 px-2 py-1 text-xs break-words font-semibold tracking-wider uppercase cursor-pointer hover:underline">
+                          className={
+                            hoveredRow === idx
+                              ? "bg-gray-200 transition-none"
+                              : "transition-none"
+                          }
+                        >
+                          <td className="border border-gray-300 px-3 py-1 text-center text-xs break-words tracking-wider">
+                            {item.nip || "-"}
+                          </td>
+                          <td
+                            onClick={() => {
+                              const url = `/kelola-absensi/${item.id_user}?startDate=${startDate}&endDate=${endDate}`;
+                              window.open(url, "_blank", "noopener,noreferrer");
+                            }}
+                            className="border border-gray-300 px-2 py-1 text-xs break-words font-semibold tracking-wider uppercase cursor-pointer hover:underline"
+                          >
                             {item.nama}
                           </td>
-                          <td className="border border-gray-300 px-3 py-1 text-center text-xs">{item.total_days || "-"}</td>
-                          <td className="border border-gray-300 px-3 py-1 text-center text-xs">{item.total_alpha || "-"}</td>
-                          <td className={`border border-gray-300 px-3 py-1 text-center text-xs ${isLate ? "text-red-700 font-bold" : ""}`}> {isLate ? item.total_late : "-"}</td>
-                          <td className="border border-gray-300 px-3 py-1 text-center text-xs"> {(item.total_overtime || 0) > 0 ? item.total_overtime : "-"}</td>
+                          <td className="border border-gray-300 px-3 py-1 text-center text-xs">
+                            {item.total_days || "-"}
+                          </td>
+                          <td className="border border-gray-300 px-3 py-1 text-center text-xs">
+                            {item.total_alpha || "-"}
+                          </td>
+                          <td
+                            className={`border border-gray-300 px-3 py-1 text-center text-xs ${isLate ? "text-red-700 font-bold" : ""}`}
+                          >
+                            {" "}
+                            {isLate ? item.total_late : "-"}
+                          </td>
+                          <td className="border border-gray-300 px-3 py-1 text-center text-xs">
+                            {" "}
+                            {(item.total_overtime || 0) > 0
+                              ? item.total_overtime
+                              : "-"}
+                          </td>
                         </tr>
                       );
                     })}
@@ -279,10 +373,14 @@ const DataRekapAbsensi = () => {
                   <thead>
                     {/* Baris tanggal */}
                     <tr>
-                      {tanggalArray.map(tgl => {
+                      {tanggalArray.map((tgl) => {
                         const m = dayMeta(tgl);
                         return (
-                          <th key={tgl} colSpan={m.isSunday ? 6 : 4} className={`sticky top-0 z-10 text-white ${m.bg} ${m.border} border px-2 py-0.5 text-center text-xs min-w-[120px]`}>
+                          <th
+                            key={tgl}
+                            colSpan={m.isSunday ? 6 : 4}
+                            className={`sticky top-0 z-10 text-white ${m.bg} ${m.border} border px-2 py-0.5 text-center text-xs min-w-[120px]`}
+                          >
                             {formatLongDate(tgl)}
                           </th>
                         );
@@ -291,10 +389,14 @@ const DataRekapAbsensi = () => {
 
                     {/* Baris nama hari */}
                     <tr>
-                      {tanggalArray.map(tgl => {
+                      {tanggalArray.map((tgl) => {
                         const m = dayMeta(tgl);
                         return (
-                          <th key={`hari-${tgl}`} colSpan={m.isSunday ? 6 : 4} className={`sticky top-0 z-20 text-white ${m.bg} ${m.border} border px-2 py-0.5 text-center text-xs`}>
+                          <th
+                            key={`hari-${tgl}`}
+                            colSpan={m.isSunday ? 6 : 4}
+                            className={`sticky top-0 z-20 text-white ${m.bg} ${m.border} border px-2 py-0.5 text-center text-xs`}
+                          >
                             {m.dayName}
                           </th>
                         );
@@ -303,12 +405,17 @@ const DataRekapAbsensi = () => {
 
                     {/* Baris label kolom */}
                     <tr>
-                      {tanggalArray.map(tgl => {
+                      {tanggalArray.map((tgl) => {
                         const m = dayMeta(tgl);
                         // hanya tampilkan LM dan LP jika hari Minggu
-                        const labels = m.isSunday ? ["IN", "LATE", "OUT", "T", "LM", "LP"] : ["IN", "LATE", "OUT", "T"];
-                        return labels.map(label => (
-                          <th key={`${tgl}-${label}`} className={`text-white ${m.bg} ${m.border} border px-1 py-0.5 text-[11.5px]`}>
+                        const labels = m.isSunday
+                          ? ["IN", "LATE", "OUT", "T", "LM", "LP"]
+                          : ["IN", "LATE", "OUT", "T"];
+                        return labels.map((label) => (
+                          <th
+                            key={`${tgl}-${label}`}
+                            className={`text-white ${m.bg} ${m.border} border px-1 py-0.5 text-[11.5px]`}
+                          >
                             {label}
                           </th>
                         ));
@@ -318,7 +425,12 @@ const DataRekapAbsensi = () => {
 
                   <tbody>
                     {filteredAbsenData.map((item, rowIdx) => (
-                      <tr key={rowIdx} onMouseEnter={() => setHoveredRow(rowIdx)} onMouseLeave={() => setHoveredRow(null)} className="group">
+                      <tr
+                        key={rowIdx}
+                        onMouseEnter={() => setHoveredRow(rowIdx)}
+                        onMouseLeave={() => setHoveredRow(null)}
+                        className="group"
+                      >
                         {tanggalArray.map((tgl, colIdx) => {
                           const m = dayMeta(tgl);
                           const att = item.attendance[tgl] || {};
@@ -326,44 +438,76 @@ const DataRekapAbsensi = () => {
                           const isFullSpan = isFullSpanRemark(att);
                           const inTime = att.in || "-";
                           const lateVal = att.late;
-                          const lateMin = lateVal === null || lateVal === undefined || lateVal === 0 ? "-" : lateVal;
+                          const lateMin =
+                            lateVal === null ||
+                            lateVal === undefined ||
+                            lateVal === 0
+                              ? "-"
+                              : lateVal;
                           const outTime = att.out || "-";
-                          const rawOt = att.overtime ?? item.overtimes?.[tgl]?.durasi;
-                          const startOvertime = item.overtimes?.[tgl]?.mulai ?? "-";
-                          const lastOvertime = item.overtimes?.[tgl]?.selesai ?? "-";
-                          const overtime = rawOt === null || rawOt === undefined || rawOt === 0 ? "-" : rawOt;
+                          const rawOt =
+                            att.overtime ?? item.overtimes?.[tgl]?.durasi;
+                          const startOvertime =
+                            item.overtimes?.[tgl]?.mulai ?? "-";
+                          const lastOvertime =
+                            item.overtimes?.[tgl]?.selesai ?? "-";
+                          const overtime =
+                            rawOt === null || rawOt === undefined || rawOt === 0
+                              ? "-"
+                              : rawOt;
                           const isEvenCol = colIdx % 2 === 0;
-                          const remarkClick = isRemark ? () => openRemarkModal({ item, att, tanggal: tgl }) : undefined;
+                          const remarkClick = isRemark
+                            ? () => openRemarkModal({ item, att, tanggal: tgl })
+                            : undefined;
 
                           // === Style dasar tiap sel ===
-                          const tdBase = `border px-2 py-1 text-center text-xs min-w-[50px] ${m.isSunday
-                            ? "border-red-800 bg-red-600 text-white font-semibold group-hover:!bg-red-700 group-hover:!text-white"
-                            : `border-gray-300 ${isEvenCol ? "bg-gray-100" : "bg-white"} group-hover:!bg-gray-200`
-                            }`;
+                          const tdBase = `border px-2 py-1 text-center text-xs min-w-[50px] ${
+                            m.isSunday
+                              ? "border-red-800 bg-red-600 text-white font-semibold group-hover:!bg-red-700 group-hover:!text-white"
+                              : `border-gray-300 ${isEvenCol ? "bg-gray-100" : "bg-white"} group-hover:!bg-gray-200`
+                          }`;
 
                           return (
                             <React.Fragment key={`${tgl}-${rowIdx}`}>
                               {isRemark && isFullSpan ? (
                                 /* ==== CUTI & IZIN SAKIT (COLSPAN + BG KUNING) ==== */
-                                <td colSpan={4} onClick={() => openRemarkModal({ item, att, tanggal: tgl })} className={`${tdBase} bg-yellow-100 cursor-pointer font-bold hover:bg-yellow-200 `}>
+                                <td
+                                  colSpan={4}
+                                  onClick={() =>
+                                    openRemarkModal({ item, att, tanggal: tgl })
+                                  }
+                                  className={`${tdBase} bg-yellow-100 cursor-pointer font-bold hover:bg-yellow-200 `}
+                                >
                                   {REMARK_MAP[att.remark_status]}
                                 </td>
                               ) : (
                                 /* ==== NORMAL CELL (TERMAsuk REMARK KUNING) ==== */
                                 <>
-                                  <td onClick={remarkClick} className={`${tdBase} ${isRemark ? "bg-yellow-100 hover:bg-yellow-200 cursor-pointer" : ""}`}>
+                                  <td
+                                    onClick={remarkClick}
+                                    className={`${tdBase} ${isRemark ? "bg-yellow-100 hover:bg-yellow-200 cursor-pointer" : ""}`}
+                                  >
                                     {inTime}
                                   </td>
 
-                                  <td onClick={remarkClick} className={`${tdBase} ${lateVal > 0 ? "text-red-700 font-bold" : ""} ${isRemark ? "bg-yellow-100 hover:bg-yellow-200 cursor-pointer" : ""}`}>
+                                  <td
+                                    onClick={remarkClick}
+                                    className={`${tdBase} ${lateVal > 0 ? "text-red-700 font-bold" : ""} ${isRemark ? "bg-yellow-100 hover:bg-yellow-200 cursor-pointer" : ""}`}
+                                  >
                                     {lateMin}
                                   </td>
 
-                                  <td onClick={remarkClick} className={`${tdBase} ${isRemark ? "bg-yellow-100 hover:bg-yellow-200 cursor-pointer" : ""}`}>
+                                  <td
+                                    onClick={remarkClick}
+                                    className={`${tdBase} ${isRemark ? "bg-yellow-100 hover:bg-yellow-200 cursor-pointer" : ""}`}
+                                  >
                                     {outTime}
                                   </td>
 
-                                  <td onClick={remarkClick}className={`${tdBase} ${isRemark ? "bg-yellow-100 hover:bg-yellow-200 cursor-pointer" : ""}`}>
+                                  <td
+                                    onClick={remarkClick}
+                                    className={`${tdBase} ${isRemark ? "bg-yellow-100 hover:bg-yellow-200 cursor-pointer" : ""}`}
+                                  >
                                     {overtime}
                                   </td>
                                 </>
@@ -389,19 +533,33 @@ const DataRekapAbsensi = () => {
       )}
 
       {showInfoModal && (
-        <Modal isOpen={showInfoModal} title="Informasi Halaman" note="Panduan singkat untuk memahami tombol dan label kolom." onClose={() => setShowInfoModal(false)}>
+        <Modal
+          isOpen={showInfoModal}
+          title="Informasi Halaman"
+          note="Panduan singkat untuk memahami tombol dan label kolom."
+          onClose={() => setShowInfoModal(false)}
+        >
           <div className="grid grid-cols-1 gap-3 text-sm text-gray-700">
             <div className="flex items-center gap-2">
-              <FontAwesomeIcon icon={faFileDownload} className="text-green-600" />
-              <span><b>Export Excel</b> – Unduh rekap presensi lengkap.</span>
+              <FontAwesomeIcon
+                icon={faFileDownload}
+                className="text-green-600"
+              />
+              <span>
+                <b>Export Excel</b> – Unduh rekap presensi lengkap.
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <FontAwesomeIcon icon={faExpand} className="text-yellow-500" />
-              <span><b>Fullscreen</b> – Perbesar tampilan tabel penuh layar.</span>
+              <span>
+                <b>Fullscreen</b> – Perbesar tampilan tabel penuh layar.
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <FontAwesomeIcon icon={faRefresh} className="text-blue-600" />
-              <span><b>Segarkan</b> – Muat ulang data sesuai rentang tanggal.</span>
+              <span>
+                <b>Segarkan</b> – Muat ulang data sesuai rentang tanggal.
+              </span>
             </div>
             <hr className="my-2 border-gray-300" />
 
@@ -422,7 +580,8 @@ const DataRekapAbsensi = () => {
             </div>
             <hr className="my-2 border-gray-300" />
             <p className="mt-2 text-xs text-gray-500">
-              Pastikan rentang tanggal sudah dipilih agar data ditampilkan lengkap.
+              Pastikan rentang tanggal sudah dipilih agar data ditampilkan
+              lengkap.
             </p>
           </div>
         </Modal>
@@ -436,20 +595,33 @@ const DataRekapAbsensi = () => {
 
       {!loading && error && (
         <div className="flex flex-col items-center justify-center py-8">
-          <ErrorState message={error} onRetry={() => { setLoading(true); fetchAbsenData(); }} />
+          <ErrorState
+            message={error}
+            onRetry={() => {
+              setLoading(true);
+              fetchAbsenData();
+            }}
+          />
         </div>
       )}
 
       {!loading && !error && dataAbsen.length === 0 && (
         <div className="flex flex-col items-center justify-center py-8 text-gray-600">
-          <EmptyState icon={faFolderOpen} title="Data kosong" subtitle="Silakan pilih rentang tanggal lain." />
+          <EmptyState
+            icon={faFolderOpen}
+            title="Data kosong"
+            subtitle="Silakan pilih rentang tanggal lain."
+          />
         </div>
       )}
 
       {showRemarkModal && (
-        <AttendanceRemarkModal isOpen={showRemarkModal} onClose={() => setShowRemarkModal(false)} data={remarkDetail} />
+        <AttendanceRemarkModal
+          isOpen={showRemarkModal}
+          onClose={() => setShowRemarkModal(false)}
+          data={remarkDetail}
+        />
       )}
-
     </div>
   );
 };

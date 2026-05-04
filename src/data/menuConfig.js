@@ -58,7 +58,7 @@ export const menuConfig = [
             {
                 label: "Data Karyawan",
                 icon: faPeopleGroup,
-                roles: [1, 4, 6, 20],
+                roles: [1, 4, 5, 6, 20],
                 submenu: [
                     {
                         label: "Kelola Karyawan",
@@ -77,7 +77,7 @@ export const menuConfig = [
                         label: "Kendaraan Karyawan",
                         icon: faUserGear,
                         path: "/kendaraan-karyawan",
-                        roles: [1, 4, 6, 20],
+                        roles: [1, 4, 5, 6, 20],
                         perusahaan: [1, 4],
                     },
                 ],
@@ -86,6 +86,7 @@ export const menuConfig = [
                 label: "Struktur Organisasi",
                 icon: faUsersCog,
                 roles: [1, 4, 6],
+                perusahaan: [1, 4],
                 submenu: [
                     {
                         label: "Data Divisi",
@@ -177,6 +178,7 @@ export const menuConfig = [
                 label: "Absensi Lapangan",
                 icon: faHelmetSafety,
                 roles: [1, 4, 5, 6, 18, 20],
+                perusahaan: [1, 4],
                 submenu: [
                     {
                         label: "Absensi Tidak Valid",
@@ -217,7 +219,7 @@ export const menuConfig = [
             {
                 label: "Formulir Dinas",
                 icon: faPlaneDeparture,
-                path: "/formulir-dinas",
+                path: "/formulir-dinas-aplikasi",
                 roles: [1, 5, 20],
             },
         ],
@@ -274,6 +276,12 @@ export const menuConfig = [
                         roles: [1, 4, 5, 6, 20],
                     },
                     {
+                        label: "Daftar Dinas Aktif",
+                        icon: faFileSignature,
+                        path: "/dinas-aktif",
+                        roles: [1],
+                    },
+                    {
                         label: "Riwayat Dinas",
                         icon: faBriefcase,
                         path: "/riwayat-surat-dinas",
@@ -285,6 +293,7 @@ export const menuConfig = [
                 label: "Kunjungan",
                 icon: faMapLocationDot,
                 roles: [1, 4, 5, 6, 20],
+                perusahaan: [1, 4],
                 submenu: [
                     {
                         label: "List Bantuan Checkout",
@@ -378,18 +387,21 @@ export const menuConfig = [
                 icon: faMapMarkerAlt,
                 path: "/data-lokasi",
                 roles: [1, 4, 5, 6, 20],
+                perusahaan: [1, 4],
             },
             {
                 label: "Data Kendaraan",
                 icon: faBicycle,
                 path: "/data-kendaraan",
                 roles: [1, 4, 5, 6, 20],
+                perusahaan: [1, 4],
             },
             {
                 label: "Data Jenis BBM",
                 icon: faGasPump,
-                path: "/jenis-bbm",
+                path: "/data-bbm",
                 roles: [1, 5, 20],
+                perusahaan: [1, 4],
             },
 
         ],

@@ -1,226 +1,182 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { faEye, } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import { fetchWithJwt } from "../../utils/jwtHelper";
-import SectionHeader from "../../components/desktop/SectionHeader";
-import { LoadingSpinner, ErrorState, SearchBar, Pagination, EmptyState, } from "../../components";
 import { formatLongDate, toLocalISODate } from "../../utils/dateUtils";
+import {
+  SectionHeader,
+  DataView,
+  Button,
+  Badge,
+  FilterSelect,
+} from "../../components";
+import { faEye } from "@fortawesome/free-solid-svg-icons";
 
 
 const RiwayatAbsensiLapangan = () => {
-    const navigate = useNavigate();
-    const apiUrl = process.env.REACT_APP_API_BASE_URL;
-    const itemsPerPage = 10;
-    const [data, setData] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [search, setSearch] = useState("");
-    const [currentPage, setCurrentPage] = useState(1);
-    const [periodeList, setPeriodeList] = useState([]);
-    const [selectedPeriode, setSelectedPeriode] = useState(null);
+  const navigate = useNavigate();
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  const [data, setData] = useState([]);
+  const [periodeList, setPeriodeList] = useState([]);
+  const [selectedPeriode, setSelectedPeriode] = useState(null);
+  const [loadingPeriode, setLoadingPeriode] = useState(true);
+  const [loadingData, setLoadingData] = useState(false);
+  const [error, setError] = useState(null);
 
-    /* ===================== FETCH PERIODE (MAX 3 BULAN) ===================== */
-    const fetchPeriode = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-            const res = await fetchWithJwt(`${apiUrl}/penggajian/periode`);
-            if (res.status === 404) {
-                setPeriodeList([]);
-                setSelectedPeriode(null);
-                return;
-            }
-            if (!res.ok) {
-                throw new Error("Gagal memuat periode penggajian");
-            }
-            const json = await res.json();
-            const today = new Date();
-            const nonActive = json.data.filter((p) => {
-                const start = new Date(p.tgl_awal);
-                const end = new Date(p.tgl_akhir);
-                return !(today >= start && today <= end);
-            });
+  /* ================= FETCH PERIODE ================= */
+  const fetchPeriode = async () => {
+    try {
+      setLoadingPeriode(true);
+      setError(null);
+      const res = await fetchWithJwt(`${apiUrl}/penggajian/periode`);
+      if (!res.ok) throw new Error("Gagal memuat periode");
+      const json = await res.json();
+      const today = new Date();
+      const nonActive = (json.data || []).filter((p) => {
+        const start = new Date(p.tgl_awal);
+        const end = new Date(p.tgl_akhir);
+        return !(today >= start && today <= end);
+      });
+      const lastThree = nonActive.slice(-3);
+      setPeriodeList(lastThree);
+      setSelectedPeriode(lastThree.at(-1) || null);
+    } catch (err) {
+      setError(err.message);
+      setPeriodeList([]);
+      setSelectedPeriode(null);
+    } finally {
+      setLoadingPeriode(false);
+    }
+  };
 
-            const lastThree = nonActive.slice(-3);
-            setPeriodeList(lastThree);
-            setSelectedPeriode(lastThree.length ? lastThree[lastThree.length - 1] : null);
-        } catch (err) {
-            console.error("fetchPeriode error:", err);
-            setError(err.message || "Terjadi kesalahan sistem");
-            setPeriodeList([]);
+  /* ================= FETCH DATA ================= */
+  const fetchRiwayat = async (periode) => {
+    if (!periode?.tgl_awal || !periode?.tgl_akhir) {
+      setData([]);
+      return;
+    }
+    try {
+      setLoadingData(true);
+      setError(null);
+      const res = await fetchWithJwt(
+        `${apiUrl}/absen/riwayat?startDate=${toLocalISODate(
+          periode.tgl_awal,
+        )}&endDate=${toLocalISODate(periode.tgl_akhir)}`,
+      );
+      if (!res.ok) throw new Error("Gagal memuat riwayat");
+      const json = await res.json();
+      setData(json.data || []);
+    } catch (err) {
+      setError(err.message);
+      setData([]);
+    } finally {
+      setLoadingData(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPeriode();
+  }, []);
+
+  useEffect(() => {
+    if (selectedPeriode) {
+      fetchRiwayat(selectedPeriode);
+    }
+  }, [selectedPeriode]);
+
+  /* ================= COLUMNS ================= */
+  const columns = [
+    {
+      label: "Nama Karyawan",
+      key: "nama",
+      render: (row) => <div className="font-semibold">{row.nama}</div>,
+    },
+    {
+      label: "Divisi",
+      key: "role",
+      cellClassName: "text-gray-600",
+    },
+    {
+      label: "Total Absen",
+      align: "text-center",
+      render: (row) => `${row.total_absen} Hari`,
+    },
+    {
+      label: "Menu",
+      align: "text-center",
+      isAction: true,
+      render: (row) => {
+        const isValid = selectedPeriode?.tgl_awal && selectedPeriode?.tgl_akhir;
+
+        return (
+          <Button
+            variant="detail"
+            size="sm"
+            icon={faEye}
+            disabled={!isValid}
+            onClick={() =>
+              window.open(
+                `/riwayat-absensi-lapangan/${row.id_user}?startDate=${toLocalISODate(
+                  selectedPeriode.tgl_awal,
+                )}&endDate=${toLocalISODate(selectedPeriode.tgl_akhir)}`,
+                "_blank",
+              )
+            }
+          >
+            Detail
+          </Button>
+        );
+      },
+    },
+  ];
+  const periodeOptions = periodeList.map((p) => ({
+    value: p.id,
+    label: `${formatLongDate(p.tgl_awal)} - ${formatLongDate(p.tgl_akhir)}`,
+  }));
+  /* ================= HEADER FILTER ================= */
+  const headerFilter = (
+    <div className="w-full md:w-[260px] shrink">
+      <FilterSelect
+        label="Periode"
+        options={periodeOptions}
+        value={selectedPeriode?.id || ""}
+        placeholder="Pilih periode"
+        onChange={(val) => {
+          if (!val) {
             setSelectedPeriode(null);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-
-    /* ===================== FETCH RIWAYAT ===================== */
-    const fetchRiwayat = async (periode) => {
-        if (!periode?.tgl_awal || !periode?.tgl_akhir) {
             setData([]);
             return;
-        }
+          }
 
-        try {
-            setLoading(true);
-            setError(null);
+          const p = periodeList.find((x) => x.id === val);
+          setSelectedPeriode(p || null);
+        }}
+      />
+    </div>
+  );
 
-            const startDate = toLocalISODate(periode.tgl_awal);
-            const endDate = toLocalISODate(periode.tgl_akhir);
+  return (
+    <div className="flex flex-col">
+      <SectionHeader
+        title="Riwayat Absensi Lapangan"
+        subtitle="Menampilkan riwayat absensi karyawan lapangan berdasarkan periode yang dipilih."
+        onBack={() => navigate("/pengajuan-absensi")}
+      />
 
-            const res = await fetchWithJwt(
-                `${apiUrl}/absen/riwayat?startDate=${startDate}&endDate=${endDate}`
-            );
-
-            if (res.status === 404) {
-                setData([]);
-                return;
-            }
-
-            if (!res.ok) {
-                throw new Error("Gagal memuat riwayat absensi");
-            }
-
-            const json = await res.json();
-            setData(Array.isArray(json.data) ? json.data : []);
-        } catch (err) {
-            console.error("fetchRiwayat error:", err);
-            setError(err.message || "Terjadi kesalahan sistem");
-            setData([]);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-
-
-    useEffect(() => {
-        fetchPeriode();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    useEffect(() => {
-        if (selectedPeriode) {
-            fetchRiwayat(selectedPeriode);
-        }
-    }, [selectedPeriode]);
-
-    const filteredData = useMemo(() => {
-        return data.filter(
-            (d) =>
-                d.nama.toLowerCase().includes(search.toLowerCase()) ||
-                d.role.toLowerCase().includes(search.toLowerCase())
-        );
-    }, [data, search]);
-
-    const paginated = filteredData.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
-
-    const isValidPeriode = selectedPeriode?.tgl_awal && selectedPeriode?.tgl_akhir;
-
-
-    return (
-        <div className="flex flex-col">
-            <SectionHeader title="Riwayat Absensi Lapangan" subtitle="Riwayat absensi karyawan lapangan yang diajukan melalui aplikasi absensi online." onBack={() => navigate("/pengajuan-absensi")} />
-
-            <div className="mb-4 flex flex-col sm:flex-row sm:items-end gap-2">
-                <div className="w-full sm:flex-1">
-                    <SearchBar placeholder="Cari nama atau divisi..." onSearch={(v) => { setSearch(v); setCurrentPage(1); }} />
-                </div>
-
-                <div className="w-full sm:w-auto sm:min-w-[260px]">
-                    <label className="text-xs font-semibold text-gray-600 mb-1 block sm:text-right">
-                        Tentukan Periode
-                    </label>
-                    <select value={selectedPeriode?.id || ""}
-                        onChange={(e) => {
-                            const p = periodeList.find((x) => x.id === Number(e.target.value));
-                            setSelectedPeriode(p);
-                            setCurrentPage(1);
-                        }}
-                        className="w-full border-2 border-gray-700 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-green-500"
-                    >
-                        {periodeList.map((p) => (
-                            <option key={p.id} value={p.id}>
-                                {formatLongDate(p.tgl_awal)} - {formatLongDate(p.tgl_akhir)}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-            </div>
-
-            <div className="rounded-lg shadow-md overflow-hidden bg-white">
-                <table className="w-full">
-                    <thead className="bg-green-500 text-white">
-                        <tr>
-                            <th className="py-3 px-4 text-sm text-center">No</th>
-                            <th className="py-3 px-4 text-sm text-left">Karyawan</th>
-                            <th className="py-3 px-4 text-sm text-left">Divisi</th>
-                            <th className="py-3 px-4 text-sm text-center">Total Absen</th>
-                            <th className="py-3 px-4 text-sm text-center">Menu</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        {loading && (
-                            <tr>
-                                <td colSpan={5} className="py-8">
-                                    <LoadingSpinner text="Memuat riwayat..." />
-                                </td>
-                            </tr>
-                        )}
-
-                        {!loading && error && (
-                            <tr>
-                                <td colSpan={5} className="py-8">
-                                    <ErrorState message={error} onRetry={fetchRiwayat} />
-                                </td>
-                            </tr>
-                        )}
-
-                        {!loading && !error && paginated.length === 0 && (
-                            <tr>
-                                <td colSpan={5} className="py-8">
-                                    <EmptyState title="Tidak ada data riwayat absensi" />
-                                </td>
-                            </tr>
-                        )}
-
-                        {!loading &&
-                            paginated.map((item, idx) => (
-                                <tr key={item.id_user} className="border-t hover:bg-gray-50">
-                                    <td className="text-center text-sm">
-                                        {idx + 1 + (currentPage - 1) * itemsPerPage}
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <div className="font-semibold">{item.nama}</div>
-                                    </td>
-                                    <td className="px-4 py-3 text-gray-600">
-                                        {item.role}
-                                    </td>
-                                    <td className="text-center text-sm">{item.total_absen} Hari</td>
-                                    <td className="text-center">
-                                        <a href={`/riwayat-absensi-lapangan/${item.id_user}?startDate=${toLocalISODate(selectedPeriode.tgl_awal)}&endDate=${toLocalISODate(selectedPeriode.tgl_akhir)}`} target="_blank" rel="noopener noreferrer"
-                                            className={`inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-md transition
-                                            ${isValidPeriode ? "bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300" : "bg-gray-300 text-gray-500 pointer-events-none cursor-not-allowed"}`}
-                                        >
-                                            <FontAwesomeIcon icon={faEye} className="text-[11px]" />
-                                            <span>Detail</span>
-                                        </a>
-                                    </td>
-                                </tr>
-                            ))}
-                    </tbody>
-                </table>
-            </div>
-
-            <Pagination currentPage={currentPage} totalItems={filteredData.length} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} />
-        </div>
-    );
+      <DataView
+        data={data}
+        columns={columns}
+        searchable
+        searchKeys={["nama", "role"]}
+        searchPlaceholder="Cari nama atau divisi..."
+        header={headerFilter}
+        isLoading={loadingPeriode || loadingData}
+        error={error}
+        onRetry={() => fetchRiwayat(selectedPeriode)}
+        emptyTitle="Tidak ada data riwayat absensi"
+      />
+    </div>
+  );
 };
 
 export default RiwayatAbsensiLapangan;

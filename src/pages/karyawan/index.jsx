@@ -1,565 +1,294 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import Swal from "sweetalert2";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrash, faPlus, faInfoCircle, faSortUp, faSortDown, faSort, faCheckCircle, faExclamationCircle, faEye, } from "@fortawesome/free-solid-svg-icons";
-import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
-import { LoadingSpinner, EmptyState, ErrorState, Pagination, SearchBar, SectionHeader, Modal } from "../../components/";
-import Select from "react-select";
+import {
+  faEdit,
+  faTrash,
+  faPlus,
+  faCheckCircle,
+  faExclamationCircle,
+  faEye,
+  faUser,
+} from "@fortawesome/free-solid-svg-icons";
+import { fetchWithJwt } from "../../utils/jwtHelper";
+import {
+  Modal,
+  DataView,
+  Button,
+  SectionHeader,
+  Badge,
+  FilterSelect,
+} from "../../components";
 
 const DataKaryawan = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [loadingAction, setLoadingAction] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
   const [selectedPerusahaan, setSelectedPerusahaan] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("");
-  const [sortOrder, setSortOrder] = useState(null);
+  const [selectedRole, setSelectedRole] = useState("");
   const [openInfo, setOpenInfo] = useState(false);
   const [selectedUserInfo, setSelectedUserInfo] = useState(null);
-  const [selectedRole, setSelectedRole] = useState("");
-
-  const handleSortStatus = () => {
-    setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
-    const sortedUsers = [...users].sort((a, b) => {
-      if (sortOrder === "asc") {
-        return b.status - a.status;
-      } else {
-        return a.status - b.status;
-      }
-    });
-    setUsers(sortedUsers);
-  };
-
-  const fetchData = async (endpoint) => {
-    try {
-      const res = await fetchWithJwt(`${apiUrl}${endpoint}`);
-      const json = await res.json();
-      if (res.ok && (json.data || Array.isArray(json))) {
-        return json.data || json;
-      } else {
-        throw new Error(json.message || "Gagal mengambil data.");
-      }
-    } catch (err) {
-      throw new Error(err.message || "Terjadi kesalahan koneksi.");
-    }
-  };
-
-  const fetchKaryawan = async () => {
-    try {
-      setIsLoading(true);
-      setErrorMessage("");
-      const users = await fetchData("/profil");
-      setUsers(users);
-    } catch (err) {
-      setErrorMessage(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   useEffect(() => {
-    fetchKaryawan();
+    (async () => {
+      try {
+        const res = await fetchWithJwt(`${apiUrl}/profil`);
+        const json = await res.json();
+        const data = Array.isArray(json.data)
+          ? json.data
+          : Array.isArray(json)
+            ? json
+            : [];
+
+        setUsers(data);
+      } catch (err) {
+        setErrorMessage(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    })();
   }, [apiUrl]);
 
-  const filteredUsers = users.filter((user) => {
-    const query = searchQuery.toLowerCase();
+  const getIncompleteFields = useCallback((user) => {
+    const fields = {
+      nik: "NIK",
+      nip: "NIP",
+      npwp: "NPWP",
+      no_rek: "No Rekening",
+      telp: "Nomor Telepon",
+      status_nikah: "Status Nikah",
+      id_shift: "Shift",
+    };
 
-    const matchSearch =
-      (user?.nama?.toLowerCase().includes(query) ||
-        user?.nip?.toLowerCase().includes(query) ||
-        user?.perusahaan?.toLowerCase().includes(query) ||
-        user?.role?.toLowerCase().includes(query) ||
-        (user?.shift || "").toLowerCase().includes(query) ||
-        (user?.status === 1 ? "aktif" : "nonaktif").includes(query));
+    return Object.keys(fields)
+      .filter((k) => {
+        const v = user[k];
+        if (k === "id_shift") return !v || v <= 0;
+        if (typeof v === "string") return !v.trim() || v === "-";
+        return v == null;
+      })
+      .map((k) => fields[k]);
+  }, []);
 
-    const matchPerusahaan =
-      !selectedPerusahaan ||
-      user.perusahaan?.toLowerCase() === selectedPerusahaan.toLowerCase();
+  const isDataComplete = (u) => getIncompleteFields(u).length === 0;
 
-    const matchStatus =
-      selectedStatus === "" ||
-      user.status?.toString() === selectedStatus;
+  const openModal = (user) => {
+    setSelectedUserInfo(user);
+    setOpenInfo(true);
+  };
 
-    const matchRole =
-      !selectedRole ||
-      user.role?.toLowerCase() === selectedRole.toLowerCase();
+  const renderActionButtons = (user) => (
+    <div className="flex gap-2 justify-center">
+      <Button
+        size="sm"
+        variant="detail"
+        icon={faEye}
+        onClick={() => navigate(`/karyawan/show/${user.id}`)}
+      >
+        Detail
+      </Button>
+      <Button
+        size="sm"
+        variant="warning"
+        icon={faEdit}
+        onClick={() => navigate(`/karyawan/edit/${user.id}`)}
+      >
+        Edit
+      </Button>
 
-    return matchSearch && matchPerusahaan && matchStatus && matchRole;
+      <Button
+        size="sm"
+        variant="danger"
+        icon={faTrash}
+        onClick={() => handleDelete(user.id)}
+      >
+        Hapus
+      </Button>
+    </div>
+  );
+
+  const handleDelete = async (id) => {
+    const res = await Swal.fire({ title: "Hapus?", showCancelButton: true });
+    if (!res.isConfirmed) return;
+    await fetchWithJwt(`${apiUrl}/profil/${id}`, { method: "DELETE" });
+    setUsers((p) => p.filter((u) => u.id !== id));
+  };
+
+  const columns = useMemo(
+    () => [
+      { label: "NIP", key: "nip", align: "text-center" },
+      {
+        label: "Nama Karyawan",
+        render: (row) => {
+          const incomplete = !isDataComplete(row);
+
+          return (
+            <div className="flex justify-between items-center gap-2">
+              <div>
+                <div className="font-semibold">{row.nama}</div>
+              </div>
+
+              {incomplete && (
+                <FontAwesomeIcon
+                  icon={faExclamationCircle}
+                  className="text-red-500 cursor-pointer"
+                  onClick={() => openModal(row)}
+                />
+              )}
+            </div>
+          );
+        },
+      },
+
+      { label: "Divisi", key: "role", align: "text-center" },
+      { label: "Shift", key: "shift", align: "text-center" },
+      {
+        label: "Status",
+        align: "text-center",
+        render: (row) => (
+          <Badge variant={row.status === 1 ? "success" : "neutral"} size="sm">
+            {row.status === 1 ? "Aktif" : "Nonaktif"}
+          </Badge>
+        ),
+      },
+
+      {
+        label: "Menu",
+        isAction: true,
+        align: "text-center",
+        render: (row) => renderActionButtons(row),
+      },
+    ],
+    [],
+  );
+
+  const filteredUsers = users.filter((u) => {
+    const p = (u.perusahaan || "").toLowerCase();
+    const r = (u.role || "").toLowerCase();
+    return (
+      (!selectedPerusahaan || p === selectedPerusahaan.toLowerCase()) &&
+      (!selectedRole || r === selectedRole.toLowerCase())
+    );
   });
 
+  const summaryItems = [
+    {
+      key: "total",
+      title: "Total Karyawan",
+      value: filteredUsers.length,
+      note: "Semua data",
+      icon: faUser,
+      variant: "default",
+    },
+  ];
 
-  const totalItems = filteredUsers.length;
-  const itemsPerPage = 10;
-  const indexOfFirstUser = (currentPage - 1) * itemsPerPage;
-  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfFirstUser + itemsPerPage);
+  const perusahaanOptions = useMemo(
+    () => [
+      { value: "", label: "Semua" },
+      ...[...new Set(users.map((u) => u.perusahaan).filter(Boolean))].map(
+        (p) => ({ value: p, label: p }),
+      ),
+    ],
+    [users],
+  );
 
-
-  const handleDelete = (id) => {
-    Swal.fire({
-      title: "Apakah Anda yakin ingin menghapus karyawan ini?",
-      icon: "warning",
-      html: `
-    <div style="text-align:left; font-size:14px; line-height:1.6">
-      <p><b>Perhatian:</b></p>
-      <p>
-        Menghapus karyawan akan <b>menghapus seluruh data secara permanen</b>, termasuk:
-      </p>
-      <ul style="padding-left:18px; margin-top:6px">
-        <li>Data karyawan</li>
-        <li>Riwayat kehadiran</li>
-        <li>Lembur</li>
-        <li>Dinas</li>
-        <li>Data terkait lainnya</li>
-      </ul>
-      <p style="margin-top:10px; color:#b91c1c;">
-        Tindakan ini tidak dapat dibatalkan.
-      </p>
-      <hr style="margin:12px 0"/>
-      <p>
-        <b>Disarankan:</b><br/>
-        Gunakan fitur <b>Nonaktifkan</b> melalui menu <b>Edit</b> agar data tetap tersimpan,
-        namun karyawan tidak dapat login dan melakukan absensi.
-      </p>
-    </div>
-  `,
-      showCancelButton: true,
-      confirmButtonText: "Ya, Hapus Permanen",
-      cancelButtonText: "Batal",
-      confirmButtonColor: "#dc2626",
-      cancelButtonColor: "#6b7280",
-    }).then(async (result) => {
-      if (!result.isConfirmed) return;
-      try {
-        setLoadingAction(true);
-        const res = await fetchWithJwt(`${apiUrl}/profil/${id}`, { method: "DELETE" });
-        const json = await res.json();
-        if (json.success) {
-          Swal.fire("Berhasil!", json.message, "success");
-          setUsers((prev) => prev.filter((user) => user.id !== id));
-        } else {
-          Swal.fire("Gagal", json.message, "error");
-        }
-      } catch {
-        Swal.fire("Gagal", "Terjadi kesalahan saat menghapus data.", "error");
-      } finally {
-        setLoadingAction(false);
-      }
-    });
-  };
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, selectedPerusahaan, selectedStatus, selectedRole]);
-
-  const requiredFields = {
-    nik: "NIK",
-    nip: "NIP",
-    npwp: "NPWP",
-    no_rek: "No Rekening",
-    telp: "Nomor Telepon",
-    status_nikah: "Status Nikah",
-    id_shift: "Shift"
-  };
-
-  const getIncompleteFields = (user) => {
-    if (!user || typeof user !== "object") return ["DATA KOSONG / ERROR"];
-    const missing = [];
-    Object.keys(requiredFields).forEach((key) => {
-      const value = user[key];
-      if (key === "id_shift") {
-        if (!value || value <= 0) missing.push(requiredFields[key]);
-        return;
-      }
-      if (key === "status_nikah") {
-        if (value === null || value === undefined) {
-          missing.push(requiredFields[key]);
-        }
-        return;
-      }
-      if (typeof value === "string") {
-        if (!value.trim() || value.trim() === "-") missing.push(requiredFields[key]);
-        return;
-      }
-      if (typeof value === "number") {
-        if (value <= 0) missing.push(requiredFields[key]);
-        return;
-      }
-      if (value === null || value === undefined) {
-        missing.push(requiredFields[key]);
-      }
-    });
-    return missing;
-  };
-
-
-  const isDataComplete = (user) => {
-    return getIncompleteFields(user).length === 0;
-  };
-
+  const roleOptions = useMemo(
+    () => [
+      { value: "", label: "Semua" },
+      ...[...new Set(users.map((u) => u.role).filter(Boolean))].map((r) => ({
+        value: r,
+        label: r,
+      })),
+    ],
+    [users],
+  );
 
   return (
-    <div className="flex flex-col">
-      <div className="flex-grow">
-        <SectionHeader title="Kelola Karyawan" subtitle="Mengatur data karyawan yang terdaftar dalam sistem." onBack={() => navigate("/home")} actions={
-          <button onClick={() => navigate("/karyawan/tambah")} className="flex items-center justify-center px-3 py-2 sm:px-5 sm:py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg transition-all duration-200 ease-in-out active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
-            <FontAwesomeIcon icon={faPlus} className="text-base sm:mr-2" />
-            <span className="hidden sm:inline">Tambah</span>
-          </button>
+    <div>
+      <SectionHeader
+        title="Kelola Karyawan"
+        subtitle="Mengelola data karyawan yang terdaftar dalam sistem."
+        onBack={() => navigate("/home")}
+        actions={
+          <Button icon={faPlus} onClick={() => navigate("/karyawan/tambah")}>
+            Tambah
+          </Button>
         }
-        />
+      />
 
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
-          <div className="w-full sm:flex-1">
-            <SearchBar onSearch={setSearchQuery} placeholder="Cari karyawan berdasarkan nama, role, atau perusahaan..." className="text-sm" />
-          </div>
-          <div className="w-full sm:w-[200px]">
-            <label className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5 block">
-              Perusahaan
-            </label>
-            <Select className="text-xs sm:text-sm"
-              styles={{
-                control: (base) => ({
-                  ...base,
-                  minHeight: 36,
-                  borderRadius: 8,
-                }),
-              }}
-              options={[
-                { value: "", label: "Semua" },
-                ...[...new Set(users.map((u) => u.perusahaan).filter(Boolean))].map((p) => ({
-                  value: p,
-                  label: p,
-                })),
-              ]}
-              value={
-                selectedPerusahaan
-                  ? { value: selectedPerusahaan, label: selectedPerusahaan }
-                  : { value: "", label: "Semua" }
-              }
-              onChange={(opt) => setSelectedPerusahaan(opt?.value ?? "")}
-              isClearable
-              placeholder="Semua"
-            />
-          </div>
-
-          <div className="w-full sm:w-[200px]">
-            <label className="text-[10px] sm:text-xs font-medium text-gray-600 mb-0.5 block">
-              Divisi / Role
-            </label>
-            <Select className="text-xs sm:text-sm"
-              styles={{
-                control: (base) => ({
-                  ...base,
-                  minHeight: 36,
-                  borderRadius: 8,
-                }),
-              }}
-              options={[
-                { value: "", label: "Semua" },
-                ...[...new Set(users.map((u) => u.role).filter(Boolean))].map((r) => ({
-                  value: r,
-                  label: r,
-                })),
-              ]}
-              value={
-                selectedRole
-                  ? { value: selectedRole, label: selectedRole }
-                  : { value: "", label: "Semua" }
-              }
-              onChange={(opt) => setSelectedRole(opt?.value ?? "")}
-              isClearable
-              placeholder="Semua"
-            />
-          </div>
-        </div>
-
-        {isLoading ? (
-          <div className="flex justify-center py-20">
-            <LoadingSpinner size="lg" />
-          </div>
-        ) : errorMessage ? (
-          <ErrorState message={"Terjadi kesalahan saat memuat data karyawan."} onRetry={fetchKaryawan} retryText="Coba Muat Ulang" />
-        ) : users.length === 0 ? (
-          <EmptyState title="Belum Ada Data Karyawan" description="Tambahkan karyawan baru atau cek kembali filter pencarian." actionLabel="Tambah Karyawan" onAction={() => navigate("/karyawan/tambah")} />
-        ) : (
+      <DataView
+        data={filteredUsers}
+        columns={columns}
+        rowKey={(r) => r.id}
+        searchable
+        searchKeys={["nip", "nama", "perusahaan", "role"]}
+        searchPlaceholder="Cari karyawan..."
+        isLoading={isLoading}
+        error={errorMessage}
+        summaryItems={summaryItems}
+        header={
           <>
-            <div className="relative hidden lg:block">
-              {loadingAction && (
-                <div className="absolute inset-0 flex items-center justify-center bg-white/60 z-10">
-                  <LoadingSpinner size="lg" />
-                </div>
-              )}
-
-              <table className="min-w-full table-auto bg-white border-collapse shadow-md rounded-lg">
-                <thead>
-                  <tr className="bg-green-500 text-white text-sm">
-                    <th className="px-4 py-3 font-semibold text-center rounded-tl-lg">No.</th>
-                    <th className="px-4 py-3 font-semibold text-center">NIP</th>
-                    <th className="px-4 py-3 font-semibold text-center">Nama Karyawan</th>
-                    <th className="px-4 py-3 font-semibold text-center">Divisi</th>
-                    <th className="px-4 py-3 font-semibold text-center">Perusahaan</th>
-                    <th className="px-4 py-3 font-semibold text-center">Shift</th>
-                    <th className="px-4 py-3 font-semibold text-center cursor-pointer select-none" onClick={handleSortStatus} title={`Urutkan Status (${sortOrder === "asc" ? "Aktif dulu" : "Nonaktif dulu"})`}>
-                      <div className="flex items-center justify-center gap-2">
-                        <span>Status</span>
-                        <FontAwesomeIcon icon={sortOrder === "asc" ? faSortUp : sortOrder === "desc" ? faSortDown : faSort} className={`text-base transition-transform duration-200 ${sortOrder ? "text-white" : "text-white/70"}`} />
-                      </div>
-                    </th>
-                    <th className="px-4 py-3 font-semibold text-center rounded-tr-lg">Menu</th>
-                  </tr>
-                </thead>
-
-                <tbody className="text-gray-800 text-sm">
-                  {Array.isArray(currentUsers) && currentUsers.length > 0 ? (
-                    currentUsers.map((user, index) => (
-                      <tr key={user.id} className="hover:bg-gray-50 transition duration-150 border-b border-gray-200">
-                        <td className="px-4 py-2 text-center">{indexOfFirstUser + index + 1}</td>
-
-                        <td className="px-4 py-2 text-center">
-                          <span className={user.nip ? "" : "text-gray-400 italic text-xs"}>
-                            {user.nip || "N/A"}
-                          </span>
-                        </td>
-
-                        <td className="px-4 py-2">
-                          <div className="flex items-center justify-between gap-3">
-                            <span className="font-semibold uppercase truncate max-w-[250px]">
-                              {user.nama || "N/A"}
-                            </span>
-                            {user.status === 1 && !isDataComplete(user) && (
-                              <FontAwesomeIcon icon={faExclamationCircle} className="text-red-500 text-lg cursor-pointer flex-shrink-0 animate-bounce" onClick={() => { setSelectedUserInfo(user); setOpenInfo(true); }} title={`Data belum lengkap:\n- ${getIncompleteFields(user).join("\n- ")}`} />
-                            )}
-                          </div>
-                        </td>
-
-                        <td className="px-4 py-2 text-center text-sm text-gray-700">
-                          {user.role || <span className="italic text-gray-400 text-xs">N/A</span>}
-                        </td>
-
-                        <td className="px-4 py-2 text-center text-[12px] text-gray-700 uppercase">
-                          {user.perusahaan || "N/A"}
-                        </td>
-
-                        <td className="px-4 py-2 text-center">
-                          <span className={user.shift ? "" : "text-gray-400 italic text-xs"}>
-                            {user.shift || "N/A"}
-                          </span>
-                        </td>
-
-                        <td className="px-4 py-2 text-center">
-                          <span className={`px-3 py-0.5 text-xs font-semibold rounded-full ${user.status === 1 ? "bg-emerald-500 text-white" : "bg-gray-500 text-white"}`}>
-                            {user.status === 1 ? "Aktif" : "Nonaktif"}
-                          </span>
-                        </td>
-
-                        <td className="px-4 py-2 text-center">
-                          <div className="flex justify-center gap-1.5">
-                            <button onClick={() => navigate(`/karyawan/show/${user.id}`)} className="px-2.5 py-1.5 font-medium rounded text-white text-xs flex items-center justify-center bg-blue-500 hover:bg-blue-600" title="Detail">
-                              <FontAwesomeIcon icon={faInfoCircle} className="mr-1" />
-                              Detail
-                            </button>
-                            <button onClick={() => navigate(`/karyawan/edit/${user.id}`)} className="px-2.5 py-1.5 font-medium rounded text-white text-xs flex items-center justify-center bg-yellow-500 hover:bg-yellow-600" title="Edit">
-                              <FontAwesomeIcon icon={faEdit} className="mr-1" />
-                              Edit
-                            </button>
-                            <button onClick={() => handleDelete(user.id)} className="px-2.5 py-1.5 font-medium rounded text-white text-xs flex items-center justify-center bg-red-600 hover:bg-red-700" title="Hapus">
-                              <FontAwesomeIcon icon={faTrash} className="mr-1" />
-                              Hapus
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="8" className="text-center text-gray-500 py-4 italic text-sm">
-                        Tidak ada data karyawan
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="lg:hidden">
-              {Array.isArray(currentUsers) && currentUsers.length > 0 ? (
-                currentUsers.map((user) => (
-                  <div key={user.id} className="bg-white border border-gray-200 rounded-2xl shadow-sm mb-5 overflow-hidden">
-                    <div className="px-4 pt-5 pb-3 flex justify-between items-start">
-                      <div className="flex-1 min-w-0 space-y-1">
-                        <div className="flex items-center justify-between">
-                          <h3 className="font-semibold text-gray-900 text-[17px] leading-tight truncate">
-                            {user.nama || "Tanpa Nama"}
-                          </h3>
-
-                          {user.status === 1 && !isDataComplete(user) && (
-                            <FontAwesomeIcon icon={faExclamationCircle} className="text-red-500 text-lg animate-bounce ml-2 cursor-pointer"
-                              onClick={() => {
-                                setSelectedUserInfo(user);
-                                setOpenInfo(true);
-                              }}
-                              title={`Data belum lengkap:\n- ${getIncompleteFields(user).join("\n- ")}`}
-                            />
-                          )}
-                        </div>
-
-                        <div className="flex flex-wrap gap-2 mt-1 text-[13px] text-gray-700">
-                          <span className="flex items-center gap-1">
-                            <span className="text-gray-400">NIP:</span>
-                            <span className={user.nip ? "text-gray-700" : "italic text-gray-400"}>
-                              {user.nip || "N/A"}
-                            </span>
-                          </span>
-
-                          <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 font-medium rounded-md flex items-center gap-1 border border-indigo-100">
-                            <i className="fa-solid fa-briefcase text-[9px]" />
-                            {user.role || "N/A"}
-                          </span>
-                        </div>
-                      </div>
-
-                      <span className={`ml-3 px-3 py-1.5 rounded-full text-[11px] font-semibold flex items-center gap-1 border ${user.status === 1 ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-gray-50 text-gray-500 border-gray-200"}`}>
-                        <i className={`fa-solid ${user.status === 1 ? "fa-circle-check" : "fa-circle-xmark"} text-[12px]`} />
-                        {user.status === 1 ? "Aktif" : "Nonaktif"}
-                      </span>
-                    </div>
-
-                    <div className="px-4 pb-3 text-[14px] text-gray-800 space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-500 flex items-center gap-1">
-                          <i className="fa-solid fa-building text-[11px]" />
-                          Perusahaan
-                        </span>
-                        <span className="font-semibold text-gray-900 max-w-[60%] text-right truncate">
-                          {user.perusahaan || <span className="italic text-gray-400">N/A</span>}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-500 flex items-center gap-1">
-                          <i className="fa-solid fa-clock text-[11px]" />
-                          Shift
-                        </span>
-                        <span className="font-semibold text-gray-900">
-                          {user.shift || <span className="italic text-gray-400">N/A</span>}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="px-4 py-3 border-t border-gray-200 bg-white flex justify-end gap-2">
-                      <button onClick={() => navigate(`/karyawan/show/${user.id}`)} className="px-3 py-1.5 text-[12px] font-medium rounded flex items-center justify-center gap-1 bg-blue-500 text-white hover:bg-blue-600 transition">
-                        <FontAwesomeIcon icon={faEye} />
-                        Detail
-                      </button>
-                      <button onClick={() => navigate(`/karyawan/edit/${user.id}`)} className="px-3 py-1.5 text-[12px] font-medium rounded flex items-center justify-center gap-1 bg-yellow-500 text-white hover:bg-yellow-600 transition">
-                        <FontAwesomeIcon icon={faEdit} />
-                        Edit
-                      </button>
-                      <button onClick={() => handleDelete(user.id)} className="px-3 py-1.5 text-[12px] font-medium rounded flex items-center justify-center gap-1 bg-red-600 text-white hover:bg-red-700 transition">
-                        <FontAwesomeIcon icon={faTrash} />
-                        Hapus
-                      </button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center text-gray-400 mt-10 italic">
-                  Tidak ada karyawan ditemukan
-                </div>
-              )}
-            </div>
+            <FilterSelect
+              label="Perusahaan"
+              value={selectedPerusahaan}
+              onChange={setSelectedPerusahaan}
+              options={perusahaanOptions}
+              className="md:w-56"
+            />
+            <FilterSelect
+              label="Divisi"
+              value={selectedRole}
+              onChange={setSelectedRole}
+              options={roleOptions}
+              className="md:w-48"
+            />
           </>
-        )}
-        <Pagination currentPage={currentPage} totalItems={totalItems} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} className="mt-10" />
-      </div>
+        }
+      />
 
-      <Modal isOpen={openInfo} onClose={() => setOpenInfo(false)} title="Kelengkapan Data" size="md" note={selectedUserInfo?.nama}
+      {/* MODAL FIXED */}
+      <Modal
+        isOpen={openInfo}
+        onClose={() => setOpenInfo(false)}
+        title="Info Kelengkapan Data"
+        note={`Nama Karyawan: ${selectedUserInfo?.nama}`}
         footer={
-          <div className="flex justify-between items-center gap-2 w-full">
-            <button onClick={() => setOpenInfo(false)} className="px-4 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded text-sm font-medium shadow-sm transition">
-              Tutup
-            </button>
-            {!isDataComplete(selectedUserInfo) && (
-              <button onClick={() => { setOpenInfo(false); navigate(`/karyawan/edit/${selectedUserInfo?.id}`); }} className="flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded text-sm font-semibold shadow-md">
-                <FontAwesomeIcon icon={faEdit} className="text-white text-sm" />
-                Perbaiki Data
-              </button>
-            )}
-          </div>
+          <Button
+            variant="warning"
+            onClick={() => {
+              setOpenInfo(false);
+              navigate(`/karyawan/edit/${selectedUserInfo?.id}`);
+            }}
+          >
+            Perbarui
+          </Button>
         }
       >
-
-        {selectedUserInfo && (
-          <div className="text-[15px] leading-relaxed">
-            {isDataComplete(selectedUserInfo) ? (
-              <div className="p-4 rounded-lg bg-green-100 border border-green-300 shadow-sm">
-                <p className="text-green-800 font-semibold flex items-center gap-2 text-[15px]">
-                  <FontAwesomeIcon icon={faCheckCircle} className="text-green-600 text-lg" />
-                  Data karyawan ini sudah lengkap
-                </p>
-                <p className="text-green-800 mt-2">
-                  Terima kasih! Seluruh informasi sudah sesuai dan siap digunakan untuk proses administrasi.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="p-4 rounded-xl bg-red-50 border border-red-200 shadow-[0_2px_6px_rgba(255,0,0,0.08)]">
-                  <div className="flex items-start gap-3">
-                    <div className="mt-1">
-                      <FontAwesomeIcon icon={faExclamationCircle} className="text-red-500 text-xl" />
-                    </div>
-
-                    <div>
-                      <p className="font-semibold text-red-700 text-[16px] mb-1">
-                        Beberapa data masih perlu dilengkapi
-                      </p>
-
-                      <ul className="list-disc pl-5 text-red-700 text-[15px] space-y-1">
-                        {getIncompleteFields(selectedUserInfo).map((item, idx) => (
-                          <li key={idx}>{item}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 shadow-[0_2px_6px_rgba(0,0,255,0.08)]">
-                  <div className="flex items-start gap-3">
-                    <div className="mt-1">
-                      <FontAwesomeIcon icon={faInfoCircle} className="text-blue-500 text-lg" />
-                    </div>
-
-                    <div>
-                      <p className="text-blue-800 text-[15px] leading-relaxed font-medium">
-                        Kelengkapan data sangat penting agar absensi, payroll, dan validasi karyawan
-                        dapat berjalan tanpa kendala.
-                      </p>
-
-                      <p className="text-blue-800 text-[14px] mt-2">
-                        Mohon lengkapi bagian yang masih kosong untuk memastikan data tersimpan dengan
-                        benar dan akurat.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+        {selectedUserInfo &&
+          (isDataComplete(selectedUserInfo) ? (
+            <div className="flex gap-2 text-emerald-600">
+              <FontAwesomeIcon icon={faCheckCircle} />
+              Data sudah lengkap
+            </div>
+          ) : (
+            <div>
+              <p className="font-semibold text-red-600 mb-2">
+                Data belum lengkap:
+              </p>
+              <ul className="list-disc pl-5 text-sm">
+                {getIncompleteFields(selectedUserInfo).map((f, i) => (
+                  <li key={i}>{f}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
       </Modal>
-
-
-
     </div>
   );
 };
-
-
-
 
 export default DataKaryawan;

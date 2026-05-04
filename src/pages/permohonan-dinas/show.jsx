@@ -1,22 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faFileDownload } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faFileDownload, faBuilding, faUser, faCalendarDays, faClock, faCircleInfo, faCheckCircle, faRoad, faPrint, faFilePdf, faEdit} from "@fortawesome/free-solid-svg-icons";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { formatFullDate } from "../../utils/dateUtils";
-import {
-  LoadingSpinner,
-  EmptyState,
-  ErrorState,
-  SectionHeader,
-} from "../../components";
+import { LoadingSpinner, EmptyState, ErrorState, SectionHeader, Button, DetailCard} from "../../components";
 
 const SuratDinasDetail = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const { id } = useParams();
   const navigate = useNavigate();
+  const printRef = useRef(null);
+
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,13 +23,8 @@ const SuratDinasDetail = () => {
       try {
         const res = await fetchWithJwt(`${apiUrl}/surat-dinas/${id}`);
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-
         const result = await res.json();
-        if (result?.data) {
-          setData(result.data);
-        } else {
-          setData(null);
-        }
+        setData(result?.data || null);
       } catch (err) {
         console.error("Gagal memuat detail:", err);
         setError(err.message || "Terjadi kesalahan");
@@ -57,9 +49,62 @@ const SuratDinasDetail = () => {
     }
   };
 
+  const tanggalPerjalanan = useMemo(() => {
+    if (!data?.tgl_berangkat) return "-";
+
+    return data.tgl_pulang
+      ? `${formatFullDate(data.tgl_berangkat)} s/d ${formatFullDate(
+          data.tgl_pulang,
+        )}`
+      : formatFullDate(data.tgl_berangkat);
+  }, [data]);
+
+  const detailItems = useMemo(
+    () => [
+      { label: "Nama Karyawan", value: data?.nama || "-" },
+      { label: "Divisi", value: data?.divisi || "-" },
+      { label: "Hari / Tanggal", value: tanggalPerjalanan },
+      {
+        label: "Waktu Berangkat",
+        value: data?.waktu ? `${data.waktu} WIB` : "-",
+      },
+      { label: "Kategori Perjalanan", value: getAreaDinas(data?.kategori) },
+      { label: "Keterangan", value: data?.keterangan || "-" },
+      {
+        label: "Persetujuan Ka Dept/Kadiv",
+        value:
+          Number(data?.status) === 1
+            ? `Disetujui pada ${data?.updated_at ? formatFullDate(data.updated_at) : "-"}`
+            : "Belum disetujui",
+      },
+    ],
+    [data, tanggalPerjalanan],
+  );
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate("/surat-dinas");
+    }
+  };
+
+  const safeFileName = (name) =>
+    String(name || "karyawan")
+      .replace(/[^a-z0-9-_ ]/gi, "")
+      .trim()
+      .replace(/\s+/g, "-");
+
+  const safeDateForFile = (value) => {
+    if (!value) return "tanggal-tidak-diketahui";
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return "tanggal-tidak-diketahui";
+    return d.toISOString().slice(0, 10);
+  };
+
   const handleCetakPDF = async () => {
     try {
-      const element = document.getElementById("cetak-area");
+      const element = printRef.current;
       if (!element) {
         alert("Area cetak tidak ditemukan.");
         return;
@@ -69,6 +114,10 @@ const SuratDinasDetail = () => {
         scale: 2,
         useCORS: true,
         backgroundColor: "#ffffff",
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight,
       });
 
       const imgData = canvas.toDataURL("image/png");
@@ -93,24 +142,13 @@ const SuratDinasDetail = () => {
         heightLeft -= pdfHeight;
       }
 
-      const tanggal = new Date(data.tgl_berangkat);
-      const formattedDate = tanggal.toLocaleDateString("id-ID");
-      const safeNama = String(data.nama || "karyawan")
-        .replace(/[^a-z0-9-_ ]/gi, "")
-        .trim();
+      const nama = safeFileName(data?.nama);
+      const tanggal = safeDateForFile(data?.tgl_berangkat);
 
-      pdf.save(`Surat-Dinas-${safeNama}-${formattedDate}.pdf`);
+      pdf.save(`Surat-Dinas-${nama}-${tanggal}.pdf`);
     } catch (err) {
       console.error("Gagal mencetak PDF:", err);
       alert("Gagal membuat PDF.");
-    }
-  };
-
-  const handleBack = () => {
-    if (window.history.length > 1) {
-      navigate(-1);
-    } else {
-      navigate("/surat-dinas");
     }
   };
 
@@ -118,39 +156,100 @@ const SuratDinasDetail = () => {
   if (error) return <ErrorState message="Gagal memuat data" detail={error} />;
   if (!data) return <EmptyState message="Data surat dinas tidak ditemukan" />;
 
-  const tanggalPerjalanan = data.tgl_pulang
-    ? `${formatFullDate(data.tgl_berangkat)} s/d ${formatFullDate(data.tgl_pulang)}`
-    : formatFullDate(data.tgl_berangkat);
-
-  const detailItems = [
-    { label: "Nama Karyawan", value: data.nama },
-    { label: "Hari/Tanggal", value: tanggalPerjalanan },
-    { label: "Divisi", value: data.divisi },
-    { label: "Keterangan", value: data.keterangan },
-    { label: "Kategori", value: getAreaDinas(data.kategori) },
-    { label: "Berangkat Jam", value: data.waktu ? `${data.waktu} WIB` : "-" },
-    {
-      label: "Persetujuan Ka Dept/Kadiv",
-      value:
-        Number(data.status) === 1
-          ? `Disetujui pada ${formatFullDate(data.updated_at)}`
-          : "Belum disetujui",
-    },
-  ];
-
   return (
     <div>
       <SectionHeader
-        title="Detail Surat Dinas"
-        subtitle="Detail Surat Dinas jika dibutuhkan untuk mencetak"
+        title="Detail Perjalanan Dinas"
+        subtitle="Informasi detail perjalanan dinas dan dokumen siap cetak PDF"
         onBack={handleBack}
+        actions={
+          <>
+          <Button
+            size="sm"
+            variant="danger"
+            onClick={handleCetakPDF}
+            icon={faFilePdf}
+          >
+            Cetak PDF
+          </Button>
+          {/* <Button
+            size="sm"
+            variant="warning"
+            onClick={() => navigate(`/permohonan-dinas/edit/${data.id}`)}
+            icon={faEdit}
+          >
+            Edit
+          </Button> */}
+          </>
+        }
       />
 
-      <div className="max-w-4xl mx-auto mt-20">
-        <div
-          id="cetak-area"
-          className="border-y-4 border-double border-gray-700 border-x-8 p-6 rounded-lg bg-white shadow-md"
-        >
+      <DetailCard>
+        <DetailCard.Header
+          title={data?.nama || "-"}
+          note="Detail perjalanan dinas untuk keperluan verifikasi dan pencetakan dokumen."
+          right={
+            <div className="text-right">
+              <p className="text-xs font-semibold uppercase text-gray-500">
+                Status
+              </p>
+              <p className="text-sm font-bold text-gray-800">
+                {Number(data?.status) === 1
+                  ? "Disetujui"
+                  : "Menunggu Persetujuan"}
+              </p>
+            </div>
+          }
+        />
+
+        <DetailCard.Body>
+          {/* ================= INFORMASI UTAMA ================= */}
+          <DetailCard.Section title="Informasi Perjalanan Dinas">
+            <DetailCard.Grid cols="sm:grid-cols-2 xl:grid-cols-3">
+              <DetailCard.Item label="Nama Karyawan" value={data?.nama} />
+              <DetailCard.Item label="Divisi" value={data?.divisi} />
+              <DetailCard.Item
+                label="Hari / Tanggal"
+                value={tanggalPerjalanan}
+              />
+              <DetailCard.Item
+                label="Waktu Berangkat"
+                value={data?.waktu ? `${data.waktu} WIB` : "-"}
+              />
+              <DetailCard.Item
+                label="Kategori Perjalanan"
+                value={getAreaDinas(data?.kategori)}
+              />
+              <DetailCard.Item
+                label="Persetujuan"
+                value={
+                  Number(data?.status) === 1
+                    ? `Disetujui pada ${
+                        data?.updated_at ? formatFullDate(data.updated_at) : "-"
+                      }`
+                    : "Belum disetujui"
+                }
+              />
+            </DetailCard.Grid>
+          </DetailCard.Section>
+
+          {/* ================= KETERANGAN ================= */}
+          <DetailCard.Section title="Keterangan">
+            <div className="rounded-xl border bg-gray-50 p-4 text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+              {data?.keterangan || "-"}
+            </div>
+          </DetailCard.Section>
+        </DetailCard.Body>
+
+      </DetailCard>
+
+      <div
+        ref={printRef}
+        id="cetak-area"
+        className="fixed left-[-10000px] top-0 w-[794px] bg-white text-black"
+        style={{ fontFamily: "Arial, sans-serif" }}
+      >
+        <div className="border-y-4 border-double border-gray-700 border-x-8 p-6 rounded-lg bg-white shadow-md">
           <h2 className="text-center text-4xl font-bold mb-4 text-gray-800">
             FORM DINAS KELUAR KANTOR
           </h2>
@@ -173,18 +272,24 @@ const SuratDinasDetail = () => {
             tugas dilaksanakan
           </div>
         </div>
+      </div>
+    </div>
+  );
+};
 
-        <div className="flex justify-between items-center mt-4 max-w-4xl mx-auto">
-          <button onClick={handleBack} className="text-white bg-green-600 hover:bg-green-700 transition rounded px-4 py-2 flex items-center">
-            <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
-            Kembali
-          </button>
-
-          <button onClick={handleCetakPDF} className="text-white bg-blue-600 hover:bg-blue-700 transition rounded px-4 py-2 flex items-center">
-            <FontAwesomeIcon icon={faFileDownload} className="mr-2" />
-            Cetak PDF
-          </button>
-        </div>
+const InfoCard = ({ icon, label, value }) => {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-700 shadow-sm">
+        <FontAwesomeIcon icon={icon} />
+      </div>
+      <div className="min-w-0">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          {label}
+        </p>
+        <p className="mt-1 break-words text-sm font-semibold text-slate-800">
+          {value}
+        </p>
       </div>
     </div>
   );

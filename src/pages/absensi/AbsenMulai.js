@@ -1,7 +1,7 @@
 import Select from "react-select";
 import Webcam from "react-webcam";
 import { useEffect, useState, useRef, useMemo } from "react";
-import MobileLayout from "../../layouts/mobileLayout";
+// import MobileLayout from "../../layouts/mobile/mobileLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { faArrowRight, faLocationDot, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
@@ -378,7 +378,7 @@ useEffect(() => {
 
 
   return (
-    <MobileLayout title="Absen Masuk Kerja" className="bg-gray-100">
+    // <MobileLayout title="Absen Masuk Kerja" className="bg-gray-100">
       <div className="flex justify-center">
         <form onSubmit={handleSubmit} className="w-full max-w-xl pb-28 space-y-6">
           <section className="bg-white rounded-xl border shadow-sm p-4 space-y-3">
@@ -575,7 +575,7 @@ useEffect(() => {
           </button>
         </form>
       </div>
-    </MobileLayout>
+    // </MobileLayout>
   );
 
 };

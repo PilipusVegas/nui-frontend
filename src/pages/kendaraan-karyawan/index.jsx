@@ -1,15 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faSearch,
-  faTrash,
-  faPlus,
-  faEdit,
-} from "@fortawesome/free-solid-svg-icons";
-import { fetchWithJwt } from "../../utils/jwtHelper";
-import { SectionHeader, Pagination } from "../../components/";
 import Swal from "sweetalert2";
+import { faPlus, faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { fetchWithJwt } from "../../utils/jwtHelper";
+import { SectionHeader, DataView, Button } from "../../components";
+
 import TambahKendaraanKaryawan from "./Tambah";
 import EditKendaraanKaryawan from "./Edit";
 
@@ -17,58 +12,57 @@ const KendaraanKaryawan = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const navigate = useNavigate();
 
-  const [searchTerm, setSearchTerm] = useState("");
   const [data, setData] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selected, setSelected] = useState(null);
 
-  const itemsPerPage = 10;
-
-  /* Helpers */
+  /* ================= FORMAT ================= */
   const formatRupiah = (value) =>
     `Rp ${Number(value || 0).toLocaleString("id-ID")}`;
 
-  /* Fetch Data */
-  useEffect(() => {
-    fetchData();
-  }, []);
-
+  /* ================= FETCH ================= */
   const fetchData = async () => {
+    setIsLoading(true);
     try {
       const res = await fetchWithJwt(`${apiUrl}/vehicles/users`);
+
       if (res.status === 404) {
         setData([]);
         return;
       }
+
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}`);
       }
+
       const json = await res.json();
       setData(Array.isArray(json.data) ? json.data : []);
     } catch (err) {
       console.error("Fetch kendaraan karyawan gagal:", err);
       setData([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  /* ================= DELETE ================= */
   const handleDelete = async (item) => {
     const confirm = await Swal.fire({
-      title: "Hapus Kendaraan Karyawan?",
-      html: `
-        <div style="text-align:left;font-size:13px">
-            <b>Karyawan:</b> ${item.nama_user}<br/>
-            <b>Kendaraan:</b> ${item.nama_kendaraan}
-        </div>
-    `,
+      title: "Hapus relasi kendaraan?",
+      text: `${item.nama_user ?? "-"} • ${item.nama_kendaraan ?? "-"}`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Hapus",
       cancelButtonText: "Batal",
       confirmButtonColor: "#dc2626",
     });
-
     if (!confirm.isConfirmed) return;
 
     try {
@@ -77,225 +71,125 @@ const KendaraanKaryawan = () => {
         { method: "DELETE" },
       );
 
-      // 🔥 AMBIL RESPONSE BODY DARI BACKEND
       let json = {};
       try {
         json = await res.json();
-      } catch {
-        json = {};
-      }
+      } catch {}
 
-      // 🔥 HANDLE ERROR DENGAN MESSAGE BE
       if (!res.ok) {
-        throw new Error(json?.message || "Gagal menghapus data");
+        throw new Error(json?.message || "Gagal menghapus");
       }
 
-      // ✅ SUCCESS JUGA PAKAI MESSAGE BE (JIKA ADA)
-      Swal.fire(
-        "Berhasil",
-        json?.message || "Relasi kendaraan karyawan berhasil dihapus",
-        "success",
-      );
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: "Kendaraan berhasil dihapus",
+        timer: 1200,
+        showConfirmButton: false,
+      });
 
       fetchData();
     } catch (err) {
-      Swal.fire(
-        "Gagal",
-        err.message || "Terjadi kesalahan pada sistem",
-        "error",
-      );
+      Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: err.message,
+      });
     }
   };
+  /* ================= COLUMNS ================= */
+  const columns = useMemo(
+    () => [
+      {
+        label: "Nama Karyawan ",
+        render: (row) => (
+          <div>
+            <div className="font-semibold">{row.nama_user}</div>
+            <div className="text-xs text-gray-500">{row.role}</div>
+          </div>
+        ),
+      },
+      {
+        label: "Informasi Kendaraan",
+        align: "text-center",
+        cellClassName: "text-center",
+        render: (row) => (
+          <div>
+            <div className="font-semibold">
+              {row.nama_kendaraan ?? "-"} ({row.tahun_kendaraan ?? "-"})
+            </div>
+            <div className="text-xs text-slate-500">
+              {row.konsumsi_bb ?? "-"} km/l
+            </div>
+          </div>
+        ),
+      },
+      {
+        label: "BBM",
+        key: "nama_bb",
+        align: "text-center",
+      },
+      {
+        label: "Harga",
+        render: (row) => formatRupiah(row.harga_bb),
+        align: "text-right",
+      },
+      {
+        label: "Menu",
+        isAction: true,
+        align: "text-center",
+        render: (row) => (
+          <div className="flex justify-center gap-2">
+            <Button
+              size="sm"
+              variant="warning"
+              icon={faEdit}
+              onClick={() => {
+                setSelected(row);
+                setIsEditOpen(true);
+              }}
+            >
+              Edit
+            </Button>
 
-  /* Filter & Pagination */
-  const filteredData = data.filter((item) =>
-    `${item.nama_user} ${item.nip_user} ${item.nama_kendaraan}`
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase()),
+            <Button
+              size="sm"
+              variant="danger"
+              icon={faTrash}
+              onClick={() => handleDelete(row)}
+            >
+              Hapus
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [],
   );
 
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentItems = filteredData.slice(
-    startIndex,
-    startIndex + itemsPerPage,
-  );
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm]);
-
-  /* Render */
   return (
     <div className="flex flex-col bg-white">
-      <SectionHeader
-        title="Kendaraan Karyawan"
-        subtitle="Daftar kendaraan yang digunakan oleh karyawan untuk operasional dan kunjungan."
+      <SectionHeader title="Kendaraan Karyawan"
+        subtitle="Mengelola kendaraan yang digunakan oleh karyawan."
         onBack={() => navigate("/home")}
         actions={
-          <button
-            onClick={() => setIsAddOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium"
-          >
-            <FontAwesomeIcon icon={faPlus} />
+          <Button icon={faPlus} onClick={() => setIsAddOpen(true)}>
             Tambah
-          </button>
+          </Button>
         }
       />
 
-      {/* SEARCH */}
-      <div className="mb-4">
-        <div className="relative">
-          <FontAwesomeIcon
-            icon={faSearch}
-            className="absolute left-3 top-3 text-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="Cari nama karyawan, NIP, atau kendaraan..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm"
-          />
-        </div>
-      </div>
-
-      {/* ================= TABLE DESKTOP ================= */}
-      <div className="hidden md:block rounded-lg shadow overflow-hidden">
-        <table className="w-full text-sm border-collapse">
-          <thead>
-            <tr className="bg-green-500 text-white">
-              <th className="px-3 py-3 text-center">No</th>
-              <th className="px-3 py-3">Karyawan</th>
-              <th className="px-3 py-3">Kendaraan</th>
-              <th className="px-3 py-3 text-center">Tahun</th>
-              <th className="px-3 py-3 text-center">Konsumsi</th>
-              <th className="px-3 py-3">BBM</th>
-              <th className="px-3 py-3 text-right">Harga BBM</th>
-              <th className="px-3 py-3 text-center">Menu</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentItems.length ? (
-              currentItems.map((item, index) => (
-                <tr
-                  key={`${item.id_user}-${item.id_kendaraan}`}
-                  className="hover:bg-gray-100"
-                >
-                  <td className="px-3 py-2 text-center">
-                    {startIndex + index + 1}
-                  </td>
-                  <td className="px-3 py-2">
-                    <div className="font-semibold">{item.nama_user}</div>
-                    <div className="text-xs text-gray-700">{item.role}</div>
-                  </td>
-                  <td className="px-3 py-2 font-semibold text-center">
-                    {item.nama_kendaraan}
-                  </td>
-                  <td className="px-3 py-2 text-center">
-                    {item.tahun_kendaraan}
-                  </td>
-                  <td className="px-3 py-2 text-center">
-                    {item.konsumsi_bb} km/l
-                  </td>
-                  <td className="px-3 py-2 text-center">{item.nama_bb}</td>
-                  <td className="px-3 py-2 text-right">
-                    {formatRupiah(item.harga_bb)}
-                  </td>
-                  <td className="px-3 py-2 text-center">
-                    <div className="flex justify-center gap-2">
-                      <button
-                        onClick={() => {
-                          setSelected(item);
-                          setIsEditOpen(true);
-                        }}
-                        className="px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md flex items-center gap-2"
-                      >
-                        <FontAwesomeIcon icon={faEdit} />
-                        Edit
-                      </button>
-
-                      <button
-                        onClick={() => handleDelete(item)}
-                        className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md flex items-center gap-2"
-                      >
-                        <FontAwesomeIcon icon={faTrash} />
-                        Hapus
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={8} className="text-center py-6 text-gray-500">
-                  Tidak ada data
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* ================= MOBILE ================= */}
-      <div className="md:hidden space-y-3">
-        {currentItems.length ? (
-          currentItems.map((item) => (
-            <div
-              key={`${item.id_user}-${item.id_kendaraan}`}
-              className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm"
-            >
-              {/* HEADER USER */}
-              <div className="mb-2">
-                <div className="font-semibold text-sm">{item.nama_user}</div>
-                <div className="text-xs text-gray-500">
-                  {item.nip_user} • {item.role}
-                </div>
-                <div className="text-xs text-gray-400">{item.perusahaan}</div>
-              </div>
-
-              {/* DATA KENDARAAN */}
-              <div className="text-sm font-medium">
-                {item.nama_kendaraan} ({item.tahun_kendaraan})
-              </div>
-              <div className="text-xs text-gray-500">
-                {item.nama_bb} • {item.konsumsi_bb} km/l
-              </div>
-
-              {/* ACTION BUTTON */}
-              <div className="mt-3 flex justify-end gap-2">
-                <button
-                  onClick={() => {
-                    setSelected(item);
-                    setIsEditOpen(true);
-                  }}
-                  className="inline-flex items-center px-3 py-1.5 text-xs font-medium bg-yellow-500 hover:bg-yellow-600 text-white rounded-md transition"
-                >
-                  Edit
-                </button>
-
-                <button
-                  onClick={() => handleDelete(item)}
-                  className="inline-flex items-center px-3 py-1.5 text-xs font-medium bg-red-600 hover:bg-red-700 text-white rounded-md transition"
-                >
-                  Hapus
-                </button>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="text-center text-sm text-gray-500 py-6">
-            Tidak ada data
-          </div>
-        )}
-      </div>
-
-      <Pagination
-        currentPage={currentPage}
-        totalItems={filteredData.length}
-        itemsPerPage={itemsPerPage}
-        onPageChange={setCurrentPage}
+      <DataView
+        data={data}
+        columns={columns}
+        isLoading={isLoading}
+        searchable
+        searchKeys={["nama_user", "nip_user", "nama_kendaraan"]}
+        emptyTitle="Belum ada data kendaraan"
+        emptyMessage="Silakan tambahkan kendaraan untuk karyawan."
       />
 
+      {/* MODAL */}
       <TambahKendaraanKaryawan
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
@@ -310,7 +204,7 @@ const KendaraanKaryawan = () => {
           setSelected(null);
         }}
         apiUrl={apiUrl}
-        idUserKendaraan={selected?.id_user_kendaraan} // ✅ FIX
+        idUserKendaraan={selected?.id_user_kendaraan}
         onSuccess={fetchData}
       />
     </div>

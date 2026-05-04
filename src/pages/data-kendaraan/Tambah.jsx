@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { Modal } from "../../components/";
+import { Modal, Button } from "../../components/";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import Select from "react-select";
 
@@ -63,7 +63,25 @@ const TambahKendaraan = ({ isOpen, onClose, apiUrl, onSuccess }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+
+    setForm((prev) => {
+      let newValue = value;
+
+      if (name === "konsumsi_bb") {
+        if (value === "") {
+          newValue = "";
+        } else {
+          const num = Number(value);
+
+          // paksa minimal 1
+          if (!isNaN(num)) {
+            newValue = Math.max(1, num);
+          }
+        }
+      }
+
+      return { ...prev, [name]: newValue };
+    });
   };
 
   const handleSubmit = async () => {
@@ -94,7 +112,11 @@ const TambahKendaraan = ({ isOpen, onClose, apiUrl, onSuccess }) => {
       const json = await res.json().catch(() => null);
 
       if (res.ok) {
-        Swal.fire("Berhasil", json?.message || "Kendaraan berhasil ditambahkan", "success");
+        Swal.fire(
+          "Berhasil",
+          json?.message || "Kendaraan berhasil ditambahkan",
+          "success",
+        );
 
         onSuccess?.();
         onClose();
@@ -110,43 +132,58 @@ const TambahKendaraan = ({ isOpen, onClose, apiUrl, onSuccess }) => {
         Swal.fire(
           "Gagal",
           json?.message || "Gagal menambahkan kendaraan",
-          "error"
+          "error",
         );
       }
     } catch (err) {
       console.error(err);
-      Swal.fire(
-        "Error",
-        err?.message || "Terjadi kesalahan sistem",
-        "error"
-      );
+      Swal.fire("Error", err?.message || "Terjadi kesalahan sistem", "error");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Tambah Kendaraan" note="Data kendaraan digunakan untuk perhitungan konsumsi BBM pada fitur kunjungan."
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Tambah Kendaraan"
+      note="Data kendaraan digunakan untuk perhitungan konsumsi BBM pada fitur kunjungan."
       footer={
         <>
-          <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-lg">
-            Batal
-          </button>
-          <button onClick={handleSubmit} disabled={isSubmitting || bbmList.length === 0} className="ml-2 px-6 py-2 bg-green-600 text-white rounded-lg disabled:opacity-50">
+          <Button size="sm" variant="secondary" onClick={onClose}>
+            Tutup
+          </Button>
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+          >
             {isSubmitting ? "Menyimpan..." : "Simpan"}
-          </button>
+          </Button>
         </>
       }
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="sm:col-span-2">
           <label className="text-sm font-medium">Nama Kendaraan</label>
-          <input name="nama" value={form.nama} onChange={handleChange} className="mt-1 w-full border rounded-lg px-3 py-2 text-sm" />
+          <input
+            name="nama"
+            value={form.nama}
+            onChange={handleChange}
+            className="mt-1 w-full border rounded-lg px-3 py-2 text-sm"
+          />
         </div>
 
         <div>
           <label className="text-sm font-medium">Kategori</label>
-          <select name="kategori" value={form.kategori} onChange={handleChange} className="mt-1 w-full border rounded-lg px-3 py-2 text-sm">
+          <select
+            name="kategori"
+            value={form.kategori}
+            onChange={handleChange}
+            className="mt-1 w-full border rounded-lg px-3 py-2 text-sm"
+          >
             {Object.entries(KATEGORI_KENDARAAN).map(([k, v]) => (
               <option key={k} value={k}>
                 {v}
@@ -157,7 +194,13 @@ const TambahKendaraan = ({ isOpen, onClose, apiUrl, onSuccess }) => {
 
         <div>
           <label className="text-sm font-medium">Tahun</label>
-          <input type="number" name="tahun" value={form.tahun} onChange={handleChange} className="mt-1 w-full border rounded-lg px-3 py-2 text-sm" />
+          <input
+            type="number"
+            name="tahun"
+            value={form.tahun}
+            onChange={handleChange}
+            className="mt-1 w-full border rounded-lg px-3 py-2 text-sm"
+          />
         </div>
 
         <div>
@@ -165,6 +208,7 @@ const TambahKendaraan = ({ isOpen, onClose, apiUrl, onSuccess }) => {
           <input
             type="number"
             name="konsumsi_bb"
+            min={1}
             value={form.konsumsi_bb}
             onChange={handleChange}
             className="mt-1 w-full border rounded-lg px-3 py-2 text-sm"
@@ -176,7 +220,9 @@ const TambahKendaraan = ({ isOpen, onClose, apiUrl, onSuccess }) => {
 
           <Select
             options={bbmOptions}
-            value={bbmOptions.find((o) => o.value === Number(form.id_bb)) || null}
+            value={
+              bbmOptions.find((o) => o.value === Number(form.id_bb)) || null
+            }
             onChange={(selected) =>
               setForm((prev) => ({
                 ...prev,

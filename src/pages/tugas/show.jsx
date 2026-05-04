@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCamera, faChevronDown, faChevronRight, faCircleCheck, faCircleXmark, faHammer, faHourglassHalf, faInfoCircle, faPauseCircle, faTimes, } from "@fortawesome/free-solid-svg-icons";
 import toast from "react-hot-toast";
-import MobileLayout from "../../layouts/mobileLayout";
 import { LoadingSpinner, ErrorState, EmptyState, FooterMainBar } from "../../components";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { formatFullDate } from "../../utils/dateUtils";
@@ -194,7 +193,7 @@ const DetailTugasMobile = () => {
 
 
     return (
-        <MobileLayout title="Detail Tugas">
+        <div>
             <div className="pb-24">
                 {loading ? (
                     <LoadingSpinner message="Memuat detail tugas..." />
@@ -499,7 +498,7 @@ const DetailTugasMobile = () => {
             <Lightbox open={lightboxOpen} close={() => setLightboxOpen(false)} slides={lightboxImages} index={lightboxIndex} plugins={[Thumbnails]} />
 
             <FooterMainBar />
-        </MobileLayout>
+        </div>
     );
 };
 

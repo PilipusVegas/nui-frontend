@@ -164,7 +164,7 @@ const TambahAksesHRD = () => {
                 )}
 
 
-                {/* Tombol Aksi */}
+                {/* Tombol Menu */}
                 <div className="flex justify-between gap-3 mt-auto pt-6 border-t border-gray-100">
                     <button type="button" onClick={() => navigate(-1)} className="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 transition-all duration-200 flex items-center gap-2">
                         <FontAwesomeIcon icon={faArrowLeft} />

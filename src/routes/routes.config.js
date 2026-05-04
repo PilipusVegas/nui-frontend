@@ -1,16 +1,15 @@
 // src/routes/routes.config.jsx
 
 import React from "react";
-import SidebarLayout from "../layouts/SidebarLayout";
 
 /* ===================== AUTH & HOME ===================== */
 import Login from "../pages/login";
 import HomeRedirect from "../pages/HomeRedirect";
 
 /* ===================== MENU & PROFILE ===================== */
-import Menu from "../pages/menu";
-import Profile from "../pages/user-profile";
-import EditProfile from "../pages/user-profile/edit";
+// import Menu from "../pages/menu";
+import Profile from "../pages/profil";
+import EditProfile from "../pages/profil/edit";
 
 /* ===================== ABSENSI / LEMBUR / CUTI ===================== */
 import Absen from "../pages/absensi";
@@ -24,6 +23,7 @@ import FormulirDinas from "../pages/dinas";
 import FormulirDinasAplikasi from "../pages/dinas/formDinasAplikasi";
 import PermohonanDinas from "../pages/permohonan-dinas/";
 import DetailPermohonanDinas from "../pages/permohonan-dinas/show";
+import DinasAktif from "../pages/daftar-dinas-aktif";
 import RiwayatPermohonanDinas from "../pages/permohonan-dinas/riwayat";
 
 /* ===================== TUGAS ===================== */
@@ -109,6 +109,8 @@ import KelolaAnggotaTim from "../pages/kelola-anggota-tim";
 import DataKendaraan from "../pages/data-kendaraan";
 import DataJenisBbm from "../pages/data-jenis-bbm";
 import KendaraanKaryawan from "../pages/kendaraan-karyawan"
+import Kalender from "../pages/kalender";
+// import { FooterMainBar } from "../components";
 
 /* ===================== ROUTES CONFIG ===================== */
 export const routes = [
@@ -118,116 +120,118 @@ export const routes = [
   /* ===== HOME ===== */
   // { path: "/home", element: <HomeRedirect />},
   { path: "/home", element: <HomeRedirect />, roles: [] },
+  { path: "/kalender", element: <Kalender />, roles: [], layout: "auto", mobileTitle: "Kalender" },
 
 
   /* ===== MOBILE ===== */
   { path: "/notification", element: <Notification />, roles: [] },
-  { path: "/riwayat-pengguna", element: <RiwayatPengguna />, roles: [] },
+  { path: "/riwayat-pengguna", element: <RiwayatPengguna />, roles: [], layout: "auto", mobileTitle: "Riwayat Pengguna", showMobileFooter: true },
   { path: "/riwayat-face", element: <RiwayatFace /> },
 
   /* ===== MENU & PROFILE ===== */
-  { path: "/menu", element: <Menu />, roles: [] },
-  { path: "/profile", element: <Profile />, roles: [] },
-  { path: "/profile/edit/:id", element: <EditProfile />, roles: [] },
+  // { path: "/menu", element: <Menu />, roles: [] },
+  { path: "/profile", element: <Profile />, roles: [], layout: "auto", mobileTitle: "Profile Karyawan", showMobileFooter: true },
+  { path: "/profile/edit/:id", element: <EditProfile />, roles: [], layout: "auto", mobileTitle: "Edit Profile" },
 
   /* ===== ABSENSI / LEMBUR / CUTI ===== */
-  { path: "/absensi", element: <Absen />, roles: [] },
-  { path: "/absensi-tim", element: <AbsensiTim />, roles: [] },
-  { path: "/lembur", element: <Lembur />, roles: [] },
+  { path: "/absensi", element: <Absen />, roles: [], layout: "auto", mobileTitle: "Absensi" },  
+  { path: "/absensi-tim", element: <AbsensiTim />, roles: [], layout: "auto", mobileTitle: "Absensi Tim" },
+  { path: "/lembur", element: <Lembur />, roles: [], layout: "auto", mobileTitle: "Formulir Lembur" },
   { path: "/cuti", element: <Cuti />, roles: [] },
   { path: "/formulir-cuti", element: <PermohonanCuti />, roles: [] },
 
   /* ===== DINAS ===== */
-  { path: "/formulir-dinas", element: <FormulirDinas /> },
-  { path: "/formulir-dinas-aplikasi", element: <FormulirDinasAplikasi />, roles: [] },
+  { path: "/formulir-dinas", element: <FormulirDinas />  },
+  { path: "/formulir-dinas-aplikasi", element: <FormulirDinasAplikasi />, roles: [], layout: "auto", mobileTitle: "Formulir Dinas" },
 
   /* ===== KUNJUNGAN ===== */
-  { path: "/list-bantuan-checkout", element: <ListBantuanCheckout />, roles: [], layout: SidebarLayout },
-  { path: "/permohonan-kunjungan", element: <PermohonanKunjungan />, roles: [], layout: SidebarLayout },
-  { path: "/permohonan-kunjungan/detail/:id", element: <DetailKunjungan />, roles: [], layout: SidebarLayout },
-  { path: "/riwayat-permohonan-kunjungan", element: <RiwayatKunjungan />, roles: [], layout: SidebarLayout },
-  { path: "/kunjungan", element: <Kunjungan />, roles: [] },
+  { path: "/list-bantuan-checkout", element: <ListBantuanCheckout />, roles: [], layout: "desktop" },
+  { path: "/permohonan-kunjungan", element: <PermohonanKunjungan />, roles: [], layout: "desktop" },
+  { path: "/permohonan-kunjungan/detail/:id", element: <DetailKunjungan />, roles: [], layout: "desktop" },
+  { path: "/riwayat-permohonan-kunjungan", element: <RiwayatKunjungan />, roles: [], layout: "desktop" },
+  { path: "/kunjungan", element: <Kunjungan />, roles: [], layout: "mobile", mobileTitle: "Permohonan Kunjungan" },
 
   /* ===== TUGAS ===== */
-  { path: "/tugas", element: <Tugas />, roles: [] },
-  { path: "/tugas/:id", element: <DetailTugas />, roles: [] },
+  { path: "/tugas", element: <Tugas />, roles: [], layout: "auto", mobileTitle: "Tugas" },
+  { path: "/tugas/:id", element: <DetailTugas />, roles: [], layout: "auto", mobileTitle: "Detail Tugas" },
 
   /* ===== DESKTOP (SIDEBAR LAYOUT) ===== */
-  { path: "/monitoring-absensi", element: <MonitoringAbsensi />, roles: ["1", "4", "5", "6", "18", "20"], layout: SidebarLayout },
-  { path: "/monitoring-absensi/:id_user", element: <DetailMonitoringAbsensi />, roles: ["1", "4", "5", "6", "18", "20"], layout: SidebarLayout },
-  { path: "/absensi-tidak-valid", element: <AbsensiTidakValid />, roles: ["1", "4", "5", "6", "18", "20"], layout: SidebarLayout },
-  { path: "/riwayat-absensi-lapangan", element: <RiwayatAbsensiLapangan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-  { path: "/riwayat-absensi-lapangan/:id_user", element: <RiwayatAbsensiLapanganDetail />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/monitoring-absensi", element: <MonitoringAbsensi />, roles: ["1", "4", "5", "6", "18", "20"], layout: "desktop" },
+  { path: "/monitoring-absensi/:id_user", element: <DetailMonitoringAbsensi />, roles: ["1", "4", "5", "6", "18", "20"], layout: "desktop" },
+  { path: "/absensi-tidak-valid", element: <AbsensiTidakValid />, roles: ["1", "4", "5", "6", "18", "20"], layout: "desktop" },
+  { path: "/riwayat-absensi-lapangan", element: <RiwayatAbsensiLapangan />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
+  { path: "/riwayat-absensi-lapangan/:id_user", element: <RiwayatAbsensiLapanganDetail />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
 
-  { path: "/permohonan-absensi-tim", element: <PermohonanAbsensiTim />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/permohonan-absensi-tim", element: <PermohonanAbsensiTim />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
 
-  { path: "/permohonan-lembur", element: <PermohonanLembur />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-  { path: "/riwayat-lembur", element: <RiwayatPermohonanLembur />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/permohonan-lembur", element: <PermohonanLembur />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
+  { path: "/riwayat-lembur", element: <RiwayatPermohonanLembur />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
 
-  { path: "/permohonan-dinas", element: <PermohonanDinas />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-  { path: "/permohonan-dinas/:id", element: <DetailPermohonanDinas />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-  { path: "/riwayat-surat-dinas", element: <RiwayatPermohonanDinas />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/permohonan-dinas", element: <PermohonanDinas />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
+  { path: "/permohonan-dinas/:id", element: <DetailPermohonanDinas />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
+  { path: "/dinas-aktif", element: <DinasAktif />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
+  { path: "/riwayat-surat-dinas", element: <RiwayatPermohonanDinas />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
 
-  { path: "/data-lokasi", element: <DataLokasi />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-  { path: "/data-lokasi/tambah", element: <TambahLokasi />, roles:  ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-  { path: "/data-lokasi/edit/:id", element: <EditLokasi />, roles:  ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/data-lokasi", element: <DataLokasi />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
+  { path: "/data-lokasi/tambah", element: <TambahLokasi />, roles:  ["1", "4", "5", "6", "20"], layout: "desktop" },
+  { path: "/data-lokasi/edit/:id", element: <EditLokasi />, roles:  ["1", "4", "5", "6", "20"], layout: "desktop" },
 
   { path: "/kelola-absensi", element: <KelolaAbsensi />, roles: ["1", "4", "6"] },
-  { path: "/kelola-absensi/:id", element: <DetailKelolaAbsensi />, roles: ["1", "4", "6"], layout: SidebarLayout },
-  { path: "/remark-absensi", element: <RemarkAbsensi />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/kelola-absensi/:id", element: <DetailKelolaAbsensi />, roles: ["1", "4", "6"], layout: "desktop" },
+  { path: "/remark-absensi", element: <RemarkAbsensi />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
   
-  { path: "/karyawan", element: <DataKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
-  { path: "/karyawan/tambah", element: <TambahKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
-  { path: "/karyawan/edit/:id", element: <EditKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
-  { path: "/karyawan/show/:id", element: <ShowKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
+  { path: "/karyawan", element: <DataKaryawan />, roles: ["1", "4", "6"], layout: "desktop" },
+  { path: "/karyawan/tambah", element: <TambahKaryawan />, roles: ["1", "4", "6"], layout: "desktop" },
+  { path: "/karyawan/edit/:id", element: <EditKaryawan />, roles: ["1", "4", "6"], layout: "desktop" },
+  { path: "/karyawan/show/:id", element: <ShowKaryawan />, roles: ["1", "4", "6"], layout: "desktop" },
 
-  { path: "/penggajian", element: <DataPenggajian />, roles: ["1", "4", "6"], layout: SidebarLayout },
-  { path: "/penggajian/riwayat", element: <RiwayatPenggajian />, roles: ["1", "4", "6"], layout: SidebarLayout },
+  { path: "/penggajian", element: <DataPenggajian />, roles: ["1", "4", "6"], layout: "desktop" },
+  { path: "/penggajian/riwayat", element: <RiwayatPenggajian />, roles: ["1", "4", "6"], layout: "desktop" },
 
-  { path: "/divisi", element: <Divisi />, roles: ["1", "4", "6"], layout: SidebarLayout },
-  { path: "/shift", element: <Shift />, roles: ["1", "4", "6"], layout: SidebarLayout },
-  { path: "/shift/tambah", element: <TambahShift />, roles: ["1", "4", "6"], layout: SidebarLayout },
-  { path: "/shift/edit/:id", element: <EditShift />, roles: ["1", "4", "6"], layout: SidebarLayout },
+  { path: "/divisi", element: <Divisi />, roles: ["1", "4", "6"], layout: "desktop" },
+  { path: "/shift", element: <Shift />, roles: ["1", "4", "6"], layout: "desktop" },
+  { path: "/shift/tambah", element: <TambahShift />, roles: ["1", "4", "6"], layout: "desktop" },
+  { path: "/shift/edit/:id", element: <EditShift />, roles: ["1", "4", "6"], layout: "desktop" },
 
-  { path: "/perusahaan", element: <KelolaPerusahaan />, roles: ["1", "4", "6"], layout: SidebarLayout },
-  { path: "/perusahaan/tambah", element: <TambahPerusahaan />, roles: ["1", "4", "6"], layout: SidebarLayout },
-  { path: "/perusahaan/edit/:id", element: <EditPerusahaan />, roles: ["1", "4", "6"], layout: SidebarLayout },
+  { path: "/perusahaan", element: <KelolaPerusahaan />, roles: ["1", "4", "6"], layout: "desktop" },
+  { path: "/perusahaan/tambah", element: <TambahPerusahaan />, roles: ["1", "4", "6"], layout: "desktop" },
+  { path: "/perusahaan/edit/:id", element: <EditPerusahaan />, roles: ["1", "4", "6"], layout: "desktop" },
 
-  { path: "/shift-perusahaan", element: <KelolaShiftPerusahaan />, roles: ["1", "4", "6"], layout: SidebarLayout },
-  { path: "/shift-perusahaan/edit/:id", element: <EditShiftPerusahaan />, roles: ["1", "4", "6"], layout: SidebarLayout },
+  { path: "/shift-perusahaan", element: <KelolaShiftPerusahaan />, roles: ["1", "4", "6"], layout: "desktop" },
+  { path: "/shift-perusahaan/edit/:id", element: <EditShiftPerusahaan />, roles: ["1", "4", "6"], layout: "desktop" },
 
-  { path: "/manajemen-menu", element: <ManajemenMenu />, roles: ["1"], layout: SidebarLayout },
-  { path: "/perangkat-absensi", element: <PerangkatAbsensi />, roles: ["1"], layout: SidebarLayout },
+  { path: "/manajemen-menu", element: <ManajemenMenu />, roles: ["1"], layout: "desktop" },
+  { path: "/perangkat-absensi", element: <PerangkatAbsensi />, roles: ["1"], layout: "desktop" },
 
-  { path: "/akses-hrd", element: <HrdAccess />, roles: ["1"], layout: SidebarLayout },
-  { path: "/akses-hrd/tambah", element: <TambahHrdAccess />, roles: ["1"], layout: SidebarLayout },
-  { path: "/akses-hrd/edit/:id_user", element: <EditHrdAccess />, roles: ["1"], layout: SidebarLayout },
+  { path: "/akses-hrd", element: <HrdAccess />, roles: ["1"], layout: "desktop" },
+  { path: "/akses-hrd/tambah", element: <TambahHrdAccess />, roles: ["1"], layout: "desktop" },
+  { path: "/akses-hrd/edit/:id_user", element: <EditHrdAccess />, roles: ["1"], layout: "desktop" },
 
-  { path: "/kadiv-member", element: <KadivMember />, roles: ["1", "4", "6"], layout: SidebarLayout },
-  { path: "/kadiv-member/show/:id_user", element: <DetailKadivMember />, roles: ["1", "4", "6"], layout: SidebarLayout },
+  { path: "/kadiv-member", element: <KadivMember />, roles: ["1", "4", "6"], layout: "desktop" },
+  { path: "/kadiv-member/show/:id_user", element: <DetailKadivMember />, roles: ["1", "4", "6"], layout: "desktop" },
 
-  { path: "/role-app", element: <RoleApp />, roles: ["1"], layout: SidebarLayout },
+  { path: "/role-app", element: <RoleApp />, roles: ["1"], layout: "desktop" },
 
-  { path: "/penugasan", element: <Penugasan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-  { path: "/penugasan/tambah", element: <TambahPenugasan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-  { path: "/penugasan/edit/:id", element: <EditPenugasan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-  { path: "/penugasan/show/:id", element: <DetailPenugasan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-  { path: "/penugasan/riwayat", element: <RiwayatPenugasan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/penugasan", element: <Penugasan />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
+  { path: "/penugasan/tambah", element: <TambahPenugasan />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
+  { path: "/penugasan/edit/:id", element: <EditPenugasan />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
+  { path: "/penugasan/show/:id", element: <DetailPenugasan />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
+  { path: "/penugasan/riwayat", element: <RiwayatPenugasan />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
 
-  { path: "/tunjangan-karyawan", element: <TunjanganKaryawan />, roles: ["1", "4", "6"], layout: SidebarLayout },
+  { path: "/tunjangan-karyawan", element: <TunjanganKaryawan />, roles: ["1", "4", "6"], layout: "desktop" },
   { path: "/rekap-tunjangan", element: <RekapTunjangan />, roles: ["1", "4", "6"] },
 
-  { path: "/log-sistem", element: <LogSistem />, roles: ["1", "4", "6"], layout: SidebarLayout },
+  { path: "/log-sistem", element: <LogSistem />, roles: ["1", "4", "6"], layout: "desktop" },
 
-  { path: "kelola-anggota-tim", element: <KelolaAnggotaTim />, roles: ["1", "5", "20"], layout: SidebarLayout },
+  { path: "/kelola-anggota-tim", element: <KelolaAnggotaTim />, roles: ["1", "5", "20"], layout: "desktop" },
 
-  { path: "/penjadwalan", element: <PenjadwalanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-  { path: "/penjadwalan/tambah", element: <TambahPenjadwalanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-  { path: "/penjadwalan/edit/:id_user", element: <EditPenjadwalanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-  { path: "/penjadwalan/detail/:id_user", element: <DetailPenjadwalanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-  { path: "/penjadwalan/tambah-jadwal/:id_user", element: <TambahPenjadwalan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/penjadwalan", element: <PenjadwalanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
+  { path: "/penjadwalan/tambah", element: <TambahPenjadwalanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
+  { path: "/penjadwalan/edit/:id_user", element: <EditPenjadwalanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
+  { path: "/penjadwalan/detail/:id_user", element: <DetailPenjadwalanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
+  { path: "/penjadwalan/tambah-jadwal/:id_user", element: <TambahPenjadwalan />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
 
-  { path: "/jenis-bbm", element: <DataJenisBbm />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-  { path: "/data-kendaraan", element: <DataKendaraan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
-  { path: "/kendaraan-karyawan", element: <KendaraanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: SidebarLayout },
+  { path: "/data-bbm", element: <DataJenisBbm />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
+  { path: "/data-kendaraan", element: <DataKendaraan />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
+  { path: "/kendaraan-karyawan", element: <KendaraanKaryawan />, roles: ["1", "4", "5", "6", "20"], layout: "desktop" },
 ];

@@ -2,34 +2,45 @@ import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faEdit, faTrash, faMapMarkerAlt, faBuilding, faStore, faHouse, } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPlus,
+  faEdit,
+  faMapMarkerAlt,
+  faBuilding,
+  faStore,
+  faHouse,
+} from "@fortawesome/free-solid-svg-icons";
+
 import { fetchWithJwt } from "../../utils/jwtHelper";
-import { LoadingSpinner, EmptyState, Pagination, SearchBar, ErrorState, SectionHeader, Modal } from "../../components";
+import {
+  SectionHeader,
+  Modal,
+  DataView,
+  Button,
+} from "../../components";
 
 const DataLokasi = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const navigate = useNavigate();
+
   const [lokasiData, setLokasiData] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
   const [activeKategori, setActiveKategori] = useState("ALL");
   const [openKategoriModal, setOpenKategoriModal] = useState(false);
 
-
-  /* ================= FETCH DATA ================= */
+  /* ================= FETCH ================= */
   const fetchLokasiData = async () => {
     setLoading(true);
     setError(false);
 
     try {
-      const response = await fetchWithJwt(`${apiUrl}/lokasi/`);
-      const result = await response.json();
+      const res = await fetchWithJwt(`${apiUrl}/lokasi/`);
+      const result = await res.json();
       setLokasiData(result.data || []);
     } catch (err) {
-      console.error("Error fetching lokasi:", err);
+      console.error(err);
       setError(true);
     } finally {
       setLoading(false);
@@ -40,54 +51,69 @@ const DataLokasi = () => {
     fetchLokasiData();
   }, []);
 
-  /* ================= DELETE ================= */
-  const handleDelete = async (id) => {
-    const result = await Swal.fire({
-      title: "Anda yakin ingin menghapus?",
-      text: "Data ini akan dihapus secara permanen!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Hapus",
-      cancelButtonText: "Batal",
-    });
-
-    if (!result.isConfirmed) return;
-
-    try {
-      const response = await fetchWithJwt(
-        `${apiUrl}/lokasi/delete/${id}`,
-        { method: "DELETE" }
-      );
-
-      if (response.ok) {
-        Swal.fire("Berhasil", "Data berhasil dihapus", "success");
-        fetchLokasiData();
-      }
-    } catch (err) {
-      console.error("Delete error:", err);
-    }
+  /* ================= ACTION ================= */
+  const openGoogleMaps = (koordinat) => {
+    if (!koordinat) return;
+    window.open(
+      `https://www.google.com/maps?q=${encodeURIComponent(koordinat)}`,
+      "_blank"
+    );
   };
 
-  /* ================= FILTER & PAGINATION ================= */
-  const filteredData = lokasiData
-    .filter((item) =>
-      activeKategori === "ALL"
-        ? true
-        : item.kategori === activeKategori
-    )
-    .filter((item) =>
-      item.nama.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  /* ================= FILTER ================= */
+  const filteredData =
+    activeKategori === "ALL"
+      ? lokasiData
+      : lokasiData.filter((i) => i.kategori === activeKategori);
 
-  const paginatedData = filteredData.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  /* ================= COLUMNS ================= */
+  const columns = [
+    {
+      label: "Nama Lokasi",
+      key: "nama",
+      render: (row) => (
+        <span className="font-semibold uppercase">{row.nama}</span>
+      ),
+    },
+    {
+      label: "Koordinat",
+      key: "koordinat",
+      truncate: true,
+    },
+    {
+      label: "Timezone",
+      key: "timezone",
+      align: "text-center",
+    },
+    {
+      label: "Menu",
+      isAction: true,
+      align: "text-center",
+      render: (row) => (
+        <div className="flex justify-center gap-2">
+          <Button
+            size="sm"
+            variant="detail"
+            icon={faMapMarkerAlt}
+            onClick={() => openGoogleMaps(row.koordinat)}
+          >
+            Maps
+          </Button>
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, activeKategori]);
+          <Button
+            size="sm"
+            variant="warning"
+            icon={faEdit}
+            onClick={() => navigate(`/data-lokasi/edit/${row.id}`)}
+          >
+            Edit
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
+  /* ================= TABS ================= */
   const tabs = [
     { label: "Semua", value: "ALL" },
     { label: "Kantor", value: 1 },
@@ -95,195 +121,84 @@ const DataLokasi = () => {
     { label: "Rumah", value: 3 },
   ];
 
-  const MAX_VISIBLE_TABS = 5;
-  const visibleTabs = tabs.slice(0, MAX_VISIBLE_TABS);
-  const overflowTabs = tabs.slice(MAX_VISIBLE_TABS);
-  const [openMoreTab, setOpenMoreTab] = useState(false);
+  const renderTabs = () =>
+    tabs.map((tab) => {
+      const isActive = activeKategori === tab.value;
 
-  const renderTab = (tab) => {
-    const isActive = activeKategori === tab.value;
+      return (
+        <Button
+          key={tab.value}
+          size="sm"
+          variant={isActive ? "primary" : "secondary"}
+          onClick={() => setActiveKategori(tab.value)}
+        >
+          {tab.label}
+        </Button>
+      );
+    });
 
-    return (
-      <button key={tab.value} onClick={() => setActiveKategori(tab.value)}
-        className={`shrink-0 px-3 py-1.5 text-xs sm:text-sm rounded-lg border font-medium whitespace-nowrap transition-colors focus:outline-none focus:ring-2 focus:ring-green-300
-        ${isActive ? "bg-green-500 border-green-500 text-white" : "bg-white border-gray-300 text-gray-600 hover:bg-gray-100"}
-      `}
-      >
-        {tab.label}
-      </button>
-    );
-  };
-
-  const openGoogleMaps = (koordinat) => {
-    if (!koordinat) return;
-
-    // asumsi format: "lat,lng"
-    const url = `https://www.google.com/maps?q=${encodeURIComponent(koordinat)}`;
-    window.open(url, "_blank", "noopener,noreferrer");
-  };
-
-  /* ================= RENDER ================= */
   return (
     <>
-      <div className="flex flex-col bg-white">
+      <SectionHeader
+        title="Data Lokasi"
+        subtitle={`Menampilkan ${filteredData.length} lokasi yang terdaftar dalam sistem`}
+        onBack={() => navigate("/home")}
+        actions={
+          <Button
+            icon={faPlus}
+            onClick={() => setOpenKategoriModal(true)}
+          >
+            Tambah
+          </Button>
+        }
+      />
 
-        <SectionHeader title="Data Lokasi" subtitle={`Total ${filteredData.length} lokasi terdaftar`} onBack={() => navigate("/home")}
-          actions={
-            <button onClick={() => setOpenKategoriModal(true)} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg transition">
-              <FontAwesomeIcon icon={faPlus} />
-              Tambah
-            </button>
-          }
-        />
+      <DataView
+        data={filteredData}
+        columns={columns}
+        searchable
+        searchKeys={["nama", "koordinat", "timezone"]}
+        searchPlaceholder="Cari lokasi..."
+        isLoading={loading}
+        error={error}
+        onRetry={fetchLokasiData}
+        emptyTitle="Data Lokasi Kosong"
+        emptyMessage="Belum ada data lokasi atau hasil pencarian tidak ditemukan."
+        emptyActionText="Tambah Lokasi"
+        onEmptyAction={() => navigate("/data-lokasi/tambah")}
+        header={renderTabs()}
+      />
 
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-          <div className="order-2 md:order-1 md:flex-1">
-            {/* MOBILE — scroll horizontal */}
-            <div className="flex gap-2 overflow-x-auto no-scrollbar md:hidden">
-              {tabs.map(renderTab)}
-            </div>
-
-            {/* DESKTOP — tabs + dropdown */}
-            <div className="hidden md:flex gap-2 items-center relative">
-
-              {/* tab utama */}
-              {visibleTabs.map(renderTab)}
-
-              {/* dropdown Lainnya */}
-              {overflowTabs.length > 0 && (
-                <div className="relative">
-                  <button onClick={() => setOpenMoreTab((prev) => !prev)} className="px-3 py-1.5 text-sm border rounded-lg bg-white hover:bg-gray-100">
-                    Lainnya ▾
-                  </button>
-
-                  {openMoreTab && (
-                    <div className="absolute right-0 mt-2 bg-white border rounded-lg shadow-md min-w-[160px] z-20">
-                      {overflowTabs.map((tab) => (
-                        <button key={tab.value} onClick={() => { setActiveKategori(tab.value); setOpenMoreTab(false); }} className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100">
-                          {tab.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* SEARCH — kanan di desktop, atas di mobile */}
-          <div className="order-1 md:order-2 w-full md:w-72">
-            <SearchBar placeholder="Cari Lokasi..." onSearch={(val) => setSearchTerm(val)} />
-          </div>
-        </div>
-
-        {/* LOADING */}
-        {loading && <LoadingSpinner />}
-
-        {/* ERROR */}
-        {!loading && error && (
-          <ErrorState onRetry={fetchLokasiData} />
-        )}
-
-        {/* EMPTY */}
-        {!loading && !error && filteredData.length === 0 && (
-          <EmptyState title="Data Lokasi Kosong" description="Belum ada data lokasi atau hasil pencarian tidak ditemukan." actionText="Tambah Lokasi" onAction={() => navigate("/data-lokasi/tambah")} />
-        )}
-
-        {/* ================= TABLE DESKTOP ================= */}
-        {!loading && !error && filteredData.length > 0 && (
-          <div className="hidden md:block rounded-lg shadow-md overflow-hidden">
-            <table className="table-auto w-full text-sm border-collapse">
-              <thead className="bg-green-500 text-white">
-                <tr>
-                  <th className="px-4 py-2">No</th>
-                  <th className="px-4 py-2">Nama Lokasi</th>
-                  <th className="px-4 py-2">Koordinat</th>
-                  <th className="px-4 py-2">Timezone</th>
-                  <th className="px-4 py-2">Menu</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedData.map((item, index) => (
-                  <tr key={item.id} className="hover:bg-gray-50 transition duration-150 border-b border-gray-200">
-                    <td className="px-4 py-2 text-center">
-                      {(currentPage - 1) * itemsPerPage + index + 1}
-                    </td>
-                    <td className="px-4 py-2 font-semibold uppercase">
-                      {item.nama}
-                    </td>
-                    <td className="px-4 py-2">{item.koordinat}</td>
-                    <td className="px-4 py-2 text-center">
-                      {item.timezone}
-                    </td>
-                    <td className="px-4 py-2 text-center space-x-2">
-                      <button onClick={() => openGoogleMaps(item.koordinat)} className="px-3 py-2 text-xs bg-blue-500 text-white rounded hover:bg-blue-600" title="Lihat lokasi di Google Maps">
-                        <FontAwesomeIcon icon={faMapMarkerAlt} /> Maps
-                      </button>
-                      <button onClick={() => navigate(`/data-lokasi/edit/${item.id}`)} className="px-3 py-2 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600">
-                        <FontAwesomeIcon icon={faEdit} /> Edit
-                      </button>
-                      {/* <button onClick={() => handleDelete(item.id)} className="px-3 py-2 text-xs bg-red-500 text-white rounded hover:bg-red-600">
-                        <FontAwesomeIcon icon={faTrash} /> Hapus
-                      </button> */}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-        
-
-        {/* ================= MOBILE CARD ================= */}
-        {!loading && !error && filteredData.length > 0 && (
-          <div className="md:hidden space-y-3">
-            {paginatedData.map((item) => (
-              <div key={item.id} className="bg-white border border-gray-200 rounded-xl shadow-sm">
-                {/* Content */}
-                <div className="p-4 space-y-3">
-                  <h3 className="font-semibold text-gray-800 text-sm leading-tight">
-                    {item.nama}
-                  </h3>
-
-                  <div className="flex items-start gap-2 text-xs text-gray-600">
-                    <FontAwesomeIcon icon={faMapMarkerAlt} className="text-green-600 mt-0.5" />
-                    <span className="break-all">{item.koordinat}</span>
-                  </div>
-                </div>
-
-                <div className="px-4 pb-3 flex justify-end gap-2">
-                  <button onClick={() => openGoogleMaps(item.koordinat)} className="px-3 py-1.5 text-xs font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 transition">
-                    <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1" />
-                    Maps
-                  </button>
-                  <button onClick={() => navigate(`/data-lokasi/edit/${item.id}`)} className="px-3 py-1.5 text-xs font-medium text-white bg-yellow-500 rounded-md hover:bg-yellow-600 transition">
-                    <FontAwesomeIcon icon={faEdit} className="mr-1" />
-                    Edit
-                  </button>
-                  {/* <button onClick={() => handleDelete(item.id)} className="px-3 py-1.5 text-xs font-medium text-white bg-red-500 rounded-md hover:bg-red-600 transition">
-                    <FontAwesomeIcon icon={faTrash} className="mr-1" />
-                    Hapus
-                  </button> */}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* PAGINATION */}
-        {!loading && !error && filteredData.length > 0 && (
-          <Pagination currentPage={currentPage} totalItems={filteredData.length} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} />
-        )}
-      </div>
-
-      <Modal isOpen={openKategoriModal} onClose={() => setOpenKategoriModal(false)} title="Pilih Jenis Lokasi" note="Setiap jenis lokasi memiliki fungsi yang berbeda" size="md">
-        <div className="grid grid-cols-3 gap-2 sm:gap-4">
+      {/* ================= MODAL ================= */}
+      <Modal
+        isOpen={openKategoriModal}
+        onClose={() => setOpenKategoriModal(false)}
+        title="Pilih Jenis Lokasi"
+        note="Setiap jenis lokasi memiliki fungsi yang berbeda"
+      >
+        <div className="grid grid-cols-3 gap-3">
           {[
-            { label: "Kantor", value: 1, icon: faBuilding, desc: "Digunakan untuk absensi dan kunjungan kerja", },
-            { label: "Gerai", value: 2, icon: faStore, desc: "Digunakan untuk absensi dan kunjungan kerja", },
-            { label: "Rumah", value: 3, icon: faHouse, desc: "Digunakan untuk mulai dan selesai kunjungan", },
+            {
+              label: "Kantor",
+              value: 1,
+              icon: faBuilding,
+              desc: "Digunakan untuk Absen & Kunjungan",
+            },
+            {
+              label: "Gerai",
+              value: 2,
+              icon: faStore,
+              desc: "Digunakan untuk Absen & Kunjungan",
+            },
+            {
+              label: "Rumah",
+              value: 3,
+              icon: faHouse,
+              desc: "Digunakan Untuk Kunjungan",
+            },
           ].map((item) => (
-            <button key={item.value}
+            <button
+              key={item.value}
               onClick={() => {
                 setOpenKategoriModal(false);
                 navigate("/data-lokasi/tambah", {
@@ -291,34 +206,25 @@ const DataLokasi = () => {
                 });
               }}
               className="
-          group w-full rounded-xl border border-gray-200
-          flex flex-col items-center justify-center text-center
-          min-h-[120px] sm:min-h-[180px]
-          p-3 sm:p-4
-          transition-all duration-200
-          hover:border-green-500 hover:bg-green-50
-          focus:outline-none focus:ring-2 focus:ring-green-300
-        "
+                group rounded-xl border border-gray-200 p-4 text-center
+                hover:border-green-500 hover:bg-green-50 transition
+              "
             >
-              {/* ICON */}
-              <div className="mb-2 w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 group-hover:bg-green-100 group-hover:text-green-600 transition">
-                <FontAwesomeIcon icon={item.icon} className="text-sm sm:text-lg" />
+              <div className="mb-2 text-gray-600 group-hover:text-green-600">
+                <FontAwesomeIcon icon={item.icon} />
               </div>
 
-              {/* LABEL */}
-              <h3 className="text-xs sm:text-sm font-semibold text-gray-800">
+              <div className="text-sm font-semibold">
                 {item.label}
-              </h3>
+              </div>
 
-              {/* DESC */}
-              <p className="mt-1 text-[9px] sm:text-[11px] text-gray-700 leading-snug">
+              <div className="text-xs text-gray-500 mt-1">
                 {item.desc}
-              </p>
+              </div>
             </button>
           ))}
         </div>
       </Modal>
-
     </>
   );
 };

@@ -1,227 +1,263 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash, faPlus, faEye, faSort, faSortUp, faSortDown } from "@fortawesome/free-solid-svg-icons";
-import { SectionHeader, LoadingSpinner, ErrorState, EmptyState, SearchBar } from "../../components";
+import {
+  faTrash,
+  faEye,
+  faUsers,
+  faCalendarCheck,
+  faCalendarXmark,
+} from "@fortawesome/free-solid-svg-icons";
+import { SectionHeader, DataView, Button, Badge } from "../../components";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 
 const PenjadwalanKaryawan = () => {
-    const apiUrl = process.env.REACT_APP_API_BASE_URL;
-    const navigate = useNavigate();
-    const [data, setData] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [searchQuery, setSearchQuery] = useState("");
-    const scheduledUserIds = data.map(item => item.id_user);
-    const getStatusPriority = (item) => { return item.has_ongoing ? 1 : 0; };
-    const [statusSort, setStatusSort] = useState("empty-first");
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  const navigate = useNavigate();
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    const fetchPenjadwalan = async () => {
-        try {
-            setLoading(true);
-            const res = await fetchWithJwt(`${apiUrl}/jadwal`);
-            const json = await res.json();
-            setData(json.data || []);
-        } catch (err) {
-            console.error(err);
-            setError("Gagal memuat data penjadwalan");
-            toast.error("Gagal memuat data penjadwalan");
-        } finally {
-            setLoading(false);
-        }
+  const fetchPenjadwalan = async () => {
+    try {
+      setLoading(true);
+      const res = await fetchWithJwt(`${apiUrl}/jadwal`);
+      const json = await res.json();
+      setData(json.data || []);
+    } catch (err) {
+      console.error(err);
+      setError("Gagal memuat data penjadwalan");
+      toast.error("Gagal memuat data penjadwalan");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPenjadwalan();
+  }, []);
+
+  const tableData = useMemo(() => {
+    return (data || []).map((row) => ({
+      ...row,
+      has_jadwal: !!row.jadwal,
+      id_jadwal: row.jadwal?.id_jadwal ?? null,
+      tgl_mulai: row.jadwal?.tgl_mulai ?? null,
+      tgl_selesai: row.jadwal?.tgl_selesai ?? null,
+      is_permanent: row.jadwal?.is_permanent ?? null,
+      shift: row.jadwal?.shift ?? null,
+      lokasi: row.jadwal?.lokasi ?? null,
+      created_by: row.jadwal?.created_by ?? null,
+    }));
+  }, [data]);
+
+  const scheduledUserIds = useMemo(
+    () =>
+      tableData.filter((item) => item.has_jadwal).map((item) => item.id_user),
+    [tableData],
+  );
+
+  const handleDelete = async (id_user) => {
+    const confirm = await Swal.fire({
+      title: "Hapus Penjadwalan?",
+      text: "Data yang dihapus tidak dapat dikembalikan",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ya, hapus",
+      cancelButtonText: "Batal",
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+    });
+
+    if (!confirm.isConfirmed) return;
+
+    const toastId = toast.loading("Menghapus data...");
+
+    try {
+      await fetchWithJwt(`${apiUrl}/jadwal/all/${id_user}`, {
+        method: "DELETE",
+      });
+
+      toast.success("Berhasil dihapus", { id: toastId });
+      fetchPenjadwalan();
+    } catch (err) {
+      console.error(err);
+      toast.error("Gagal menghapus data", { id: toastId });
+    }
+  };
+
+  const renderStatus = (row) => {
+    if (!row.has_jadwal) {
+      return <Badge variant="danger">Jadwal Kosong</Badge>;
+    }
+    if (row.is_permanent === 1) {
+      return <Badge variant="info">Jadwal Permanent</Badge>;
+    }
+    return <Badge variant="success">Jadwal Range</Badge>;
+  };
+
+  const sortedData = useMemo(() => {
+    const getPriority = (item) => {
+      if (!item.has_jadwal) return 0; // kosong
+      if (item.is_permanent === 0) return 1; // range
+      if (item.is_permanent === 1) return 2; // permanent
+      return 3;
     };
 
-    useEffect(() => {
-        fetchPenjadwalan();
-    }, []);
+    return [...tableData].sort((a, b) => {
+      const priorityA = getPriority(a);
+      const priorityB = getPriority(b);
 
-    const handleDelete = async (id_user) => {
-        const confirm = await Swal.fire({
-            title: "Hapus Penjadwalan?",
-            text: "Data yang dihapus tidak dapat dikembalikan",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Ya, hapus",
-            cancelButtonText: "Batal",
-            confirmButtonColor: "#dc2626",
-            cancelButtonColor: "#6b7280"
-        });
-        if (!confirm.isConfirmed) return;
-        const toastId = toast.loading("Menghapus data...");
-        try {
-            await fetchWithJwt(`${apiUrl}/jadwal/all/${id_user}`, {
-                method: "DELETE"
-            });
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
 
-            toast.success("Berhasil dihapus", { id: toastId });
-            fetchPenjadwalan();
-        } catch (err) {
-            console.error(err);
-            toast.error("Gagal menghapus data", { id: toastId });
-        }
-    };
+      // fallback sorting (biar rapi)
+      return (a.nama_user || "").localeCompare(b.nama_user || "");
+    });
+  }, [tableData]);
 
+  const summaryItems = useMemo(() => {
+    const total = tableData.length;
+    const kosong = tableData.filter((item) => !item.has_jadwal).length;
+    const permanent = tableData.filter(
+      (item) => item.has_jadwal && item.is_permanent === 1,
+    ).length;
+    const range = tableData.filter(
+      (item) => item.has_jadwal && item.is_permanent === 0,
+    ).length;
 
-    const filteredData = data
-        .filter(item => {
-            const q = searchQuery.toLowerCase();
-            return (
-                item.nama?.toLowerCase().includes(q) ||
-                item.nip?.toLowerCase().includes(q) ||
-                item.role?.toLowerCase().includes(q)
-            );
-        })
-        .slice()
-        .sort((a, b) => {
-            const aPriority = getStatusPriority(a);
-            const bPriority = getStatusPriority(b);
+    return [
+      {
+        key: "total",
+        title: "Total User",
+        value: total,
+        note: "Seluruh user yang tampil",
+        icon: faUsers,
+        variant: "info",
+      },
+      {
+        key: "permanent",
+        title: "Jadwal Permanent",
+        value: permanent,
+        note: "User dengan jadwal tetap",
+        icon: faCalendarCheck,
+        variant: "info",
+      },
+      {
+        key: "range",
+        title: "Jadwal Range",
+        value: range,
+        note: "User dengan jadwal periode",
+        icon: faCalendarCheck,
+        variant: "success",
+      },
+      {
+        key: "kosong",
+        title: "Jadwal Kosong",
+        value: kosong,
+        note: "Belum punya jadwal aktif",
+        icon: faCalendarXmark,
+        variant: "danger",
+      },
+    ];
+  }, [tableData]);
 
-            if (statusSort === "empty-first") {
-                if (aPriority !== bPriority) return aPriority - bPriority;
-            } else {
-                if (aPriority !== bPriority) return bPriority - aPriority;
-            }
-            return a.nama.localeCompare(b.nama);
-        });
+  const columns = [
+    {
+      key: "nip_user",
+      label: "NIP",
+      align: "text-center",
+    },
+    {
+      key: "nama_user",
+      label: "Nama Karyawan",
+      cellClassName: "font-semibold",
+    },
+    {
+      key: "role_user",
+      label: "Divisi",
+      align: "text-center",
+    },
+    {
+      key: "shift",
+      label: "Jadwal Shift",
+      align: "text-center",
+      render: (row) => row.shift || "-",
+    },
+    {
+      key: "lokasi",
+      label: "Lokasi",
+      align: "text-center",
+      render: (row) => row.lokasi || "-",
+    },
+    {
+      label: "Tipe Penjadwalan",
+      align: "text-center",
+      render: (row) => renderStatus(row),
+    },
+    {
+      label: "Menu",
+      align: "text-center",
+      isAction: true,
+      render: (row) => (
+        <div className="flex justify-center gap-2">
+          <Button
+            size="sm"
+            variant="detail"
+            icon={faEye}
+            onClick={() => navigate(`/penjadwalan/detail/${row.id_user}`)}
+          >
+            Detail
+          </Button>
 
-
-    const badgeBase = "inline-flex items-center justify-center min-w-[110px] px-3 py-1.5 text-xs font-semibold rounded";
-    const renderStatus = (hasOngoing, ongoingType) => {
-        if (!hasOngoing) {
-            return (
-                <span className={`${badgeBase} bg-red-100 text-red-700`}>
-                    Jadwal Kosong
-                </span>
-            );
-        }
-        if (ongoingType === "permanent") {
-            return (
-                <span className={`${badgeBase} bg-blue-100 text-blue-700`}>
-                    Permanent
-                </span>
-            );
-        }
-        if (ongoingType === "range") {
-            return (
-                <span className={`${badgeBase} bg-green-100 text-green-700`}>
-                    Range
-                </span>
-            );
-        }
-        return null;
-    };
-
-    return (
-        <div className="bg-white flex flex-col">
-            <SectionHeader title="Penjadwalan Karyawan" subtitle="Daftar karyawan dan status ketersediaan" onBack={() => navigate(-1)}
-                actions={
-                    <button onClick={() => navigate("/penjadwalan/tambah", { state: { scheduledUserIds } })} className="flex items-center gap-2 px-4 py-2 text-sm text-white font-bold bg-green-500 rounded">
-                        <FontAwesomeIcon icon={faPlus} />
-                        Tambah Baru
-                    </button>
-                }
-            />
-
-            <SearchBar placeholder="Cari nama, NIP, atau role..." onSearch={setSearchQuery} className="my-3" />
-
-            {loading && <LoadingSpinner />}
-            {!loading && error && <ErrorState message={error} />}
-            {!loading && !error && data.length === 0 && (
-                <EmptyState message="Data karyawan kosong" />
-            )}
-
-            {!loading && !error && data.length > 0 && (
-                <div className="hidden md:block mb-20">
-                    <table className="min-w-full text-sm">
-                        <thead className="bg-green-500 text-white">
-                            <tr>
-                                <th className="px-4 py-3 text-center rounded-tl-lg">
-                                    No
-                                </th>
-                                <th className="px-4 py-3 text-center">
-                                    NIP
-                                </th>
-                                <th className="px-4 py-3 text-left">
-                                    Nama
-                                </th>
-                                <th className="px-4 py-3 text-center">
-                                    Divisi
-                                </th>
-                                <th className="px-4 py-3 text-center">
-                                    <button onClick={() => setStatusSort(prev => prev === "empty-first" ? "available-first" : "empty-first")} className="flex items-center justify-center gap-2 w-full hover:text-gray-200 transition cursor-pointer" title="Urutkan status" type="button">
-                                        <span>Tipe Penjadwalan</span>
-                                        <FontAwesomeIcon icon={statusSort === "empty-first" ? faSortUp : faSortDown} />
-                                    </button>
-                                </th>
-                                <th className="px-4 py-3 text-center rounded-tr-lg">
-                                    Menu
-                                </th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            {filteredData.map((item, i) => (
-                                <tr key={item.id_user} className="border-b hover:bg-gray-50">
-                                    <td className="px-4 py-2 text-center">{i + 1}</td>
-                                    <td className="px-4 py-2 text-center">{item.nip}</td>
-                                    <td className="px-4 py-2 font-semibold">{item.nama}</td>
-                                    <td className="px-4 py-2 text-center">{item.role}</td>
-                                    <td className="px-4 py-2 text-center">
-                                        {renderStatus(item.has_ongoing, item.ongoing_type)}
-                                    </td>
-                                    <td className="px-4 py-2">
-                                        <div className="flex justify-center gap-2">
-                                            <button onClick={() => navigate(`/penjadwalan/detail/${item.id_user}`)} className="px-3 py-1.5 bg-blue-500 text-white text-sm font-semibold rounded">
-                                                <FontAwesomeIcon icon={faEye} /> Detail
-                                            </button>
-                                            <button onClick={() => handleDelete(item.id_user)} className="px-3 py-2 bg-red-500 text-white rounded">
-                                                <FontAwesomeIcon icon={faTrash} /> Hapus
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-
-
-            {/* MOBILE VIEW */}
-            {!loading && !error && data.length > 0 && (
-                <div className="block md:hidden space-y-3 mb-20">
-                    {filteredData.map((item) => (
-                        <div key={item.id_user} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <p className="font-semibold text-gray-900">
-                                        {item.nama}
-                                    </p>
-                                    <p className="text-sm text-gray-500 mt-1">
-                                        {item.nip} • {item.role}
-                                    </p>
-                                </div>
-                                <div>
-                                    {renderStatus(item.has_ongoing, item.ongoing_type)}
-                                </div>
-                            </div>
-                            <div className="border-t border-gray-100 my-4"></div>
-                            <div className="flex justify-end gap-2">
-                                <button onClick={() => navigate(`/penjadwalan/detail/${item.id_user}`)} className="px-3 py-1.5 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-md">
-                                    <FontAwesomeIcon icon={faEye} /> Detail
-                                </button>
-                                <button onClick={() => handleDelete(item.id_user)} className="px-3 py-1.5 text-sm bg-red-500 hover:bg-red-600 text-white rounded-md">
-                                    <FontAwesomeIcon icon={faTrash} /> Hapus
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+          {/* {row.has_jadwal && (
+            <Button
+              size="sm"
+              variant="danger"
+              icon={faTrash}
+              onClick={() => handleDelete(row.id_user)}
+            >
+              Hapus
+            </Button>
+          )} */}
         </div>
-    );
+      ),
+    },
+  ];
+
+  return (
+    <div className="bg-white flex flex-col">
+      <SectionHeader
+        title="Penjadwalan Karyawan"
+        subtitle="Atur jadwal kerja dan lokasi karyawan dengan mudah."
+        onBack={() => navigate(-1)}
+      />
+
+      <DataView
+        data={sortedData}
+        columns={columns}
+        summaryItems={summaryItems}
+        searchable
+        searchKeys={[
+          "nama_user",
+          "nip_user",
+          "role_user",
+          "shift",
+          "lokasi",
+          "created_by",
+        ]}
+        searchPlaceholder="Cari nama, NIP, divisi, perusahaan, atau lokasi..."
+        itemsPerPage={10}
+        isLoading={loading}
+        error={error}
+        onRetry={fetchPenjadwalan}
+        emptyTitle="Belum ada data penjadwalan"
+        emptyMessage="Tambahkan penjadwalan untuk mulai mengelola jadwal karyawan."
+      />
+    </div>
+  );
 };
 
 export default PenjadwalanKaryawan;

@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import Swal from "sweetalert2";
+import { SectionHeader } from "../../components";
 
 const EditPerusahaan = () => {
   const [nama, setNama] = useState("");
@@ -104,15 +105,7 @@ const EditPerusahaan = () => {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Header */}
-      <div className="w-full flex items-center pb-4 bg-white shadow-sm border-b">
-        <button onClick={() => navigate("/perusahaan")} className="bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded-full mr-2">
-          <FontAwesomeIcon icon={faArrowLeft} />
-        </button>
-        <h1 className="text-2xl font-bold text-gray-800">
-          Edit Perusahaan
-        </h1>
-      </div>
+      <SectionHeader title="Edit Perusahaan" subtitle="Perbarui data perusahaan" onBack={() => navigate("/perusahaan")}/>
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="flex-grow pt-5 sm:p-4 w-full mx-auto space-y-6">
