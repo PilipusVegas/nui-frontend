@@ -21,8 +21,8 @@ const MobileLayout = ({
   return (
     <div className="h-screen flex flex-col bg-gradient-to-b from-gray-50 to-gray-100">
       {/* HEADER */}
-      <header className="relative flex items-center justify-between px-4 py-2 bg-green-500 text-white shadow-sm">
-        <div className="w-7">
+      <header className="relative flex items-center justify-between px-4 py-4 bg-green-500 text-white shadow-sm">
+        <div className="w-8">
           {showBackButton && (
             <button onClick={handleBack}>
               <FontAwesomeIcon icon={faArrowLeftLong} />
@@ -34,7 +34,7 @@ const MobileLayout = ({
           {title}
         </h1>
 
-        <div className="w-7" />
+        <div className="w-8" />
       </header>
 
       {/* CONTENT */}

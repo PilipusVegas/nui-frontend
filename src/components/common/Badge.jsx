@@ -32,6 +32,11 @@ const variantMap = {
     soft: "bg-violet-50 text-violet-700 border-violet-200",
     outline: "bg-transparent text-violet-700 border-violet-300",
   },
+  white: {
+    solid: "bg-white text-green-700 border-white",
+    soft: "bg-white/20 text-white border-white/30",
+    outline: "bg-transparent text-white border-white/50",
+  },
 };
 
 const sizeMap = {
