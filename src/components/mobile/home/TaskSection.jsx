@@ -4,6 +4,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCalendarAlt,
   faChevronRight,
+  faLayerGroup,
+  faTasks,
 } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt } from "../../../utils/jwtHelper";
 import { formatLongDate } from "../../../utils/dateUtils";
@@ -71,7 +73,7 @@ const TaskCard = ({ t, onClick }) => {
       <div className="flex items-start justify-between gap-3 mb-3">
         <span
           className={`text-[10px] px-2 py-[3px] rounded-full font-semibold uppercase tracking-wide ${getCategoryColor(
-            t.category
+            t.category,
           )}`}
         >
           {t.category || "-"}
@@ -79,7 +81,7 @@ const TaskCard = ({ t, onClick }) => {
 
         <span
           className={`text-[10px] px-2 py-[3px] rounded-full font-semibold uppercase border ${getStatusColor(
-            t
+            t,
           )}`}
         >
           {getStatusLabel(t)}
@@ -104,7 +106,7 @@ const TaskCard = ({ t, onClick }) => {
 
           <span
             className={`text-[11px] font-semibold shrink-0 ${getDeadlineColor(
-              deadlineInfo
+              deadlineInfo,
             )}`}
           >
             {deadlineInfo}
@@ -193,45 +195,38 @@ const TaskSection = () => {
   }
 
   return (
-    <div className="bg-white mx-4 px-5 py-4 mt-3 rounded-[24px] border border-gray-100 shadow-sm">
-      <div className="flex justify-between items-start gap-3 mb-4">
-        <div>
-          <p className="text-sm font-semibold text-black">
-            Tugas Aktif
-            {tasks.length > 0 && (
-              <span className="ml-2 text-[10px] font-semibold px-2 py-[2px] rounded-full bg-green-50 text-green-700 border border-green-200">
-                {tasks.length}
-              </span>
-            )}
-          </p>
+    <SectionCard>
+      <div>
+        <div className="flex justify-between items-start gap-3 mb-4">
+          <div className="mb-4 flex items-center gap-2 text-xs">
+            <FontAwesomeIcon icon={faTasks} className="text-green-600" />
+            <p className="font-semibold tracking-wide">Tugas</p>
+          </div>
+
+          <button
+            onClick={() => navigate("/tugas")}
+            className="flex items-center gap-1 text-[11px] font-semibold text-green-600 hover:text-green-700 transition-colors shrink-0 pt-0.5"
+          >
+            Lihat
+            <FontAwesomeIcon icon={faChevronRight} className="text-[10px]" />
+          </button>
         </div>
 
-        <button
-          onClick={() => navigate("/tugas")}
-          className="flex items-center gap-1 text-[11px] font-semibold text-green-600 hover:text-green-700 transition-colors shrink-0 pt-0.5"
-        >
-          Lihat
-          <FontAwesomeIcon icon={faChevronRight} className="text-[10px]" />
-        </button>
+        {tasks.length === 0 ? (
+          <Empty title="Tidak ada tugas hari ini." />
+        ) : (
+          <div className="space-y-2">
+            {tasks.map((t) => (
+              <TaskCard
+                key={t.id}
+                t={t}
+                onClick={() => navigate(`/tugas/${t.id}`)}
+              />
+            ))}
+          </div>
+        )}
       </div>
-
-      {tasks.length === 0 ? (
-        <Empty
-            title="Tidak ada tugas hari ini."
-
-        />
-      ) : (
-        <div className="space-y-2">
-          {tasks.map((t) => (
-            <TaskCard
-              key={t.id}
-              t={t}
-              onClick={() => navigate(`/tugas/${t.id}`)}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+    </SectionCard>
   );
 };
 

@@ -6,70 +6,92 @@ import {
   faClock,
   faMotorcycle,
 } from "@fortawesome/free-solid-svg-icons";
-import Badge from "../../common/Badge";
 
 const statusConfig = {
   dinas: {
     label: "Sedang Dinas",
-    icon: <FontAwesomeIcon icon={faMapMarkedAlt} />,
-    variant: "warning",
+    icon: faMapMarkedAlt,
   },
   lembur: {
     label: "Sedang Lembur",
-    icon: <FontAwesomeIcon icon={faClock} />,
-    variant: "danger",
+    icon: faClock,
   },
   kunjungan: {
     label: "Sedang Kunjungan",
-    icon: <FontAwesomeIcon icon={faMotorcycle} />,
-    variant: "purple",
+    icon: faMotorcycle,
   },
 };
 
+/* ===== GREEN MINIMAL BADGE ===== */
+const MiniBadge = ({ icon, children, active = false }) => {
+  return (
+    <div
+      className={`flex items-center gap-1.5 px-2 py-2 rounded-md text-[9px] border transition
+      ${
+        active
+          ? "bg-green-500 text-white border-green-500 shadow-sm"
+          : "bg-green-50 text-green-700 border-green-200"
+      }`}
+    >
+      <FontAwesomeIcon icon={icon} className="text-[9px]" />
+      <span className="leading-none font-medium">{children}</span>
+    </div>
+  );
+};
+
 const HomeHero = ({ user, onLogout, activityStatus }) => {
-  const status = activityStatus ? statusConfig[activityStatus] : null;
+  const active = activityStatus ? statusConfig[activityStatus] : null;
 
   return (
-    <div className="bg-gradient-to-br from-green-500 to-green-700 px-5 pt-10 pb-14 relative">
-      <button
-        onClick={onLogout}
-        title="Logout"
-        className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-md bg-white/70 text-red-500 hover:bg-white hover:text-red-600 transition-colors"
-      >
-        <FontAwesomeIcon icon={faSignOutAlt} className="text-xl" />
-      </button>
+    <div className="bg-white border border-green-100 shadow-sm px-5 py-5">
+      {/* HEADER */}
+      <div className="flex items-start justify-between gap-3">
+        {/* USER INFO */}
+        <div className="space-y-1 min-w-0 flex-1">
+          <div className="text-sm text-green-600 font-semibold tracking-wide">
+            Selamat bekerja
+          </div>
 
-      <div className="flex flex-col gap-1.5">
-        <h2 className="text-sm font-medium text-white/90 tracking-wide">
-          Selamat Bekerja,
-        </h2>
+          <div className="text-lg font-semibold text-gray-900 break-words leading-snug">
+            {user?.nama_user || "User"}
+          </div>
 
-        <div className="text-2xl font-bold text-white drop-shadow-sm">
-          {user?.nama_user || "User"}
+          {/* ROLE + STATUS */}
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <MiniBadge icon={faPeopleGroup}>{user?.role || "User"}</MiniBadge>
+            {active && (
+              <MiniBadge icon={active.icon} active>
+                {active.label}
+              </MiniBadge>
+            )}
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 mt-1">
-          <Badge
-            variant="white"
-            tone="soft"
-            size="md"
-            icon={<FontAwesomeIcon icon={faPeopleGroup} />}
-            rounded="lg"
-          >
-            {user?.role || "N/A"}
-          </Badge>
+        {/* LOGOUT */}
+        <div className="shrink-0">
+          <button onClick={onLogout} className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-green-600 text-white text-xs hover:bg-green-700 transition shadow-sm whitespace-nowrap">
+            <FontAwesomeIcon icon={faSignOutAlt} />
+            Keluar
+          </button>
+        </div>
+      </div>
 
-          {status && (
-            <Badge
-              variant={status.variant}
-              tone="solid"
-              size="md"
-              icon={status.icon}
-              rounded="lg"
-            >
-              {status.label}
-            </Badge>
-          )}
+      {/* STATUS GRID */}
+      <div className="mt-5">
+        <div className="text-xs text-green-600 mb-2 font-medium">
+          Status Aktivitas
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          {Object.entries(statusConfig).map(([key, item]) => {
+            const isActive = active?.label === item.label;
+
+            return (
+              <MiniBadge key={key} icon={item.icon} active={isActive}>
+                {item.label}
+              </MiniBadge>
+            );
+          })}
         </div>
       </div>
     </div>

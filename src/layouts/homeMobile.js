@@ -224,10 +224,10 @@ const HomeMobile = () => {
 
 
   return (
-    <div className="flex flex-col font-sans bg-gray-50 min-h-screen pb-40">
+    <div className="flex flex-col font-sans bg-gray-50 min-h-screen pb-20">
       <HomeHero user={user} onLogout={confirmLogout} activityStatus={loadingActivityStatus ? null : activityStatus} />
 
-      {attendanceData && (
+      {/* {attendanceData && (
         <div className="relative z-20 scale-95">
           <div className="px-4 -mt-14">
             <div
@@ -236,7 +236,6 @@ const HomeMobile = () => {
             >
               <div className="flex items-start">
 
-                {/* Tanggal */}
                 <div className="flex flex-col items-center min-w-[72px]">
                   <div className="bg-green-500 text-white rounded-xl py-2 px-3 text-center w-full">
                     <div className="text-[11px] font-medium opacity-90 tracking-wider">
@@ -263,16 +262,12 @@ const HomeMobile = () => {
                   </div>
                 </div>
 
-                {/* Info Absensi */}
                 <div className="flex-1 grid gap-2">
                   <div className="grid grid-cols-2 text-center text-sm overflow-hidden">
-
-                    {/* Absen Masuk */}
                     <div className="border-r border-gray-300 flex flex-col items-center">
                       <div className="text-[10px] text-gray-600 mb-1">
                         Absen Masuk
                       </div>
-
                       <div className="text-base font-semibold text-gray-800">
                         {attendanceData.jam_mulai
                           ? formatTime(attendanceData.jam_mulai)
@@ -295,8 +290,6 @@ const HomeMobile = () => {
                         </div>
                       )}
                     </div>
-
-                    {/* Absen Pulang */}
                     <div className="flex flex-col items-center">
                       <div className="text-[10px] text-gray-600 mb-1">
                         Absen Pulang
@@ -334,20 +327,13 @@ const HomeMobile = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* MENU UTAMA */}
-      <div className="bg-[#f5f7f6]">
-        <MainMenuCard
-          user={user}
-          isTripReady={isTripReady}
-          loadingTripStatus={loadingTripStatus}
-        />
-
+      <div className="bg-slate-50">
+        <MainMenuCard user={user} isTripReady={isTripReady} loadingTripStatus={loadingTripStatus}/>
         <TaskSection />
-
         <HelpMenuCard />
-
       </div>
 
       <FooterMainBar />

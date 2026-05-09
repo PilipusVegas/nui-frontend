@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import MobileLayout from "../../layouts/mobile/mobileLayout";
+import HeaderMobile from "../../layouts/mobile/HeaderMobile";
 import { fetchWithJwt } from "../../utils/jwtHelper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { LoadingSpinner } from "../../components";
@@ -73,7 +73,7 @@ const CutiKaryawan = () => {
   };
 
   return (
-    <MobileLayout title="Cuti Karyawan">
+    <HeaderMobile title="Cuti Karyawan">
       <div className="mb-20">
         <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg shadow-md p-3 mb-5 border border-green-200">
           {/* Header */}
@@ -203,7 +203,7 @@ const CutiKaryawan = () => {
           )}
         </div>
       </div>
-    </MobileLayout>
+    </HeaderMobile>
   );
 };
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchWithJwt } from "../../utils/jwtHelper";
-import MobileLayout from "../../layouts/mobile/mobileLayout";
+import HeaderMobile from "../../layouts/mobile/HeaderMobile";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
 
@@ -65,7 +65,7 @@ export default function FormCuti() {
     };
 
     return (
-        <MobileLayout title="Form Pengajuan Cuti">
+        <HeaderMobile title="Form Pengajuan Cuti">
             <div className="mx-auto bg-white p-4 px-2">
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {/* Tanggal Mulai */}
@@ -118,6 +118,6 @@ export default function FormCuti() {
                     </button>
                 </form>
             </div>
-        </MobileLayout>
+        </HeaderMobile>
     );
 }

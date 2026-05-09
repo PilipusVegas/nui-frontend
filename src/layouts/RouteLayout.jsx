@@ -1,6 +1,6 @@
 import { Outlet, useLocation, matchRoutes } from "react-router-dom";
 import DekstopLayout from "../layouts/dekstop/DekstopLayout";
-import MobileLayout from "../layouts/mobile/mobileLayout";
+import HeaderMobile from "../layouts/mobile/HeaderMobile";
 import { getUserFromToken } from "../utils/jwtHelper";
 import { routes } from "../routes/routes.config";
 
@@ -35,13 +35,13 @@ const RouteLayout = ({ layout = "none" }) => {
 
   if (layout === "mobile") {
     return (
-      <MobileLayout
+      <HeaderMobile
         title={mobileTitle}
         showFooter={showMobileFooter}
         showBackButton={showBackButton}
       >
         {content}
-      </MobileLayout>
+      </HeaderMobile>
     );
   }
 
@@ -51,13 +51,13 @@ const RouteLayout = ({ layout = "none" }) => {
         {content}
       </DekstopLayout>
     ) : (
-      <MobileLayout
+      <HeaderMobile
         title={mobileTitle}
         showFooter={showMobileFooter}
         showBackButton={showBackButton}
       >
         {content}
-      </MobileLayout>
+      </HeaderMobile>
     );
   }
 

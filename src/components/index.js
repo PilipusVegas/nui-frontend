@@ -1,7 +1,7 @@
 // File ini berfungsi untuk memanggil components dengan mudah dan ringkas.
 
 // UI
-export { default as Button } from "./ui/button";
+export { default as Button } from "./ui/Button";
 export { default as FilterSelect } from "./common/FilterSelect";
 export { default as Badge } from "./common/Badge";
 export { default as DateRangeField } from "./ui/DateRangeField";
@@ -27,7 +27,6 @@ export { default as Modal } from "./ui/Modal";
 // Mobile specific
 // export { default as DashboardCard } from "./desktop/DashboardCard";
 export { default as FooterMainBar } from "../layouts/mobile/FooterMainBar.jsx";
-export { default as TaskCardSlider } from "./mobile/TaskCardSlider.jsx";
 export { default as HomeHero } from "./mobile/home/HomeHero.jsx";
 export { default as MainMenuCard } from "./mobile/home/MainMenuCard.jsx";
 export { default as TaskSection } from "./mobile/home/TaskSection.jsx";

@@ -7,6 +7,9 @@ import {
   faClockFour,
   faTasks,
   faMotorcycle,
+  faTableCellsLarge,
+  faGrip,
+  faLayerGroup,
 } from "@fortawesome/free-solid-svg-icons";
 import SectionCard from "../SectionCard";
 
@@ -109,8 +112,12 @@ const MainMenuCard = ({ user, isTripReady, loadingTripStatus }) => {
 
   return (
     <SectionCard>
-      <div className="mb-4">
-        <p className="text-sm font-semibold text-black">Menu Utama</p>
+      <div className="mb-4 flex items-center gap-2 text-xs">
+        <FontAwesomeIcon icon={faLayerGroup} className="text-green-700" />
+
+        <p className="font-semibold tracking-wide">
+          Menu Utama
+        </p>
       </div>
 
       <div className="grid grid-cols-4 gap-y-4 gap-x-2">

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell } from "@fortawesome/free-solid-svg-icons";
-import MobileLayout from "../../layouts/mobile/mobileLayout";
+import HeaderMobile from "../../layouts/mobile/HeaderMobile";
 import NotificationDetail from "./notificationDetail";
 import { fetchWithJwt, getUserFromToken } from "../../utils/jwtHelper";
 import { FooterMainBar } from "../../components";
@@ -109,7 +109,7 @@ const Notification = () => {
   };
 
   return (
-    <MobileLayout title="Notification" className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
+    <HeaderMobile title="Notification" className="p-6 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
 
       <div className="mb-20">
         {showDetail ? (
@@ -151,7 +151,7 @@ const Notification = () => {
         )}
       </div>
       <FooterMainBar />
-    </MobileLayout>
+    </HeaderMobile>
   );
 };
 
