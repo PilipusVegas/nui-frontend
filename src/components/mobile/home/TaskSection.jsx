@@ -207,7 +207,7 @@ const TaskSection = () => {
             onClick={() => navigate("/tugas")}
             className="flex items-center gap-1 text-[11px] font-semibold text-green-600 hover:text-green-700 transition-colors shrink-0 pt-0.5"
           >
-            Lihat
+            Lihat semua
             <FontAwesomeIcon icon={faChevronRight} className="text-[10px]" />
           </button>
         </div>

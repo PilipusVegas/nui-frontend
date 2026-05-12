@@ -2,6 +2,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { faHeadset } from "@fortawesome/free-solid-svg-icons";
 import SectionCard from "../SectionCard";
+import { getUserFromToken } from "../../../utils/jwtHelper";
 
 const helpItems = [
   {
@@ -18,22 +19,25 @@ const helpItems = [
     label: "Tim HRD",
     phone: "6282181525235",
     message:
-      "Halo HRD, saya ingin menyampaikan pertanyaan terkait data atau kepegawaian. Mohon informasi dan bantuannya. Terima kasih.",
+      "Halo Tim HRD, saya ingin menyampaikan pertanyaan terkait data atau kepegawaian. Mohon informasi dan bantuannya. Terima kasih.",
   },
 ];
 
-const HelpMenuCard = ({ items = helpItems, user }) => {
+const HelpMenuCard = ({ items = helpItems }) => {
+  // Ambil user langsung dari token
+  const user = getUserFromToken();
+
   const handleOpenWhatsapp = (phone, message) => {
     const name = user?.nama_user || "User";
 
     const finalMessage = encodeURIComponent(
-      `Halo, saya ${name}.\n\n${message}`,
+      `Halo, saya ${name}.\n\n${message}`
     );
 
     window.open(
       `https://wa.me/${phone}?text=${finalMessage}`,
       "_blank",
-      "noopener,noreferrer",
+      "noopener,noreferrer"
     );
   };
 
@@ -41,7 +45,10 @@ const HelpMenuCard = ({ items = helpItems, user }) => {
     <SectionCard>
       {/* HEADER */}
       <div className="flex items-center gap-2 text-xs mb-4">
-        <FontAwesomeIcon icon={faHeadset} className="text-green-600 text-sm" />
+        <FontAwesomeIcon
+          icon={faHeadset}
+          className="text-green-600 text-sm"
+        />
         <p className="font-semibold text-gray-900 tracking-wide">
           Bantuan & Support
         </p>
@@ -52,7 +59,9 @@ const HelpMenuCard = ({ items = helpItems, user }) => {
         {items.map((item) => (
           <button
             key={item.key}
-            onClick={() => handleOpenWhatsapp(item.phone, item.message)}
+            onClick={() =>
+              handleOpenWhatsapp(item.phone, item.message)
+            }
             className="min-w-[190px] flex items-center gap-3 px-4 py-3
                        bg-white border border-gray-200 rounded-xl
                        hover:border-green-400 hover:bg-green-50
@@ -68,7 +77,9 @@ const HelpMenuCard = ({ items = helpItems, user }) => {
 
             {/* TEXT */}
             <div className="flex flex-col text-left min-w-0">
-              <span className="text-[11px] text-gray-500">Klik untuk chat</span>
+              <span className="text-[11px] text-gray-500">
+                Klik untuk chat
+              </span>
 
               <span className="text-sm font-semibold text-gray-800 truncate">
                 {item.label}

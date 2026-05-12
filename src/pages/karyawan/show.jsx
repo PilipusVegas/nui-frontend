@@ -156,7 +156,6 @@ const DetailKaryawan = () => {
                   <TunjanganBadge label="Perjalanan Dinas" icon={faSuitcaseRolling} active={karyawan.tunjangan?.dinas === 1} />
                   <TunjanganBadge label="Biaya Penginapan" icon={faHotel} active={karyawan.tunjangan?.penginapan === 1} />
                 </div>
-
               </DataSection>
             )}
 

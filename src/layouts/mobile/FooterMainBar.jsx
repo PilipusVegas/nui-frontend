@@ -25,11 +25,11 @@ const FooterMainButton = ({ icon, label, to, isActive, onClick }) => {
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-col items-center justify-center flex-1 py-2 transition-all duration-200 active:scale-95"
+      className="flex flex-col items-center justify-center flex-1 py-3 transition-all duration-200 active:scale-95"
     >
       <FontAwesomeIcon
         icon={icon}
-        className={`text-[18px] mb-[2px] transition-all duration-200 ${
+        className={`text-[14px] mb-[7px] transition-all duration-200 ${
           isActive ? "text-green-600 scale-110" : "text-gray-400"
         }`}
       />
@@ -43,7 +43,7 @@ const FooterMainButton = ({ icon, label, to, isActive, onClick }) => {
       </span>
 
       <div
-        className={`mt-[4px] h-[3px] w-6 rounded-full transition-all duration-300 ${
+        className={`mt-[5px] h-[2px] w-10 rounded-full transition-all duration-300 ${
           isActive ? "bg-green-600 opacity-100" : "bg-transparent opacity-0"
         }`}
       />
@@ -57,7 +57,7 @@ export default function FooterMainBar() {
 
   return (
     <div className="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-gray-200 z-50 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
-      <div className="max-w-md mx-auto flex justify-between px-2 py-[6px]">
+      <div className="max-w-md mx-auto flex justify-between px-2 py-0">
         {menus.map((menu) => {
           const isActive = location.pathname.startsWith(menu.to);
 
