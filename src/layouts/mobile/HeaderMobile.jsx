@@ -53,7 +53,7 @@ Mohon arahan atau informasinya. Terima kasih.`,
           border-b border-[#e7ece9]
         "
       >
-        <div className="flex items-center justify-between h-[54px] px-2.5">
+        <div className="flex items-center justify-between h-[48px] px-2.5">
           {/* LEFT */}
           <div className="w-[52px] flex items-center">
             {showBackButton && (
@@ -62,7 +62,7 @@ Mohon arahan atau informasinya. Terima kasih.`,
                 className="
                   group
                   flex items-center justify-center
-                  w-9 h-9
+                  w-8 h-8
                   rounded-full
                   transition-all duration-200
                   hover:bg-green-600
@@ -111,7 +111,7 @@ Mohon arahan atau informasinya. Terima kasih.`,
               className="
                 group
                 flex items-center justify-center
-                w-9 h-9
+                w-8 h-8
                 rounded-full
                 transition-all duration-200
                 hover:bg-green-600

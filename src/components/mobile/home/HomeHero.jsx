@@ -139,7 +139,7 @@ const AttendanceCard = ({ attendanceData, navigate }) => {
                   {startLabel}
                 </span>
               </div>
-              <div className="text-[18px] font-bold text-gray-900 leading-none">
+              <div className="text-[16px] font-bold text-gray-900 leading-none">
                 {attendanceData.jam_mulai
                   ? formatTime(attendanceData.jam_mulai)
                   : "--:--"}
@@ -170,11 +170,7 @@ const AttendanceCard = ({ attendanceData, navigate }) => {
                 </span>
               </div>
 
-              <div
-                className={`text-[18px] font-bold leading-none ${
-                  attendanceData.jam_selesai ? "text-gray-900" : "text-gray-300"
-                }`}
-              >
+              <div className={`text-[16px] font-bold leading-none ${attendanceData.jam_selesai ? "text-gray-900" : "text-gray-300"}`}>
                 {attendanceData.jam_selesai
                   ? formatTime(attendanceData.jam_selesai)
                   : "--:--"}

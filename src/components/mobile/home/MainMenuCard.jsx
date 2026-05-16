@@ -129,7 +129,7 @@ const MainMenuCard = ({ user, isTripReady, loadingTripStatus }) => {
       </div>
 
       {/* GRID */}
-      <div className="grid grid-cols-4 gap-x-1.5 gap-y-4">
+      <div className="grid grid-cols-4 gap-x-1.5 gap-y-2">
         {menuItems.map((item) => (
           <MenuItem
             key={item.key}

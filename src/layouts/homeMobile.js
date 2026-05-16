@@ -9,6 +9,7 @@ import {
   HomeHero,
   MainMenuCard,
   TaskSection,
+  ScheduleSection,
 } from "../components";
 import { useAuth } from "../hooks/useAuth";
 
@@ -200,6 +201,7 @@ const HomeMobile = () => {
       <HomeHero user={user} onLogout={confirmLogout} attendanceData={attendanceData}/>
       <div className="bg-slate-100">
         <MainMenuCard user={user} isTripReady={isTripReady} loadingTripStatus={loadingTripStatus}/>
+        <ScheduleSection />
         <TaskSection />
         <HelpMenuCard />
       </div>

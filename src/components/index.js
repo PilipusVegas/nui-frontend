@@ -31,6 +31,8 @@ export { default as HomeHero } from "./mobile/home/HomeHero.jsx";
 export { default as MainMenuCard } from "./mobile/home/MainMenuCard.jsx";
 export { default as TaskSection } from "./mobile/home/TaskSection.jsx";
 export { default as HelpMenuCard } from "./mobile/home/HelpMenuCard.jsx";
+export { default as ScheduleSection } from "./mobile/home/ScheduleSection.jsx";
+export { default as SectionCard } from "../components/mobile/SectionCard.jsx";
 
 // Maps
 export { default as MapRoute } from "./maps/MapRoute.jsx";

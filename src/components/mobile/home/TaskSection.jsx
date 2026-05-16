@@ -1,16 +1,23 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  faBell,
   faCalendarAlt,
   faChevronRight,
-  faLayerGroup,
+  faClock,
   faTasks,
+  faUserTie,
 } from "@fortawesome/free-solid-svg-icons";
 import { fetchWithJwt } from "../../../utils/jwtHelper";
 import { formatLongDate } from "../../../utils/dateUtils";
-import Empty from "../../feedback/Empty";
-import SectionCard from "../SectionCard";
+import {
+  EmptyState,
+  Badge,
+  LoadingSpinner,
+  ErrorState,
+  SectionCard,
+} from "../../index";
 
 const getDeadlineStatus = (deadline_at, finished_at = null) => {
   if (!deadline_at) return "-";
@@ -26,6 +33,29 @@ const getDeadlineStatus = (deadline_at, finished_at = null) => {
   return `Sisa ${diff} hari`;
 };
 
+const getCategoryCardStyle = (category) => {
+  const c = category?.toLowerCase();
+
+  if (c === "urgent") {
+    return "border-red-100 bg-red-50/50 hover:bg-red-50";
+  }
+
+  if (c === "daily") {
+    return "border-green-100 bg-green-50/50 hover:bg-green-50";
+  }
+
+  return "border-slate-100 bg-slate-50/60 hover:bg-slate-50";
+};
+
+const getCategoryIconColor = (category) => {
+  const c = category?.toLowerCase();
+
+  if (c === "urgent") return "text-red-600";
+  if (c === "daily") return "text-green-600";
+
+  return "text-slate-500";
+};
+
 const getStatusLabel = (task) => {
   if (task.is_paused === 1) return "Ditunda";
   if (task.status_tugas === 2) return "Revisi";
@@ -35,197 +65,299 @@ const getStatusLabel = (task) => {
   return "Selesai";
 };
 
-const getStatusColor = (task) => {
-  if (task.is_paused === 1) return "bg-blue-50 text-blue-700 border-blue-100";
-  if (task.status_tugas === 2) return "bg-red-50 text-red-700 border-red-100";
-  if (task.status_tugas === 0 && task.finished_at)
-    return "bg-yellow-50 text-yellow-700 border-yellow-100";
-  if (task.status_tugas === 0 && !task.finished_at)
-    return "bg-gray-50 text-gray-600 border-gray-100";
+const getStatusVariant = (task) => {
+  if (task.is_paused === 1) return "info";
+  if (task.status_tugas === 2) return "danger";
+  if (task.status_tugas === 0 && task.finished_at) return "warning";
+  if (task.status_tugas === 0 && !task.finished_at) return "neutral";
 
-  return "bg-green-50 text-green-700 border-green-100";
+  return "success";
 };
 
-const getCategoryColor = (category) => {
+const getCategoryVariant = (category) => {
   const c = category?.toLowerCase();
 
-  if (c === "urgent") return "bg-red-600 text-white";
-  if (c === "daily") return "bg-green-600 text-white";
+  if (c === "urgent") return "danger";
+  if (c === "daily") return "success";
 
-  return "bg-gray-600 text-white";
+  return "neutral";
 };
 
-const getDeadlineColor = (info) => {
-  if (info.includes("Terlambat")) return "text-red-600";
-  if (info.includes("hari ini")) return "text-amber-600";
+const getDeadlineVariant = (text) => {
+  if (text.includes("Terlambat")) return "danger";
+  if (text.includes("hari ini")) return "warning";
 
-  return "text-green-600";
+  return "success";
 };
 
-const TaskCard = ({ t, onClick }) => {
-  const deadlineInfo = getDeadlineStatus(t.deadline_at);
+const formatTimeOnly = (date) => {
+  if (!date) return "-";
+
+  return new Date(date).toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const InfoItem = ({ icon, label, value }) => (
+  <div className="flex min-w-0 items-center gap-1.5">
+    <FontAwesomeIcon
+      icon={icon}
+      className="shrink-0 text-[10px] text-green-600"
+    />
+
+    <span className="shrink-0 text-[10px] text-slate-400">{label}</span>
+
+    <span className="min-w-0 truncate text-[10.5px] font-semibold text-slate-700">
+      {value || "-"}
+    </span>
+  </div>
+);
+
+const TaskCard = ({ task, onClick }) => {
+  const deadlineInfo = getDeadlineStatus(task.deadline_at, task.finished_at);
+  const categoryColor = getCategoryIconColor(task.category);
 
   return (
-    <div
+    <button
+      type="button"
       onClick={onClick}
-      className="bg-white border border-gray-100 rounded-2xl p-4 active:scale-[0.98] transition-all duration-200 cursor-pointer shadow-sm hover:border-green-300 hover:shadow-md"
+      className={`group w-full rounded-xl border px-3 py-2.5 text-left transition-all duration-200 hover:shadow-sm ${getCategoryCardStyle(
+        task.category,
+      )}`}
     >
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <span
-          className={`text-[10px] px-2 py-[3px] rounded-full font-semibold uppercase tracking-wide ${getCategoryColor(
-            t.category,
-          )}`}
-        >
-          {t.category || "-"}
-        </span>
+      <div className="flex items-start gap-2.5">
+        {/* Content */}
+        <div className="min-w-0 flex-1">
+          {/* Top Row */}
+          <div className="mb-1.5 flex items-start justify-between gap-2">
+            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+              <Badge
+                variant={getCategoryVariant(task.category)}
+                tone="soft"
+                size="xs"
+                rounded="full"
+                uppercase
+              >
+                {task.category || "-"}
+              </Badge>
 
-        <span
-          className={`text-[10px] px-2 py-[3px] rounded-full font-semibold uppercase border ${getStatusColor(
-            t,
-          )}`}
-        >
-          {getStatusLabel(t)}
-        </span>
-      </div>
+              <Badge
+                variant={getDeadlineVariant(deadlineInfo)}
+                tone="soft"
+                size="xs"
+                rounded="full"
+              >
+                {deadlineInfo}
+              </Badge>
 
-      <h2 className="font-semibold text-[14px] text-gray-900 leading-snug mb-3 line-clamp-2">
-        {t.nama_tugas}
-      </h2>
+              <Badge
+                variant={getStatusVariant(task)}
+                tone="soft"
+                size="xs"
+                rounded="full"
+                className="max-w-[130px]"
+              >
+                <span className="truncate">{getStatusLabel(task)}</span>
+              </Badge>
+            </div>
 
-      {t.status_tugas !== 1 && (
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <FontAwesomeIcon
-              icon={faCalendarAlt}
-              className="text-[11px] text-green-600 shrink-0"
-            />
-            <span className="text-[11px] text-gray-500 truncate">
-              {formatLongDate(t.deadline_at)}
-            </span>
+            <div className="flex shrink-0 items-center gap-2">
+              <span className="text-[9px] font-medium text-slate-500">
+                Lihat detail
+              </span>
+
+              <FontAwesomeIcon
+                icon={faChevronRight}
+                className={`text-[10px] transition-all duration-200 group-hover:translate-x-0.5 ${categoryColor}`}
+              />
+            </div>
           </div>
 
-          <span
-            className={`text-[11px] font-semibold shrink-0 ${getDeadlineColor(
-              deadlineInfo,
-            )}`}
-          >
-            {deadlineInfo}
-          </span>
+          {/* Title */}
+          <h3 className="line-clamp-1 break-words text-[13px] font-semibold leading-5 text-slate-900">
+            {task.nama_tugas || "Tanpa nama tugas"}
+          </h3>
+
+          {/* Description */}
+          {task.deskripsi && (
+            <p className="mt-0.5 line-clamp-1 break-words text-[10.5px] leading-4 text-slate-500">
+              {task.deskripsi}
+            </p>
+          )}
+
+          {/* Bottom Section */}
+          <div className="mt-2 flex items-end justify-between gap-3">
+            {/* Meta Info */}
+            <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-slate-500">
+              <span className="inline-flex max-w-[145px] items-center gap-1 truncate">
+                <FontAwesomeIcon
+                  icon={faClock}
+                  className={`shrink-0 text-[9px] ${categoryColor}`}
+                />
+
+                <span className="truncate">
+                  Mulai {formatLongDate(task.start_date)}
+                </span>
+              </span>
+
+              <span className="inline-flex max-w-[160px] items-center gap-1 truncate">
+                <FontAwesomeIcon
+                  icon={faCalendarAlt}
+                  className={`shrink-0 text-[9px] ${categoryColor}`}
+                />
+
+                <span className="truncate">
+                  Deadline {formatLongDate(task.deadline_at)}
+                </span>
+              </span>
+
+              <span className="inline-flex max-w-[120px] items-center gap-1 truncate">
+                <FontAwesomeIcon
+                  icon={faUserTie}
+                  className={`shrink-0 text-[9px] ${categoryColor}`}
+                />
+
+                <span className="truncate">{task.nama_kadiv || "-"}</span>
+              </span>
+            </div>
+
+            {/* Right Bottom */}
+            <div className="flex shrink-0 items-center gap-1 rounded-full bg-white/70 px-2 py-1 text-[9px] font-medium text-slate-500">
+              <FontAwesomeIcon
+                icon={faBell}
+                className={`text-[8px] ${categoryColor}`}
+              />
+
+              <span>{task.interval_notifikasi || 0} menit</span>
+            </div>
+          </div>
         </div>
-      )}
-    </div>
+      </div>
+    </button>
   );
 };
 
 const TaskSection = () => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const navigate = useNavigate();
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await fetchWithJwt(`${apiUrl}/tugas/user`);
+  const loadTasks = useCallback(async () => {
+    setLoading(true);
+    setErrorMessage("");
 
-        if (!res.ok) throw new Error("Gagal mengambil data tugas");
+    try {
+      const res = await fetchWithJwt(`${apiUrl}/tugas/user`);
 
-        const data = await res.json();
-        const all = data?.data || [];
+      if (!res.ok) throw new Error("Gagal mengambil data tugas");
 
-        const active = all.filter((t) => {
-          const category = t.category?.toLowerCase();
+      const result = await res.json();
+      const allTasks = result?.data || [];
 
-          const isFinished = !!t.finished_at;
-          const isPending = isFinished && t.status_persetujuan === 0;
-          const isRevision = t.status_tugas === 2;
+      const activeTasks = allTasks.filter((task) => {
+        const category = task.category?.toLowerCase();
 
-          return (
-            (category === "urgent" || category === "daily") &&
-            (!isFinished || isPending || isRevision)
-          );
-        });
+        const isAllowedCategory = category === "urgent" || category === "daily";
+        const isFinished = !!task.finished_at;
+        const isRevision = task.status_tugas === 2;
+        const isWaitingVerification = isFinished && task.status_tugas === 0;
 
-        active.sort((a, b) => {
-          if (a.status_tugas === 2 && b.status_tugas !== 2) return -1;
-          if (a.status_tugas !== 2 && b.status_tugas === 2) return 1;
+        return (
+          isAllowedCategory &&
+          (!isFinished || isRevision || isWaitingVerification)
+        );
+      });
 
-          const dateA = a.deadline_at
-            ? new Date(a.deadline_at).getTime()
-            : Infinity;
-          const dateB = b.deadline_at
-            ? new Date(b.deadline_at).getTime()
-            : Infinity;
+      activeTasks.sort((a, b) => {
+        const categoryA = a.category?.toLowerCase();
+        const categoryB = b.category?.toLowerCase();
 
-          return dateA - dateB;
-        });
+        // PRIORITAS CATEGORY
+        if (categoryA === "urgent" && categoryB !== "urgent") return -1;
+        if (categoryA !== "urgent" && categoryB === "urgent") return 1;
 
-        setTasks(active);
-      } catch (error) {
-        setTasks([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+        // PRIORITAS REVISI
+        if (a.status_tugas === 2 && b.status_tugas !== 2) return -1;
+        if (a.status_tugas !== 2 && b.status_tugas === 2) return 1;
 
-    load();
+        // PRIORITAS DEADLINE TERDEKAT
+        const dateA = a.deadline_at
+          ? new Date(a.deadline_at).getTime()
+          : Infinity;
+        const dateB = b.deadline_at
+          ? new Date(b.deadline_at).getTime()
+          : Infinity;
+        return dateA - dateB;
+      });
+
+      setTasks(activeTasks);
+    } catch (error) {
+      console.error(error);
+      setTasks([]);
+      setErrorMessage("Data tugas belum berhasil dimuat.");
+    } finally {
+      setLoading(false);
+    }
   }, [apiUrl]);
 
-  if (loading) {
-    return (
-      <SectionCard>
-        <div className="mb-4">
-          <p className="text-sm font-semibold text-black">Tugas Aktif</p>
-          <p className="text-[11px] text-gray-400 mt-0.5">
-            Tugas yang perlu kamu selesaikan
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          {[1, 2].map((i) => (
-            <div
-              key={i}
-              className="h-24 bg-gray-100 rounded-2xl animate-pulse"
-            />
-          ))}
-        </div>
-      </SectionCard>
-    );
-  }
+  useEffect(() => {
+    loadTasks();
+  }, [loadTasks]);
 
   return (
     <SectionCard>
-      <div>
-        <div className="flex justify-between items-start gap-3 mb-4">
-          <div className="mb-4 flex items-center gap-2 text-xs">
-            <FontAwesomeIcon icon={faTasks} className="text-green-600" />
-            <p className="font-semibold tracking-wide">Tugas</p>
-          </div>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        {/* HEADER */}
+        <div className="flex items-center gap-2 text-[11px] font-semibold text-gray-700">
+          <FontAwesomeIcon
+            icon={faTasks}
+            className="text-[12px] text-green-600"
+          />
 
-          <button
-            onClick={() => navigate("/tugas")}
-            className="flex items-center gap-1 text-[11px] font-semibold text-green-600 hover:text-green-700 transition-colors shrink-0 pt-0.5"
-          >
-            Lihat semua
-            <FontAwesomeIcon icon={faChevronRight} className="text-[10px]" />
-          </button>
+          <span>Tugas</span>
         </div>
 
-        {tasks.length === 0 ? (
-          <Empty title="Tidak ada tugas hari ini." />
-        ) : (
-          <div className="space-y-2">
-            {tasks.map((t) => (
-              <TaskCard
-                key={t.id}
-                t={t}
-                onClick={() => navigate(`/tugas/${t.id}`)}
-              />
-            ))}
-          </div>
-        )}
+        {/* ACTION */}
+        <button
+          type="button"
+          onClick={() => navigate("/tugas")}
+          className="flex shrink-0 items-center gap-1 text-[11px] font-semibold text-green-700 transition-colors active:scale-95"
+        >
+          <span className="hover:underline">Lihat semua</span>
+
+          <FontAwesomeIcon icon={faChevronRight} className="text-[9px]" />
+        </button>
       </div>
+
+      {loading ? (
+        <LoadingSpinner message="Memuat data tugas..." />
+      ) : errorMessage ? (
+        <ErrorState
+          message="Gagal memuat tugas"
+          detail={errorMessage}
+          onRetry={loadTasks}
+          retryText="Muat Ulang"
+        />
+      ) : tasks.length === 0 ? (
+        <EmptyState
+          title="Tidak ada tugas aktif."
+          description="Semua tugas aktif akan tampil di sini."
+        />
+      ) : (
+        <div className="max-h-[220px] space-y-2 overflow-y-auto pr-1 scrollbar-none">
+          {tasks.map((task) => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              onClick={() => navigate(`/tugas/${task.id}`)}
+            />
+          ))}
+        </div>
+      )}
     </SectionCard>
   );
 };
