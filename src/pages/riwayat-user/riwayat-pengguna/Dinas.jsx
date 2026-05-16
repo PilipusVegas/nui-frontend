@@ -41,7 +41,7 @@ export default function RiwayatDinas() {
         setError(null);
 
         const res = await fetchWithJwt(
-          `${apiUrl}/surat-dinas/riwayat/user?startDate=${startDate}&endDate=${endDate}`
+          `${apiUrl}/surat-dinas/riwayat/user?startDate=${startDate}&endDate=${endDate}`,
         );
 
         if (res.status === 404) {
@@ -65,7 +65,7 @@ export default function RiwayatDinas() {
           : [];
 
         const sorted = [...rawData].sort(
-          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+          (a, b) => new Date(b.created_at) - new Date(a.created_at),
         );
 
         setData(sorted);
@@ -92,7 +92,7 @@ export default function RiwayatDinas() {
     return data.filter((item) =>
       `${item.keterangan} ${formatFullDate(item.tgl_berangkat)}`
         .toLowerCase()
-        .includes(q)
+        .includes(q),
     );
   }, [data, query]);
 
@@ -114,44 +114,48 @@ export default function RiwayatDinas() {
 
   return (
     <div className="space-y-3">
+      {/* Summary Mini */}
+      <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-sm">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold text-gray-800">
+              Riwayat Surat Dinas
+            </p>
 
-      {/* ================= SUMMARY ================= */}
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-
-        {/* Header */}
-        <div className="px-3 py-3 border-b border-gray-100">
-          <p className="text-[13px] font-semibold text-gray-800">
-            Riwayat Surat Dinas
-          </p>
-          <p className="text-[11px] text-gray-500 mt-0.5">
-            Periode {formatPeriod(startDate, endDate)}
-          </p>
+            <p className="truncate text-[9px] text-gray-600">
+              {formatPeriod(startDate, endDate)}
+            </p>
+          </div>
         </div>
 
-        {/* KPI GRID */}
-        <div className="grid grid-cols-3 divide-x divide-gray-100 text-center">
-
-          <div className="py-3">
-            <p className="text-[15px] font-semibold text-gray-900">
+        <div className="grid grid-cols-3 gap-2">
+          <div>
+            <p className="text-[13px] font-bold leading-none text-gray-900">
               {summary.total_office_leave}
             </p>
-            <p className="text-[11px] text-gray-500">Total</p>
+
+            <p className="mt-0.5 text-[9px] font-medium text-gray-500">Total Pengajuan</p>
           </div>
 
-          <div className="py-3">
-            <p className="text-[15px] font-semibold text-green-600">
+          <div className="border-l border-gray-100 pl-2">
+            <p className="text-[13px] font-bold leading-none text-green-600">
               {summary.total_approved}
             </p>
-            <p className="text-[11px] text-gray-500">Disetujui</p>
+
+            <p className="mt-0.5 text-[9px] font-medium text-gray-500">
+              Disetujui
+            </p>
           </div>
 
-          <div className="py-3">
-            <p className="text-[15px] font-semibold text-red-600">
+          <div className="border-l border-gray-100 pl-2">
+            <p className="text-[13px] font-bold leading-none text-red-600">
               {summary.total_rejected}
             </p>
-            <p className="text-[11px] text-gray-500">Ditolak</p>
-          </div>
 
+            <p className="mt-0.5 text-[9px] font-medium text-gray-500">
+              Ditolak
+            </p>
+          </div>
         </div>
       </div>
 
@@ -173,7 +177,6 @@ export default function RiwayatDinas() {
 
       {/* ================= LIST ================= */}
       <div className="space-y-2 pb-4">
-
         {loading ? (
           <div className="rounded-xl border border-gray-200 bg-white px-3 py-8 shadow-sm">
             <div className="flex flex-col items-center gap-3">
@@ -193,15 +196,15 @@ export default function RiwayatDinas() {
               item.status === 1
                 ? "Disetujui"
                 : item.status === 2
-                ? "Ditolak"
-                : "Pending";
+                  ? "Ditolak"
+                  : "Pending";
 
             const statusStyle =
               item.status === 1
                 ? "bg-green-50 text-green-600"
                 : item.status === 2
-                ? "bg-red-50 text-red-600"
-                : "bg-yellow-50 text-yellow-600";
+                  ? "bg-red-50 text-red-600"
+                  : "bg-yellow-50 text-yellow-600";
 
             const isAreaA = item.kategori == 1;
 
@@ -221,7 +224,9 @@ export default function RiwayatDinas() {
                     </p>
                   </div>
 
-                  <span className={`text-[10px] px-2 py-1 rounded-md font-medium ${statusStyle}`}>
+                  <span
+                    className={`text-[10px] px-2 py-1 rounded-md font-medium ${statusStyle}`}
+                  >
                     {statusText}
                   </span>
                 </div>

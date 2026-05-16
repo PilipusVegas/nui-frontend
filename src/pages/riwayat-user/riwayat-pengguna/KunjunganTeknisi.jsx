@@ -122,47 +122,62 @@ export default function KunjunganTeknisi() {
 
   return (
     <div className="space-y-3">
-      {/* ================= SUMMARY ================= */}
-      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-        <div className="border-b border-gray-100 px-3 py-3">
-          <p className="text-[13px] font-semibold text-gray-800">
-            Riwayat Kunjungan Teknisi
-          </p>
-          <p className="mt-0.5 text-[11px] text-gray-500">
-            Ringkasan aktivitas kunjungan
-          </p>
-        </div>
+{/* Summary Mini */}
+<div className="rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-sm">
+  <div className="mb-2 flex items-center justify-between gap-2">
+    <div className="min-w-0">
+      <p className="text-[11px] font-semibold text-gray-800">
+        Riwayat Kunjungan Teknisi
+      </p>
 
-        <div className="grid grid-cols-4 divide-x divide-gray-100 text-center">
-          <div className="py-3">
-            <p className="text-[15px] font-semibold text-gray-900">
-              {summary.total}
-            </p>
-            <p className="text-[11px] text-gray-500">Total</p>
-          </div>
+      <p className="truncate text-[9px] text-gray-600">
+        Ringkasan aktivitas kunjungan
+      </p>
+    </div>
+  </div>
 
-          <div className="py-3">
-            <p className="text-[15px] font-semibold text-amber-600">
-              {summary.pending}
-            </p>
-            <p className="text-[11px] text-gray-500">Pending</p>
-          </div>
+  <div className="grid grid-cols-4 gap-2">
+    <div>
+      <p className="text-[13px] font-bold leading-none text-gray-900">
+        {summary.total}
+      </p>
 
-          <div className="py-3">
-            <p className="text-[15px] font-semibold text-emerald-600">
-              {summary.approved}
-            </p>
-            <p className="text-[11px] text-gray-500">Disetujui</p>
-          </div>
+      <p className="mt-0.5 text-[9px] font-medium text-gray-500">
+        Total
+      </p>
+    </div>
 
-          <div className="py-3">
-            <p className="text-[15px] font-semibold text-rose-600">
-              {summary.rejected}
-            </p>
-            <p className="text-[11px] text-gray-500">Ditolak</p>
-          </div>
-        </div>
-      </div>
+    <div className="border-l border-gray-100 pl-2">
+      <p className="text-[13px] font-bold leading-none text-amber-600">
+        {summary.pending}
+      </p>
+
+      <p className="mt-0.5 text-[9px] font-medium text-gray-500">
+        Pending
+      </p>
+    </div>
+
+    <div className="border-l border-gray-100 pl-2">
+      <p className="text-[13px] font-bold leading-none text-emerald-600">
+        {summary.approved}
+      </p>
+
+      <p className="mt-0.5 text-[9px] font-medium text-gray-500">
+        Disetujui
+      </p>
+    </div>
+
+    <div className="border-l border-gray-100 pl-2">
+      <p className="text-[13px] font-bold leading-none text-rose-600">
+        {summary.rejected}
+      </p>
+
+      <p className="mt-0.5 text-[9px] font-medium text-gray-500">
+        Ditolak
+      </p>
+    </div>
+  </div>
+</div>
 
       {/* ================= SEARCH ================= */}
       <SearchBar

@@ -122,47 +122,45 @@ export default function Absensi() {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-        {/* HEADER */}
-        <div className="px-3 py-3 border-b border-gray-100">
-          <p className="text-[13px] font-semibold text-gray-800">
-            Riwayat Absensi
-          </p>
-          <p className="text-[11px] text-gray-500 mt-0.5">
-            Periode {formatPeriod(startDate, endDate)}
-          </p>
+      {/* Summary Mini */}
+      <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-sm">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold text-gray-800">
+              Riwayat Absensi
+            </p>
+            <p className="truncate text-[9px] text-gray-600">
+              {formatPeriod(startDate, endDate)}
+            </p>
+          </div>
         </div>
 
-        {/* SUMMARY */}
-        <div className="grid grid-cols-3 divide-x divide-gray-100 text-center">
-          {/* Kehadiran */}
-          <div className="py-3">
-            <p className="text-[15px] font-semibold text-gray-900">
+        <div className="grid grid-cols-3 gap-2">
+          <div>
+            <p className="text-[13px] font-bold leading-none text-gray-900">
               {summary.totalDays}
             </p>
-            <p className="text-[11px] text-gray-500 mt-0.5">Kehadiran</p>
+            <p className="mt-0.5 text-[9px] font-medium text-gray-500">Total Hadir</p>
           </div>
 
-          {/* Terlambat */}
-          <div className="py-3">
-            <p className="text-[15px] font-semibold text-red-600">
+          <div className="border-l border-gray-100 pl-2">
+            <p className="text-[13px] font-bold leading-none text-red-600">
               {summary.totalLate}
             </p>
-            <p className="text-[11px] text-gray-500 mt-0.5">Terlambat</p>
+            <p className="mt-0.5 text-[9px] font-medium text-gray-500">Menit Terlambat</p>
           </div>
 
-          {/* Lupa Absen */}
-          <div className="py-3">
-            <p className="text-[15px] font-semibold text-orange-500">
+          <div className="border-l border-gray-100 pl-2">
+            <p className="text-[13px] font-bold leading-none text-orange-500">
               {summary.totalForgotCheckout}
             </p>
-            <p className="text-[11px] text-gray-500 mt-0.5">Lupa Absen</p>
+            <p className="mt-0.5 text-[9px] font-medium text-gray-500">Lupa Absen</p>
           </div>
         </div>
       </div>
 
-      {/* Filter */}
-      <div className="space-y-2">
+      {/* Filter Compact */}
+      <div className="space-y-3">
         <DateRangeField
           startDate={startDate}
           endDate={endDate}
@@ -173,19 +171,17 @@ export default function Absensi() {
         <SearchBar
           value={query}
           onSearch={handleSearch}
-          placeholder="Cari riwayat absensi..."
+          placeholder="Cari absensi..."
         />
       </div>
 
-      {/* Data area */}
-      <div className="space-y-2 pb-4">
+      {/* Data Area */}
+      <div className="space-y-1.5 pb-3">
         {loading ? (
-          <div className="rounded-xl border border-gray-200 bg-white px-3 py-8 shadow-sm">
-            <div className="flex flex-col items-center justify-center gap-3">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-green-500" />
-              <p className="text-[12px] text-gray-500">
-                Memuat riwayat absensi...
-              </p>
+          <div className="rounded-lg border border-gray-200 bg-white px-3 py-6 shadow-sm">
+            <div className="flex flex-col items-center justify-center gap-2">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-200 border-t-green-500" />
+              <p className="text-[11px] text-gray-500">Memuat riwayat...</p>
             </div>
           </div>
         ) : error ? (
@@ -197,10 +193,16 @@ export default function Absensi() {
             const tglMasuk = item.jam_mulai
               ? formatFullDate(item.jam_mulai)
               : "-";
-
             const tglPulang = item.jam_selesai
               ? formatFullDate(item.jam_selesai)
               : "-";
+
+            const jamMasuk = item.jam_mulai
+              ? formatTime(item.jam_mulai)
+              : "--:--";
+            const jamPulang = item.jam_selesai
+              ? formatTime(item.jam_selesai)
+              : "--:--";
 
             const isLate = !!item.keterlambatan;
 
@@ -212,76 +214,85 @@ export default function Absensi() {
             return (
               <div
                 key={item.id_absen}
-                className="rounded-xl border border-gray-200 bg-white px-3 py-3 shadow-sm"
+                className="rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-sm"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-[12px] font-semibold text-gray-800">
-                      {tglMasuk}
-                    </p>
-                    <p className="mt-0.5 truncate text-[11px] text-gray-500">
+                {/* Header */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <p className="truncate text-[11px] font-semibold text-gray-900">
+                        {tglMasuk}
+                      </p>
+
+                      {isLate && (
+                        <span className="shrink-0 rounded-md border border-red-200 bg-red-50 px-1.5 py-0.5 text-[9px] font-semibold text-red-600">
+                          Telat {item.keterlambatan}m
+                        </span>
+                      )}
+
+                      {isForgotCheckout && (
+                        <span className="shrink-0 rounded-md border border-gray-300 bg-gray-50 px-1.5 py-0.5 text-[9px] font-semibold text-gray-600">
+                          Belum pulang
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="mt-0.5 truncate text-[10px] font-medium text-gray-500">
                       {item.nama_shift || "-"}
                     </p>
                   </div>
-
-                  <div className="text-right text-[11px] text-gray-500">
-                    <p>Masuk</p>
-                    <p className="font-medium text-gray-800">
-                      {item.jam_mulai ? formatTime(item.jam_mulai) : "--:--"}
-                    </p>
-                  </div>
                 </div>
 
-                <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
-                  <div>
-                    <p className="text-gray-400">Tanggal Pulang</p>
-                    <p className="mt-0.5 font-medium text-gray-700">
+                {/* Masuk & Pulang */}
+                <div className="mt-2 grid grid-cols-2 gap-2 border-t border-gray-100 pt-2">
+                  <div className="min-w-0">
+                    <p className="text-[9px] font-semibold uppercase tracking-wide text-green-600">
+                      Masuk
+                    </p>
+
+                    <p className="mt-0.5 text-[11px] font-bold text-gray-900">
+                      {jamMasuk}
+                    </p>
+
+                    <p className="truncate text-[9px] font-medium text-gray-500">
+                      {tglMasuk}
+                    </p>
+
+                    <div className="mt-1 flex min-w-0 items-center gap-1 text-[10px] text-gray-600">
+                      <FontAwesomeIcon
+                        icon={faMapMarkerAlt}
+                        className="shrink-0 text-green-600"
+                      />
+                      <span className="truncate">
+                        {item.lokasi_absen_mulai ||
+                          "Lokasi masuk tidak tersedia"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="min-w-0 text-right">
+                    <p className="text-[9px] font-semibold uppercase tracking-wide text-orange-500">
+                      Pulang
+                    </p>
+
+                    <p className="mt-0.5 text-[11px] font-bold text-gray-900">
+                      {jamPulang}
+                    </p>
+
+                    <p className="truncate text-[9px] font-medium text-gray-500">
                       {tglPulang}
                     </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-gray-400">Jam Pulang</p>
-                    <p className="mt-0.5 font-medium text-gray-700">
-                      {item.jam_selesai
-                        ? formatTime(item.jam_selesai)
-                        : "--:--"}
-                    </p>
-                  </div>
-                </div>
 
-                <div className="mt-3 grid grid-cols-1 gap-1 text-[11px] text-gray-500">
-                  <div className="flex min-w-0 items-center gap-1">
-                    <FontAwesomeIcon
-                      icon={faMapMarkerAlt}
-                      className="text-green-500"
-                    />
-                    <span className="truncate">
-                      {item.lokasi_absen_mulai ?? "N/A"}
-                    </span>
+                    <div className="mt-1 flex min-w-0 items-center justify-end gap-1 text-[10px] text-gray-600">
+                      <FontAwesomeIcon
+                        icon={faMapMarkerAlt}
+                        className="shrink-0 text-orange-500"
+                      />
+                      <span className="truncate">
+                        {item.lokasi_absen_selesai || "Belum tersedia"}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex min-w-0 items-center gap-1">
-                    <FontAwesomeIcon
-                      icon={faMapMarkerAlt}
-                      className="text-orange-500"
-                    />
-                    <span className="truncate">
-                      {item.lokasi_absen_selesai ?? "N/A"}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {isLate && (
-                    <span className="rounded-md bg-red-50 px-2 py-1 text-[10px] font-medium text-red-600">
-                      Terlambat {item.keterlambatan} menit
-                    </span>
-                  )}
-
-                  {isForgotCheckout && (
-                    <span className="rounded-md bg-gray-100 px-2 py-1 text-[10px] font-medium text-gray-700">
-                      Absen pulang kosong
-                    </span>
-                  )}
                 </div>
               </div>
             );
